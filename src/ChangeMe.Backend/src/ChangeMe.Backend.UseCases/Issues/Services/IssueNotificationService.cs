@@ -192,6 +192,9 @@ public class IssueNotificationService(
       IssueHistoryEventType.ASSIGNEE_CHANGED => NotificationEventType.ASSIGNEE_CHANGED,
       IssueHistoryEventType.TITLE_CHANGED => NotificationEventType.TITLE_CHANGED,
       IssueHistoryEventType.DESCRIPTION_CHANGED => NotificationEventType.DESCRIPTION_CHANGED,
+      IssueHistoryEventType.ACCEPTANCE_CRITERION_ADDED => NotificationEventType.ACCEPTANCE_CRITERION_ADDED,
+      IssueHistoryEventType.ACCEPTANCE_CRITERION_UPDATED => NotificationEventType.ACCEPTANCE_CRITERION_UPDATED,
+      IssueHistoryEventType.ACCEPTANCE_CRITERION_REMOVED => NotificationEventType.ACCEPTANCE_CRITERION_REMOVED,
       _ => NotificationEventType.STATUS_CHANGED,
     };
   }
@@ -205,6 +208,9 @@ public class IssueNotificationService(
       IssueHistoryEventType.ASSIGNEE_CHANGED => $"Issue '{issueTitle}' assignee changed.",
       IssueHistoryEventType.TITLE_CHANGED => $"Issue title changed from '{historyEntry.PreviousValue}' to '{historyEntry.CurrentValue}'.",
       IssueHistoryEventType.DESCRIPTION_CHANGED => $"Issue '{issueTitle}' description was updated.",
+      IssueHistoryEventType.ACCEPTANCE_CRITERION_ADDED => $"Issue '{issueTitle}' acceptance criterion added.",
+      IssueHistoryEventType.ACCEPTANCE_CRITERION_UPDATED => $"Issue '{issueTitle}' acceptance criterion updated.",
+      IssueHistoryEventType.ACCEPTANCE_CRITERION_REMOVED => $"Issue '{issueTitle}' acceptance criterion removed.",
       _ => historyEntry.Summary,
     };
   }

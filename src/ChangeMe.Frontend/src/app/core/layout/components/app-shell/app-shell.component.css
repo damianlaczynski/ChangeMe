@@ -1,0 +1,29 @@
+@reference '../../../../../tailwind.css';
+
+.shell-content {
+  @apply bg-surface-50 dark:bg-surface-950;
+}
+
+.shell-sidebar {
+  @apply border-surface-200 bg-surface-0 border-r dark:border-surface-700 dark:bg-surface-900;
+}
+
+.shell-header {
+  @apply border-surface-200 bg-surface-0 border-b dark:border-surface-700 dark:bg-surface-900;
+}
+
+.shell-sidebar-brand {
+  @apply border-surface-200 border-b px-3 dark:border-surface-700;
+}
+
+.app-shell-drawer.p-drawer {
+  @apply border-surface-200 bg-surface-0 text-color dark:border-surface-700 dark:bg-surface-900;
+}
+
+.app-shell-drawer .p-drawer-header {
+  @apply border-surface-200 bg-surface-0 text-color dark:border-surface-700 dark:bg-surface-900;
+}
+
+.app-shell-drawer .p-drawer-content {
+  @apply bg-surface-0 p-0 dark:bg-surface-900;
+}

@@ -1,221 +1,219 @@
-<section>
-  <h1>Issues</h1>
-  <p>Browse, filter and monitor issues.</p>
-
-  <form [formGroup]="filtersForm" (ngSubmit)="applyFilters()">
-    <div>
-      <label for="searchText">Search</label>
-      <input
-        id="searchText"
-        type="text"
-        formControlName="searchText"
-        placeholder="Search issues..."
-      />
-      <button type="submit">Search</button>
-      @if (isAuthenticated()) {
-        <a [routerLink]="['/issues', 'create']">+ Add issue</a>
-      }
+<p-card class="mb-4" header="Issues" subheader="Browse, filter and monitor issues.">
+  <form class="p-fluid" [formGroup]="filtersForm" (ngSubmit)="applyFilters()">
+    <div class="flex flex-col gap-1.5 mb-4">
+      <div class="flex flex-wrap items-center gap-2">
+        <input
+          id="searchText"
+          type="text"
+          pInputText
+          [formControl]="filtersForm.controls.searchText"
+          placeholder="Search issues..."
+          class="min-w-0 flex-1"
+        />
+        <p-button type="submit" label="Search" icon="pi pi-search" />
+        <p-button
+          label="Add issue"
+          icon="pi pi-plus"
+          [routerLink]="['/issues', 'create']"
+        />
+      </div>
     </div>
 
-    <fieldset>
-      <legend>Filters</legend>
+    <p-panel
+      header="Filters"
+      [toggleable]="true"
+      [collapsed]="filtersCollapsed()"
+      (collapsedChange)="onFiltersCollapsedChange($event)"
+      class="mb-4"
+    >
+      <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div class="flex flex-col gap-1.5">
+          <label for="statuses">Status</label>
+          <p-multiselect
+            inputId="statuses"
+            [formControl]="filtersForm.controls.statuses"
+            [options]="issueStatuses()"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Any status"
+            display="chip"
+          />
+        </div>
 
-      <div>
-        <label for="statuses">Status</label>
-        <select id="statuses" formControlName="statuses" multiple>
-          @for (status of issueStatuses(); track status.value) {
-            <option [ngValue]="status.value">{{ status.label }}</option>
-          }
-        </select>
+        <div class="flex flex-col gap-1.5">
+          <label for="priorities">Priority</label>
+          <p-multiselect
+            inputId="priorities"
+            [formControl]="filtersForm.controls.priorities"
+            [options]="issuePriorities()"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Any priority"
+            display="chip"
+          />
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <label for="assignedToUserId">Assigned to</label>
+          <p-select
+            inputId="assignedToUserId"
+            [formControl]="filtersForm.controls.assignedToUserId"
+            [options]="assignableUsers()"
+            optionLabel="fullName"
+            optionValue="id"
+            placeholder="Any assignee"
+            [showClear]="true"
+            [loading]="isLoadingAssignableUsers()"
+          />
+        </div>
+
+        <div class="flex items-center gap-2">
+          <p-checkbox
+            [formControl]="filtersForm.controls.watchedByMe"
+            inputId="watchedByMe"
+            binary
+          />
+          <label class="cursor-pointer" for="watchedByMe">Watched by me</label>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <p-checkbox
+            [formControl]="filtersForm.controls.createdByMe"
+            inputId="createdByMe"
+            binary
+          />
+          <label class="cursor-pointer" for="createdByMe">My issues</label>
+        </div>
       </div>
 
-      <div>
-        <label for="priorities">Priority</label>
-        <select id="priorities" formControlName="priorities" multiple>
-          @for (priority of issuePriorities(); track priority.value) {
-            <option [ngValue]="priority.value">{{ priority.label }}</option>
-          }
-        </select>
+      <div class="mt-4 flex flex-wrap items-center justify-end gap-2">
+        <p-button
+          type="button"
+          label="Clear filters"
+          icon="pi pi-filter-slash"
+          severity="secondary"
+          [outlined]="true"
+          [disabled]="!hasActiveFilters()"
+          (onClick)="clearFilters()"
+        />
+        <p-button type="submit" label="Apply filters" icon="pi pi-filter" />
       </div>
-
-      <div>
-        <label for="assignedToUserId">Assigned to</label>
-        <select id="assignedToUserId" formControlName="assignedToUserId">
-          <option [ngValue]="null">Any assignee</option>
-          @for (user of assignableUsers(); track user.id) {
-            <option [ngValue]="user.id">{{ user.fullName }}</option>
-          }
-        </select>
-        @if (isLoadingAssignableUsers()) {
-          <p>Loading assignable users...</p>
-        }
-      </div>
-
-      <div>
-        <label>
-          <input type="checkbox" formControlName="watchedByMe" />
-          Watched by me
-        </label>
-      </div>
-
-      <div>
-        <label>
-          <input type="checkbox" formControlName="createdByMe" />
-          My issues
-        </label>
-      </div>
-
-      <div>
-        <button type="submit">Apply filters</button>
-        <button type="button" (click)="clearFilters()">Clear filters</button>
-      </div>
-    </fieldset>
+    </p-panel>
   </form>
 
   @if (errorMessage()) {
-    <p>{{ errorMessage() }}</p>
+    <p-message severity="error" class="mb-4">{{ errorMessage() }}</p-message>
   }
 
-  @if (isLoading() && !hasLoaded()) {
-    <section aria-busy="true">
-      <h2>Loading issues...</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Title</th>
-            <th>Status</th>
-            <th>Priority</th>
-            <th>Assigned to</th>
-            <th>Created at</th>
-            <th>Last activity</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (_row of skeletonRows; track $index) {
-            <tr>
-              <td>Loading...</td>
-              <td>Loading issue title...</td>
-              <td>Loading...</td>
-              <td>Loading...</td>
-              <td>Loading...</td>
-              <td>Loading...</td>
-              <td>Loading...</td>
-              <td>Loading...</td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    </section>
-  } @else {
-    <p>
-      Results: {{ pagination()?.totalCount ?? 0 }} | Page
-      {{ pagination()?.currentPage ?? 1 }} of {{ pagination()?.totalPages ?? 0 }}
-    </p>
+  <p-menu #issueActionsMenu [model]="issueActionItems()" [popup]="true" />
 
-    @if (issues().length > 0) {
-      <table>
-        <thead>
-          <tr>
-            <th>
-              <button type="button" (click)="toggleSort('Id')">
-                ID
-                @if (getSortDirection('Id') === 'ascending') {
-                  <span>(asc)</span>
-                } @else if (getSortDirection('Id') === 'descending') {
-                  <span>(desc)</span>
-                }
-              </button>
-            </th>
-            <th>
-              <button type="button" (click)="toggleSort('Title')">
-                Title
-                @if (getSortDirection('Title') === 'ascending') {
-                  <span>(asc)</span>
-                } @else if (getSortDirection('Title') === 'descending') {
-                  <span>(desc)</span>
-                }
-              </button>
-            </th>
-            <th>Status</th>
-            <th>Priority</th>
-            <th>Assigned to</th>
-            <th>
-              <button type="button" (click)="toggleSort('CreatedAt')">
-                Created at
-                @if (getSortDirection('CreatedAt') === 'ascending') {
-                  <span>(asc)</span>
-                } @else if (getSortDirection('CreatedAt') === 'descending') {
-                  <span>(desc)</span>
-                }
-              </button>
-            </th>
-            <th>
-              <button type="button" (click)="toggleSort('LastActivityAt')">
-                Last activity
-                @if (getSortDirection('LastActivityAt') === 'ascending') {
-                  <span>(asc)</span>
-                } @else if (getSortDirection('LastActivityAt') === 'descending') {
-                  <span>(desc)</span>
-                }
-              </button>
-            </th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (issue of issues(); track issue.id) {
-            <tr>
-              <td>
-                <a [routerLink]="['/issues', issue.id]">{{ issue.id }}</a>
-              </td>
-              <td>
-                <a [routerLink]="['/issues', issue.id]">{{ issue.title }}</a>
-              </td>
-              <td>{{ issue.status }}</td>
-              <td>{{ issue.priority }}</td>
-              <td>{{ issue.assignedToUserName || 'Unassigned' }}</td>
-              <td>{{ issue.createdAt | date: 'short' }}</td>
-              <td>{{ issue.lastActivityAt | date: 'short' }}</td>
-              <td>
-                <a [routerLink]="['/issues', issue.id]">Show details</a>
-                @if (isAuthenticated()) {
-                  <button
-                    type="button"
-                    (click)="toggleWatch(issue)"
-                    [disabled]="isWatchPending(issue.id)"
-                  >
-                    {{ issue.isWatchedByCurrentUser ? 'Unwatch' : 'Watch' }}
-                    ({{ issue.watchersCount }})
-                  </button>
-                } @else {
-                  <span>Watchers: {{ issue.watchersCount }}</span>
-                }
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    } @else {
-      <p>No issues found</p>
-    }
+  <p-table
+    [value]="issues()"
+    [loading]="isLoading() && !hasLoaded()"
+    [rowTrackBy]="trackIssue"
+    [sortField]="query().sortField"
+    [sortOrder]="query().ascending ? 1 : -1"
+    [customSort]="true"
+    (onSort)="onTableSort($event)"
+    stripedRows
+  >
+    <ng-template #header>
+      <tr>
+        <th pSortableColumn="Title">
+          <div class="flex items-center gap-2">
+            Title
+            <p-sortIcon field="Title" />
+          </div>
+        </th>
+        <th>Status</th>
+        <th>Priority</th>
+        <th>Assigned to</th>
+        <th pSortableColumn="CreatedAt">
+          <div class="flex items-center gap-2">
+            Created at
+            <p-sortIcon field="CreatedAt" />
+          </div>
+        </th>
+        <th pSortableColumn="LastActivityAt">
+          <div class="flex items-center gap-2">
+            Last activity
+            <p-sortIcon field="LastActivityAt" />
+          </div>
+        </th>
+        <th>Actions</th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-issue>
+      <tr>
+        <td>
+          <a
+            class="text-primary font-medium hover:underline"
+            [routerLink]="['/issues', issue.id]"
+          >
+            {{ issue.title }}
+          </a>
+        </td>
+        <td>
+          <p-tag
+            [value]="getIssueStatusLabel(issue.status)"
+            [severity]="getIssueStatusSeverity(issue.status)"
+          />
+        </td>
+        <td>
+          <p-tag
+            [value]="getIssuePriorityLabel(issue.priority)"
+            [severity]="getIssuePrioritySeverity(issue.priority)"
+          />
+        </td>
+        <td>{{ issue.assignedToUserName || 'Unassigned' }}</td>
+        <td>
+          {{ issue.createdAt | date: 'dd.MM.yyyy HH:mm' }}
+        </td>
+        <td>
+          {{ issue.lastActivityAt | date: 'dd.MM.yyyy HH:mm' }}
+        </td>
+        <td>
+          <div class="flex flex-wrap items-center gap-2">
+            <p-button
+              [label]="issue.watchersCount.toString()"
+              [icon]="issue.isWatchedByCurrentUser ? 'pi pi-bell-slash' : 'pi pi-bell'"
+              [severity]="issue.isWatchedByCurrentUser ? 'success' : 'secondary'"
+              [outlined]="!issue.isWatchedByCurrentUser"
+              size="small"
+              [loading]="isWatchPending(issue.id)"
+              [pTooltip]="getWatchTooltip(issue)"
+              tooltipPosition="top"
+              [attr.aria-label]="getWatchTooltip(issue)"
+              (onClick)="toggleWatch(issue)"
+            />
+            <p-button
+              type="button"
+              icon="pi pi-ellipsis-v"
+              severity="secondary"
+              [text]="true"
+              size="small"
+              pTooltip="Issue actions"
+              tooltipPosition="top"
+              [attr.aria-label]="'Actions for ' + issue.title"
+              (onClick)="openIssueActionsMenu($event, issue)"
+            />
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="7">No issues found</td>
+      </tr>
+    </ng-template>
+  </p-table>
 
-    <div>
-      <button
-        type="button"
-        (click)="changePage((pagination()?.currentPage ?? 1) - 1)"
-        [disabled]="!pagination()?.hasPrevious"
-      >
-        Previous
-      </button>
-      <button
-        type="button"
-        (click)="changePage((pagination()?.currentPage ?? 1) + 1)"
-        [disabled]="!pagination()?.hasNext"
-      >
-        Next
-      </button>
-    </div>
+  @if (hasLoaded()) {
+    <p-paginator
+      [rows]="pagination()?.pageSize ?? 10"
+      [totalRecords]="pagination()?.totalCount ?? 0"
+      [first]="((pagination()?.currentPage ?? 1) - 1) * (pagination()?.pageSize ?? 10)"
+      (onPageChange)="onPageChange($event)"
+    />
   }
-</section>
+</p-card>

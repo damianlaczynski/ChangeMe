@@ -1,140 +1,262 @@
-<section>
-  <h1>Issue Details</h1>
-  <p>Review issue data, comments, history and watch state.</p>
-
-  <div>
-    <a [routerLink]="['/issues']">Back to issues list</a>
-    @if (issue() && isAuthenticated()) {
-      <a [routerLink]="['/issues', issue()!.id, 'edit']">Edit issue</a>
-      <button type="button" (click)="toggleWatch()" [disabled]="isTogglingWatch()">
-        {{ issue()!.isWatchedByCurrentUser ? 'Unwatch' : 'Watch' }}
-        ({{ issue()!.watchersCount }})
-      </button>
+﻿<p-card
+  class="mb-4"
+  [header]="pageTitle()"
+  subheader="Review issue data, comments and history"
+>
+  <div class="mb-4 flex flex-wrap items-center gap-2">
+    <app-back-button />
+    @if (issue()) {
+      <p-button
+        label="Edit"
+        icon="pi pi-pencil"
+        severity="secondary"
+        [outlined]="true"
+        size="small"
+        [routerLink]="['/issues', issue()!.id, 'edit']"
+      />
+      <p-button
+        [label]="issue()!.watchersCount.toString()"
+        [icon]="issue()!.isWatchedByCurrentUser ? 'pi pi-bell-slash' : 'pi pi-bell'"
+        [severity]="issue()!.isWatchedByCurrentUser ? 'success' : 'secondary'"
+        [outlined]="!issue()!.isWatchedByCurrentUser"
+        size="small"
+        [loading]="isTogglingWatch()"
+        [pTooltip]="getWatchTooltip(issue()!)"
+        tooltipPosition="top"
+        [attr.aria-label]="getWatchTooltip(issue()!)"
+        (onClick)="toggleWatch()"
+      />
+      <p-button
+        label="Delete"
+        icon="pi pi-trash"
+        severity="danger"
+        [outlined]="true"
+        size="small"
+        [loading]="isDeleting()"
+        (onClick)="confirmDeleteIssue()"
+      />
     }
   </div>
 
   @if (isLoading() && !hasLoaded()) {
-    <section aria-busy="true">
-      <h2>Loading issue details...</h2>
-      <p>Loading issue header...</p>
-      <p>Loading acceptance criteria...</p>
-      <p>Loading comments...</p>
-      <p>Loading history...</p>
-    </section>
+    <div class="flex flex-col items-center gap-2 py-8">
+      <p-progressSpinner ariaLabel="Loading issue details" />
+      <p class="text-muted-color m-0 text-sm">Loading issue details...</p>
+    </div>
   } @else if (loadError()) {
-    <p>{{ loadError() }}</p>
-  } @else if (issue()) {
-    <article>
-      <header>
-        <h2>{{ issue()!.title }}</h2>
-        <p>ID: {{ issue()!.id }}</p>
-        <p>Status: {{ issue()!.status }}</p>
-        <p>Priority: {{ issue()!.priority }}</p>
-        <p>Author: {{ issue()!.createdByName || issue()!.createdBy }}</p>
-        <p>Assigned to: {{ issue()!.assignedToUserName || 'Unassigned' }}</p>
-        <p>Created at: {{ issue()!.createdAt | date: 'short' }}</p>
-        <p>Last activity: {{ issue()!.lastActivityAt | date: 'short' }}</p>
-        <p>
-          Watch state:
-          {{ issue()!.isWatchedByCurrentUser ? 'Watching' : 'Not watching' }}
-        </p>
-      </header>
+    <p-message severity="error">{{ loadError() }}</p-message>
+  } @else if (issue(); as currentIssue) {
+    <dl
+      class="mb-6 grid gap-4 rounded-lg border border-surface-200 p-4 sm:grid-cols-2 lg:grid-cols-3"
+    >
+      <div class="flex flex-col gap-1">
+        <dt class="text-muted-color text-sm">Author</dt>
+        <dd class="m-0 font-medium">
+          {{ currentIssue.createdByName || currentIssue.createdBy }}
+        </dd>
+      </div>
+      <div class="flex flex-col gap-1">
+        <dt class="text-muted-color text-sm">Assigned to</dt>
+        <dd class="m-0 font-medium">
+          {{ currentIssue.assignedToUserName || 'Unassigned' }}
+        </dd>
+      </div>
+      <div class="flex flex-col gap-1">
+        <dt class="text-muted-color text-sm">Status</dt>
+        <dd class="m-0">
+          <p-tag
+            [value]="getIssueStatusLabel(currentIssue.status)"
+            [severity]="getIssueStatusSeverity(currentIssue.status)"
+          />
+        </dd>
+      </div>
+      <div class="flex flex-col gap-1">
+        <dt class="text-muted-color text-sm">Priority</dt>
+        <dd class="m-0">
+          <p-tag
+            [value]="getIssuePriorityLabel(currentIssue.priority)"
+            [severity]="getIssuePrioritySeverity(currentIssue.priority)"
+          />
+        </dd>
+      </div>
+      <div class="flex flex-col gap-1">
+        <dt class="text-muted-color text-sm">Created at</dt>
+        <dd class="m-0">
+          {{ currentIssue.createdAt | date: 'dd.MM.yyyy HH:mm' }}
+        </dd>
+      </div>
+      <div class="flex flex-col gap-1">
+        <dt class="text-muted-color text-sm">Last activity</dt>
+        <dd class="m-0">
+          {{ currentIssue.lastActivityAt | date: 'dd.MM.yyyy HH:mm' }}
+        </dd>
+      </div>
+    </dl>
 
-      <section>
-        <h3>Description</h3>
-        <p>{{ issue()!.description }}</p>
-      </section>
+    <div class="flex flex-col gap-4">
+      <p-panel header="Description" [toggleable]="true">
+        <p class="m-0 whitespace-pre-wrap">{{ currentIssue.description }}</p>
+      </p-panel>
 
-      <section>
-        <h3>Acceptance Criteria</h3>
-        @if (issue()!.acceptanceCriteria.length > 0) {
-          <ul>
-            @for (criterion of issue()!.acceptanceCriteria; track criterion.id) {
+      <p-panel header="Acceptance criteria" [toggleable]="true">
+        @if (currentIssue.acceptanceCriteria.length > 0) {
+          <ul class="m-0 flex list-disc flex-col gap-2 pl-5">
+            @for (criterion of currentIssue.acceptanceCriteria; track criterion.id) {
               <li>{{ criterion.content }}</li>
             }
           </ul>
         } @else {
-          <p>No acceptance criteria defined</p>
+          <p class="m-0 text-muted-color">No acceptance criteria defined</p>
         }
-      </section>
+      </p-panel>
 
-      <section>
-        <h3>Comments</h3>
-
-        @if (isAuthenticated()) {
-          <form [formGroup]="commentForm" (ngSubmit)="addComment()">
-            <div>
-              <label for="comment-content">Comment</label>
-              <textarea id="comment-content" formControlName="content"></textarea>
-            </div>
-
-            @if (shouldShowCommentError()) {
-              @if (commentForm.controls.content.errors?.['required']) {
-                <p>Comment content is required</p>
+      <p-tabs [value]="activeTab()" (valueChange)="onTabChange($event)">
+        <p-tablist>
+          <p-tab value="comments">Comments</p-tab>
+          <p-tab value="history">History</p-tab>
+        </p-tablist>
+        <p-tabpanels>
+          <p-tabpanel value="comments">
+            <div class="flex flex-col gap-4 pt-2">
+              @if (sortedComments().length > 0) {
+                <div class="flex flex-col gap-3">
+                  @for (comment of sortedComments(); track comment.id) {
+                    <article class="rounded-lg border border-surface-200 p-4">
+                      <header
+                        class="mb-2 flex flex-wrap items-baseline justify-between gap-2"
+                      >
+                        <span class="font-medium">
+                          {{ comment.authorName || comment.authorUserId }}
+                        </span>
+                        <time class="text-muted-color text-sm">
+                          {{ comment.createdAt | date: 'dd.MM.yyyy HH:mm' }}
+                        </time>
+                      </header>
+                      <p class="m-0 whitespace-pre-wrap">{{ comment.content }}</p>
+                    </article>
+                  }
+                </div>
+              } @else {
+                <p class="m-0 text-muted-color">No comments yet</p>
               }
-              @if (commentForm.controls.content.errors?.['maxlength']) {
-                <p>
-                  Comment must be at most
-                  {{ issueCommentConstraints.CONTENT_MAX_LENGTH }} characters
-                </p>
-              }
-            }
 
-            @if (commentError()) {
-              <p>{{ commentError() }}</p>
-            }
+              <form class="p-fluid" [formGroup]="commentForm" (ngSubmit)="addComment()">
+                <div class="flex flex-col gap-1.5">
+                  <label for="comment-content">Add a comment</label>
+                  <textarea
+                    id="comment-content"
+                    pTextarea
+                    [formControl]="commentForm.controls.content"
+                    rows="4"
+                    [invalid]="
+                      commentForm.controls.content.touched &&
+                      commentForm.controls.content.errors
+                    "
+                  ></textarea>
+                </div>
 
-            <button type="submit" [disabled]="isSubmittingComment()">
-              {{ isSubmittingComment() ? 'Adding comment...' : 'Add comment' }}
-            </button>
-          </form>
-        } @else {
-          <p>Log in to add comments</p>
-        }
-
-        @if (sortedComments().length > 0) {
-          <ul>
-            @for (comment of sortedComments(); track comment.id) {
-              <li>
-                <p>{{ comment.authorName || comment.authorUserId }}</p>
-                <p>{{ comment.createdAt | date: 'short' }}</p>
-                <p>{{ comment.content }}</p>
-              </li>
-            }
-          </ul>
-        } @else {
-          <p>No comments yet</p>
-        }
-      </section>
-
-      <section>
-        <h3>History</h3>
-        @if (sortedHistoryEntries().length > 0) {
-          <ul>
-            @for (
-              entry of sortedHistoryEntries();
-              track trackHistoryEntry($index, entry)
-            ) {
-              <li>
-                <p>{{ entry.eventType }}</p>
-                <p>{{ entry.actorName || entry.actorUserId }}</p>
-                <p>{{ entry.createdAt | date: 'short' }}</p>
-                <p>{{ entry.summary }}</p>
-                @if (entry.previousValue || entry.currentValue) {
-                  <p>
-                    Before: {{ entry.previousValue || '-' }} | After:
-                    {{ entry.currentValue || '-' }}
-                  </p>
+                @if (shouldShowCommentError()) {
+                  <div class="mt-2 flex flex-col gap-2">
+                    @if (commentForm.controls.content.errors?.['required']) {
+                      <p-message severity="error" variant="simple">
+                        Comment content is required
+                      </p-message>
+                    }
+                    @if (commentForm.controls.content.errors?.['maxlength']) {
+                      <p-message severity="error" variant="simple">
+                        Comment must be at most
+                        {{ issueCommentConstraints.CONTENT_MAX_LENGTH }} characters
+                      </p-message>
+                    }
+                  </div>
                 }
-              </li>
-            }
-          </ul>
-        } @else {
-          <p>No history entries found</p>
-        }
-      </section>
-    </article>
+
+                @if (commentError()) {
+                  <p-message severity="error" class="mt-2">
+                    {{ commentError() }}
+                  </p-message>
+                }
+
+                <div class="mt-3 flex justify-end">
+                  <p-button
+                    type="submit"
+                    [label]="
+                      isSubmittingComment() ? 'Adding comment...' : 'Add comment'
+                    "
+                    icon="pi pi-send"
+                    [loading]="isSubmittingComment()"
+                  />
+                </div>
+              </form>
+            </div>
+          </p-tabpanel>
+
+          <p-tabpanel value="history">
+            <div class="pt-2">
+              @if (sortedHistoryEntries().length > 0) {
+                <p-timeline
+                  [value]="sortedHistoryEntries()"
+                  align="left"
+                  class="issue-history-timeline"
+                >
+                  <ng-template pTemplate="marker" let-event>
+                    <span
+                      class="flex h-8 w-8 items-center justify-center rounded-full"
+                      [ngClass]="
+                        getIssueHistoryEventVisual(event.eventType).markerClass
+                      "
+                    >
+                      <i
+                        class="text-sm"
+                        [ngClass]="getIssueHistoryEventVisual(event.eventType).icon"
+                        aria-hidden="true"
+                      ></i>
+                    </span>
+                  </ng-template>
+                  <ng-template pTemplate="content" let-event>
+                    <div class="flex flex-col gap-2 pb-4">
+                      <p-tag
+                        class="justify-start"
+                        [value]="event.summary"
+                        [severity]="
+                          getIssueHistoryEventVisual(event.eventType).tagSeverity
+                        "
+                      />
+                      <div class="flex items-center gap-2">
+                        <time
+                          class="text-muted-color shrink-0 text-right text-sm whitespace-nowrap"
+                        >
+                          {{ event.createdAt | date: 'dd.MM.yyyy HH:mm' }}
+                        </time>
+                        <span class="mx-1">·</span>
+                        <p class="text-muted-color m-0 min-w-0 text-sm">
+                          {{ event.actorName || event.actorUserId }}
+                        </p>
+                      </div>
+                      @if (
+                        (event.previousValue || event.currentValue) &&
+                        event.eventType !== 'DESCRIPTION_CHANGED'
+                      ) {
+                        <p class="text-muted-color m-0 text-sm">
+                          <span class="font-medium">Before:</span>
+                          {{ event.previousValue || '-' }}
+                          <span class="mx-1">·</span>
+                          <span class="font-medium">After:</span>
+                          {{ event.currentValue || '-' }}
+                        </p>
+                      }
+                    </div>
+                  </ng-template>
+                </p-timeline>
+              } @else {
+                <p class="m-0 text-muted-color">No history entries found</p>
+              }
+            </div>
+          </p-tabpanel>
+        </p-tabpanels>
+      </p-tabs>
+    </div>
   } @else {
-    <p>Issue not found</p>
+    <p-message severity="warn">Issue not found</p-message>
   }
-</section>
+</p-card>

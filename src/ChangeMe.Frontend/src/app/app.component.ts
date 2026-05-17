@@ -1,25 +1,18 @@
-import { Component, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { Router, RouterLink, RouterOutlet } from '@angular/router';
-import { AuthService } from '@features/auth/services/auth.service';
-import { NotificationsService } from '@features/notifications/services/notifications.service';
+import { Component } from '@angular/core';
+import { AppShellComponent } from '@core/layout/components/app-shell/app-shell.component';
+import { ToastConfig } from '@core/toast/utils/toast.utils';
+import { ConfirmDialog } from 'primeng/confirmdialog';
+import { Toast } from 'primeng/toast';
 
 @Component({
   selector: 'app-root',
-  imports: [CommonModule, RouterOutlet, RouterLink],
-  templateUrl: './app.component.html'
+  imports: [AppShellComponent, Toast, ConfirmDialog],
+  template: `
+    <app-shell />
+    <p-toast [key]="toastKey" position="top-right" />
+    <p-confirmDialog />
+  `
 })
 export class AppComponent {
-  private readonly authService = inject(AuthService);
-  private readonly router = inject(Router);
-  private readonly notificationsService = inject(NotificationsService);
-
-  readonly currentUser = this.authService.currentUser;
-  readonly isAuthenticated = this.authService.isAuthenticated;
-  readonly unreadNotificationsCount = this.notificationsService.unreadCount;
-
-  logout(): void {
-    this.authService.logout();
-    this.router.navigateByUrl('/issues');
-  }
+  readonly toastKey = ToastConfig.KEY;
 }

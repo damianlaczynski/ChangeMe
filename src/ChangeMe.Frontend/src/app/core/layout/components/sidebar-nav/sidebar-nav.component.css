@@ -1,0 +1,9 @@
+@reference '../../../../../tailwind.css';
+
+.shell-nav-link {
+  @apply text-color hover:bg-emphasis flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors dark:hover:bg-surface-800;
+}
+
+.shell-nav-link-active {
+  @apply bg-primary text-primary-contrast;
+}

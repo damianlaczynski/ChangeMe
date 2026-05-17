@@ -1,5 +1,5 @@
 import { Component, DestroyRef, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   FormArray,
   FormControl,
@@ -7,17 +7,31 @@ import {
   ReactiveFormsModule,
   Validators
 } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Router } from '@angular/router';
+import { NavigationHistoryService } from '@core/navigation/services/navigation-history.service';
+import { ToastService } from '@core/toast/services/toast.service';
 import {
   CreateIssueRequest,
-  IssueAcceptanceCriteriaConstraints,
   IssueAssignableUserDto,
-  IssueConstraints,
   IssuePriority,
   IssueStatus
 } from '@features/issues/models/issue.model';
 import { IssuesService } from '@features/issues/services/issues.service';
+import {
+  IssueAcceptanceCriteriaConstraints,
+  IssueConstraints,
+  issuePriorities,
+  issueStatuses
+} from '@features/issues/utils/issue.utils';
+import { BackButtonComponent } from '@shared/components/back-button/back-button.component';
+import { Button } from 'primeng/button';
+import { Card } from 'primeng/card';
+import { Checkbox } from 'primeng/checkbox';
+import { InputText } from 'primeng/inputtext';
+import { Message } from 'primeng/message';
+import { Panel } from 'primeng/panel';
+import { Select } from 'primeng/select';
+import { Textarea } from 'primeng/textarea';
 
 type CreateIssueForm = {
   title: FormControl<string>;
@@ -35,16 +49,29 @@ type AcceptanceCriterionForm = {
 
 @Component({
   selector: 'app-create-issue',
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [
+    ReactiveFormsModule,
+    Card,
+    BackButtonComponent,
+    Button,
+    InputText,
+    Textarea,
+    Select,
+    Checkbox,
+    Message,
+    Panel
+  ],
   templateUrl: './create-issue.component.html'
 })
 export class CreateIssueComponent {
   private readonly issuesService = inject(IssuesService);
   private readonly router = inject(Router);
+  private readonly navigationHistory = inject(NavigationHistoryService);
+  private readonly toastService = inject(ToastService);
   private readonly destroyRef = inject(DestroyRef);
 
-  readonly issuePriorities = this.issuesService.issuePriorities;
-  readonly issueStatuses = this.issuesService.issueStatuses;
+  readonly issuePriorities = issuePriorities;
+  readonly issueStatuses = issueStatuses;
   readonly issueConstraints = IssueConstraints;
   readonly issueAcceptanceCriteriaConstraints = IssueAcceptanceCriteriaConstraints;
   readonly assignableUsers = signal<IssueAssignableUserDto[]>([]);
@@ -97,16 +124,16 @@ export class CreateIssueComponent {
       });
   }
 
-  get acceptanceCriteria(): FormArray<FormGroup<AcceptanceCriterionForm>> {
-    return this.form.controls.acceptanceCriteria;
-  }
-
   addAcceptanceCriterion(): void {
-    this.acceptanceCriteria.push(this.createAcceptanceCriterionGroup());
+    this.form.controls.acceptanceCriteria.push(this.createAcceptanceCriterionGroup());
   }
 
   removeAcceptanceCriterion(index: number): void {
-    this.acceptanceCriteria.removeAt(index);
+    this.form.controls.acceptanceCriteria.removeAt(index);
+  }
+
+  cancel(): void {
+    this.navigationHistory.goBack('/issues');
   }
 
   onSubmit(): void {
@@ -125,9 +152,11 @@ export class CreateIssueComponent {
       priority: this.form.controls.priority.value,
       assignedToUserId: this.form.controls.assignedToUserId.value,
       watchAfterCreate: this.form.controls.watchAfterCreate.value,
-      acceptanceCriteria: this.acceptanceCriteria.controls.map((criterion) => ({
-        content: criterion.controls.content.value.trim()
-      }))
+      acceptanceCriteria: this.form.controls.acceptanceCriteria.controls.map(
+        (criterion) => ({
+          content: criterion.controls.content.value.trim()
+        })
+      )
     };
 
     this.isSubmitting.set(true);
@@ -138,6 +167,7 @@ export class CreateIssueComponent {
       .subscribe({
         next: (issue) => {
           this.isSubmitting.set(false);
+          this.toastService.success('Issue created', issue.title);
           void this.router.navigate(['/issues', issue.id]);
         },
         error: (error: Error) => {

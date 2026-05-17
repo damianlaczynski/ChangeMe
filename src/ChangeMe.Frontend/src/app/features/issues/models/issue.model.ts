@@ -141,17 +141,3 @@ export enum IssueHistoryEventType {
   ACCEPTANCE_CRITERION_UPDATED = 'ACCEPTANCE_CRITERION_UPDATED',
   ACCEPTANCE_CRITERION_REMOVED = 'ACCEPTANCE_CRITERION_REMOVED'
 }
-
-export const IssueConstraints = {
-  TITLE_MIN_LENGTH: 3,
-  TITLE_MAX_LENGTH: 255,
-  DESCRIPTION_MAX_LENGTH: 2000
-};
-
-export const IssueAcceptanceCriteriaConstraints = {
-  CONTENT_MAX_LENGTH: 2000
-};
-
-export const IssueCommentConstraints = {
-  CONTENT_MAX_LENGTH: 4000
-};

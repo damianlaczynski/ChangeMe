@@ -1,0 +1,151 @@
+@if (isAuthenticated()) {
+  <div class="shell-content flex min-h-screen w-full">
+    <aside
+      class="shell-sidebar sticky top-0 hidden h-screen shrink-0 flex-col transition-[width] duration-200 ease-in-out md:flex"
+      [class.w-16]="layoutService.$sidebarCollapsed()"
+      [class.w-60]="!layoutService.$sidebarCollapsed()"
+      [attr.aria-expanded]="!layoutService.$sidebarCollapsed()"
+    >
+      <div
+        class="shell-sidebar-brand flex h-14 shrink-0 items-center"
+        [class.justify-center]="layoutService.$sidebarCollapsed()"
+        [class.gap-2]="!layoutService.$sidebarCollapsed()"
+      >
+        <i class="pi pi-bolt text-primary text-xl" aria-hidden="true"></i>
+        @if (!layoutService.$sidebarCollapsed()) {
+          <span class="text-color truncate text-lg font-semibold">ChangeMe</span>
+        }
+      </div>
+
+      <div class="flex min-h-0 flex-1 flex-col overflow-y-auto">
+        <app-sidebar-nav
+          [items]="authenticatedNavItems()"
+          [collapsed]="layoutService.$sidebarCollapsed()"
+        />
+      </div>
+    </aside>
+
+    <p-drawer
+      class="md:hidden"
+      [visible]="layoutService.$mobileNavOpen()"
+      (visibleChange)="onMobileNavVisibleChange($event)"
+      position="left"
+      [modal]="true"
+      [dismissible]="true"
+      [showCloseIcon]="true"
+      header="ChangeMe"
+      styleClass="app-shell-drawer !w-[min(100vw,18rem)]"
+    >
+      <app-sidebar-nav
+        [items]="authenticatedNavItems()"
+        [collapsed]="false"
+        (navigate)="layoutService.closeMobileNav()"
+      />
+    </p-drawer>
+
+    <div class="flex min-w-0 flex-1 flex-col">
+      <header
+        class="shell-header sticky top-0 z-20 flex h-14 shrink-0 items-center gap-2 px-3 md:px-4"
+      >
+        <p-button
+          [icon]="
+            isDesktop() && layoutService.$sidebarCollapsed()
+              ? 'pi pi-angle-right'
+              : 'pi pi-bars'
+          "
+          [rounded]="true"
+          [text]="true"
+          severity="secondary"
+          [attr.aria-label]="
+            isDesktop()
+              ? layoutService.$sidebarCollapsed()
+                ? 'Expand sidebar'
+                : 'Collapse sidebar'
+              : 'Open navigation menu'
+          "
+          (onClick)="onMenuToggle()"
+        />
+
+        <span class="text-color truncate text-lg font-semibold md:hidden">
+          ChangeMe
+        </span>
+
+        <div class="flex-1"></div>
+
+        <div class="flex flex-wrap items-center gap-1 sm:gap-2">
+          <app-notifications-bell />
+          <p-button
+            [icon]="layoutService.$themeMode() === 'dark' ? 'pi pi-sun' : 'pi pi-moon'"
+            [rounded]="true"
+            [text]="true"
+            severity="secondary"
+            [attr.aria-label]="
+              layoutService.$themeMode() === 'dark'
+                ? 'Switch to light mode'
+                : 'Switch to dark mode'
+            "
+            (onClick)="layoutService.toggleTheme()"
+          />
+          <span
+            class="text-muted-color hidden max-w-[12rem] truncate text-sm lg:inline"
+          >
+            {{ currentUser()?.fullName }}
+          </span>
+          <p-button
+            label="Logout"
+            icon="pi pi-sign-out"
+            severity="secondary"
+            [outlined]="true"
+            size="small"
+            class="hidden sm:inline-flex"
+            (onClick)="logout()"
+          />
+          <p-button
+            icon="pi pi-sign-out"
+            severity="secondary"
+            [rounded]="true"
+            [text]="true"
+            class="sm:hidden"
+            ariaLabel="Logout"
+            (onClick)="logout()"
+          />
+        </div>
+      </header>
+
+      <main class="mx-auto w-full max-w-6xl flex-1 p-4 md:p-6">
+        <router-outlet />
+      </main>
+    </div>
+  </div>
+} @else {
+  <div class="shell-content flex min-h-screen w-full flex-col">
+    <header
+      class="shell-header flex h-14 shrink-0 items-center justify-between gap-4 px-4"
+    >
+      <span class="text-color flex items-center gap-2 text-lg font-semibold">
+        <i class="pi pi-bolt text-primary" aria-hidden="true"></i>
+        ChangeMe
+      </span>
+      <nav class="flex items-center gap-2" aria-label="Account navigation">
+        <p-button
+          [icon]="layoutService.$themeMode() === 'dark' ? 'pi pi-sun' : 'pi pi-moon'"
+          [rounded]="true"
+          [text]="true"
+          severity="secondary"
+          [attr.aria-label]="
+            layoutService.$themeMode() === 'dark'
+              ? 'Switch to light mode'
+              : 'Switch to dark mode'
+          "
+          (onClick)="layoutService.toggleTheme()"
+        />
+        <p-button label="Login" [text]="true" [routerLink]="['/login']" />
+        <p-button label="Register" [outlined]="true" [routerLink]="['/register']" />
+      </nav>
+    </header>
+
+    <main class="mx-auto flex w-full max-w-6xl min-h-0 flex-1 flex-col p-4 md:p-6">
+      <router-outlet />
+    </main>
+  </div>
+}

@@ -1,112 +1,168 @@
-<section>
-  <h1>Register</h1>
-  <p>Create an account to manage issues.</p>
+<app-auth-page
+  title="Create account"
+  subtitle="Join ChangeMe to track and manage issues."
+  [wide]="true"
+  footerPrompt="Already have an account?"
+  footerLinkLabel="Sign in"
+  footerRoute="/login"
+>
+  <form class="p-fluid flex flex-col gap-4" [formGroup]="form" (ngSubmit)="onSubmit()">
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div class="flex flex-col gap-1.5">
+        <label class="text-color text-sm font-medium" for="firstName">First name</label>
+        <input
+          id="firstName"
+          type="text"
+          pInputText
+          autocomplete="given-name"
+          [formControl]="form.controls.firstName"
+          [invalid]="form.controls.firstName.touched && form.controls.firstName.errors"
+        />
+        @if (
+          form.controls.firstName.touched &&
+          form.controls.firstName.errors?.['required']
+        ) {
+          <p-message severity="error" variant="simple">
+            First name is required.
+          </p-message>
+        }
+        @if (
+          form.controls.firstName.touched &&
+          form.controls.firstName.errors?.['maxlength']
+        ) {
+          <p-message severity="error" variant="simple">
+            First name must be less than
+            {{ authConstraints.NAME_MAX_LENGTH }} characters long.
+          </p-message>
+        }
+      </div>
 
-  <form [formGroup]="form" (ngSubmit)="onSubmit()">
-    <div>
-      <label for="firstName">First name</label>
-      <input id="firstName" type="text" formControlName="firstName" />
-      @if (
-        form.controls.firstName.touched && form.controls.firstName.errors?.['required']
-      ) {
-        <p>First name is required.</p>
-      }
-      @if (
-        form.controls.firstName.touched && form.controls.firstName.errors?.['maxlength']
-      ) {
-        <p>
-          First name must be less than {{ authConstraints.NAME_MAX_LENGTH }} characters
-          long.
-        </p>
-      }
+      <div class="flex flex-col gap-1.5">
+        <label class="text-color text-sm font-medium" for="lastName">Last name</label>
+        <input
+          id="lastName"
+          type="text"
+          pInputText
+          autocomplete="family-name"
+          [formControl]="form.controls.lastName"
+          [invalid]="form.controls.lastName.touched && form.controls.lastName.errors"
+        />
+        @if (
+          form.controls.lastName.touched && form.controls.lastName.errors?.['required']
+        ) {
+          <p-message severity="error" variant="simple">
+            Last name is required.
+          </p-message>
+        }
+        @if (
+          form.controls.lastName.touched && form.controls.lastName.errors?.['maxlength']
+        ) {
+          <p-message severity="error" variant="simple">
+            Last name must be less than {{ authConstraints.NAME_MAX_LENGTH }} characters
+            long.
+          </p-message>
+        }
+      </div>
     </div>
 
-    <div>
-      <label for="lastName">Last name</label>
-      <input id="lastName" type="text" formControlName="lastName" />
-      @if (
-        form.controls.lastName.touched && form.controls.lastName.errors?.['required']
-      ) {
-        <p>Last name is required.</p>
-      }
-      @if (
-        form.controls.lastName.touched && form.controls.lastName.errors?.['maxlength']
-      ) {
-        <p>
-          Last name must be less than {{ authConstraints.NAME_MAX_LENGTH }} characters
-          long.
-        </p>
-      }
-    </div>
-
-    <div>
-      <label for="email">Email</label>
-      <input id="email" type="email" formControlName="email" />
+    <div class="flex flex-col gap-1.5">
+      <label class="text-color text-sm font-medium" for="email">Email</label>
+      <input
+        id="email"
+        type="email"
+        pInputText
+        autocomplete="email"
+        [formControl]="form.controls.email"
+        [invalid]="form.controls.email.touched && form.controls.email.errors"
+      />
       @if (form.controls.email.touched && form.controls.email.errors?.['required']) {
-        <p>Email is required.</p>
+        <p-message severity="error" variant="simple">Email is required.</p-message>
       }
       @if (form.controls.email.touched && form.controls.email.errors?.['email']) {
-        <p>Enter a valid email address.</p>
+        <p-message severity="error" variant="simple">
+          Enter a valid email address.
+        </p-message>
       }
       @if (form.controls.email.touched && form.controls.email.errors?.['maxlength']) {
-        <p>
+        <p-message severity="error" variant="simple">
           Email must be less than {{ authConstraints.EMAIL_MAX_LENGTH }} characters
           long.
-        </p>
+        </p-message>
       }
     </div>
 
-    <div>
-      <label for="password">Password</label>
-      <input id="password" type="password" formControlName="password" />
+    <div class="flex flex-col gap-1.5">
+      <label class="text-color text-sm font-medium" for="password">Password</label>
+      <p-password
+        inputId="password"
+        autocomplete="new-password"
+        [formControl]="form.controls.password"
+        [feedback]="true"
+        [toggleMask]="true"
+        fluid
+        [invalid]="form.controls.password.touched && form.controls.password.errors"
+      />
       @if (
         form.controls.password.touched && form.controls.password.errors?.['required']
       ) {
-        <p>Password is required.</p>
+        <p-message severity="error" variant="simple">Password is required.</p-message>
       }
       @if (
         form.controls.password.touched && form.controls.password.errors?.['minlength']
       ) {
-        <p>
-          Password must be at least {{ authConstraints.PASSWORD_MIN_LENGTH }} characters
-          long.
-        </p>
+        <p-message severity="error" variant="simple">
+          Password must be at least
+          {{ authConstraints.PASSWORD_MIN_LENGTH }} characters long.
+        </p-message>
       }
       @if (
         form.controls.password.touched && form.controls.password.errors?.['maxlength']
       ) {
-        <p>
+        <p-message severity="error" variant="simple">
           Password must be less than
           {{ authConstraints.PASSWORD_MAX_LENGTH }} characters long.
-        </p>
+        </p-message>
       }
     </div>
 
-    <div>
-      <label for="confirmPassword">Confirm password</label>
-      <input id="confirmPassword" type="password" formControlName="confirmPassword" />
+    <div class="flex flex-col gap-1.5">
+      <label class="text-color text-sm font-medium" for="confirmPassword">
+        Confirm password
+      </label>
+      <p-password
+        inputId="confirmPassword"
+        autocomplete="new-password"
+        [formControl]="form.controls.confirmPassword"
+        [feedback]="false"
+        [toggleMask]="true"
+        fluid
+        [invalid]="
+          (form.controls.confirmPassword.touched &&
+            form.controls.confirmPassword.errors) ||
+          (form.touched && form.errors?.['passwordMismatch'])
+        "
+      />
       @if (
         form.controls.confirmPassword.touched &&
         form.controls.confirmPassword.errors?.['required']
       ) {
-        <p>Confirm your password.</p>
+        <p-message severity="error" variant="simple">Confirm your password.</p-message>
       }
       @if (form.touched && form.errors?.['passwordMismatch']) {
-        <p>Passwords must match.</p>
+        <p-message severity="error" variant="simple">Passwords must match.</p-message>
       }
     </div>
 
     @if (errorMessage()) {
-      <p>{{ errorMessage() }}</p>
+      <p-message severity="error">{{ errorMessage() }}</p-message>
     }
 
-    <button type="submit" [disabled]="isSubmitting()">
-      {{ isSubmitting() ? 'Creating account...' : 'Register' }}
-    </button>
+    <p-button
+      type="submit"
+      [label]="isSubmitting() ? 'Creating account...' : 'Create account'"
+      icon="pi pi-user-plus"
+      [loading]="isSubmitting()"
+      styleClass="w-full"
+    />
   </form>
-
-  <p>
-    Already have an account?
-    <a [routerLink]="['/login']">Login</a>
-  </p>
-</section>
+</app-auth-page>

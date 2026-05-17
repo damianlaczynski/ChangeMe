@@ -1,4 +1,5 @@
-import { computed, effect, Injectable, inject, signal, untracked } from '@angular/core';
+import { computed, effect, inject, Injectable, signal, untracked } from '@angular/core';
+import { ToastService } from '@core/toast/services/toast.service';
 import { AuthService } from '@features/auth/services/auth.service';
 import { ApiService } from '@shared/api/services/api.service';
 import {
@@ -17,6 +18,7 @@ export class NotificationsService {
   private readonly realtimeConnectionService = inject(
     NotificationsRealtimeConnectionService
   );
+  private readonly toastService = inject(ToastService);
 
   readonly notifications = signal<NotificationDto[]>([]);
   readonly unreadCount = signal(0);
@@ -138,5 +140,9 @@ export class NotificationsService {
     });
 
     this.unreadCount.update((count) => count + 1);
+    this.toastService.showIssueNotification(
+      notification.issueTitle,
+      notification.message
+    );
   }
 }

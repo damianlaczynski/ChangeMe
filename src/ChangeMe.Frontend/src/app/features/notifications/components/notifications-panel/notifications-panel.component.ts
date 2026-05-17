@@ -1,15 +1,29 @@
-import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component, inject, output } from '@angular/core';
 import { Router } from '@angular/router';
-import { NotificationsService } from '@features/notifications/services/notifications.service';
 import { NotificationDto } from '@features/notifications/models/notification.model';
+import { NotificationsService } from '@features/notifications/services/notifications.service';
+import { Button } from 'primeng/button';
+import { Message } from 'primeng/message';
+import { ProgressSpinner } from 'primeng/progressspinner';
+import { Tab, TabList, TabPanel, TabPanels, Tabs } from 'primeng/tabs';
 
 @Component({
-  selector: 'app-notifications-center',
-  imports: [CommonModule],
-  templateUrl: './notifications-center.component.html'
+  selector: 'app-notifications-panel',
+  imports: [
+    CommonModule,
+    Button,
+    Message,
+    ProgressSpinner,
+    Tabs,
+    TabList,
+    Tab,
+    TabPanels,
+    TabPanel
+  ],
+  templateUrl: './notifications-panel.component.html'
 })
-export class NotificationsCenterComponent {
+export class NotificationsPanelComponent {
   private readonly router = inject(Router);
 
   readonly notificationsService = inject(NotificationsService);
@@ -21,19 +35,21 @@ export class NotificationsCenterComponent {
   readonly hasLoaded = this.notificationsService.hasLoaded;
   readonly errorMessage = this.notificationsService.errorMessage;
 
-  constructor() {
-    this.notificationsService.loadNotifications();
-  }
+  readonly closed = output<void>();
 
   openNotification(notification: NotificationDto): void {
     if (!notification.isRead) {
       this.notificationsService.markAsRead(notification.id);
     }
 
+    this.closed.emit();
     void this.router.navigateByUrl(notification.link);
   }
 
-  markAsRead(notification: NotificationDto): void {
+  markAsRead(event: Event, notification: NotificationDto): void {
+    event.stopPropagation();
+    event.preventDefault();
+
     if (!notification.isRead) {
       this.notificationsService.markAsRead(notification.id);
     }
