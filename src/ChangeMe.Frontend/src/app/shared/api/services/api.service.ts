@@ -1,11 +1,23 @@
+import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
-import { environment } from '../../../../environments/environment';
-import { Result, ResultStatus } from '../models/api-response.model';
-import { PaginationResult } from '@shared/data/models/pagination-result.model';
 import { PaginationParameters } from '@shared/data/models/pagination-parameters.model';
+import { PaginationResult } from '@shared/data/models/pagination-result.model';
+import { Observable, throwError } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
+import { environment } from '../../../../environments/environment';
+import { Result, ResultStatus, ValidationError } from '../models/api-response.model';
+
+const HTTP_STATUS_TO_RESULT: Partial<Record<number, ResultStatus>> = {
+  400: ResultStatus.Invalid,
+  401: ResultStatus.Unauthorized,
+  403: ResultStatus.Forbidden,
+  404: ResultStatus.NotFound,
+  409: ResultStatus.Conflict,
+  500: ResultStatus.CriticalError,
+  502: ResultStatus.CriticalError,
+  503: ResultStatus.Unavailable,
+  504: ResultStatus.CriticalError
+};
 
 @Injectable({
   providedIn: 'root'
@@ -18,108 +30,168 @@ export class ApiService {
   public get<T>(endpoint: string, params?: object): Observable<T> {
     const httpParams = this.buildHttpParams(params);
 
-    return this.http
-      .get<Result<T>>(`${this.baseUrl}${endpoint}`, { params: httpParams })
-      .pipe(map((response) => this.handleResponse(response)));
+    return this.pipeResult(
+      this.http.get<Result<T>>(`${this.baseUrl}${endpoint}`, { params: httpParams })
+    );
   }
 
   public getPaginated<T, P extends PaginationParameters = PaginationParameters>(
     endpoint: string,
     params: P
   ): Observable<PaginationResult<T>> {
-    const httpParams = this.buildHttpParams(params);
-
-    return this.http
-      .get<Result<PaginationResult<T>>>(`${this.baseUrl}${endpoint}`, {
-        params: httpParams
-      })
-      .pipe(map((response) => this.handleResponse(response)));
+    return this.get<PaginationResult<T>>(endpoint, params);
   }
 
   public post<T>(endpoint: string, body: unknown): Observable<T> {
-    return this.http
-      .post<Result<T>>(`${this.baseUrl}${endpoint}`, body)
-      .pipe(map((response) => this.handleResponse(response)));
+    return this.pipeResult(
+      this.http.post<Result<T>>(`${this.baseUrl}${endpoint}`, body)
+    );
   }
 
   public put<T>(endpoint: string, body: unknown): Observable<T> {
-    return this.http
-      .put<Result<T>>(`${this.baseUrl}${endpoint}`, body)
-      .pipe(map((response) => this.handleResponse(response)));
+    return this.pipeResult(
+      this.http.put<Result<T>>(`${this.baseUrl}${endpoint}`, body)
+    );
   }
 
   public delete<T>(endpoint: string): Observable<T> {
-    return this.http
-      .delete<Result<T>>(`${this.baseUrl}${endpoint}`)
-      .pipe(map((response) => this.handleResponse(response)));
+    return this.pipeResult(this.http.delete<Result<T>>(`${this.baseUrl}${endpoint}`));
+  }
+
+  private pipeResult<T>(source: Observable<Result<T>>): Observable<T> {
+    return source.pipe(
+      map((response) => this.handleResponse(response)),
+      catchError((error: unknown) => throwError(() => this.toError(error)))
+    );
   }
 
   private handleResponse<T>(result: Result<T>): T {
-    if (result.isSuccess && result.value !== undefined) {
-      return result.value;
-    } else if (!result.isSuccess) {
-      // Handle different error types based on status
-      const errorMessage = this.getErrorMessageFromResult(result);
+    if (result.isSuccess) {
+      return result.value as T;
+    }
 
-      // Show success message if available (for operations that don't return data)
-      if (
-        result.status === ResultStatus.Ok ||
-        result.status === ResultStatus.Created ||
-        result.status === ResultStatus.NoContent
-      ) {
-        return {} as T;
+    throw new Error(this.getErrorMessageFromResult(result));
+  }
+
+  private toError(error: unknown): Error {
+    if (error instanceof HttpErrorResponse) {
+      const result = this.parseResultBody(error.error);
+      if (result) {
+        return new Error(this.getErrorMessageFromResult(result));
       }
 
-      throw new Error(errorMessage);
-    } else {
-      // Success case without specific value
-      return {} as T;
+      if (error.status === 0) {
+        return new Error(
+          "We couldn't connect to the server. Check your internet connection and try again."
+        );
+      }
+
+      return new Error(this.getDefaultErrorMessageFromHttpStatus(error.status));
     }
+
+    if (error instanceof Error) {
+      return error;
+    }
+
+    return new Error(this.getDefaultErrorMessage(ResultStatus.Error));
+  }
+
+  private parseResultBody(body: unknown): Result<unknown> | null {
+    if (!body || typeof body !== 'object') {
+      return null;
+    }
+
+    const candidate = body as Partial<Result<unknown>>;
+    if (typeof candidate.isSuccess !== 'boolean') {
+      return null;
+    }
+
+    return candidate as Result<unknown>;
   }
 
   private getErrorMessageFromResult<T>(result: Result<T>): string {
     const messages: string[] = [];
 
-    // Add validation errors
-    if (result.validationErrors && result.validationErrors.length > 0) {
-      const validationMessages = result.validationErrors.map(
-        (ve) => `${ve.identifier}: ${ve.errorMessage}`
+    if (result.validationErrors?.length) {
+      messages.push(
+        ...result.validationErrors.map((validationError) =>
+          this.formatValidationError(validationError)
+        )
       );
-      messages.push(...validationMessages);
     }
 
-    // Add general errors
-    if (result.errors && result.errors.length > 0) {
-      messages.push(...result.errors);
+    if (result.errors?.length) {
+      messages.push(...result.errors.filter((message) => message.trim().length > 0));
     }
 
-    // Default message based on status
     if (messages.length === 0) {
-      messages.push(this.getDefaultErrorMessage(result.status));
+      messages.push(
+        this.getDefaultErrorMessage(this.normalizeResultStatus(result.status))
+      );
     }
 
-    return messages.join(', ');
+    return [...new Set(messages)].join(' ');
+  }
+
+  private formatValidationError(validationError: ValidationError): string {
+    const message = validationError.errorMessage?.trim();
+    if (message) {
+      return message;
+    }
+
+    return `Please check ${this.humanizeFieldName(validationError.identifier)}.`;
+  }
+
+  private humanizeFieldName(identifier: string): string {
+    const normalized = identifier
+      .replace(/[[\].]/g, ' ')
+      .replace(/([a-z])([A-Z])/g, '$1 $2')
+      .replace(/_/g, ' ')
+      .trim()
+      .toLowerCase();
+
+    return normalized.length > 0 ? normalized : 'this field';
+  }
+
+  private normalizeResultStatus(status: unknown): ResultStatus {
+    if (typeof status === 'number') {
+      return status as ResultStatus;
+    }
+
+    if (typeof status === 'string') {
+      const mapped = ResultStatus[status as keyof typeof ResultStatus];
+      if (typeof mapped === 'number') {
+        return mapped;
+      }
+    }
+
+    return ResultStatus.Error;
   }
 
   private getDefaultErrorMessage(status: ResultStatus): string {
     switch (status) {
       case ResultStatus.NotFound:
-        return 'Requested resource was not found';
+        return "We couldn't find what you're looking for. It may have been removed or the link is no longer valid.";
       case ResultStatus.Unauthorized:
-        return 'You are not authorized to perform this action';
+        return 'Please sign in to continue.';
       case ResultStatus.Forbidden:
-        return 'Access to this resource is forbidden';
+        return "You don't have permission to do that.";
       case ResultStatus.Invalid:
-        return 'Invalid request data';
+        return "Some of the information isn't valid. Please review the form and try again.";
       case ResultStatus.Conflict:
-        return 'Conflict occurred while processing the request';
+        return "This couldn't be completed because something changed. Refresh the page and try again.";
       case ResultStatus.Unavailable:
-        return 'Service is temporarily unavailable';
+        return 'The service is temporarily unavailable. Please try again in a moment.';
       case ResultStatus.CriticalError:
-        return 'A critical error occurred';
+        return 'Something went wrong on our end. Please try again later.';
       default:
-        return 'An unexpected error occurred';
+        return 'Something went wrong. Please try again.';
     }
+  }
+
+  private getDefaultErrorMessageFromHttpStatus(httpStatus: number): string {
+    const status = HTTP_STATUS_TO_RESULT[httpStatus] ?? ResultStatus.Error;
+    return this.getDefaultErrorMessage(status);
   }
 
   private buildHttpParams(params?: object): HttpParams {

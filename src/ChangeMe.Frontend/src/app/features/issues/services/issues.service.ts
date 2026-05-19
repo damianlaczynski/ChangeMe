@@ -1,17 +1,17 @@
 import { Injectable, inject } from '@angular/core';
-import { Observable } from 'rxjs';
 import { ApiService } from '@shared/api/services/api.service';
+import { PaginationResult } from '@shared/data/models/pagination-result.model';
+import { Observable } from 'rxjs';
 import {
   AddIssueCommentRequest,
-  IssueDto,
   CreateIssueRequest,
-  UpdateIssueRequest,
-  IssueSearchParameters,
-  IssueDetailsDto,
   IssueAssignableUserDto,
-  IssueWatchStateDto
+  IssueDetailsDto,
+  IssueDto,
+  IssueSearchParameters,
+  IssueWatchStateDto,
+  UpdateIssueRequest
 } from '../models/issue.model';
-import { PaginationResult } from '@shared/data/models/pagination-result.model';
 
 @Injectable({
   providedIn: 'root'
@@ -72,7 +72,7 @@ export class IssuesService {
     );
   }
 
-  deleteIssue(id: string): Observable<boolean> {
-    return this.apiService.delete<boolean>(`${this.baseEndpoint}/${id}`);
+  deleteIssue(id: string): Observable<string> {
+    return this.apiService.delete<string>(`${this.baseEndpoint}/${id}`);
   }
 }
