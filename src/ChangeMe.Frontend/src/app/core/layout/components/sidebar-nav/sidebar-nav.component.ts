@@ -6,15 +6,14 @@ import { Tooltip } from 'primeng/tooltip';
 @Component({
   selector: 'app-sidebar-nav',
   imports: [RouterLink, RouterLinkActive, Tooltip],
-  styleUrl: './sidebar-nav.component.css',
   template: `
     <nav class="flex flex-col gap-1 p-2" aria-label="Main navigation">
       @for (item of items(); track item.routerLink) {
         <a
           [routerLink]="item.routerLink"
-          routerLinkActive="shell-nav-link-active"
+          routerLinkActive="bg-primary text-primary-contrast"
           [routerLinkActiveOptions]="{ exact: item.exact ?? false }"
-          class="shell-nav-link"
+          class="text-color hover:bg-emphasis flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors dark:hover:bg-surface-800"
           [class.justify-center]="collapsed()"
           [class.px-2]="collapsed()"
           [pTooltip]="collapsed() ? item.label : undefined"

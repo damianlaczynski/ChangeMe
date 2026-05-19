@@ -1,13 +1,13 @@
 @if (isAuthenticated()) {
-  <div class="shell-content flex min-h-screen w-full">
+  <div class="flex min-h-screen w-full bg-surface-50 dark:bg-surface-950">
     <aside
-      class="shell-sidebar sticky top-0 hidden h-screen shrink-0 flex-col transition-[width] duration-200 ease-in-out md:flex"
+      class="sticky top-0 hidden h-screen shrink-0 flex-col border-r border-surface-200 bg-surface-0 transition-[width] duration-200 ease-in-out dark:border-surface-700 dark:bg-surface-900 md:flex"
       [class.w-16]="layoutService.$sidebarCollapsed()"
       [class.w-60]="!layoutService.$sidebarCollapsed()"
       [attr.aria-expanded]="!layoutService.$sidebarCollapsed()"
     >
       <div
-        class="shell-sidebar-brand flex h-14 shrink-0 items-center"
+        class="flex h-14 shrink-0 items-center border-b border-surface-200 px-3 dark:border-surface-700"
         [class.justify-center]="layoutService.$sidebarCollapsed()"
         [class.gap-2]="!layoutService.$sidebarCollapsed()"
       >
@@ -45,7 +45,7 @@
 
     <div class="flex min-w-0 flex-1 flex-col">
       <header
-        class="shell-header sticky top-0 z-20 flex h-14 shrink-0 items-center gap-2 px-3 md:px-4"
+        class="sticky top-0 z-20 flex h-14 shrink-0 items-center gap-2 border-b border-surface-200 bg-surface-0 px-3 dark:border-surface-700 dark:bg-surface-900 md:px-4"
       >
         <p-button
           [icon]="
@@ -118,9 +118,9 @@
     </div>
   </div>
 } @else {
-  <div class="shell-content flex min-h-screen w-full flex-col">
+  <div class="flex min-h-screen w-full flex-col bg-surface-50 dark:bg-surface-950">
     <header
-      class="shell-header flex h-14 shrink-0 items-center justify-between gap-4 px-4"
+      class="flex h-14 shrink-0 items-center justify-between gap-4 border-b border-surface-200 bg-surface-0 px-4 dark:border-surface-700 dark:bg-surface-900"
     >
       <span class="text-color flex items-center gap-2 text-lg font-semibold">
         <i class="pi pi-bolt text-primary" aria-hidden="true"></i>

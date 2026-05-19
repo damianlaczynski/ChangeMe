@@ -1,11 +1,5 @@
 import { BreakpointObserver } from '@angular/cdk/layout';
-import {
-  Component,
-  computed,
-  DestroyRef,
-  inject,
-  ViewEncapsulation
-} from '@angular/core';
+import { Component, computed, DestroyRef, inject } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
 import { SidebarNavComponent } from '@core/layout/components/sidebar-nav/sidebar-nav.component';
@@ -20,10 +14,15 @@ import { filter, map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-shell',
-  imports: [RouterOutlet, RouterLink, SidebarNavComponent, NotificationsBellComponent, Button, Drawer],
-  templateUrl: './app-shell.component.html',
-  styleUrl: './app-shell.component.css',
-  encapsulation: ViewEncapsulation.None
+  imports: [
+    RouterOutlet,
+    RouterLink,
+    SidebarNavComponent,
+    NotificationsBellComponent,
+    Button,
+    Drawer
+  ],
+  templateUrl: './app-shell.component.html'
 })
 export class AppShellComponent {
   private readonly authService = inject(AuthService);
