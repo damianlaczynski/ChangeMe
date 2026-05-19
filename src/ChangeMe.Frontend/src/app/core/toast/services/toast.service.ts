@@ -45,7 +45,9 @@ export class ToastService {
 
   showApiError(error: unknown, summary = 'Request failed'): void {
     const detail =
-      error instanceof Error ? error.message : 'An unexpected error occurred';
+      error instanceof Error
+        ? error.message
+        : 'Something went wrong. Please try again.';
     this.error(summary, detail);
   }
 

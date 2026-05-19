@@ -5,25 +5,25 @@
 >
   <div class="mb-4 flex flex-wrap items-center gap-2">
     <app-back-button />
-    @if (issue()) {
+    @if (issue(); as currentIssue) {
       <p-button
         label="Edit"
         icon="pi pi-pencil"
         severity="secondary"
         [outlined]="true"
         size="small"
-        [routerLink]="['/issues', issue()!.id, 'edit']"
+        [routerLink]="['/issues', currentIssue.id, 'edit']"
       />
       <p-button
-        [label]="issue()!.watchersCount.toString()"
-        [icon]="issue()!.isWatchedByCurrentUser ? 'pi pi-bell-slash' : 'pi pi-bell'"
-        [severity]="issue()!.isWatchedByCurrentUser ? 'success' : 'secondary'"
-        [outlined]="!issue()!.isWatchedByCurrentUser"
+        [label]="currentIssue.watchersCount.toString()"
+        [icon]="currentIssue.isWatchedByCurrentUser ? 'pi pi-bell-slash' : 'pi pi-bell'"
+        [severity]="currentIssue.isWatchedByCurrentUser ? 'success' : 'secondary'"
+        [outlined]="!currentIssue.isWatchedByCurrentUser"
         size="small"
         [loading]="isTogglingWatch()"
-        [pTooltip]="getWatchTooltip(issue()!)"
+        [pTooltip]="getWatchTooltip(currentIssue)"
         tooltipPosition="top"
-        [attr.aria-label]="getWatchTooltip(issue()!)"
+        [attr.aria-label]="getWatchTooltip(currentIssue)"
         (onClick)="toggleWatch()"
       />
       <p-button
@@ -38,13 +38,24 @@
     }
   </div>
 
-  @if (isLoading() && !hasLoaded()) {
+  @if (isLoading()) {
     <div class="flex flex-col items-center gap-2 py-8">
       <p-progressSpinner ariaLabel="Loading issue details" />
       <p class="text-muted-color m-0 text-sm">Loading issue details...</p>
     </div>
   } @else if (loadError()) {
-    <p-message severity="error">{{ loadError() }}</p-message>
+    <div class="flex flex-col items-center gap-2">
+      <p-message severity="error">{{ loadError() }}</p-message>
+      <p-button
+        size="small"
+        label="Try again"
+        icon="pi pi-refresh"
+        severity="secondary"
+        [outlined]="true"
+        [loading]="isLoading()"
+        (onClick)="refresh()"
+      />
+    </div>
   } @else if (issue(); as currentIssue) {
     <dl
       class="mb-6 grid gap-4 rounded-lg border border-surface-200 p-4 sm:grid-cols-2 lg:grid-cols-3"
@@ -256,7 +267,5 @@
         </p-tabpanels>
       </p-tabs>
     </div>
-  } @else {
-    <p-message severity="warn">Issue not found</p-message>
   }
 </p-card>

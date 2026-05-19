@@ -375,6 +375,13 @@ export class IssuesComponent {
     return this.pendingWatchIssueIds().includes(issueId);
   }
 
+  refresh(): void {
+    this.query.set({
+      ...this.query(),
+      pageNumber: 1
+    });
+  }
+
   private loadAssignableUsers(): void {
     this.isLoadingAssignableUsers.set(true);
 

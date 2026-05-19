@@ -1,13 +1,5 @@
 import { CommonModule } from '@angular/common';
-import {
-  Component,
-  DestroyRef,
-  computed,
-  effect,
-  inject,
-  input,
-  signal
-} from '@angular/core';
+import { Component, DestroyRef, effect, inject, input, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   FormArray,
@@ -89,10 +81,6 @@ export class EditIssueComponent {
   readonly issueAcceptanceCriteriaConstraints = IssueAcceptanceCriteriaConstraints;
   readonly assignableUsers = signal<IssueAssignableUserDto[]>([]);
   readonly issue = signal<IssueDetailsDto | null>(null);
-  readonly pageTitle = computed(() => {
-    const currentIssue = this.issue();
-    return currentIssue ? `Edit: ${currentIssue.title}` : 'Edit Issue';
-  });
   readonly isLoadingIssue = signal(true);
   readonly isLoadingAssignableUsers = signal(true);
   readonly isSubmitting = signal(false);
@@ -143,39 +131,46 @@ export class EditIssueComponent {
       });
 
     effect(() => {
-      const id = this.id();
-      if (!id) {
-        this.isLoadingIssue.set(false);
+      const issueId = this.id();
+      if (!issueId) {
         return;
       }
-
-      this.isLoadingIssue.set(true);
-      this.loadError.set(null);
-
-      this.issuesService
-        .getIssue(id)
-        .pipe(takeUntilDestroyed(this.destroyRef))
-        .subscribe({
-          next: (issue) => {
-            this.issue.set(issue);
-            this.form.setValue({
-              title: issue.title,
-              description: issue.description,
-              status: issue.status,
-              priority: issue.priority,
-              assignedToUserId: issue.assignedToUserId ?? null,
-              acceptanceCriteria: []
-            });
-            this.setAcceptanceCriteria(issue);
-            this.form.markAsPristine();
-            this.isLoadingIssue.set(false);
-          },
-          error: (error: Error) => {
-            this.loadError.set(error.message);
-            this.isLoadingIssue.set(false);
-          }
-        });
+      this.loadIssue(issueId);
     });
+  }
+
+  private loadIssue(issueId: string): void {
+    if (!issueId) {
+      this.isLoadingIssue.set(false);
+      return;
+    }
+
+    this.isLoadingIssue.set(true);
+    this.loadError.set(null);
+
+    this.issuesService
+      .getIssue(issueId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (issue) => {
+          this.issue.set(issue);
+          this.form.setValue({
+            title: issue.title,
+            description: issue.description,
+            status: issue.status,
+            priority: issue.priority,
+            assignedToUserId: issue.assignedToUserId ?? null,
+            acceptanceCriteria: []
+          });
+          this.setAcceptanceCriteria(issue);
+          this.form.markAsPristine();
+          this.isLoadingIssue.set(false);
+        },
+        error: (error: Error) => {
+          this.loadError.set(error.message);
+          this.isLoadingIssue.set(false);
+        }
+      });
   }
 
   addAcceptanceCriterion(): void {
@@ -251,6 +246,14 @@ export class EditIssueComponent {
         this.createAcceptanceCriterionGroup(criterion.id, criterion.content)
       );
     });
+  }
+
+  refresh(): void {
+    const issueId = this.id();
+    if (!issueId) {
+      return;
+    }
+    this.loadIssue(issueId);
   }
 
   private createAcceptanceCriterionGroup(

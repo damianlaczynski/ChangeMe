@@ -100,7 +100,6 @@ export class IssueDetailsComponent {
   readonly issue = signal<IssueDetailsDto | null>(null);
   readonly pageTitle = computed(() => this.issue()?.title ?? 'Issue Details');
   readonly isLoading = signal(true);
-  readonly hasLoaded = signal(false);
   readonly loadError = signal<string | null>(null);
   readonly commentError = signal<string | null>(null);
   readonly isSubmitted = signal(false);
@@ -149,13 +148,7 @@ export class IssueDetailsComponent {
       const message = this.issueRealtimeService.lastIssueMessage();
       const issueId = this.id();
 
-      if (
-        messageVersion === 0 ||
-        !message ||
-        !issueId ||
-        message.issueId !== issueId ||
-        !this.hasLoaded()
-      ) {
+      if (messageVersion === 0 || !message || !issueId || message.issueId !== issueId) {
         return;
       }
 
@@ -165,7 +158,7 @@ export class IssueDetailsComponent {
     effect(() => {
       const reconnectCount = this.issueRealtimeService.reconnectCount();
       const issueId = this.id();
-      if (reconnectCount === 0 || !issueId || !this.hasLoaded()) {
+      if (reconnectCount === 0 || !issueId) {
         return;
       }
 
@@ -228,6 +221,14 @@ export class IssueDetailsComponent {
           this.isSubmittingComment.set(false);
         }
       });
+  }
+
+  refresh(): void {
+    const issueId = this.id();
+    if (!issueId) {
+      return;
+    }
+    this.loadIssue(issueId, false);
   }
 
   getWatchTooltip(issue: IssueDetailsDto): string {
@@ -319,7 +320,7 @@ export class IssueDetailsComponent {
         next: (issue) => {
           this.issue.set(issue);
           this.isLoading.set(false);
-          this.hasLoaded.set(true);
+          this.loadError.set(null);
 
           if (resetState) {
             this.commentError.set(null);
@@ -328,7 +329,6 @@ export class IssueDetailsComponent {
         error: (error: Error) => {
           this.loadError.set(error.message);
           this.isLoading.set(false);
-          this.hasLoaded.set(true);
         }
       });
   }
