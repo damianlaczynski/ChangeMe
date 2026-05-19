@@ -223,14 +223,6 @@ export class IssueDetailsComponent {
       });
   }
 
-  refresh(): void {
-    const issueId = this.id();
-    if (!issueId) {
-      return;
-    }
-    this.loadIssue(issueId, false);
-  }
-
   getWatchTooltip(issue: IssueDetailsDto): string {
     const watchers = this.formatWatchersCount(issue.watchersCount);
     return issue.isWatchedByCurrentUser
@@ -288,6 +280,14 @@ export class IssueDetailsComponent {
 
   trackHistoryEntry(_index: number, entry: IssueHistoryEntryDto): string {
     return entry.id;
+  }
+
+  refresh(): void {
+    const issueId = this.id();
+    if (!issueId) {
+      return;
+    }
+    this.loadIssue(issueId, false);
   }
 
   private deleteIssue(issueId: string): void {

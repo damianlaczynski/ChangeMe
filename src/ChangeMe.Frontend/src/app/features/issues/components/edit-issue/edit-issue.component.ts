@@ -173,6 +173,14 @@ export class EditIssueComponent {
       });
   }
 
+  refresh(): void {
+    const issueId = this.id();
+    if (!issueId) {
+      return;
+    }
+    this.loadIssue(issueId);
+  }
+
   addAcceptanceCriterion(): void {
     this.form.controls.acceptanceCriteria.push(this.createAcceptanceCriterionGroup());
   }
@@ -246,14 +254,6 @@ export class EditIssueComponent {
         this.createAcceptanceCriterionGroup(criterion.id, criterion.content)
       );
     });
-  }
-
-  refresh(): void {
-    const issueId = this.id();
-    if (!issueId) {
-      return;
-    }
-    this.loadIssue(issueId);
   }
 
   private createAcceptanceCriterionGroup(
