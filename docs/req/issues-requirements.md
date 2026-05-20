@@ -1,20 +1,9 @@
 # Requirements - Issues
 
 This document covers five REQs for the **Issues** area:
-issue list, issue create/edit flow, issue details page, watching and notifications, and the user notification center.
+issue list, issue create/edit flow, issue details page, watching and notifications, and the in-app notification dropdown in the top bar.
 
-The scope also includes comments, change history, and delivering notifications in real time and by email.
-
-The document also reflects the current `issues` module implementation, especially the existing **acceptance criteria** attached to an issue.
-
-## Shared UX and data-loading rules
-
-- The issues list, issue details page, create flow, edit flow, and notification center are available only to authenticated users.
-- Screens and sections in the `issues` module that load data asynchronously should use **skeletons** matching the target layout.
-- A global spinner-style loader must not be used as the primary loading mechanism for `issues` screens.
-- Skeletons should be displayed locally within the list, form, details panel, or comments/history section depending on where data is being fetched.
-- After data is loaded, the skeleton disappears without a full view reload.
-- The real-time refresh mechanism for the issues list and issue details page is independent from the watch mechanism. Watching is used only to deliver user notifications.
+The scope includes comments, change history, issue deletion, and delivering notifications in real time and by email.
 
 ---
 
@@ -22,45 +11,60 @@ The document also reflects the current `issues` module implementation, especiall
 
 ## Goal
 
-The user must be able to browse all issues, search, filter, sort, navigate to details, and quickly start creating a new issue.
+The user must be able to browse all issues, search, filter, sort, navigate to details, manage watches, and quickly start creating a new issue.
 
 ## Features
 
+### Access
+
+- Screen: **Issues list**
+- Available only to authenticated users. Guests are redirected to **Login** (REQ-AUTH-001).
+
 ### Search and actions bar
 
-- A text field with the placeholder _Search issues..._ filters the list by a fragment of the **issue title**, **issue identifier**, or **description**.
-- The **Search** button applies the text filter to the list.
-- The **+ Add issue** button opens the issue creation form (REQ-ISS-002).
+- **Add issue** button opens **Create issue** (REQ-ISS-002).
 
-### Issues table - columns
+### Issues table — columns
 
-| Column | Description |
-| ------ | ----------- |
-| **ID** | Unique issue identifier; clickable link to the issue details page (REQ-ISS-003). |
-| **Title** | Short issue title; clickable link to the issue details page. |
-| **Status** | Issue status badge, for example **New**, **In Progress**, **Resolved**, **Closed**. |
-| **Priority** | Priority badge, for example **Low**, **Medium**, **High**, **Critical**. |
-| **Assigned To** | Full name of the assigned user or information that the issue is unassigned. |
-| **Last Activity** | Date and time of the most recent change, comment, or other activity on the issue. |
-| **Actions** | Buttons: **View details** and **Watch / Unwatch**; the button may also display the watcher count. |
+| Column            | Description                                                                       |
+| ----------------- | --------------------------------------------------------------------------------- |
+| **Title**         | Short issue title; clickable link to **Issue details**.                           |
+| **Status**        | Issue status badge (**New**, **In Progress**, **Resolved**, **Closed**).          |
+| **Priority**      | Priority badge (**Low**, **Medium**, **High**, **Critical**).                     |
+| **Assigned to**   | Full name of the assigned user or `**Unassigned`\*\*.                             |
+| **Created at**    | Issue creation date and time.                                                     |
+| **Last activity** | Date and time of the most recent change, comment, or other activity on the issue. |
+| **Actions**       | Watch control and overflow menu for row actions (see below).                      |
 
 ### Sorting
 
-- The **ID** column is sortable ascending and descending.
-- The **Title** column is sortable alphabetically ascending and descending.
-- The **Created Date** column is sortable chronologically ascending and descending.
-- The **Last Activity** column is sortable chronologically ascending and descending.
-- The active sort column is visually marked together with the sort direction.
+- **Title**: sortable alphabetically ascending and descending.
+- **Created at**: sortable chronologically ascending and descending.
+- **Last activity**: sortable chronologically ascending and descending.
+- Default sort: **Last activity**, descending (most recent first).
 
-### Filter panel
+### Row actions and watch control
 
-- **Status** filter: single- or multi-select; no selection means no restriction.
-- **Priority** filter: single- or multi-select; no selection means no restriction.
-- **Assigned To** filter: user selector populated from the user dictionary.
-- **Watched by me** filter: toggle that shows only issues watched by the current user.
-- **My issues** filter: toggle that shows only issues created by or assigned to the current user.
-- All filters work together with the text field using **AND** logic.
-- The user can clear all filters at once with the **Clear filters** button.
+- **Watch / Unwatch**: compact button shows **watcher count** as label and bell / bell-slash icon for current watch state. Tooltip format: `**Watch this issue ({n} watchers)`** or `**Unwatch this issue ({n} watchers)\*\*`where`{n}` is the count.
+- Overflow menu: **Open details**, **Edit issue**, **Delete issue**.
+- **Delete issue** confirmation: `**Delete "{issue title}"? This action cannot be undone.`\*\*
+
+### Search and filters
+
+- Toggleable **Filters** panel (collapsed by default).
+- **Status** filter: multi-select; empty selection means no restriction.
+- **Priority** filter: multi-select; empty selection means no restriction.
+- **Assigned to** filter: single-select user list from assignable users (REQ-USR-005); clearable.
+- **Watched by me** filter: checkbox; when selected, shows only issues watched by the current user.
+- **My issues** filter: checkbox; when selected, shows only issues **created by** or **assigned to** the current user.
+- All filters combine with search text using **AND** logic.
+- **Apply filters** submits the filter panel with the current search text.
+- **Clear filters** resets the filter form and removes all filter constraints (search text included).
+- Applied filters list
+
+### Loading
+
+- While the table is loading, a loading indicator is shown in the table area; the screen layout remains visible.
 
 ---
 
@@ -68,51 +72,72 @@ The user must be able to browse all issues, search, filter, sort, navigate to de
 
 ## Goal
 
-The user must be able to create a new issue and edit an existing one by providing the required core data, and after saving be taken to the issue details page.
+The user must be able to create a new issue and edit an existing one by providing the required core data, and after saving be taken to **Issue details**.
 
 ## Features
 
-### "Issue core data" section
+### Access
 
-| Field | Behavior |
-| ----- | -------- |
-| **Title** | Text field, **required**. |
-| **Description** | Multiline text area, **required**. |
-| **Status** | Issue status dropdown; **required**; default value in create flow: **New**. |
-| **Priority** | Priority dropdown; **required**; default value in create flow: **Medium**. |
-| **Assigned To** | User selector populated from the user dictionary; **optional**. |
-| **Acceptance Criteria** | List of acceptance criteria; the user can add multiple items; each item contains criterion text. |
-| **Watch after creation** | Checkbox; selected by default for the issue author. |
+- Screens: **Create issue**, **Edit issue**
+- Available only to authenticated users.
 
-**System fields:**
+### "Issue details" section (create and edit)
 
-- **Issue ID** - assigned by the system on first save.
-- **Author** - set to the currently authenticated user during creation.
-- **Created Date** - assigned by the system on first save; read-only.
-- **Last Activity Date** - updated automatically by the system; read-only.
+| Field                    | Behavior                                                                                  |
+| ------------------------ | ----------------------------------------------------------------------------------------- |
+| **Title**                | Text field, **required**; **3–255** characters.                                           |
+| **Description**          | Multiline text area, **required**; up to **2000** characters.                             |
+| **Status**               | Issue status dropdown; **required**; default on create: **New**.                          |
+| **Priority**             | Priority dropdown; **required**; default on create: **Medium**.                           |
+| **Assigned to**          | User selector from assignable users (REQ-USR-005); **not required** (clear = unassigned). |
+| **Watch after creation** | Checkbox on create only; selected by default; adds the author as a watcher when checked.  |
+
+### "Acceptance criteria" section
+
+- List of acceptance criteria; the user can add multiple items and remove rows.
+- Each item is a multiline **criterion** field, **required** when the row is present; up to **2000** characters per item.
+- Zero acceptance-criteria rows are allowed on create.
+
+**System fields (read-only on edit):**
+
+- **Author**, **Created at**, and **Last activity** in a read-only summary block.
+- **Issue identifier** is assigned by the system on first save; not editable in the form.
+- **Author** is the currently signed-in user on create.
+- **Created at** and **Last activity** are maintained by the system.
 
 ### Validation
 
-- **Title**: required; save is blocked when empty.
-- **Description**: required; save is blocked when empty.
-- **Status**: required; must be one of the allowed dictionary values.
-- **Priority**: required; must be one of the allowed dictionary values.
-- **Assigned To**: if provided, it must come from the user dictionary.
-- **Acceptance criterion**: when an item is added to the list, its text is required.
-- Validation errors are shown next to the relevant fields without closing the form.
+- **Title**: required; **3–255** characters.
+- **Description**: required; max **2000** characters.
+- **Status**: required; one of **New**, **In Progress**, **Resolved**, **Closed**.
+- **Priority**: required; one of **Low**, **Medium**, **High**, **Critical**.
+- **Assigned to**: when selected, must be an **Active** assignable user (REQ-USR-005).
+- **Acceptance criterion**: when a row exists, its text is required; max **2000** characters.
+- Validation errors are inline next to the relevant field; the form stays open on failure.
 
 ### Form actions
 
-- **Cancel** button: closes the form without saving.
-- **Create issue** / **Save changes** button: triggers validation; success saves and navigates to the issue page, failure keeps the form open with validation messages.
+- **Back to issues list** button navigates to **Issues list** without saving.
+- **Cancel** (create): same as **Back to issues list** — leaves without saving.
+- **Create issue** / **Save changes**: on success save and open **Issue details**; on failure keep the form open with validation messages.
+
+### Back navigation (create and edit)
+
+| Screen           | Back button label         | Destination                            |
+| ---------------- | ------------------------- | -------------------------------------- |
+| **Create issue** | **Back to issues list**   | **Issues list**                        |
+| **Edit issue**   | **Back to issue details** | **Issue details** for the edited issue |
 
 ### Consistency between create and edit
 
-- The edit form uses the same fields and validation rules as the create flow, except for system fields that are read-only.
-- In edit mode, the user can change at least: **Title**, **Description**, **Status**, **Priority**, and **Assigned To**.
-- In both create and edit flows, the user can add, remove, and modify **acceptance criteria** items.
-- After issue creation, the author can be automatically added to watchers when **Watch after creation** is selected.
-- Every issue creation and every issue edit writes an entry to change history (REQ-ISS-003).
+- Edit uses the same core fields and validation as create, plus read-only system metadata.
+- On edit, the user can change **Title**, **Description**, **Status**, **Priority**, **Assigned to**, and all **acceptance criteria** rows.
+- After create, the author is added to watchers when **Watch after creation** is checked.
+- Every create and edit writes entries to change history (REQ-ISS-003), including acceptance-criterion add, update, and remove events.
+
+### Loading
+
+- Before the first load on create/edit, a loading state covers the form area until initial data arrives.
 
 ---
 
@@ -120,55 +145,75 @@ The user must be able to create a new issue and edit an existing one by providin
 
 ## Goal
 
-The issue details page is the central detailed view where the user reviews the full issue data, adds comments, tracks change history, and performs core operational actions.
-
-Access to the issue details page requires authentication.
+**Issue details** is the central view where the user reviews full issue data, adds comments, tracks change history, watches or unwatches, edits, or deletes the issue.
 
 ## Features
 
-### Issue header
+### Access
 
-- Displays: **Issue ID**, **Title**, **Status**, **Priority**, **Author**, **Assigned To**, **Created Date**, and **Last Activity Date**.
-- Shows the current user's watch state: **Watching** / **Not watching**.
-- The **Edit issue** button opens the edit form (REQ-ISS-002).
-- The **Watch** or **Unwatch** button manages the user's subscription (REQ-ISS-004).
+- Screen: **Issue details**
+- Available only to authenticated users.
+
+### Issue header and metadata
+
+- Page header shows issue **title**, or `**Issue Details`\*\* while loading.
+- Metadata block: **Author**, **Assigned to**, **Status**, **Priority**, **Created at**, **Last activity** (status and priority as badges).
+- Issue identifier is not shown as a separate labeled field; it is used in navigation and search (REQ-ISS-001).
+- Watch state is shown by the watch button icon, watcher count label, and tooltip — not by separate **Watching** / **Not watching** text.
+- **Edit** opens **Edit issue** (REQ-ISS-002).
+- **Delete** confirmation: `**Delete "{issue title}"? This action cannot be undone.`** On confirm, delete the issue and navigate to **Issues list\*\*.
 
 ### Description section
 
-- The full issue **Description** is displayed as read-only content.
+- Full **Description** as read-only content in a toggleable panel.
 
 ### Acceptance criteria section
 
-- The issue details page displays the list of **acceptance criteria** linked to the issue.
-- Each item shows the full criterion text.
-- If the issue has no acceptance criteria, the view shows a clear empty-state message.
+- Lists all **acceptance criteria** for the issue.
+- Empty state: `**No acceptance criteria defined`\*\*
+
+### Comments and history tabs
+
+- Separate tabs: **Comments** and **History**.
 
 ### Comments section
 
-- Users can add comments to an issue.
-- Each comment displays: **author**, **date and time**, and **full content**.
-- Comments are sorted chronologically ascending unless the module adopts a different global standard.
-- Adding a comment updates the issue **Last Activity Date**.
-- Adding a comment can trigger notifications for watchers (REQ-ISS-004).
+- Users add comments to an issue.
+- Each comment shows **author**, **date and time**, and **full content**.
+- Comments sorted chronologically ascending.
+- Adding a comment updates **Last activity** and shows the new comment without leaving the screen.
+- Adding a comment triggers notifications for watchers (REQ-ISS-004).
 
 ### Comment validation
 
-- **Comment content**: required; an empty comment cannot be saved.
-- After a validation error, the comment form remains open.
+- **Comment content**: required; max **4000** characters.
+- Empty comment cannot be saved; error inline on the comment field.
+- After validation error, the comment form stays open.
 
 ### Change history section
 
-- The issue page includes an activity history list for the issue.
-- History includes at least: issue creation, status change, priority change, assignee change, title edit, and description edit.
-- Each history entry contains: **event type**, **acting user**, **date and time**, and a concise change description.
-- For field changes, history should show **before** and **after** values when available and understandable to the user.
-- History is read-only and serves as an audit trail of work on the issue.
+- **History** tab shows an activity timeline.
+- History includes: issue creation, status change, priority change, assignee change, title edit, description edit, acceptance-criterion add, update, and remove.
+- Each entry: **summary** (event type), **acting user**, **date and time**, and **Before** / **After** when values apply.
+- **Description** changes show summary only (no before/after inline).
+- History is read-only.
+- Event types use distinct timeline markers (icons and colors).
 
 ### Actions and navigation
 
-- The **Back to issues list** button navigates to the issues list.
-- After saving an edit, the user returns to the issue page with refreshed data.
-- After adding a comment, the user stays on the issue page and sees the new comment without manually refreshing the view.
+- **Back to issues list** button navigates to **Issues list**.
+- After edit save, the user returns to **Issue details** with refreshed data.
+- After adding a comment, the user stays on **Issue details** and sees the new comment.
+- When the open issue is affected by activity elsewhere, **Issue details** refreshes in place (REQ-ISS-004).
+
+### Deletion navigation
+
+- After deleting an issue from **Issue details**, the user is navigated to **Issues list**.
+- After deleting an issue from **Issues list**, the user remains on **Issues list** with the list refreshed.
+
+### Loading
+
+- While issue data is loading initially, a loading state covers the detail area until initial data arrives.
 
 ---
 
@@ -176,115 +221,105 @@ Access to the issue details page requires authentication.
 
 ## Goal
 
-The user must be able to watch selected issues and receive notifications about activity related to those issues in real time and by email.
+The user must be able to watch selected issues and receive notifications about related activity in real time and by email.
 
 ## Features
 
 ### Watch management
 
-- The user can manually start watching an issue from the issues list and from the issue details page.
-- The user can manually stop watching an issue from the same places.
-- Watch state is stored per user and per issue.
-- The system must not duplicate the same issue watch for the same user.
-- The **Watch / Unwatch** button may also display the current watcher count for the issue.
+- Start watching from **Issues list** and **Issue details**.
+- Stop watching from the same places.
+- Watch state is stored per user and per issue; duplicate watches for the same user and issue are not created.
+- Watch button shows **watcher count** and whether the current user watches the issue.
 
 ### Events that generate notifications
 
-- Notifications are generated at minimum for:
-  - comment creation,
-  - status change,
-  - priority change,
-  - assignee change,
-  - title edit,
-  - issue close or reopen.
+Notifications are sent to watchers (excluding the acting user) for:
+
+- comment creation,
+- status change (including **issue closed** and **issue reopened**),
+- priority change,
+- assignee change,
+- title edit,
+- description edit,
+- acceptance-criterion add, update, and remove.
+- Watch and unwatch update watcher counts and refresh **Issues list** / **Issue details** when open; they do **not** create in-app notifications.
 
 ### Real-time notifications
 
-- A watching user receives a notification in the UI without manually refreshing the page.
-- A real-time notification includes at least: **event type**, **issue title**, **short change summary**, **event time**, and **link to the issue**.
-- If the user is authenticated and active in the application, the notification should appear in the notification center and optionally as an immediate UI signal.
-- The frontend keeps an active real-time connection to the notifications hub for the authenticated user.
-- The frontend listens to at least two classes of real-time events:
-  - events for newly created notifications for watching users,
-  - issue change events used to refresh the list and details views.
-- After receiving a notification event, the frontend updates at least the unread notification counter and notification list without reloading the page.
-- If the issues list is open, the frontend refreshes at least status, priority, watcher count, and last activity date for affected issues without a manual refresh, regardless of whether the current user watches the issue.
-- If an issue details page is open, the frontend refreshes comments, change history, watch state, last activity, and any other fields affected by the issue change event without a manual refresh, regardless of whether the current user watches the issue.
+- A watching user sees new notifications in the UI without manually reloading the page.
+- Each notification includes: **notification id**, **event type**, **issue id**, **issue title**, **message**, **event time**, and **link** to the issue.
+- When signed in, new notifications update the top-bar bell badge and, when the notification panel is open, the list inside the panel.
+- **Issues list** refreshes the current results when an issue change notification applies, regardless of watch state.
+- **Issue details** refreshes when the open issue is affected, regardless of watch state.
+- After connection loss, the user can continue working; when connection resumes, lists and open details resynchronize.
 
 ### Email notifications
 
-- The system also sends an email notification for every event covered by the notification mechanism.
-- The email contains at least: **issue title**, **change type**, **short summary**, **event time**, and **link to issue details**.
-- An event covered by such an email must also be stored as an in-app notification so the user can see it after signing in.
-- After signing in, the user sees the notification in the notification center and can navigate directly to the issue by clicking it.
-- The system should avoid sending duplicate messages for the same event to the same user.
+- The system sends an email for every in-app notification event listed above.
+- Email contains: **issue title**, **change type**, **short summary**, **event time**, and **link to issue details**.
+- Every emailed event is also stored as an in-app notification.
+- After sign-in, the user sees notifications in the bell dropdown and can open the linked issue.
+- Duplicate notification records for the same history entry and recipient are not created.
 
 ### Business rules
 
-- The issue author may be a default watcher of a newly created issue.
-- A user who stops watching an issue stops receiving new notifications about that issue from the moment they opt out.
+- When **Watch after creation** is selected (REQ-ISS-002), the author becomes a watcher on the new issue.
+- A user who unwatches stops receiving new notifications for that issue from that moment.
 
 ---
 
-# REQ-ISS-005: User Notification Center
+# REQ-ISS-005: Notification Bell and Dropdown
 
 ## Goal
 
-The user must have access to a personal notification center where they can see new and historical notifications related to watched issues and mark them as read.
+The user must be able to review new and historical notifications related to watched issues from a bell control in the top application bar, without leaving the current screen.
+
+There is no separate **Notifications** screen or sidebar entry.
 
 ## Features
 
-### Notification bell
+### Notification bell in the top bar
 
-- A **bell** icon is available in the top application bar and opens the notification center or a dropdown panel.
-- The bell icon shows the unread notification count.
-- New notifications are added to the list without manually refreshing the page.
-- Receiving a real-time notification updates the bell and its counter immediately without navigating to another view.
+- **Bell** icon in the authenticated header, next to theme and account actions.
+- Badge shows unread count when greater than zero.
+- Clicking the bell toggles a dropdown panel anchored to the control; it does not navigate away.
+- Clicking outside the panel or pressing Escape closes the dropdown.
+- New notifications update the badge and open panel list in real time without full page reload.
 
-### Notification list
+### Notification dropdown panel
 
-- The user can see both **new** and **older** notifications.
-- Each notification displays at least: **event type**, **issue title**, **short summary**, **event time**, and **read state**.
-- Clicking a notification navigates the user to the relevant issue.
-- The list may be visually separated into **Unread** and **Read** sections, or use another clear distinction mechanism.
+- Panel header: `**Notifications`**, **unread count**, and **total count\*\* when loaded.
+- **Refresh** reloads the notification list.
+- **Mark all as read** marks every unread notification as read when any unread items exist.
+- Scrollable body with tabs: **Unread** and **Read**.
+- Each notification shows: **issue title**, **message**, **event time**, and actions.
+- **Open** follows the notification **link**, marks unread items as read when opened, and closes the dropdown.
+- **Mark read** per unread item without opening the issue.
+- Empty state per tab when a tab has no items.
+- Loading indicator inside the panel during first load.
 
 ### Mark as read
 
-- The user can mark a single notification as read.
-- The user can optionally mark multiple notifications or all visible notifications as read if the module supports a bulk action.
-- Marking notifications as read updates the bell counter without reloading the page.
+- Mark a single notification as read.
+- **Mark all as read** for all unread notifications.
+- Marking as read updates the bell badge without full page reload.
 
 ### States and retention
 
-- A notification does not disappear after being read; it moves to a historical state.
-- Historical notifications remain available to the user for a period defined by the system retention policy.
-- The system distinguishes at least two states: **Unread** and **Read**.
-- The notification retention policy must be explicitly defined and configurable on the backend.
-- Default retention policy:
-  - an **unread** notification remains available for **90 days** from the event time,
-  - a **read** notification remains available for **30 days** from the moment it is marked as read,
-  - regardless of state, a single notification must not be stored longer than **180 days** from the event time.
-- After the retention period expires, the notification disappears from the user's notification center and may be physically removed from the database.
-- Retention applies only to the notification record in the notification center; it does not remove comments, change history, or the issue itself.
-- The expired-notification cleanup mechanism must run automatically on the system side and must not require user action.
-- Reading the notifications list must not return expired records even if physical cleanup has not yet run.
+- Read notifications move to the **Read** tab; they do not disappear immediately.
+- Notification states: **Unread** and **Read**.
+- Retention policy defaults:
+  - **Unread**: available **90 days** from event time,
+  - **Read**: available **30 days** from mark-as-read time,
+  - maximum lifetime **180 days** from event time regardless of state.
+- After retention expires, the notification no longer appears in the dropdown.
+- Retention applies only to notification records; it does not remove comments, history, or issues.
+- Expired notifications are removed by automatic system cleanup; no user action is required.
+- The notification list never shows expired items.
 
 ### Consistency with issues
 
-- Clicking a notification opens the relevant issue details page.
-- After navigating from a notification to an issue, the user sees the current issue state, comments, and change history.
-- The notification center is a source of information about new events, but it does not replace the change history on the issue page.
-
----
-
-## Cross-cutting acceptance criteria
-
-- The list, details page, and `issues` forms display local **skeletons** while loading data instead of a global blocking spinner.
-- The user can create an issue with **acceptance criteria**, and after saving sees those criteria on the issue details page.
-- The user can edit existing issue **acceptance criteria**, and after saving sees the updated list on the issue details page.
-- The user can start and stop watching an issue from both the list and the issue details page.
-- If a watched issue changes, the system sends an email and stores an in-app notification at the same time.
-- After signing in again, the user sees the unread notification in the bell and can navigate to the correct issue by clicking it.
-- Adding a comment updates the issue last activity and is visible without manually refreshing the page.
-- The frontend keeps the issues list, issue details page, and notification center up to date through a real-time mechanism without forcing manual page refresh.
-- Loss of the real-time connection must not block the core application flow, but after reconnection the frontend should resume listening and resynchronize UI state.
+- Opening a notification navigates to **Issue details** for the linked issue.
+- After opening from a notification, the user sees current issue state, comments, and history.
+- The notification dropdown does not replace change history on **Issue details**.

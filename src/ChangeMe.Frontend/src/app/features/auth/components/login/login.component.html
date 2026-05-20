@@ -1,54 +1,73 @@
-<section>
-  <h1>Login</h1>
-  <p>Sign in to create, edit and delete issues.</p>
-
-  <form [formGroup]="form" (ngSubmit)="onSubmit()">
-    <div>
-      <label for="email">Email</label>
-      <input id="email" type="email" formControlName="email" />
+<app-auth-page
+  title="Welcome back"
+  subtitle="Sign in to create, edit and delete issues."
+  footerPrompt="No account yet?"
+  footerLinkLabel="Create an account"
+  footerRoute="/register"
+>
+  <form class="p-fluid flex flex-col gap-4" [formGroup]="form" (ngSubmit)="onSubmit()">
+    <div class="flex flex-col gap-1.5">
+      <label class="text-color text-sm font-medium" for="email">Email</label>
+      <input
+        id="email"
+        type="email"
+        pInputText
+        autocomplete="email"
+        [formControl]="form.controls.email"
+        [invalid]="form.controls.email.touched && form.controls.email.errors"
+      />
       @if (form.controls.email.touched && form.controls.email.errors?.['required']) {
-        <p>Email is required.</p>
+        <p-message severity="error" variant="simple">Email is required.</p-message>
       }
       @if (form.controls.email.touched && form.controls.email.errors?.['email']) {
-        <p>Enter a valid email address.</p>
+        <p-message severity="error" variant="simple">
+          Enter a valid email address.
+        </p-message>
       }
       @if (form.controls.email.touched && form.controls.email.errors?.['maxlength']) {
-        <p>
+        <p-message severity="error" variant="simple">
           Email must be less than {{ authConstraints.EMAIL_MAX_LENGTH }} characters
           long.
-        </p>
+        </p-message>
       }
     </div>
 
-    <div>
-      <label for="password">Password</label>
-      <input id="password" type="password" formControlName="password" />
+    <div class="flex flex-col gap-1.5">
+      <label class="text-color text-sm font-medium" for="password">Password</label>
+      <p-password
+        inputId="password"
+        autocomplete="current-password"
+        [formControl]="form.controls.password"
+        [feedback]="false"
+        [toggleMask]="true"
+        fluid
+        [invalid]="form.controls.password.touched && form.controls.password.errors"
+      />
       @if (
         form.controls.password.touched && form.controls.password.errors?.['required']
       ) {
-        <p>Password is required.</p>
+        <p-message severity="error" variant="simple">Password is required.</p-message>
       }
       @if (
         form.controls.password.touched && form.controls.password.errors?.['minlength']
       ) {
-        <p>
-          Password must be at least {{ authConstraints.PASSWORD_MIN_LENGTH }} characters
-          long.
-        </p>
+        <p-message severity="error" variant="simple">
+          Password must be at least
+          {{ authConstraints.PASSWORD_MIN_LENGTH }} characters long.
+        </p-message>
       }
     </div>
 
     @if (errorMessage()) {
-      <p>{{ errorMessage() }}</p>
+      <p-message severity="error">{{ errorMessage() }}</p-message>
     }
 
-    <button type="submit" [disabled]="isSubmitting()">
-      {{ isSubmitting() ? 'Signing in...' : 'Login' }}
-    </button>
+    <p-button
+      type="submit"
+      [label]="isSubmitting() ? 'Signing in...' : 'Sign in'"
+      icon="pi pi-sign-in"
+      [loading]="isSubmitting()"
+      styleClass="w-full"
+    />
   </form>
-
-  <p>
-    No account yet?
-    <a [routerLink]="['/register']">Create one</a>
-  </p>
-</section>
+</app-auth-page>

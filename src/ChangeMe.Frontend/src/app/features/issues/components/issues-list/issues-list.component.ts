@@ -1,18 +1,18 @@
+import { CommonModule } from '@angular/common';
 import {
   Component,
+  computed,
   DestroyRef,
   effect,
   inject,
   signal,
-  untracked
+  untracked,
+  viewChild
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
-import { catchError, of, switchMap, tap } from 'rxjs';
-import { AuthService } from '@features/auth/services/auth.service';
-import { PaginationResult } from '@shared/data/models/pagination-result.model';
+import { ToastService } from '@core/toast/services/toast.service';
 import {
   IssueAssignableUserDto,
   IssueDto,
@@ -22,6 +22,35 @@ import {
 } from '@features/issues/models/issue.model';
 import { IssueRealtimeService } from '@features/issues/services/issue-realtime.service';
 import { IssuesService } from '@features/issues/services/issues.service';
+import {
+  getDeleteIssueConfirmMessage,
+  getIssuePriorityLabel,
+  getIssuePrioritySeverity,
+  getIssueStatusLabel,
+  getIssueStatusSeverity,
+  issueDeleteMenuItemDangerClasses,
+  issuePriorities,
+  issueStatuses
+} from '@features/issues/utils/issue.utils';
+import { AppliedFiltersChipsComponent } from '@shared/components/applied-filters-chips/applied-filters-chips.component';
+import { PaginationResult } from '@shared/data/models/pagination-result.model';
+import { AppliedFilterChip } from '@shared/models/applied-filter-chip.model';
+import { ConfirmationService, MenuItem } from 'primeng/api';
+import { Button } from 'primeng/button';
+import { Card } from 'primeng/card';
+import { Checkbox } from 'primeng/checkbox';
+import { InputText } from 'primeng/inputtext';
+import { Menu } from 'primeng/menu';
+import { Message } from 'primeng/message';
+import { MultiSelect } from 'primeng/multiselect';
+import { Paginator } from 'primeng/paginator';
+import { Panel } from 'primeng/panel';
+import { Select } from 'primeng/select';
+import { TableModule } from 'primeng/table';
+import { Tag } from 'primeng/tag';
+import { Tooltip } from 'primeng/tooltip';
+import { PaginatorState } from 'primeng/types/paginator';
+import { catchError, of, switchMap, tap } from 'rxjs';
 
 type IssuesFilterForm = {
   searchText: FormControl<string>;
@@ -36,18 +65,40 @@ type IssueSortField = 'Id' | 'Title' | 'CreatedAt' | 'LastActivityAt';
 
 @Component({
   selector: 'app-issues',
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterLink,
+    Card,
+    Button,
+    InputText,
+    MultiSelect,
+    Select,
+    Checkbox,
+    TableModule,
+    Paginator,
+    Message,
+    Tag,
+    Panel,
+    Tooltip,
+    Menu,
+    AppliedFiltersChipsComponent
+  ],
   templateUrl: './issues-list.component.html'
 })
 export class IssuesComponent {
   private readonly issuesService = inject(IssuesService);
-  private readonly authService = inject(AuthService);
   private readonly issueRealtimeService = inject(IssueRealtimeService);
+  private readonly confirmationService = inject(ConfirmationService);
+  private readonly toastService = inject(ToastService);
   private readonly destroyRef = inject(DestroyRef);
 
-  readonly isAuthenticated = this.authService.isAuthenticated;
-  readonly issuePriorities = this.issuesService.issuePriorities;
-  readonly issueStatuses = this.issuesService.issueStatuses;
+  readonly issuePriorities = issuePriorities;
+  readonly issueStatuses = issueStatuses;
+  readonly getIssueStatusLabel = getIssueStatusLabel;
+  readonly getIssueStatusSeverity = getIssueStatusSeverity;
+  readonly getIssuePriorityLabel = getIssuePriorityLabel;
+  readonly getIssuePrioritySeverity = getIssuePrioritySeverity;
 
   readonly issues = signal<IssueDto[]>([]);
   readonly pagination = signal<PaginationResult<IssueDto> | null>(null);
@@ -63,7 +114,56 @@ export class IssuesComponent {
   readonly assignableUsers = signal<IssueAssignableUserDto[]>([]);
   readonly isLoadingAssignableUsers = signal(false);
   readonly pendingWatchIssueIds = signal<string[]>([]);
-  readonly skeletonRows = Array.from({ length: 5 }, (_, index) => index);
+  readonly pendingDeleteIssueIds = signal<string[]>([]);
+  readonly filtersCollapsed = signal(true);
+  readonly issueActionItems = signal<MenuItem[]>([]);
+  private readonly issueActionsMenu = viewChild.required<Menu>('issueActionsMenu');
+
+  readonly appliedFilterChips = computed(() => {
+    const query = this.query();
+    const chips: AppliedFilterChip[] = [];
+
+    const search = query.searchText?.trim();
+    if (search) {
+      chips.push({ id: 'search', label: `Search: "${search}"` });
+    }
+
+    for (const status of query.statuses ?? []) {
+      chips.push({
+        id: `status-${status}`,
+        label: `Status: ${getIssueStatusLabel(status)}`
+      });
+    }
+
+    for (const priority of query.priorities ?? []) {
+      chips.push({
+        id: `priority-${priority}`,
+        label: `Priority: ${getIssuePriorityLabel(priority)}`
+      });
+    }
+
+    if (query.assignedToUserId) {
+      const assignee = this.assignableUsers().find(
+        (user) => user.id === query.assignedToUserId
+      );
+      chips.push({
+        id: 'assignee',
+        label: `Assignee: ${assignee?.fullName ?? 'Unknown'}`
+      });
+    }
+
+    if (query.watchedByMe) {
+      chips.push({ id: 'watched-by-me', label: 'Watched by me' });
+    }
+
+    if (query.createdByMe) {
+      chips.push({ id: 'my-issues', label: 'My issues' });
+    }
+
+    return chips;
+  });
+
+  readonly hasAppliedFilters = computed(() => this.appliedFilterChips().length > 0);
 
   readonly filtersForm = new FormGroup<IssuesFilterForm>({
     searchText: new FormControl('', { nonNullable: true }),
@@ -119,6 +219,10 @@ export class IssuesComponent {
     });
   }
 
+  onFiltersCollapsedChange(collapsed: boolean | undefined): void {
+    this.filtersCollapsed.set(collapsed ?? true);
+  }
+
   applyFilters(): void {
     const formValue = this.filtersForm.getRawValue();
 
@@ -132,6 +236,57 @@ export class IssuesComponent {
       watchedByMe: formValue.watchedByMe,
       createdByMe: formValue.createdByMe
     });
+  }
+
+  removeAppliedFilter(chip: AppliedFilterChip): void {
+    const nextQuery = { ...this.query(), pageNumber: 1 };
+
+    if (chip.id === 'search') {
+      this.filtersForm.patchValue({ searchText: '' });
+      this.query.set({ ...nextQuery, searchText: undefined });
+      return;
+    }
+
+    if (chip.id.startsWith('status-')) {
+      const status = chip.id.slice('status-'.length) as IssueStatus;
+      const statuses = (nextQuery.statuses ?? []).filter((value) => value !== status);
+      this.filtersForm.patchValue({ statuses });
+      this.query.set({
+        ...nextQuery,
+        statuses: statuses.length > 0 ? statuses : undefined
+      });
+      return;
+    }
+
+    if (chip.id.startsWith('priority-')) {
+      const priority = chip.id.slice('priority-'.length) as IssuePriority;
+      const priorities = (nextQuery.priorities ?? []).filter(
+        (value) => value !== priority
+      );
+      this.filtersForm.patchValue({ priorities });
+      this.query.set({
+        ...nextQuery,
+        priorities: priorities.length > 0 ? priorities : undefined
+      });
+      return;
+    }
+
+    if (chip.id === 'assignee') {
+      this.filtersForm.patchValue({ assignedToUserId: null });
+      this.query.set({ ...nextQuery, assignedToUserId: null });
+      return;
+    }
+
+    if (chip.id === 'watched-by-me') {
+      this.filtersForm.patchValue({ watchedByMe: false });
+      this.query.set({ ...nextQuery, watchedByMe: false });
+      return;
+    }
+
+    if (chip.id === 'my-issues') {
+      this.filtersForm.patchValue({ createdByMe: false });
+      this.query.set({ ...nextQuery, createdByMe: false });
+    }
   }
 
   clearFilters(): void {
@@ -156,7 +311,8 @@ export class IssuesComponent {
     });
   }
 
-  changePage(pageNumber: number): void {
+  onPageChange(event: PaginatorState): void {
+    const pageNumber = (event.page ?? 0) + 1;
     const currentPagination = this.pagination();
     if (
       !currentPagination ||
@@ -172,32 +328,103 @@ export class IssuesComponent {
     });
   }
 
-  toggleSort(field: IssueSortField): void {
+  onTableSort(event: { field?: string | null; order?: number | null }): void {
+    if (!event.field || event.order == null || event.order === 0) {
+      return;
+    }
+
+    const sortField = event.field as IssueSortField;
+    const ascending = event.order === 1;
     const currentQuery = this.query();
-    const isSameField = currentQuery.sortField === field;
-    const ascending = isSameField
-      ? !currentQuery.ascending
-      : this.getDefaultAscending(field);
+
+    if (currentQuery.sortField === sortField && currentQuery.ascending === ascending) {
+      return;
+    }
 
     this.query.set({
       ...currentQuery,
       pageNumber: 1,
-      sortField: field,
+      sortField,
       ascending
     });
   }
 
-  getSortDirection(field: IssueSortField): 'ascending' | 'descending' | null {
-    const currentQuery = this.query();
-    if (currentQuery.sortField !== field) {
-      return null;
+  trackIssue(_index: number, issue: IssueDto): string {
+    return issue.id;
+  }
+
+  openIssueActionsMenu(event: Event, issue: IssueDto): void {
+    this.issueActionItems.set([
+      {
+        label: 'Open details',
+        icon: 'pi pi-eye',
+        routerLink: ['/issues', issue.id]
+      },
+      { separator: true },
+      {
+        label: 'Edit issue',
+        icon: 'pi pi-pencil',
+        routerLink: ['/issues', issue.id, 'edit']
+      },
+      {
+        label: 'Delete issue',
+        icon: 'pi pi-trash',
+        ...issueDeleteMenuItemDangerClasses,
+        disabled: this.isDeletePending(issue.id),
+        command: () => this.confirmDeleteIssue(issue)
+      }
+    ]);
+    this.issueActionsMenu().toggle(event);
+  }
+
+  confirmDeleteIssue(issue: IssueDto): void {
+    this.confirmationService.confirm({
+      header: 'Delete issue',
+      message: getDeleteIssueConfirmMessage(issue.title),
+      icon: 'pi pi-exclamation-triangle',
+      acceptButtonProps: { label: 'Delete', severity: 'danger' },
+      rejectButtonProps: { label: 'Cancel', severity: 'secondary', outlined: true },
+      accept: () => this.deleteIssue(issue)
+    });
+  }
+
+  isDeletePending(issueId: string): boolean {
+    return this.pendingDeleteIssueIds().includes(issueId);
+  }
+
+  private deleteIssue(issue: IssueDto): void {
+    if (this.isDeletePending(issue.id)) {
+      return;
     }
 
-    return currentQuery.ascending ? 'ascending' : 'descending';
+    this.setDeletePending(issue.id, true);
+    this.errorMessage.set(null);
+
+    this.issuesService
+      .deleteIssue(issue.id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.refreshCurrentPage();
+          this.setDeletePending(issue.id, false);
+          this.toastService.success('Issue deleted', issue.title);
+        },
+        error: (error: Error) => {
+          this.toastService.showApiError(error, 'Could not delete issue');
+          this.setDeletePending(issue.id, false);
+        }
+      });
+  }
+
+  getWatchTooltip(issue: IssueDto): string {
+    const watchers = this.formatWatchersCount(issue.watchersCount);
+    return issue.isWatchedByCurrentUser
+      ? `Unwatch this issue (${watchers})`
+      : `Watch this issue (${watchers})`;
   }
 
   toggleWatch(issue: IssueDto): void {
-    if (!this.isAuthenticated() || this.isWatchPending(issue.id)) {
+    if (this.isWatchPending(issue.id)) {
       return;
     }
 
@@ -233,6 +460,13 @@ export class IssuesComponent {
     return this.pendingWatchIssueIds().includes(issueId);
   }
 
+  refresh(): void {
+    this.query.set({
+      ...this.query(),
+      pageNumber: 1
+    });
+  }
+
   private loadAssignableUsers(): void {
     this.isLoadingAssignableUsers.set(true);
 
@@ -262,8 +496,14 @@ export class IssuesComponent {
     );
   }
 
-  private getDefaultAscending(field: IssueSortField): boolean {
-    return field === 'Id' || field === 'Title';
+  private setDeletePending(issueId: string, isPending: boolean): void {
+    this.pendingDeleteIssueIds.update((issueIds) =>
+      isPending ? [...issueIds, issueId] : issueIds.filter((id) => id !== issueId)
+    );
+  }
+
+  private formatWatchersCount(count: number): string {
+    return count === 1 ? '1 watcher' : `${count} watchers`;
   }
 
   private createEmptyPaginationResult(

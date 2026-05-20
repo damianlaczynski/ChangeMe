@@ -146,6 +146,9 @@ public class UpdateIssueHandler(
       IssueHistoryEventType.PRIORITY_CHANGED or
       IssueHistoryEventType.ASSIGNEE_CHANGED or
       IssueHistoryEventType.TITLE_CHANGED or
-      IssueHistoryEventType.DESCRIPTION_CHANGED;
+      IssueHistoryEventType.DESCRIPTION_CHANGED or
+      IssueHistoryEventType.ACCEPTANCE_CRITERION_ADDED or
+      IssueHistoryEventType.ACCEPTANCE_CRITERION_UPDATED or
+      IssueHistoryEventType.ACCEPTANCE_CRITERION_REMOVED;
   }
 }

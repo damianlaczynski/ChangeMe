@@ -66,6 +66,7 @@ From the repository root, run `npm install` once to install root devDependencies
 - Feature code lives under `src/app/features/<feature>/`.
 - Shared HTTP wrapper lives in `src/app/shared/api/services/api.service.ts`.
 - Cross-cutting user/session concerns live under `src/app/core/` and `features/auth/`.
+- Transient toast feedback uses `src/app/core/toast/services/toast.service.ts` with global `<p-toast>` in `app.component.ts`.
 - Shared data models live under `src/app/shared/`.
 
 ### Backend
