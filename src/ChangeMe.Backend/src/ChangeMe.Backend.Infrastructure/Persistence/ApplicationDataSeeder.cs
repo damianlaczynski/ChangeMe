@@ -90,7 +90,7 @@ public static class ApplicationDataSeeder
       return;
 
     var passwordHash = passwordHasher.HashPassword(options.Password);
-    var createUserResult = User.Create(options.FirstName, options.LastName, options.Email, passwordHash);
+    var createUserResult = User.CreateInitialAdministrator(options.FirstName, options.LastName, options.Email, passwordHash);
     if (!createUserResult.IsSuccess)
       return;
 

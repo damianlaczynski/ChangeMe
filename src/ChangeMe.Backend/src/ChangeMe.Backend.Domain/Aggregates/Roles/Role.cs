@@ -20,7 +20,9 @@ public class Role : Entity, IAggregateRoot
     {
       Name = RoleConstraints.AdministratorRoleName,
       Description = RoleConstraints.AdministratorDescription,
-      IsSystem = true
+      IsSystem = true,
+      CreatedBy = Guid.Empty,
+      UpdatedBy = Guid.Empty,
     };
 
     role.SetPermissions(PermissionCodes.All);
@@ -33,7 +35,9 @@ public class Role : Entity, IAggregateRoot
     {
       Name = RoleConstraints.UserRoleName,
       Description = RoleConstraints.UserDescription,
-      IsSystem = true
+      IsSystem = true,
+      CreatedBy = Guid.Empty,
+      UpdatedBy = Guid.Empty,
     };
 
     role.SetPermissions(PermissionCodes.DefaultUserRole);
