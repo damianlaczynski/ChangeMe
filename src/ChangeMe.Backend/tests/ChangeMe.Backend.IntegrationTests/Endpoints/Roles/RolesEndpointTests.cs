@@ -303,13 +303,15 @@ public sealed class RolesEndpointTests(BackendWebApplicationFactory factory)
     var cancellationToken = TestContext.Current.CancellationToken;
     var admin = await TestAuthHelper.CreateAdministratorUserAsync(factory, cancellationToken);
     var roleId = await RolesTestHelper.CreateCustomRoleAsync(admin.Client, cancellationToken);
-    var (userId, _) = await RolesTestHelper.CreateManagedUserAsync(admin.Client, factory, cancellationToken);
+    var userRoleId = await RolesTestHelper.GetRoleIdByNameAsync(factory, RoleConstraints.UserRoleName, cancellationToken);
+    var (userId, email) = await RolesTestHelper.CreateManagedUserAsync(admin.Client, factory, cancellationToken);
 
-    await admin.Client.PutAsJsonAsync($"/api/roles/{roleId}/users", new
-    {
-      RoleId = roleId,
-      UserIds = new[] { userId }
-    }, cancellationToken);
+    await RolesTestHelper.AssignUserRolesAsync(
+      admin.Client,
+      userId,
+      email,
+      new[] { userRoleId, roleId },
+      cancellationToken);
 
     var response = await admin.Client.GetAsync($"/api/roles/{roleId}/users", cancellationToken);
 
@@ -325,13 +327,15 @@ public sealed class RolesEndpointTests(BackendWebApplicationFactory factory)
     var cancellationToken = TestContext.Current.CancellationToken;
     var admin = await TestAuthHelper.CreateAdministratorUserAsync(factory, cancellationToken);
     var customRoleId = await RolesTestHelper.CreateCustomRoleAsync(admin.Client, cancellationToken);
-    var (userId, _) = await RolesTestHelper.CreateManagedUserAsync(admin.Client, factory, cancellationToken);
+    var userRoleId = await RolesTestHelper.GetRoleIdByNameAsync(factory, RoleConstraints.UserRoleName, cancellationToken);
+    var (userId, email) = await RolesTestHelper.CreateManagedUserAsync(admin.Client, factory, cancellationToken);
 
-    await admin.Client.PutAsJsonAsync($"/api/roles/{customRoleId}/users", new
-    {
-      RoleId = customRoleId,
-      UserIds = new[] { userId }
-    }, cancellationToken);
+    await RolesTestHelper.AssignUserRolesAsync(
+      admin.Client,
+      userId,
+      email,
+      new[] { userRoleId, customRoleId },
+      cancellationToken);
 
     var response = await admin.Client.DeleteAsync(
       $"/api/roles/{customRoleId}/users/{userId}",
@@ -358,61 +362,4 @@ public sealed class RolesEndpointTests(BackendWebApplicationFactory factory)
     Assert.Contains(RolesSupport.UserMustHaveRoleMessage, body, StringComparison.Ordinal);
   }
 
-  [Fact]
-  public async Task GetManageRoleUsersForm_WhenAdministrator_ShouldReturnOk()
-  {
-    var cancellationToken = TestContext.Current.CancellationToken;
-    var admin = await TestAuthHelper.CreateAdministratorUserAsync(factory, cancellationToken);
-    var roleId = await RolesTestHelper.CreateCustomRoleAsync(admin.Client, cancellationToken);
-
-    var response = await admin.Client.GetAsync($"/api/roles/{roleId}/manage-users/form", cancellationToken);
-
-    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-  }
-
-  [Fact]
-  public async Task PutRoleUsers_WhenAdministratorUpdatesAssignments_ShouldReturnOk()
-  {
-    var cancellationToken = TestContext.Current.CancellationToken;
-    var admin = await TestAuthHelper.CreateAdministratorUserAsync(factory, cancellationToken);
-    var roleId = await RolesTestHelper.CreateCustomRoleAsync(admin.Client, cancellationToken);
-    var (userId, _) = await RolesTestHelper.CreateManagedUserAsync(admin.Client, factory, cancellationToken);
-
-    var response = await admin.Client.PutAsJsonAsync($"/api/roles/{roleId}/users", new
-    {
-      RoleId = roleId,
-      UserIds = new[] { userId }
-    }, cancellationToken);
-
-    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-  }
-
-  [Fact]
-  public async Task PutRoleUsers_WhenRemovalWouldLeaveUserWithoutRoles_ShouldReturnBadRequest()
-  {
-    var cancellationToken = TestContext.Current.CancellationToken;
-    var admin = await TestAuthHelper.CreateAdministratorUserAsync(factory, cancellationToken);
-    var roleId = await RolesTestHelper.CreateCustomRoleAsync(admin.Client, cancellationToken);
-    var (userId, email) = await RolesTestHelper.CreateManagedUserAsync(admin.Client, factory, cancellationToken);
-
-    await admin.Client.PutAsJsonAsync($"/api/users/{userId}", new
-    {
-      Id = userId,
-      FirstName = "Role",
-      LastName = "Assignee",
-      Email = email,
-      RoleIds = new[] { roleId }
-    }, cancellationToken);
-
-    var response = await admin.Client.PutAsJsonAsync($"/api/roles/{roleId}/users", new
-    {
-      RoleId = roleId,
-      UserIds = Array.Empty<Guid>()
-    }, cancellationToken);
-
-    Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-
-    var body = await response.Content.ReadAsStringAsync(cancellationToken);
-    Assert.Contains("would have no roles remaining", body, StringComparison.OrdinalIgnoreCase);
-  }
 }

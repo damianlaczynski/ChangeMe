@@ -14,8 +14,6 @@ public static class RolesSupport
     "Role is assigned to one or more users. Remove all user assignments before deleting this role.";
   public const string UserMustHaveRoleMessage =
     "Each user must have at least one role. Assign another role before removing this one.";
-  public const string UserWouldHaveNoRolesMessage =
-    "Each user must have at least one role. {0} would have no roles remaining.";
 
   public static IReadOnlyList<PermissionCatalogItemDto> GetPermissionCatalog() =>
     PermissionCatalog.All

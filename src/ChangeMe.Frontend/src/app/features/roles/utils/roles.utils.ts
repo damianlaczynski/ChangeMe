@@ -20,7 +20,6 @@ export const RoleMessages = {
   userRemovedFromRole: 'User removed from role.',
   userMustHaveRole:
     'Each user must have at least one role. Assign another role before removing this one.',
-  roleAssignmentsUpdated: 'Role assignments updated.',
   noAssignedUsers: 'No users are assigned to this role.',
   emptyDescription: '—',
   permissionsCount: (count: number) => `${count} permissions`,

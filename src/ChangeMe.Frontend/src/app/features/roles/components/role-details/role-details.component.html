@@ -13,22 +13,11 @@
           [routerLink]="['/roles', current.id, 'edit']"
         />
         <p-button
-          label="Manage users"
-          icon="pi pi-users"
-          [routerLink]="['/roles', current.id, 'manage-users']"
-        />
-        <p-button
           label="Delete role"
           icon="pi pi-trash"
           severity="danger"
           [outlined]="true"
           (onClick)="confirmDeleteRole()"
-        />
-      } @else if (canManageRoles()) {
-        <p-button
-          label="Manage users"
-          icon="pi pi-users"
-          [routerLink]="['/roles', current.id, 'manage-users']"
         />
       }
     }

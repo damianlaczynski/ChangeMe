@@ -5,7 +5,7 @@ permission catalog, roles list, role create and edit flow, role details, role an
 
 Permissions are **fixed** in REQ-ROL-001 and are **not editable** from the application UI. Roles are **managed in the application** by selecting permissions from that catalog.
 
-Role assignments from **Users** administration are managed on **Create user** and **Edit user** (REQ-USR-003). Assignments from **Roles** administration use **Manage role users** (REQ-ROL-005).
+Role assignments are managed on **Create user** and **Edit user** (REQ-USR-003). From **Roles** administration, administrators can view assigned users and **Remove from role** on **Role details** (REQ-ROL-005).
 
 ---
 
@@ -98,11 +98,10 @@ An authorized administrator must be able to browse roles, search and sort them, 
 | ---------------- | ------------------- | ---------------------------------------------------------------------- |
 | **Open details** | **Roles.View**      | Opens **Role details**.                                                |
 | **Edit role**    | **Roles.Manage**    | Opens **Edit role** for custom roles only.                             |
-| **Manage users** | **Roles.Manage**    | Opens **Manage role users** for that role (REQ-ROL-005).               |
 | **Delete role**  | **Roles.Manage**    | Shown for custom roles only; confirmation and behavior in REQ-ROL-003. |
 
 - Menu actions the current user lacks permission for are **not shown**.
-- **Edit role**, **Manage users**, and **Delete role** are **not shown** for system roles (**Administrator**, **User**); system roles are opened via **Open details** only.
+- **Edit role** and **Delete role** are **not shown** for system roles (**Administrator**, **User**); system roles are opened via **Open details** only.
 
 ### Loading
 
@@ -111,7 +110,7 @@ An authorized administrator must be able to browse roles, search and sort them, 
 ### Permissions and visibility
 
 - **Roles.View**: required for **Roles list** and **Open details**.
-- **Roles.Manage**: required for **Add role**, **Edit role**, **Manage users**, and **Delete role**.
+- **Roles.Manage**: required for **Add role**, **Edit role**, and **Delete role**.
 
 ---
 
@@ -179,7 +178,7 @@ An authorized administrator must be able to create custom roles and edit their n
 
 ### States and business rules
 
-- Creating or editing a role does **not** change user assignments; assignments are managed in REQ-ROL-005.
+- Creating or editing a role does **not** change user assignments; assignments are managed on **Create user** / **Edit user** and **Remove from role** on **Role details** (REQ-ROL-005).
 - Permission changes on a role take effect for assigned users after their next credential renewal or sign-in.
 
 ### Permissions and visibility
@@ -242,7 +241,6 @@ An authorized administrator must be able to review a role's metadata, permission
 | Action           | Permission required | Behavior                                     |
 | ---------------- | ------------------- | -------------------------------------------- |
 | **Edit role**    | **Roles.Manage**    | Opens **Edit role** (custom roles only).     |
-| **Manage users** | **Roles.Manage**    | Opens **Manage role users** (REQ-ROL-005).   |
 | **Delete role**  | **Roles.Manage**    | Custom roles only; behavior per REQ-ROL-003. |
 
 - Actions the current user lacks permission for are **not shown**.
@@ -258,12 +256,10 @@ An authorized administrator must be able to review a role's metadata, permission
 
 - **Back** returns to **Roles list**.
 - Clicking a user **Name** in **Assigned users** opens **User details** for that user.
-- After **Manage role users** save (REQ-ROL-005), the user returns to **Role details** with refreshed assigned users count and list.
-
 ### Permissions and visibility
 
 - **Roles.View**: required for **Role details**, **Permissions** section, and read-only **Assigned users** list.
-- **Roles.Manage**: required for **Edit role**, **Manage users**, **Delete role**, and **Remove from role**.
+- **Roles.Manage**: required for **Edit role**, **Delete role**, and **Remove from role**.
 
 ---
 
@@ -271,7 +267,7 @@ An authorized administrator must be able to review a role's metadata, permission
 
 ## Goal
 
-An authorized administrator must be able to assign roles to users from **Edit user** and assign users to roles from **Roles** administration, using consistent rules in both places.
+An authorized administrator must be able to assign roles to users from **Create user** and **Edit user**, and remove a user from a role from **Role details**, using consistent rules in both places.
 
 ## Features
 
@@ -290,34 +286,13 @@ An authorized administrator must be able to assign roles to users from **Edit us
 
 ### Entry point — Roles administration
 
-- **Role details** (REQ-ROL-004) shows the **Assigned users** section and **Manage users** header action.
-- **Roles list** overflow **Manage users** opens **Manage role users** for the selected role.
-
-### Manage role users screen
-
-- Screen: **Manage role users**
-- Opened from **Role details** **Manage users** or **Roles list** **Manage users**.
-- Requires permission **Roles.Manage**.
-- Screen header shows the selected role **name** and **System** badge when applicable.
-
-| Element                 | Behavior                                                                                                               |
-| ----------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| **Assigned users**      | Multi-select of **Active** and **Inactive** users sorted by **name** ascending; shows **name** and **email** per user. |
-| **Search users**        | Placeholder **`Search users to assign...`**; filters the available user list by **name** and **email**.                |
-| **Current assignments** | Read-only list above the selector showing users currently assigned to the role before save.                            |
-
-- Saving **Manage role users** replaces the role's entire user assignment set with the selected set.
-- A user removed from this role must still have at least one other role; otherwise save is rejected with message **`Each user must have at least one role. {full name} would have no roles remaining.`**
+- **Role details** (REQ-ROL-004) shows the **Assigned users** section and **Remove from role** per user.
+- Adding a user to a role is done by editing the user (**Edit user**) and selecting the role in the **Roles** multi-select.
 
 ### Validation
 
 - **Roles** (on **Create user** and **Edit user**): at least one role selected; error: **`At least one role is required.`**
-- **Assigned users** (on **Manage role users**): saving must not leave any affected user with zero roles; error: **`Each user must have at least one role. {full name} would have no roles remaining.`**
-
-### Form actions — Manage role users
-
-- **Back** and **Cancel** navigate to **Role details** without saving.
-- **Save changes**: on success show message **`Role assignments updated.`** and navigate to **Role details**.
+- **Remove from role** (on **Role details**): must not leave the user with zero roles; error: **`Each user must have at least one role. Assign another role before removing this one.`**
 
 ### Self-service restrictions
 
@@ -334,7 +309,7 @@ An authorized administrator must be able to assign roles to users from **Edit us
 
 ### Permissions and visibility
 
-- **Roles.Manage**: required for the **Roles** field on **Create user** / **Edit user** and for **Manage role users**.
+- **Roles.Manage**: required for the **Roles** field on **Create user** / **Edit user** and for **Remove from role** on **Role details**.
 - **Roles.View**: allows read-only **Roles** and **Effective permissions** on **User details** and read-only **Assigned users** on **Role details** when the user lacks **Roles.Manage**.
 
 ---

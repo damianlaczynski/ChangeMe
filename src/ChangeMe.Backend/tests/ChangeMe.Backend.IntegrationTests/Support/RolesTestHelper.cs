@@ -67,6 +67,25 @@ internal static class RolesTestHelper
     return (ReadGuidFromResultBody(body, "id"), email);
   }
 
+  public static async Task AssignUserRolesAsync(
+    HttpClient adminClient,
+    Guid userId,
+    string email,
+    IReadOnlyList<Guid> roleIds,
+    CancellationToken cancellationToken)
+  {
+    var response = await adminClient.PutAsJsonAsync($"/api/users/{userId}", new
+    {
+      Id = userId,
+      FirstName = "Role",
+      LastName = "Assignee",
+      Email = email,
+      RoleIds = roleIds
+    }, cancellationToken);
+
+    response.EnsureSuccessStatusCode();
+  }
+
   public static Guid ReadGuidFromResultBody(string json, string propertyName)
   {
     using var document = JsonDocument.Parse(json);

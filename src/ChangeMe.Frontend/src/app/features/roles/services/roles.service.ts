@@ -3,15 +3,13 @@ import { ApiService } from '@shared/api/services/api.service';
 import { Observable } from 'rxjs';
 import {
   CreateRoleRequest,
-  ManageRoleUsersFormDto,
   PermissionCatalogItemDto,
   RoleAssignedUserDto,
   RoleDetailsDto,
   RoleFormDto,
   RoleListItemDto,
   RoleSearchParameters,
-  UpdateRoleRequest,
-  UpdateRoleUsersRequest
+  UpdateRoleRequest
 } from '../models/role.model';
 
 @Injectable({
@@ -67,19 +65,6 @@ export class RolesService {
   removeUserFromRole(roleId: string, userId: string): Observable<boolean> {
     return this.apiService.delete<boolean>(
       `${this.baseEndpoint}/${roleId}/users/${userId}`
-    );
-  }
-
-  getManageRoleUsersForm(id: string): Observable<ManageRoleUsersFormDto> {
-    return this.apiService.get<ManageRoleUsersFormDto>(
-      `${this.baseEndpoint}/${id}/manage-users/form`
-    );
-  }
-
-  updateRoleUsers(request: UpdateRoleUsersRequest): Observable<boolean> {
-    return this.apiService.put<boolean>(
-      `${this.baseEndpoint}/${request.roleId}/users`,
-      request
     );
   }
 }

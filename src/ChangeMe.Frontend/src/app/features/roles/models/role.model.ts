@@ -48,21 +48,6 @@ export interface RoleAssignedUserDto {
   status: UserStatus;
 }
 
-export interface UserAssignmentOptionDto {
-  id: string;
-  fullName: string;
-  email: string;
-  status: UserStatus;
-}
-
-export interface ManageRoleUsersFormDto {
-  roleId: string;
-  roleName: string;
-  isSystem: boolean;
-  assignedUserIds: string[];
-  availableUsers: UserAssignmentOptionDto[];
-}
-
 export interface RoleSearchParameters {
   searchText?: string;
   sortField?: string;
@@ -80,9 +65,4 @@ export interface UpdateRoleRequest {
   name: string;
   description?: string | null;
   permissionCodes: string[];
-}
-
-export interface UpdateRoleUsersRequest {
-  roleId: string;
-  userIds: string[];
 }

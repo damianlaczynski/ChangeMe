@@ -16,7 +16,6 @@ import { IssueDetailsComponent } from '@features/issues/components/issue-details
 import { IssuesComponent } from '@features/issues/components/issues-list/issues-list.component';
 import { CreateRoleComponent } from '@features/roles/components/create-role/create-role.component';
 import { EditRoleComponent } from '@features/roles/components/edit-role/edit-role.component';
-import { ManageRoleUsersComponent } from '@features/roles/components/manage-role-users/manage-role-users.component';
 import { RoleDetailsComponent } from '@features/roles/components/role-details/role-details.component';
 import { RolesListComponent } from '@features/roles/components/roles-list/roles-list.component';
 import { CreateUserComponent } from '@features/users/components/create-user/create-user.component';
@@ -120,11 +119,6 @@ export const routes: Routes = [
   {
     path: 'roles/:id/edit',
     component: EditRoleComponent,
-    canActivate: [authGuard, permissionGuard(PermissionCodes.rolesManage)]
-  },
-  {
-    path: 'roles/:id/manage-users',
-    component: ManageRoleUsersComponent,
     canActivate: [authGuard, permissionGuard(PermissionCodes.rolesManage)]
   }
 ];

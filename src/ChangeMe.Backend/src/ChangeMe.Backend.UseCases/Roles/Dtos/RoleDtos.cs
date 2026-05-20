@@ -52,19 +52,3 @@ public sealed record RoleAssignedUserDto
   public UserStatus Status { get; init; }
 }
 
-public sealed record UserAssignmentOptionDto
-{
-  public Guid Id { get; init; }
-  public string FullName { get; init; } = string.Empty;
-  public string Email { get; init; } = string.Empty;
-  public UserStatus Status { get; init; }
-}
-
-public sealed record ManageRoleUsersFormDto
-{
-  public Guid RoleId { get; init; }
-  public string RoleName { get; init; } = string.Empty;
-  public bool IsSystem { get; init; }
-  public IReadOnlyList<Guid> AssignedUserIds { get; init; } = [];
-  public IReadOnlyList<UserAssignmentOptionDto> AvailableUsers { get; init; } = [];
-}

@@ -147,22 +147,11 @@ export class RolesListComponent {
           routerLink: ['/roles', role.id, 'edit']
         },
         {
-          label: 'Manage users',
-          icon: 'pi pi-users',
-          routerLink: ['/roles', role.id, 'manage-users']
-        },
-        {
           label: 'Delete role',
           icon: 'pi pi-trash',
           command: () => this.confirmDeleteRole(role)
         }
       );
-    } else if (this.canManageRoles()) {
-      items.push({
-        label: 'Manage users',
-        icon: 'pi pi-users',
-        routerLink: ['/roles', role.id, 'manage-users']
-      });
     }
 
     this.roleActionItems.set(items);

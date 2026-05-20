@@ -3,7 +3,7 @@
 This document covers five REQs for the **Users** area:
 my account profile, user list, admin create/edit flow, user details with session administration, and account deactivation.
 
-Role assignment from **Users** administration is performed on **Create user** and **Edit user** (REQ-USR-003). Assignment from **Roles** administration is defined in REQ-ROL-005.
+Role assignment is performed on **Create user** and **Edit user** (REQ-USR-003). Removing a user from a role is available on **Role details** (REQ-ROL-005).
 
 ---
 
