@@ -93,12 +93,17 @@
           icon="pi pi-filter-slash"
           severity="secondary"
           [outlined]="true"
-          [disabled]="!hasActiveFilters()"
+          [disabled]="!hasAppliedFilters()"
           (onClick)="clearFilters()"
         />
         <p-button type="submit" label="Apply filters" icon="pi pi-filter" />
       </div>
     </p-panel>
+
+    <app-applied-filters-chips
+      [chips]="appliedFilterChips()"
+      (chipRemove)="removeAppliedFilter($event)"
+    />
   </form>
 
   @if (errorMessage()) {

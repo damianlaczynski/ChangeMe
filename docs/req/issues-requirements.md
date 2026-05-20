@@ -22,9 +22,6 @@ The user must be able to browse all issues, search, filter, sort, navigate to de
 
 ### Search and actions bar
 
-- Search field placeholder: `**Search issues...`\*\*
-- Search filters by a fragment of **issue title**, **issue description**.
-- **Search** button and form submit apply the current search text together with filter panel values.
 - **Add issue** button opens **Create issue** (REQ-ISS-002).
 
 ### Issues table — columns
@@ -52,7 +49,7 @@ The user must be able to browse all issues, search, filter, sort, navigate to de
 - Overflow menu: **Open details**, **Edit issue**, **Delete issue**.
 - **Delete issue** confirmation: `**Delete "{issue title}"? This action cannot be undone.`\*\*
 
-### Filter panel
+### Search and filters
 
 - Toggleable **Filters** panel (collapsed by default).
 - **Status** filter: multi-select; empty selection means no restriction.
@@ -63,6 +60,7 @@ The user must be able to browse all issues, search, filter, sort, navigate to de
 - All filters combine with search text using **AND** logic.
 - **Apply filters** submits the filter panel with the current search text.
 - **Clear filters** resets the filter form and removes all filter constraints (search text included).
+- Applied filters list
 
 ### Loading
 

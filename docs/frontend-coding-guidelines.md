@@ -15,6 +15,7 @@ For dev server, lint, format, and test commands from `src/ChangeMe.Frontend` or 
 - Put feature-specific models in `features/<feature>/models`.
 - Put validation limits, select options, labels, and other UI-oriented constants in a single `features/<feature>/utils/<feature>.utils.ts` file (for example `issue.utils.ts`, `auth.utils.ts`). Keep DTOs, enums, and request/response shapes in `models/`.
 - Put shared transport or utility contracts in `shared/`.
+- Shared list filter chips: `shared/components/applied-filters-chips/` with `AppliedFilterChip` in `shared/models/applied-filter-chip.model.ts`.
 - Put cross-cutting app services in `core/` or `features/auth/` depending on ownership.
 - Use `app-back-button` with a fixed **label** and **route** for in-app back navigation (for example **`Back to issues list`** → **`/issues`**, **`Back to issue details`** → **`/issues/:id`**). Do not use browser history stacks or `sessionStorage` navigation stacks.
 

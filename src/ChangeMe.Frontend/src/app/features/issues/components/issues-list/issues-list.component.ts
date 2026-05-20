@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import {
   Component,
+  computed,
   DestroyRef,
   effect,
   inject,
@@ -31,7 +32,9 @@ import {
   issuePriorities,
   issueStatuses
 } from '@features/issues/utils/issue.utils';
+import { AppliedFiltersChipsComponent } from '@shared/components/applied-filters-chips/applied-filters-chips.component';
 import { PaginationResult } from '@shared/data/models/pagination-result.model';
+import { AppliedFilterChip } from '@shared/models/applied-filter-chip.model';
 import { ConfirmationService, MenuItem } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
@@ -78,7 +81,8 @@ type IssueSortField = 'Id' | 'Title' | 'CreatedAt' | 'LastActivityAt';
     Tag,
     Panel,
     Tooltip,
-    Menu
+    Menu,
+    AppliedFiltersChipsComponent
   ],
   templateUrl: './issues-list.component.html'
 })
@@ -114,6 +118,52 @@ export class IssuesComponent {
   readonly filtersCollapsed = signal(true);
   readonly issueActionItems = signal<MenuItem[]>([]);
   private readonly issueActionsMenu = viewChild.required<Menu>('issueActionsMenu');
+
+  readonly appliedFilterChips = computed(() => {
+    const query = this.query();
+    const chips: AppliedFilterChip[] = [];
+
+    const search = query.searchText?.trim();
+    if (search) {
+      chips.push({ id: 'search', label: `Search: "${search}"` });
+    }
+
+    for (const status of query.statuses ?? []) {
+      chips.push({
+        id: `status-${status}`,
+        label: `Status: ${getIssueStatusLabel(status)}`
+      });
+    }
+
+    for (const priority of query.priorities ?? []) {
+      chips.push({
+        id: `priority-${priority}`,
+        label: `Priority: ${getIssuePriorityLabel(priority)}`
+      });
+    }
+
+    if (query.assignedToUserId) {
+      const assignee = this.assignableUsers().find(
+        (user) => user.id === query.assignedToUserId
+      );
+      chips.push({
+        id: 'assignee',
+        label: `Assignee: ${assignee?.fullName ?? 'Unknown'}`
+      });
+    }
+
+    if (query.watchedByMe) {
+      chips.push({ id: 'watched-by-me', label: 'Watched by me' });
+    }
+
+    if (query.createdByMe) {
+      chips.push({ id: 'my-issues', label: 'My issues' });
+    }
+
+    return chips;
+  });
+
+  readonly hasAppliedFilters = computed(() => this.appliedFilterChips().length > 0);
 
   readonly filtersForm = new FormGroup<IssuesFilterForm>({
     searchText: new FormControl('', { nonNullable: true }),
@@ -173,19 +223,6 @@ export class IssuesComponent {
     this.filtersCollapsed.set(collapsed ?? true);
   }
 
-  hasActiveFilters(): boolean {
-    const formValue = this.filtersForm.getRawValue();
-
-    return (
-      formValue.searchText.trim().length > 0 ||
-      formValue.statuses.length > 0 ||
-      formValue.priorities.length > 0 ||
-      formValue.assignedToUserId !== null ||
-      formValue.watchedByMe ||
-      formValue.createdByMe
-    );
-  }
-
   applyFilters(): void {
     const formValue = this.filtersForm.getRawValue();
 
@@ -199,6 +236,58 @@ export class IssuesComponent {
       watchedByMe: formValue.watchedByMe,
       createdByMe: formValue.createdByMe
     });
+  }
+
+  removeAppliedFilter(chip: AppliedFilterChip): void {
+    const formValue = this.filtersForm.getRawValue();
+    const nextQuery = { ...this.query(), pageNumber: 1 };
+
+    if (chip.id === 'search') {
+      this.filtersForm.patchValue({ searchText: '' });
+      this.query.set({ ...nextQuery, searchText: undefined });
+      return;
+    }
+
+    if (chip.id.startsWith('status-')) {
+      const status = chip.id.slice('status-'.length) as IssueStatus;
+      const statuses = (nextQuery.statuses ?? []).filter((value) => value !== status);
+      this.filtersForm.patchValue({ statuses });
+      this.query.set({
+        ...nextQuery,
+        statuses: statuses.length > 0 ? statuses : undefined
+      });
+      return;
+    }
+
+    if (chip.id.startsWith('priority-')) {
+      const priority = chip.id.slice('priority-'.length) as IssuePriority;
+      const priorities = (nextQuery.priorities ?? []).filter(
+        (value) => value !== priority
+      );
+      this.filtersForm.patchValue({ priorities });
+      this.query.set({
+        ...nextQuery,
+        priorities: priorities.length > 0 ? priorities : undefined
+      });
+      return;
+    }
+
+    if (chip.id === 'assignee') {
+      this.filtersForm.patchValue({ assignedToUserId: null });
+      this.query.set({ ...nextQuery, assignedToUserId: null });
+      return;
+    }
+
+    if (chip.id === 'watched-by-me') {
+      this.filtersForm.patchValue({ watchedByMe: false });
+      this.query.set({ ...nextQuery, watchedByMe: false });
+      return;
+    }
+
+    if (chip.id === 'my-issues') {
+      this.filtersForm.patchValue({ createdByMe: false });
+      this.query.set({ ...nextQuery, createdByMe: false });
+    }
   }
 
   clearFilters(): void {
