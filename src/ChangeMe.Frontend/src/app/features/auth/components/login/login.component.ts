@@ -8,8 +8,9 @@ import {
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthPageComponent } from '@features/auth/components/auth-page/auth-page.component';
 import { AuthService } from '@features/auth/services/auth.service';
-import { AuthConstraints } from '@features/auth/utils/auth.utils';
+import { AuthConstraints, AuthMessages } from '@features/auth/utils/auth.utils';
 import { Button } from 'primeng/button';
+import { Checkbox } from 'primeng/checkbox';
 import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
 import { Password } from 'primeng/password';
@@ -21,6 +22,7 @@ import { Password } from 'primeng/password';
     ReactiveFormsModule,
     AuthPageComponent,
     Button,
+    Checkbox,
     InputText,
     Password,
     Message
@@ -33,6 +35,11 @@ export class LoginComponent {
   private readonly route = inject(ActivatedRoute);
 
   readonly errorMessage = signal('');
+  readonly infoMessage = signal(
+    this.route.snapshot.queryParamMap.get('passwordChanged') === '1'
+      ? AuthMessages.passwordChangedLogin
+      : ''
+  );
   readonly isSubmitting = signal(false);
   readonly authConstraints = AuthConstraints;
 
@@ -47,12 +54,9 @@ export class LoginComponent {
     }),
     password: new FormControl('', {
       nonNullable: true,
-      validators: [
-        Validators.required,
-        Validators.minLength(AuthConstraints.PASSWORD_MIN_LENGTH),
-        Validators.maxLength(AuthConstraints.PASSWORD_MAX_LENGTH)
-      ]
-    })
+      validators: [Validators.required]
+    }),
+    rememberMe: new FormControl(false, { nonNullable: true })
   });
 
   onSubmit(): void {
@@ -71,7 +75,18 @@ export class LoginComponent {
         this.router.navigateByUrl(returnUrl);
       },
       error: (error) => {
-        this.errorMessage.set(error instanceof Error ? error.message : 'Login failed.');
+        const message =
+          error instanceof Error ? error.message : AuthMessages.invalidCredentials;
+        if (message === AuthMessages.deactivatedAccount) {
+          this.errorMessage.set(message);
+        } else {
+          this.errorMessage.set(
+            message === 'Please sign in to continue.' ||
+              message === AuthMessages.invalidCredentials
+              ? AuthMessages.invalidCredentials
+              : message
+          );
+        }
         this.isSubmitting.set(false);
       },
       complete: () => {

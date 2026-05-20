@@ -1,0 +1,103 @@
+<p-card class="mb-4" header="My account" subheader="View and update your profile.">
+  @if (isLoading()) {
+    <p class="text-muted-color m-0 text-sm">Loading account...</p>
+  } @else if (errorMessage() && !account()) {
+    <p-message severity="error">{{ errorMessage() }}</p-message>
+  } @else if (account(); as profile) {
+    <form
+      class="p-fluid flex flex-col gap-4"
+      [formGroup]="form"
+      (ngSubmit)="onSubmit()"
+    >
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div class="flex flex-col gap-1.5">
+          <label class="text-color text-sm font-medium" for="firstName">
+            First name
+          </label>
+          <input
+            id="firstName"
+            type="text"
+            pInputText
+            [formControl]="form.controls.firstName"
+            [invalid]="shouldShowError(form.controls.firstName)"
+          />
+          @if (
+            shouldShowError(form.controls.firstName) &&
+            form.controls.firstName.errors?.['required']
+          ) {
+            <p-message severity="error" variant="simple">
+              First name is required.
+            </p-message>
+          }
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <label class="text-color text-sm font-medium" for="lastName">Last name</label>
+          <input
+            id="lastName"
+            type="text"
+            pInputText
+            [formControl]="form.controls.lastName"
+            [invalid]="shouldShowError(form.controls.lastName)"
+          />
+          @if (
+            shouldShowError(form.controls.lastName) &&
+            form.controls.lastName.errors?.['required']
+          ) {
+            <p-message severity="error" variant="simple">
+              Last name is required.
+            </p-message>
+          }
+        </div>
+      </div>
+
+      <div class="flex flex-col gap-1.5">
+        <span class="text-color text-sm font-medium">Email</span>
+        <span class="text-muted-color text-sm">{{ profile.email }}</span>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="text-color text-sm font-medium">Status</span>
+        <p-tag [value]="profile.status" />
+      </div>
+
+      <div class="flex flex-col gap-1.5">
+        <span class="text-color text-sm font-medium">Member since</span>
+        <span class="text-muted-color text-sm">
+          {{ profile.memberSince | date: 'medium' }}
+        </span>
+      </div>
+
+      <app-effective-permissions [permissions]="effectivePermissions()" />
+
+      @if (errorMessage()) {
+        <p-message severity="error">{{ errorMessage() }}</p-message>
+      }
+
+      <div class="flex flex-wrap items-center gap-3">
+        <p-button
+          type="submit"
+          label="Save changes"
+          icon="pi pi-save"
+          [loading]="isSaving()"
+        />
+        <p-button
+          label="Change password"
+          icon="pi pi-lock"
+          severity="secondary"
+          [outlined]="true"
+          [routerLink]="['/account/change-password']"
+        />
+        @if (authService.hasPermission(permissionCodes.sessionsViewOwn)) {
+          <p-button
+            label="Active sessions"
+            icon="pi pi-desktop"
+            severity="secondary"
+            [outlined]="true"
+            [routerLink]="['/account/sessions']"
+          />
+        }
+      </div>
+    </form>
+  }
+</p-card>

@@ -1,7 +1,9 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using ChangeMe.Backend.Domain.Aggregates.Sessions;
 using ChangeMe.Backend.Domain.Aggregates.Users;
+using ChangeMe.Backend.Domain.Authorization;
 using ChangeMe.Backend.Domain.Interfaces;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -10,18 +12,28 @@ namespace ChangeMe.Backend.Infrastructure.Auth;
 
 public class JwtTokenGenerator(IOptions<JwtOptions> options) : IJwtTokenGenerator
 {
+  public const string SessionIdClaimType = "sid";
+
   private readonly JwtOptions jwtOptions = options.Value;
 
-  public AccessTokenResult GenerateToken(User user)
+  public AccessTokenResult GenerateToken(User user, Guid sessionId, IReadOnlyList<string> permissions)
   {
-    var expiresAtUtc = DateTime.UtcNow.AddMinutes(jwtOptions.ExpirationMinutes);
-    var claims = new[]
+    var expiresAtUtc = DateTime.UtcNow.AddMinutes(
+      jwtOptions.ExpirationMinutes > 0
+        ? jwtOptions.ExpirationMinutes
+        : SessionConstraints.ACCESS_TOKEN_LIFETIME_MINUTES);
+
+    var claims = new List<Claim>
     {
-      new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-      new Claim(JwtRegisteredClaimNames.Email, user.Email),
-      new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-      new Claim(ClaimTypes.Email, user.Email)
+      new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+      new(JwtRegisteredClaimNames.Email, user.Email),
+      new(JwtRegisteredClaimNames.Sid, sessionId.ToString()),
+      new(ClaimTypes.NameIdentifier, user.Id.ToString()),
+      new(ClaimTypes.Email, user.Email),
+      new(SessionIdClaimType, sessionId.ToString())
     };
+
+    claims.AddRange(permissions.Select(permission => new Claim(PermissionClaimTypes.Permission, permission)));
 
     var credentials = new SigningCredentials(
       new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.SigningKey)),
@@ -30,7 +42,7 @@ public class JwtTokenGenerator(IOptions<JwtOptions> options) : IJwtTokenGenerato
     var token = new JwtSecurityToken(
       issuer: jwtOptions.Issuer,
       audience: jwtOptions.Audience,
-      claims: claims,
+      claims: claims.ToArray(),
       expires: expiresAtUtc,
       signingCredentials: credentials);
 

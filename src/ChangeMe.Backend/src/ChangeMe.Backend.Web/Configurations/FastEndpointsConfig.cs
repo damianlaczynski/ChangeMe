@@ -36,6 +36,7 @@ public static class FastEndpointsConfig
     app.UseFastEndpoints(config =>
     {
       config.Endpoints.RoutePrefix = "api";
+      config.Serializer.Options.Converters.Add(new JsonStringEnumConverter());
     }).UseSwaggerGen();
     return app;
   }

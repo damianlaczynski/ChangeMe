@@ -10,7 +10,7 @@ import {
 import { Router } from '@angular/router';
 import { AuthPageComponent } from '@features/auth/components/auth-page/auth-page.component';
 import { AuthService } from '@features/auth/services/auth.service';
-import { AuthConstraints } from '@features/auth/utils/auth.utils';
+import { AuthConstraints, AuthMessages } from '@features/auth/utils/auth.utils';
 import { Button } from 'primeng/button';
 import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
@@ -93,8 +93,9 @@ export class RegisterComponent {
         this.router.navigateByUrl('/issues');
       },
       error: (error) => {
+        const message = error instanceof Error ? error.message : 'Registration failed.';
         this.errorMessage.set(
-          error instanceof Error ? error.message : 'Registration failed.'
+          message.includes('already exists') ? AuthMessages.duplicateEmail : message
         );
         this.isSubmitting.set(false);
       },

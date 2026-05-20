@@ -1,3 +1,4 @@
+﻿using ChangeMe.Backend.Domain.Aggregates.Users;
 using ChangeMe.Backend.UseCases.Issues.Dtos;
 
 namespace ChangeMe.Backend.UseCases.Issues;
@@ -13,6 +14,7 @@ public class GetAssignableUsersHandler(ApplicationDbContext context)
   {
     var users = await context.Users
       .AsNoTracking()
+      .Where(u => u.Status == UserStatus.Active)
       .OrderBy(u => u.LastName)
       .ThenBy(u => u.FirstName)
       .Select(u => new IssueAssignableUserDto

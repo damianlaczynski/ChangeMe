@@ -1,0 +1,32 @@
+﻿using ChangeMe.Backend.Domain.Aggregates.Users;
+using ChangeMe.Backend.UseCases.Auth;
+using ChangeMe.Backend.UseCases.Auth.Dtos;
+
+namespace ChangeMe.Backend.Web.Auth;
+
+public class UpdateMyAccount(IMediator mediator) : BaseEndpoint<UpdateMyAccountCommand, MyAccountDto>(mediator)
+{
+  protected override void ConfigureEndpoint()
+  {
+    Put("/auth/account");
+    Summary(s =>
+    {
+      s.Summary = "Update my account";
+      s.Description = "Updates the signed-in user's profile.";
+    });
+  }
+}
+
+public sealed class UpdateMyAccountCommandValidator : Validator<UpdateMyAccountCommand>
+{
+  public UpdateMyAccountCommandValidator()
+  {
+    RuleFor(x => x.FirstName)
+      .NotEmpty()
+      .MaximumLength(UserConstraints.NAME_MAX_LENGTH);
+
+    RuleFor(x => x.LastName)
+      .NotEmpty()
+      .MaximumLength(UserConstraints.NAME_MAX_LENGTH);
+  }
+}

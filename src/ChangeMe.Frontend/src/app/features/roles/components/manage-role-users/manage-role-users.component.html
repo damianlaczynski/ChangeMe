@@ -1,0 +1,84 @@
+<p-card class="mb-4" header="Manage role users" subheader="Assign users to this role.">
+  <div class="mb-4">
+    <app-back-button label="Back to role details" [route]="['/roles', id()]" />
+  </div>
+
+  @if (isLoading()) {
+    <p class="text-muted-color text-sm">Loading...</p>
+  } @else if (formData(); as data) {
+    <div class="mb-4 flex items-center gap-2">
+      <h2 class="text-color m-0 text-lg font-semibold">{{ data.roleName }}</h2>
+      @if (data.isSystem) {
+        <p-tag value="System" severity="info" />
+      }
+    </div>
+
+    <form
+      class="p-fluid flex flex-col gap-4"
+      [formGroup]="form"
+      (ngSubmit)="onSubmit()"
+    >
+      <section>
+        <h3 class="text-color m-0 mb-2 text-base font-semibold">Current assignments</h3>
+        @if (currentAssignments().length === 0) {
+          <p class="text-muted-color m-0 text-sm">No users assigned yet.</p>
+        } @else {
+          <ul class="m-0 flex list-none flex-col gap-2 p-0">
+            @for (user of currentAssignments(); track user.id) {
+              <li class="text-color text-sm">{{ user.fullName }} — {{ user.email }}</li>
+            }
+          </ul>
+        }
+      </section>
+
+      <div class="flex flex-col gap-1.5">
+        <label for="userFilter">Search users</label>
+        <input
+          id="userFilter"
+          type="text"
+          pInputText
+          [formControl]="userFilter"
+          placeholder="Search users to assign..."
+        />
+      </div>
+
+      <div class="flex flex-col gap-1.5">
+        <label for="userIds">Assigned users</label>
+        <p-multiselect
+          inputId="userIds"
+          [formControl]="form.controls.userIds"
+          [options]="filteredUserOptions()"
+          optionLabel="fullName"
+          optionValue="id"
+          placeholder="Select users"
+          display="chip"
+          [filter]="false"
+        >
+          <ng-template let-user pTemplate="item">
+            <span>{{ user.fullName }} — {{ user.email }}</span>
+          </ng-template>
+        </p-multiselect>
+      </div>
+
+      @if (submitError()) {
+        <p-message severity="error">{{ submitError() }}</p-message>
+      }
+
+      <div class="flex flex-wrap gap-2">
+        <p-button
+          type="submit"
+          label="Save changes"
+          icon="pi pi-check"
+          [loading]="isSubmitting()"
+        />
+        <p-button
+          type="button"
+          label="Cancel"
+          severity="secondary"
+          [outlined]="true"
+          [routerLink]="['/roles', id()]"
+        />
+      </div>
+    </form>
+  }
+</p-card>

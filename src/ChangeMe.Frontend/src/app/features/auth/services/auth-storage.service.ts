@@ -8,7 +8,10 @@ const AUTH_STORAGE_KEY = 'auth_session';
 })
 export class AuthStorageService {
   getSession(): AuthResponse | null {
-    const rawValue = localStorage.getItem(AUTH_STORAGE_KEY);
+    const rawValue =
+      localStorage.getItem(AUTH_STORAGE_KEY) ??
+      sessionStorage.getItem(AUTH_STORAGE_KEY);
+
     if (!rawValue) {
       return null;
     }
@@ -16,16 +19,19 @@ export class AuthStorageService {
     try {
       return JSON.parse(rawValue) as AuthResponse;
     } catch {
-      localStorage.removeItem(AUTH_STORAGE_KEY);
+      this.clearSession();
       return null;
     }
   }
 
   setSession(session: AuthResponse): void {
-    localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(session));
+    this.clearSession();
+    const storage = session.isPersistent ? localStorage : sessionStorage;
+    storage.setItem(AUTH_STORAGE_KEY, JSON.stringify(session));
   }
 
   clearSession(): void {
     localStorage.removeItem(AUTH_STORAGE_KEY);
+    sessionStorage.removeItem(AUTH_STORAGE_KEY);
   }
 }

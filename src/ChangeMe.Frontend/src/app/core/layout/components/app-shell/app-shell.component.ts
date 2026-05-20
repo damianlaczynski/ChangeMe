@@ -7,6 +7,7 @@ import { LayoutNavItem } from '@core/layout/models/layout-nav-item.model';
 import { LayoutService } from '@core/layout/services/layout.service';
 import { AuthService } from '@features/auth/services/auth.service';
 import { NotificationsBellComponent } from '@features/notifications/components/notifications-bell/notifications-bell.component';
+import { PermissionCodes } from '@shared/authorization/permission-codes';
 import { Button } from 'primeng/button';
 import { Drawer } from 'primeng/drawer';
 import { filter, map } from 'rxjs/operators';
@@ -40,10 +41,33 @@ export class AppShellComponent {
     { initialValue: false }
   );
 
-  readonly authenticatedNavItems = computed<LayoutNavItem[]>(() => [
-    { label: 'Issues', icon: 'pi pi-list', routerLink: '/issues', exact: true },
-    { label: 'Create issue', icon: 'pi pi-plus', routerLink: '/issues/create' }
-  ]);
+  readonly authenticatedNavItems = computed<LayoutNavItem[]>(() => {
+    const items: LayoutNavItem[] = [
+      { label: 'Issues', icon: 'pi pi-list', routerLink: '/issues', exact: true },
+      { label: 'Create issue', icon: 'pi pi-plus', routerLink: '/issues/create' }
+    ];
+
+    if (this.authService.hasPermission(PermissionCodes.usersView)) {
+      items.push({
+        label: 'Users',
+        icon: 'pi pi-users',
+        routerLink: '/users',
+        exact: true
+      });
+    }
+
+    if (this.authService.hasPermission(PermissionCodes.rolesView)) {
+      items.push({
+        label: 'Roles',
+        icon: 'pi pi-shield',
+        routerLink: '/roles',
+        exact: true
+      });
+    }
+
+    items.push({ label: 'My account', icon: 'pi pi-user', routerLink: '/account' });
+    return items;
+  });
 
   constructor() {
     this.router.events
@@ -82,7 +106,16 @@ export class AppShellComponent {
   }
 
   logout(): void {
-    this.authService.logout();
-    void this.router.navigateByUrl('/login');
+    this.authService
+      .logout()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          void this.router.navigateByUrl('/login');
+        },
+        error: () => {
+          void this.router.navigateByUrl('/login');
+        }
+      });
   }
 }

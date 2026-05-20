@@ -1,0 +1,124 @@
+<p-card
+  class="mb-4"
+  header="Create user"
+  subheader="Add a new user account and assign roles."
+>
+  <div class="mb-4">
+    <app-back-button label="Back to users list" [route]="['/users']" />
+  </div>
+
+  <form class="p-fluid flex flex-col gap-4" [formGroup]="form" (ngSubmit)="onSubmit()">
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div class="flex flex-col gap-1.5">
+        <label for="firstName">First name</label>
+        <input
+          id="firstName"
+          type="text"
+          pInputText
+          [formControl]="form.controls.firstName"
+          [invalid]="shouldShowError(form.controls.firstName)"
+        />
+      </div>
+      <div class="flex flex-col gap-1.5">
+        <label for="lastName">Last name</label>
+        <input
+          id="lastName"
+          type="text"
+          pInputText
+          [formControl]="form.controls.lastName"
+          [invalid]="shouldShowError(form.controls.lastName)"
+        />
+      </div>
+    </div>
+
+    <div class="flex flex-col gap-1.5">
+      <label for="email">Email</label>
+      <input
+        id="email"
+        type="email"
+        pInputText
+        [formControl]="form.controls.email"
+        [invalid]="shouldShowError(form.controls.email)"
+      />
+    </div>
+
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div class="flex flex-col gap-1.5">
+        <label for="password">Password</label>
+        <p-password
+          inputId="password"
+          [formControl]="form.controls.password"
+          [toggleMask]="true"
+          fluid
+          [invalid]="shouldShowError(form.controls.password)"
+        />
+      </div>
+      <div class="flex flex-col gap-1.5">
+        <label for="confirmPassword">Confirm password</label>
+        <p-password
+          inputId="confirmPassword"
+          [formControl]="form.controls.confirmPassword"
+          [feedback]="false"
+          [toggleMask]="true"
+          fluid
+          [invalid]="
+            shouldShowError(form.controls.confirmPassword) ||
+            (form.touched && form.errors?.['passwordMismatch'])
+          "
+        />
+      </div>
+    </div>
+
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div class="flex flex-col gap-1.5">
+        <label for="roles">Roles</label>
+        <p-multiselect
+          inputId="roles"
+          [formControl]="form.controls.roleIds"
+          [options]="roleOptions()"
+          optionLabel="name"
+          optionValue="id"
+          placeholder="Select roles"
+          display="chip"
+          [loading]="isLoadingRoles()"
+          [invalid]="shouldShowError(form.controls.roleIds)"
+        />
+      </div>
+      <div class="flex flex-col gap-1.5">
+        <label for="status">Status</label>
+        <p-select
+          inputId="status"
+          [formControl]="form.controls.status"
+          [options]="userStatuses"
+          optionLabel="label"
+          optionValue="value"
+        />
+      </div>
+    </div>
+
+    <app-effective-permissions
+      [permissions]="effectivePermissions()"
+      [roleIdsSelected]="form.controls.roleIds.value.length > 0"
+    />
+
+    @if (submitError()) {
+      <p-message severity="error">{{ submitError() }}</p-message>
+    }
+
+    <div class="flex flex-wrap items-center gap-3">
+      <p-button
+        type="button"
+        label="Cancel"
+        severity="secondary"
+        [outlined]="true"
+        [routerLink]="['/users']"
+      />
+      <p-button
+        type="submit"
+        label="Create user"
+        icon="pi pi-user-plus"
+        [loading]="isSubmitting()"
+      />
+    </div>
+  </form>
+</p-card>

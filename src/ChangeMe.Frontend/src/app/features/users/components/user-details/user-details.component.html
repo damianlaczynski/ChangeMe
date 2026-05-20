@@ -1,0 +1,171 @@
+<p-card
+  class="mb-4"
+  header="User details"
+  subheader="Account profile, roles, and sessions."
+>
+  <div class="mb-4 flex flex-wrap items-center gap-2">
+    <app-back-button label="Back to users list" [route]="['/users']" />
+    @if (user(); as profile) {
+      @if (canManageUsers()) {
+        <p-button
+          label="Edit"
+          icon="pi pi-pencil"
+          [routerLink]="['/users', profile.id, 'edit']"
+        />
+      }
+      @if (canDeactivateUsers()) {
+        @if (profile.status === 'Active') {
+          <p-button
+            label="Deactivate"
+            icon="pi pi-ban"
+            severity="danger"
+            [outlined]="true"
+            (onClick)="confirmDeactivate()"
+          />
+        } @else {
+          <p-button
+            label="Activate"
+            icon="pi pi-check"
+            severity="success"
+            [outlined]="true"
+            (onClick)="confirmActivate()"
+          />
+        }
+      }
+      @if (canManageSessions() && profile.status === 'Active') {
+        <p-button
+          label="Revoke all sessions"
+          icon="pi pi-times-circle"
+          severity="danger"
+          [text]="true"
+          (onClick)="confirmRevokeAllSessions()"
+        />
+      }
+    }
+  </div>
+
+  @if (errorMessage()) {
+    <p-message class="mb-4" severity="error">{{ errorMessage() }}</p-message>
+  }
+
+  @if (isLoading()) {
+    <p class="text-muted-color text-sm">Loading user...</p>
+  } @else if (user(); as profile) {
+    <div class="flex flex-col gap-6">
+      <section class="grid gap-4 sm:grid-cols-2">
+        <div>
+          <span class="text-muted-color text-sm">Name</span>
+          <p class="text-color m-0 font-medium">{{ profile.fullName }}</p>
+        </div>
+        <div>
+          <span class="text-muted-color text-sm">Email</span>
+          <p class="text-color m-0 font-medium">{{ profile.email }}</p>
+        </div>
+        <div>
+          <span class="text-muted-color text-sm">Status</span>
+          <p class="m-0 mt-1">
+            <p-tag
+              [value]="profile.status"
+              [severity]="getUserStatusSeverity(profile.status)"
+            />
+          </p>
+        </div>
+        <div>
+          <span class="text-muted-color text-sm">Member since</span>
+          <p class="text-color m-0 font-medium">
+            {{ profile.memberSince | date: 'medium' }}
+          </p>
+        </div>
+        <div>
+          <span class="text-muted-color text-sm">Last sign-in</span>
+          <p class="text-color m-0 font-medium">
+            @if (profile.lastSignInAt) {
+              {{ profile.lastSignInAt | date: 'medium' }}
+            } @else {
+              {{ UserMessages.neverSignedIn }}
+            }
+          </p>
+        </div>
+      </section>
+
+      <section>
+        <h3 class="text-color m-0 mb-3 text-base font-semibold">Roles</h3>
+        @if (profile.roles.length === 0) {
+          <p class="text-muted-color m-0 text-sm">{{ UserMessages.noRolesAssigned }}</p>
+        } @else {
+          <div class="flex flex-wrap gap-2">
+            @for (role of profile.roles; track role.id) {
+              <a [routerLink]="['/roles', role.id]">
+                <p-tag
+                  [value]="role.isSystem ? role.name + ' (System)' : role.name"
+                  severity="secondary"
+                />
+              </a>
+            }
+          </div>
+        }
+      </section>
+
+      <app-effective-permissions
+        [permissions]="profile.effectivePermissions"
+        [roleIdsSelected]="true"
+      />
+
+      @if (canViewSessions()) {
+        <section>
+          <h3 class="text-color m-0 mb-3 text-base font-semibold">Active sessions</h3>
+          <p-table [value]="sessions()" [loading]="isLoadingSessions()" stripedRows>
+            <ng-template #header>
+              <tr>
+                <th>Device / browser</th>
+                <th>Session type</th>
+                <th>Signed in at</th>
+                <th>Last activity</th>
+                @if (canManageSessions()) {
+                  <th>Actions</th>
+                }
+              </tr>
+            </ng-template>
+            <ng-template #body let-session>
+              <tr>
+                <td>
+                  <div class="text-color font-medium">
+                    {{ session.deviceBrowserLabel }}
+                  </div>
+                  <div class="text-muted-color text-sm">
+                    {{ formatIpAddress(session.ipAddress) }}
+                  </div>
+                </td>
+                <td>{{ formatSessionType(session.isPersistent) }}</td>
+                <td>{{ session.signedInAt | date: 'medium' }}</td>
+                <td>{{ session.lastActivityAt | date: 'medium' }}</td>
+                @if (canManageSessions()) {
+                  <td>
+                    <p-button
+                      label="Revoke"
+                      icon="pi pi-times"
+                      severity="danger"
+                      [text]="true"
+                      [loading]="isRevokePending(session.id)"
+                      (onClick)="confirmRevokeSession(session)"
+                    />
+                  </td>
+                }
+              </tr>
+            </ng-template>
+            <ng-template #emptymessage>
+              <tr>
+                <td
+                  [attr.colspan]="canManageSessions() ? 5 : 4"
+                  class="text-muted-color text-center"
+                >
+                  {{ UserMessages.noActiveSessions }}
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
+        </section>
+      }
+    </div>
+  }
+</p-card>

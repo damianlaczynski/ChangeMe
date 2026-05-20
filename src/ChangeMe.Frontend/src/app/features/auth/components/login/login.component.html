@@ -48,15 +48,20 @@
       ) {
         <p-message severity="error" variant="simple">Password is required.</p-message>
       }
-      @if (
-        form.controls.password.touched && form.controls.password.errors?.['minlength']
-      ) {
-        <p-message severity="error" variant="simple">
-          Password must be at least
-          {{ authConstraints.PASSWORD_MIN_LENGTH }} characters long.
-        </p-message>
-      }
     </div>
+
+    <div class="flex items-center gap-2">
+      <p-checkbox
+        inputId="rememberMe"
+        [formControl]="form.controls.rememberMe"
+        [binary]="true"
+      />
+      <label class="text-color text-sm" for="rememberMe">Remember me</label>
+    </div>
+
+    @if (infoMessage()) {
+      <p-message severity="info">{{ infoMessage() }}</p-message>
+    }
 
     @if (errorMessage()) {
       <p-message severity="error">{{ errorMessage() }}</p-message>

@@ -1,6 +1,7 @@
-using System.Net.Http.Headers;
+﻿using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
+using ChangeMe.Backend.Domain.Aggregates.Roles;
 using ChangeMe.Backend.Infrastructure.Persistence;
 using ChangeMe.Backend.IntegrationTests.Fixtures;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -66,6 +67,49 @@ internal static class TestAuthHelper
       .SingleAsync(cancellationToken);
 
     return new AuthenticatedTestUser(authenticatedClient, userId, email);
+  }
+
+  public static async Task<AuthenticatedTestUser> CreateAdministratorUserAsync(
+    BackendWebApplicationFactory factory,
+    CancellationToken cancellationToken = default)
+  {
+    var user = await CreateAuthenticatedUserAsync(factory, cancellationToken);
+
+    await using (var scope = factory.Services.CreateAsyncScope())
+    {
+      var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+      var administratorRole = await dbContext.Roles
+        .AsNoTracking()
+        .SingleAsync(x => x.Name == RoleConstraints.AdministratorRoleName, cancellationToken);
+
+      var administratorUser = await dbContext.Users
+        .Include(x => x.Roles)
+        .FirstAsync(x => x.Id == user.UserId, cancellationToken);
+
+      if (!administratorUser.HasRole(administratorRole.Id))
+      {
+        administratorUser.AssignRole(administratorRole.Id);
+        await dbContext.SaveChangesAsync(cancellationToken);
+      }
+    }
+
+    const string password = "StrongPass123!";
+    using var loginClient = factory.CreateClient(new WebApplicationFactoryClientOptions
+    {
+      BaseAddress = new Uri("https://localhost")
+    });
+
+    var loginResponse = await loginClient.PostAsJsonAsync("/api/auth/login", new
+    {
+      Email = user.Email,
+      Password = password
+    }, cancellationToken);
+
+    loginResponse.EnsureSuccessStatusCode();
+    var token = ExtractToken(await loginResponse.Content.ReadAsStringAsync(cancellationToken));
+
+    user.Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+    return user;
   }
 
   private static string ExtractToken(string responseBody)

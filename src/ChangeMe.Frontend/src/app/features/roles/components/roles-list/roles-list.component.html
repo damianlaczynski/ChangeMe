@@ -1,0 +1,104 @@
+<p-card
+  class="mb-4"
+  header="Roles"
+  subheader="Browse, search and manage roles and permissions."
+>
+  <form class="p-fluid" [formGroup]="filtersForm" (ngSubmit)="applyFilters()">
+    <div class="mb-4 flex flex-col gap-1.5">
+      <div class="flex flex-wrap items-center gap-2">
+        <input
+          id="searchText"
+          type="text"
+          pInputText
+          [formControl]="filtersForm.controls.searchText"
+          placeholder="Search roles..."
+          class="min-w-0 flex-1"
+        />
+        <p-button type="submit" label="Search" icon="pi pi-search" />
+        @if (canManageRoles()) {
+          <p-button
+            label="Add role"
+            icon="pi pi-plus"
+            [routerLink]="['/roles/create']"
+          />
+        }
+      </div>
+    </div>
+  </form>
+
+  @if (errorMessage()) {
+    <p-message class="mb-4" severity="error">{{ errorMessage() }}</p-message>
+  }
+
+  <p-table
+    [value]="roles()"
+    [loading]="isLoading() && !hasLoaded()"
+    [sortField]="query().sortField"
+    [sortOrder]="query().ascending ? 1 : -1"
+    [customSort]="true"
+    (onSort)="onTableSort($event)"
+    stripedRows
+  >
+    <ng-template #header>
+      <tr>
+        <th pSortableColumn="Name">
+          <div class="flex items-center gap-2">
+            Name
+            <p-sortIcon field="Name" />
+          </div>
+        </th>
+        <th>Description</th>
+        <th pSortableColumn="Permissions">
+          <div class="flex items-center gap-2">
+            Permissions
+            <p-sortIcon field="Permissions" />
+          </div>
+        </th>
+        <th pSortableColumn="Users">
+          <div class="flex items-center gap-2">
+            Users
+            <p-sortIcon field="Users" />
+          </div>
+        </th>
+        <th>System</th>
+        <th>Actions</th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-role>
+      <tr>
+        <td>
+          <a
+            class="text-primary font-medium hover:underline"
+            [routerLink]="['/roles', role.id]"
+          >
+            {{ role.name }}
+          </a>
+        </td>
+        <td>{{ formatDescription(role.description) }}</td>
+        <td>{{ RoleMessages.permissionsCount(role.permissionCount) }}</td>
+        <td>{{ RoleMessages.usersCount(role.userCount) }}</td>
+        <td>
+          @if (role.isSystem) {
+            <p-tag value="System" severity="info" />
+          }
+        </td>
+        <td>
+          <p-button
+            type="button"
+            icon="pi pi-ellipsis-v"
+            [text]="true"
+            [rounded]="true"
+            (onClick)="openRoleActionsMenu($event, role)"
+          />
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="6" class="text-muted-color text-center">No roles found.</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</p-card>
+
+<p-menu #roleActionsMenu [popup]="true" [model]="roleActionItems()" />

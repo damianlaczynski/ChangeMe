@@ -4,7 +4,9 @@ using ChangeMe.Backend.Infrastructure.Persistence;
 using ChangeMe.Backend.IntegrationTests.Support.Fakes;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 #if PostgreSQL
 using Testcontainers.PostgreSql;
 #else
@@ -42,7 +44,12 @@ public sealed class BackendWebApplicationFactory : WebApplicationFactory<Program
 
     await using var scope = Services.CreateAsyncScope();
     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    await DatabaseConfig.ApplyPendingMigrationsAsync(dbContext, cancellationToken);
+    await DatabaseConfig.InitializeDatabaseAsync(
+      dbContext,
+      scope.ServiceProvider.GetRequiredService<IConfiguration>(),
+      scope.ServiceProvider.GetRequiredService<IPasswordHasher>(),
+      scope.ServiceProvider.GetRequiredService<ILogger<ApplicationDbContext>>(),
+      cancellationToken);
   }
 
   public new async ValueTask DisposeAsync()
@@ -86,6 +93,8 @@ public sealed class BackendWebApplicationFactory : WebApplicationFactory<Program
     environmentOverrides["Jwt__Audience"] = "ChangeMe.Tests";
     environmentOverrides["Jwt__SigningKey"] = "Integration-Tests-Signing-Key-Needs-32-Chars";
     environmentOverrides["Jwt__ExpirationMinutes"] = "60";
+    environmentOverrides["Session__PersistentSessionLifetimeDays"] = "14";
+    environmentOverrides["Session__BrowserSessionLifetimeDays"] = "1";
     environmentOverrides["Email__Host"] = "localhost";
     environmentOverrides["Email__Port"] = "1025";
     environmentOverrides["Email__EnableSsl"] = "false";
