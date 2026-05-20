@@ -18,8 +18,7 @@ public record CreateIssueAcceptanceCriterionPayload(string Content);
 public class CreateIssueHandler(
   IMediator mediator,
   ApplicationDbContext context,
-  IUserAccessor userAccessor,
-  IIssueRealtimePublisher issueRealtimePublisher) : ICommandHandler<CreateIssueCommand, IssueDetailsDto>
+  IUserAccessor userAccessor) : ICommandHandler<CreateIssueCommand, IssueDetailsDto>
 {
   public async Task<Result<IssueDetailsDto>> Handle(CreateIssueCommand command, CancellationToken cancellationToken)
   {
@@ -72,13 +71,6 @@ public class CreateIssueHandler(
 
     await context.Issues.AddAsync(issueResult.Value, cancellationToken);
     await context.SaveChangesAsync(cancellationToken);
-
-    await issueRealtimePublisher.PublishAsync(new IssueRealtimeMessage
-    {
-      IssueId = issueResult.Value.Id,
-      EventType = "ISSUE_CREATED",
-      OccurredAt = issueResult.Value.LastActivityAt
-    }, cancellationToken);
 
     var createdIssueResult = await mediator.Send(new GetIssueByIdQuery(issueResult.Value.Id), cancellationToken);
     if (!createdIssueResult.IsSuccess)

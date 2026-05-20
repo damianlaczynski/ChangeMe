@@ -18,7 +18,6 @@ public static class NotificationsConfig
     services.AddScoped<NotificationRetentionPolicy>();
     services.AddScoped<NotificationRetentionCleanupJob>();
     services.AddSingleton<INotificationRealtimePublisher, SignalRNotificationRealtimePublisher>();
-    services.AddSingleton<IIssueRealtimePublisher, SignalRIssueRealtimePublisher>();
 
     logger.LogInformation("{Project} services configured", "Notifications");
     return services;

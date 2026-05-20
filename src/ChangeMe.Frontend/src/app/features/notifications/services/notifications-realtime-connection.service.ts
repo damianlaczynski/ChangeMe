@@ -1,15 +1,12 @@
 import { DestroyRef, Injectable, effect, inject, signal } from '@angular/core';
+import { environment } from '@environments/environment';
+import { AuthService } from '@features/auth/services/auth.service';
 import {
   HubConnection,
   HubConnectionBuilder,
   HubConnectionState
 } from '@microsoft/signalr';
-import { AuthService } from '@features/auth/services/auth.service';
-import { environment } from '@environments/environment';
-import {
-  IssueRealtimeMessage,
-  NotificationRealtimeMessage
-} from '../models/notification.model';
+import { NotificationRealtimeMessage } from '../models/notification.model';
 
 @Injectable({
   providedIn: 'root'
@@ -22,8 +19,6 @@ export class NotificationsRealtimeConnectionService {
 
   readonly lastNotificationMessage = signal<NotificationRealtimeMessage | null>(null);
   readonly notificationMessageVersion = signal(0);
-  readonly lastIssueMessage = signal<IssueRealtimeMessage | null>(null);
-  readonly issueMessageVersion = signal(0);
   readonly connectionState = signal<'disconnected' | 'connecting' | 'connected'>(
     'disconnected'
   );
@@ -72,11 +67,6 @@ export class NotificationsRealtimeConnectionService {
       }
     );
 
-    this.connection.on('issueChanged', (message: IssueRealtimeMessage) => {
-      this.lastIssueMessage.set(message);
-      this.issueMessageVersion.update((value) => value + 1);
-    });
-
     this.connection.onreconnected(() => {
       this.connectionState.set('connected');
       this.reconnectCount.update((count) => count + 1);
@@ -103,7 +93,6 @@ export class NotificationsRealtimeConnectionService {
     const currentConnection = this.connection;
     this.connection = null;
     this.lastNotificationMessage.set(null);
-    this.lastIssueMessage.set(null);
     this.connectionState.set('disconnected');
 
     try {

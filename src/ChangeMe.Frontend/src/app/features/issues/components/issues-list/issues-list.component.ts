@@ -3,10 +3,8 @@ import {
   Component,
   computed,
   DestroyRef,
-  effect,
   inject,
   signal,
-  untracked,
   viewChild
 } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
@@ -20,7 +18,6 @@ import {
   IssueSearchParameters,
   IssueStatus
 } from '@features/issues/models/issue.model';
-import { IssueRealtimeService } from '@features/issues/services/issue-realtime.service';
 import { IssuesService } from '@features/issues/services/issues.service';
 import {
   getDeleteIssueConfirmMessage,
@@ -88,7 +85,6 @@ type IssueSortField = 'Id' | 'Title' | 'CreatedAt' | 'LastActivityAt';
 })
 export class IssuesComponent {
   private readonly issuesService = inject(IssuesService);
-  private readonly issueRealtimeService = inject(IssueRealtimeService);
   private readonly confirmationService = inject(ConfirmationService);
   private readonly toastService = inject(ToastService);
   private readonly destroyRef = inject(DestroyRef);
@@ -199,24 +195,6 @@ export class IssuesComponent {
         this.isLoading.set(false);
         this.hasLoaded.set(true);
       });
-
-    effect(() => {
-      const messageVersion = this.issueRealtimeService.issueMessageVersion();
-      if (messageVersion === 0 || !this.hasLoaded()) {
-        return;
-      }
-
-      untracked(() => this.refreshCurrentPage());
-    });
-
-    effect(() => {
-      const reconnectCount = this.issueRealtimeService.reconnectCount();
-      if (reconnectCount === 0 || !this.hasLoaded()) {
-        return;
-      }
-
-      untracked(() => this.refreshCurrentPage());
-    });
   }
 
   onFiltersCollapsedChange(collapsed: boolean | undefined): void {

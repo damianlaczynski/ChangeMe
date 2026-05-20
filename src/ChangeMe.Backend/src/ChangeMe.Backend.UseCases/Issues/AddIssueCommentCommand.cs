@@ -9,8 +9,7 @@ public class AddIssueCommentHandler(
   IMediator mediator,
   ApplicationDbContext context,
   IUserAccessor userAccessor,
-  IssueNotificationService issueNotificationService,
-  IIssueRealtimePublisher issueRealtimePublisher) : ICommandHandler<AddIssueCommentCommand, IssueDetailsDto>
+  IssueNotificationService issueNotificationService) : ICommandHandler<AddIssueCommentCommand, IssueDetailsDto>
 {
   public async Task<Result<IssueDetailsDto>> Handle(AddIssueCommentCommand command, CancellationToken cancellationToken)
   {
@@ -34,12 +33,6 @@ public class AddIssueCommentHandler(
 
     await context.SaveChangesAsync(cancellationToken);
     await issueNotificationService.NotifyCommentAddedAsync(issue.Id, commentResult.Value.Id, actorUserId, cancellationToken);
-    await issueRealtimePublisher.PublishAsync(new IssueRealtimeMessage
-    {
-      IssueId = issue.Id,
-      EventType = "COMMENT_CREATED",
-      OccurredAt = commentResult.Value.CreatedAt
-    }, cancellationToken);
 
     var issueResult = await mediator.Send(new GetIssueByIdQuery(issue.Id), cancellationToken);
     if (!issueResult.IsSuccess)

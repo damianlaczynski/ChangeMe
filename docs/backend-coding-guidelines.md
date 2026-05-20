@@ -70,7 +70,7 @@ For build, run, and test commands from `src/ChangeMe.Backend` or from the reposi
 ## Auth and cross-cutting concerns
 
 - JWT configuration lives in `Web/Configurations/AuthConfig.cs` and environment settings.
-- SignalR hubs and their DI registration should be configured through dedicated `Web/Configurations/*Config.cs` files, not inline in `Program.cs`.
+- The notifications SignalR hub (push notifications only) and its DI registration should be configured through dedicated `Web/Configurations/*Config.cs` files, not inline in `Program.cs`.
 - Endpoint auth defaults come from `BaseEndpoint`.
 - Email is abstracted behind `IEmailService`.
 
