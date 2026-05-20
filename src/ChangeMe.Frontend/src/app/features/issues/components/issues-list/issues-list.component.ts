@@ -239,7 +239,6 @@ export class IssuesComponent {
   }
 
   removeAppliedFilter(chip: AppliedFilterChip): void {
-    const formValue = this.filtersForm.getRawValue();
     const nextQuery = { ...this.query(), pageNumber: 1 };
 
     if (chip.id === 'search') {
@@ -313,7 +312,7 @@ export class IssuesComponent {
   }
 
   onPageChange(event: PaginatorState): void {
-    const pageNumber = event.page ?? 0;
+    const pageNumber = (event.page ?? 0) + 1;
     const currentPagination = this.pagination();
     if (
       !currentPagination ||
