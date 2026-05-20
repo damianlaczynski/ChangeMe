@@ -32,7 +32,7 @@
 
 ### Runtime structure
 
-- `src/app/core/` holds app-wide services and models that are not specific to one feature (layout shell, navigation history, toasts).
+- `src/app/core/` holds app-wide services and models that are not specific to one feature (layout shell, toasts).
 - `src/app/features/` holds feature slices such as `auth` and `issues`.
 - `src/app/shared/` holds reusable API wrappers and shared data contracts.
 

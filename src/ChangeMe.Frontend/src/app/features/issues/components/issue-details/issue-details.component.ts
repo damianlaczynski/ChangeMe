@@ -17,7 +17,6 @@ import {
   Validators
 } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { NavigationHistoryService } from '@core/navigation/services/navigation-history.service';
 import { ToastService } from '@core/toast/services/toast.service';
 import {
   IssueDetailsDto,
@@ -83,7 +82,6 @@ export class IssueDetailsComponent {
 
   private readonly issuesService = inject(IssuesService);
   private readonly issueRealtimeService = inject(IssueRealtimeService);
-  private readonly navigationHistory = inject(NavigationHistoryService);
   private readonly confirmationService = inject(ConfirmationService);
   private readonly toastService = inject(ToastService);
   private readonly route = inject(ActivatedRoute);
@@ -300,7 +298,7 @@ export class IssueDetailsComponent {
       .subscribe({
         next: () => {
           this.toastService.success('Issue deleted');
-          this.navigationHistory.navigateAfterIssueRemoval(issueId);
+          void this.router.navigate(['/issues']);
         },
         error: (error: Error) => {
           this.toastService.showApiError(error, 'Could not delete issue');

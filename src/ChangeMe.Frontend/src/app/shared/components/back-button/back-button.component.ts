@@ -1,5 +1,5 @@
 import { Component, inject, input } from '@angular/core';
-import { NavigationHistoryService } from '@core/navigation/services/navigation-history.service';
+import { Router } from '@angular/router';
 import { Button } from 'primeng/button';
 
 @Component({
@@ -17,12 +17,12 @@ import { Button } from 'primeng/button';
   `
 })
 export class BackButtonComponent {
-  private readonly navigationHistory = inject(NavigationHistoryService);
+  private readonly router = inject(Router);
 
-  readonly label = input('Back');
-  readonly fallbackUrl = input('/issues');
+  readonly label = input.required<string>();
+  readonly route = input.required<readonly string[]>();
 
   onBack(): void {
-    this.navigationHistory.goBack(this.fallbackUrl());
+    void this.router.navigate(this.route());
   }
 }

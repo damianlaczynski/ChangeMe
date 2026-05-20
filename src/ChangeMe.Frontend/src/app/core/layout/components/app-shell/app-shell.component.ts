@@ -5,7 +5,6 @@ import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router
 import { SidebarNavComponent } from '@core/layout/components/sidebar-nav/sidebar-nav.component';
 import { LayoutNavItem } from '@core/layout/models/layout-nav-item.model';
 import { LayoutService } from '@core/layout/services/layout.service';
-import { NavigationHistoryService } from '@core/navigation/services/navigation-history.service';
 import { AuthService } from '@features/auth/services/auth.service';
 import { NotificationsBellComponent } from '@features/notifications/components/notifications-bell/notifications-bell.component';
 import { Button } from 'primeng/button';
@@ -26,7 +25,6 @@ import { filter, map } from 'rxjs/operators';
 })
 export class AppShellComponent {
   private readonly authService = inject(AuthService);
-  private readonly navigationHistory = inject(NavigationHistoryService);
   private readonly router = inject(Router);
   private readonly breakpointObserver = inject(BreakpointObserver);
   private readonly destroyRef = inject(DestroyRef);
@@ -84,7 +82,6 @@ export class AppShellComponent {
   }
 
   logout(): void {
-    this.navigationHistory.clear();
     this.authService.logout();
     void this.router.navigateByUrl('/login');
   }

@@ -4,7 +4,9 @@
   subheader="Update issue data, acceptance criteria and assignee"
 >
   <div class="mb-4 flex flex-wrap items-center gap-2">
-    <app-back-button />
+    @if (id(); as issueId) {
+      <app-back-button label="Back to issue details" [route]="['/issues', issueId]" />
+    }
   </div>
 
   @if (isLoadingIssue()) {

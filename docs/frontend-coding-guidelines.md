@@ -16,7 +16,7 @@ For dev server, lint, format, and test commands from `src/ChangeMe.Frontend` or 
 - Put validation limits, select options, labels, and other UI-oriented constants in a single `features/<feature>/utils/<feature>.utils.ts` file (for example `issue.utils.ts`, `auth.utils.ts`). Keep DTOs, enums, and request/response shapes in `models/`.
 - Put shared transport or utility contracts in `shared/`.
 - Put cross-cutting app services in `core/` or `features/auth/` depending on ownership.
-- Use `NavigationHistoryService` plus `app-back-button` for in-app back navigation. The stack is stored in `sessionStorage` by full URL (including query params such as tabs). Call `removeIssue()` / `navigateAfterIssueRemoval()` before navigating away when a resource is deleted.
+- Use `app-back-button` with a fixed **label** and **route** for in-app back navigation (for example **`Back to issues list`** → **`/issues`**, **`Back to issue details`** → **`/issues/:id`**). Do not use browser history stacks or `sessionStorage` navigation stacks.
 
 ## Component rules
 

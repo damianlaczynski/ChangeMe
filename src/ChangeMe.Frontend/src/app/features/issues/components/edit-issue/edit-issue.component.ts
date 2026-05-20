@@ -9,7 +9,6 @@ import {
   Validators
 } from '@angular/forms';
 import { Router } from '@angular/router';
-import { NavigationHistoryService } from '@core/navigation/services/navigation-history.service';
 import { ToastService } from '@core/toast/services/toast.service';
 import {
   IssueAssignableUserDto,
@@ -71,7 +70,6 @@ export class EditIssueComponent {
 
   private readonly issuesService = inject(IssuesService);
   private readonly router = inject(Router);
-  private readonly navigationHistory = inject(NavigationHistoryService);
   private readonly toastService = inject(ToastService);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -190,7 +188,13 @@ export class EditIssueComponent {
   }
 
   cancel(): void {
-    this.navigationHistory.goBack('/issues');
+    const issueId = this.id();
+    if (!issueId) {
+      void this.router.navigate(['/issues']);
+      return;
+    }
+
+    void this.router.navigate(['/issues', issueId]);
   }
 
   onSubmit(): void {

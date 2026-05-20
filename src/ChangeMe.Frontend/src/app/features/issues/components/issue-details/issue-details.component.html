@@ -1,10 +1,10 @@
-﻿<p-card
+<p-card
   class="mb-4"
   [header]="pageTitle()"
   subheader="Review issue data, comments and history"
 >
   <div class="mb-4 flex flex-wrap items-center gap-2">
-    <app-back-button />
+    <app-back-button label="Back to issues list" [route]="['/issues']" />
     @if (issue(); as currentIssue) {
       <p-button
         label="Edit"
