@@ -14,6 +14,10 @@
     "test:backend": "dotnet test src/ChangeMe.Backend/ChangeMe.Backend.sln",
     "test:backend:unit": "dotnet test src/ChangeMe.Backend/tests/ChangeMe.Backend.UnitTests",
     "test:backend:integration": "dotnet test src/ChangeMe.Backend/tests/ChangeMe.Backend.IntegrationTests",
+    "ef:restore": "dotnet tool restore",
+    "ef:migrations:add": "dotnet ef migrations add --project src/ChangeMe.Backend/src/ChangeMe.Backend.Infrastructure/ChangeMe.Backend.Infrastructure.csproj --startup-project src/ChangeMe.Backend/src/ChangeMe.Backend.Web/ChangeMe.Backend.Web.csproj --output-dir Persistence/Migrations",
+    "ef:migrations:remove": "dotnet ef migrations remove --project src/ChangeMe.Backend/src/ChangeMe.Backend.Infrastructure/ChangeMe.Backend.Infrastructure.csproj --startup-project src/ChangeMe.Backend/src/ChangeMe.Backend.Web/ChangeMe.Backend.Web.csproj",
+    "ef:database:update": "dotnet ef database update --project src/ChangeMe.Backend/src/ChangeMe.Backend.Infrastructure/ChangeMe.Backend.Infrastructure.csproj --startup-project src/ChangeMe.Backend/src/ChangeMe.Backend.Web/ChangeMe.Backend.Web.csproj",
     "start:all": "concurrently -n frontend,backend -c cyan,green \"npm run start:frontend\" \"npm run start:backend\"",
     "test:all": "concurrently -n fe,be -c cyan,blue \"npm run test:frontend:ci\" \"npm run test:backend\"",
     "build:all": "npm run build:frontend && npm run build:backend"
