@@ -11,7 +11,6 @@ import { Button } from 'primeng/button';
       icon="pi pi-arrow-left"
       severity="secondary"
       [outlined]="true"
-      size="small"
       (onClick)="onBack()"
     />
   `
