@@ -100,7 +100,7 @@ For dev server, lint, format, and test commands from `src/ChangeMe.Frontend` or 
 ### When adding a new screen
 
 - Look at `features/auth` for form patterns and `features/issues` for tables, filters, and detail layouts.
-- Issues routes are behind `authGuard`. Do not gate issues UI with `isAuthenticated`; keep auth checks in guards, `app.component` navigation, and services such as notifications SignalR.
+- Issues routes are behind `authGuard`. Do not gate issues UI with `isAuthenticated`; keep auth checks in guards, `app.component` navigation, and `NotificationsRealtimeConnectionService` (push notifications only).
 - Match existing Tailwind layout patterns (`flex flex-col gap-1.5 mb-4` for labeled fields, `flex flex-wrap items-center gap-3 mt-4` for action rows, `grid gap-4 sm:grid-cols-2 xl:grid-cols-3` for filter grids) before introducing new one-off utilities.
 
 ## Existing repo patterns worth preserving

@@ -20,8 +20,7 @@ public class UpdateIssueHandler(
   IMediator mediator,
   ApplicationDbContext context,
   IUserAccessor userAccessor,
-  IssueNotificationService issueNotificationService,
-  IIssueRealtimePublisher issueRealtimePublisher) : ICommandHandler<UpdateIssueCommand, IssueDetailsDto>
+  IssueNotificationService issueNotificationService) : ICommandHandler<UpdateIssueCommand, IssueDetailsDto>
 {
   public async Task<Result<IssueDetailsDto>> Handle(UpdateIssueCommand command, CancellationToken cancellationToken)
   {
@@ -77,13 +76,6 @@ public class UpdateIssueHandler(
                .Where(h => IsNotificationEligible(h.EventType))
                .Select(h => h.Id))
       await issueNotificationService.NotifyIssueActivityAsync(issue.Id, historyEntryId, actorUserId, cancellationToken);
-
-    await issueRealtimePublisher.PublishAsync(new IssueRealtimeMessage
-    {
-      IssueId = issue.Id,
-      EventType = "ISSUE_UPDATED",
-      OccurredAt = issue.LastActivityAt
-    }, cancellationToken);
 
     var updatedIssueResult = await mediator.Send(new GetIssueByIdQuery(issue.Id), cancellationToken);
     if (!updatedIssueResult.IsSuccess)

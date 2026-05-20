@@ -3,7 +3,7 @@
 This document covers five REQs for the **Issues** area:
 issue list, issue create/edit flow, issue details page, watching and notifications, and the in-app notification dropdown in the top bar.
 
-The scope includes comments, change history, issue deletion, and delivering notifications in real time and by email.
+The scope includes comments, change history, issue deletion, push notifications in real time, and email notifications.
 
 ---
 
@@ -204,7 +204,6 @@ The user must be able to create a new issue and edit an existing one by providin
 - **Back to issues list** button navigates to **Issues list**.
 - After edit save, the user returns to **Issue details** with refreshed data.
 - After adding a comment, the user stays on **Issue details** and sees the new comment.
-- When the open issue is affected by activity elsewhere, **Issue details** refreshes in place (REQ-ISS-004).
 
 ### Deletion navigation
 
@@ -217,11 +216,11 @@ The user must be able to create a new issue and edit an existing one by providin
 
 ---
 
-# REQ-ISS-004: Watching Issues and Real-Time / Email Notifications
+# REQ-ISS-004: Watching Issues and Push / Email Notifications
 
 ## Goal
 
-The user must be able to watch selected issues and receive notifications about related activity in real time and by email.
+The user must be able to watch selected issues and receive in-app push notifications and email about related activity.
 
 ## Features
 
@@ -243,16 +242,15 @@ Notifications are sent to watchers (excluding the acting user) for:
 - title edit,
 - description edit,
 - acceptance-criterion add, update, and remove.
-- Watch and unwatch update watcher counts and refresh **Issues list** / **Issue details** when open; they do **not** create in-app notifications.
+- Watch and unwatch update watcher counts on the screen where the action was taken; they do **not** create in-app notifications.
 
-### Real-time notifications
+### Push notifications (real time)
 
-- A watching user sees new notifications in the UI without manually reloading the page.
+- A watching user receives new in-app notifications without manually reloading the page.
 - Each notification includes: **notification id**, **event type**, **issue id**, **issue title**, **message**, **event time**, and **link** to the issue.
 - When signed in, new notifications update the top-bar bell badge and, when the notification panel is open, the list inside the panel.
-- **Issues list** refreshes the current results when an issue change notification applies, regardless of watch state.
-- **Issue details** refreshes when the open issue is affected, regardless of watch state.
-- After connection loss, the user can continue working; when connection resumes, lists and open details resynchronize.
+- After connection loss, the user can continue working; when the push connection resumes, the notification bell and open panel resynchronize.
+- **Issues list** and **Issue details** do not auto-refresh from push events; the user refreshes or navigates to see current issue data.
 
 ### Email notifications
 
@@ -285,7 +283,7 @@ There is no separate **Notifications** screen or sidebar entry.
 - Badge shows unread count when greater than zero.
 - Clicking the bell toggles a dropdown panel anchored to the control; it does not navigate away.
 - Clicking outside the panel or pressing Escape closes the dropdown.
-- New notifications update the badge and open panel list in real time without full page reload.
+- New push notifications update the badge and open panel list without full page reload.
 
 ### Notification dropdown panel
 

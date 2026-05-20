@@ -12,8 +12,7 @@ public class IssueWatchStateDto
 
 public class WatchIssueHandler(
   ApplicationDbContext context,
-  IUserAccessor userAccessor,
-  IIssueRealtimePublisher issueRealtimePublisher) : ICommandHandler<WatchIssueCommand, IssueWatchStateDto>
+  IUserAccessor userAccessor) : ICommandHandler<WatchIssueCommand, IssueWatchStateDto>
 {
   public async Task<Result<IssueWatchStateDto>> Handle(WatchIssueCommand command, CancellationToken cancellationToken)
   {
@@ -34,13 +33,6 @@ public class WatchIssueHandler(
     await context.IssueWatchers.AddAsync(watchResult.Value, cancellationToken);
     await context.SaveChangesAsync(cancellationToken);
 
-    await issueRealtimePublisher.PublishAsync(new IssueRealtimeMessage
-    {
-      IssueId = issue.Id,
-      EventType = "WATCHERS_CHANGED",
-      OccurredAt = issue.LastActivityAt
-    }, cancellationToken);
-
     return Result.Success(new IssueWatchStateDto
     {
       IssueId = issue.Id,
@@ -52,8 +44,7 @@ public class WatchIssueHandler(
 
 public class UnwatchIssueHandler(
   ApplicationDbContext context,
-  IUserAccessor userAccessor,
-  IIssueRealtimePublisher issueRealtimePublisher) : ICommandHandler<UnwatchIssueCommand, IssueWatchStateDto>
+  IUserAccessor userAccessor) : ICommandHandler<UnwatchIssueCommand, IssueWatchStateDto>
 {
   public async Task<Result<IssueWatchStateDto>> Handle(UnwatchIssueCommand command, CancellationToken cancellationToken)
   {
@@ -73,13 +64,6 @@ public class UnwatchIssueHandler(
 
     context.IssueWatchers.Remove(unwatchResult.Value);
     await context.SaveChangesAsync(cancellationToken);
-
-    await issueRealtimePublisher.PublishAsync(new IssueRealtimeMessage
-    {
-      IssueId = issue.Id,
-      EventType = "WATCHERS_CHANGED",
-      OccurredAt = issue.LastActivityAt
-    }, cancellationToken);
 
     return Result.Success(new IssueWatchStateDto
     {

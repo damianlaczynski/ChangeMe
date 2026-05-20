@@ -25,12 +25,6 @@ export interface NotificationRealtimeMessage {
   occurredAt: string;
 }
 
-export interface IssueRealtimeMessage {
-  issueId: string;
-  eventType: string;
-  occurredAt: string;
-}
-
 export enum NotificationEventType {
   COMMENT_CREATED = 'COMMENT_CREATED',
   STATUS_CHANGED = 'STATUS_CHANGED',

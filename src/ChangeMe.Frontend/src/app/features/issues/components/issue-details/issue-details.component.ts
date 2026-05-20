@@ -6,8 +6,7 @@ import {
   effect,
   inject,
   input,
-  signal,
-  untracked
+  signal
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
@@ -22,7 +21,6 @@ import {
   IssueDetailsDto,
   IssueHistoryEntryDto
 } from '@features/issues/models/issue.model';
-import { IssueRealtimeService } from '@features/issues/services/issue-realtime.service';
 import { IssuesService } from '@features/issues/services/issues.service';
 import {
   getDeleteIssueConfirmMessage,
@@ -81,7 +79,6 @@ export class IssueDetailsComponent {
   readonly id = input<string>();
 
   private readonly issuesService = inject(IssuesService);
-  private readonly issueRealtimeService = inject(IssueRealtimeService);
   private readonly confirmationService = inject(ConfirmationService);
   private readonly toastService = inject(ToastService);
   private readonly route = inject(ActivatedRoute);
@@ -139,28 +136,6 @@ export class IssueDetailsComponent {
       }
 
       this.loadIssue(id);
-    });
-
-    effect(() => {
-      const messageVersion = this.issueRealtimeService.issueMessageVersion();
-      const message = this.issueRealtimeService.lastIssueMessage();
-      const issueId = this.id();
-
-      if (messageVersion === 0 || !message || !issueId || message.issueId !== issueId) {
-        return;
-      }
-
-      untracked(() => this.loadIssue(issueId, false));
-    });
-
-    effect(() => {
-      const reconnectCount = this.issueRealtimeService.reconnectCount();
-      const issueId = this.id();
-      if (reconnectCount === 0 || !issueId) {
-        return;
-      }
-
-      untracked(() => this.loadIssue(issueId, false));
     });
   }
 
