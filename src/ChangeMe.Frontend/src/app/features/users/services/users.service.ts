@@ -3,16 +3,15 @@ import { ApiService } from '@shared/api/services/api.service';
 import { PaginationResult } from '@shared/data/models/pagination-result.model';
 import { Observable } from 'rxjs';
 import {
-    AdminUserSessionDto,
-    CreateUserRequest,
-    EffectivePermissionDto,
-    PreviewEffectivePermissionsRequest,
-    RoleAssignmentOptionDto,
-    UpdateUserRequest,
-    UserDetailsDto,
-    UserFormDto,
-    UserListItemDto,
-    UserSearchParameters
+  AdminUserSessionDto,
+  CreateUserRequest,
+  EffectivePermissionDto,
+  PreviewEffectivePermissionsRequest,
+  RoleAssignmentOptionDto,
+  UpdateUserRequest,
+  UserDetailsDto,
+  UserListItemDto,
+  UserSearchParameters
 } from '../models/user.model';
 
 @Injectable({
@@ -33,10 +32,6 @@ export class UsersService {
 
   getUserById(id: string): Observable<UserDetailsDto> {
     return this.apiService.get<UserDetailsDto>(`${this.baseEndpoint}/${id}`);
-  }
-
-  getUserForm(id: string): Observable<UserFormDto> {
-    return this.apiService.get<UserFormDto>(`${this.baseEndpoint}/${id}/form`);
   }
 
   getRolesForAssignment(): Observable<RoleAssignmentOptionDto[]> {

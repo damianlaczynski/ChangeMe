@@ -39,15 +39,6 @@ export interface UserDetailsDto {
   effectivePermissions: EffectivePermissionDto[];
 }
 
-export interface UserFormDto {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  status: UserStatus;
-  roleIds: string[];
-}
-
 export interface RoleAssignmentOptionDto {
   id: string;
   name: string;

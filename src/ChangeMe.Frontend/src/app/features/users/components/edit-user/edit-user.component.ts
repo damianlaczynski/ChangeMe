@@ -1,10 +1,10 @@
 import { Component, DestroyRef, effect, inject, input, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
-  FormControl,
-  FormGroup,
-  ReactiveFormsModule,
-  Validators
+    FormControl,
+    FormGroup,
+    ReactiveFormsModule,
+    Validators
 } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { ToastService } from '@core/toast/services/toast.service';
@@ -13,9 +13,9 @@ import { EffectivePermissionsComponent } from '@features/users/components/effect
 import { EffectivePermissionDto, UserStatus } from '@features/users/models/user.model';
 import { UsersService } from '@features/users/services/users.service';
 import {
-  UserConstraints,
-  UserMessages,
-  userStatuses
+    UserConstraints,
+    UserMessages,
+    userStatuses
 } from '@features/users/utils/users.utils';
 import { PermissionCodes } from '@shared/authorization/permission-codes';
 import { BackButtonComponent } from '@shared/components/back-button/back-button.component';
@@ -135,19 +135,20 @@ export class EditUserComponent {
     this.isLoading.set(true);
 
     this.usersService
-      .getUserForm(userId)
+      .getUserById(userId)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (form) => {
+        next: (user) => {
           this.form.patchValue({
-            firstName: form.firstName,
-            lastName: form.lastName,
-            email: form.email,
-            roleIds: form.roleIds,
-            status: form.status
+            firstName: user.firstName,
+            lastName: user.lastName,
+            email: user.email,
+            roleIds: user.roles.map((role) => role.id),
+            status: user.status
           });
 
           if (this.showRolesField()) {
+            this.effectivePermissions.set(user.effectivePermissions);
             this.usersService
               .getRolesForAssignment()
               .pipe(takeUntilDestroyed(this.destroyRef))

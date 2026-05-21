@@ -37,16 +37,6 @@ public sealed record UserDetailsDto
   public IReadOnlyList<EffectivePermissionDto> EffectivePermissions { get; init; } = [];
 }
 
-public sealed record UserFormDto
-{
-  public Guid Id { get; init; }
-  public string FirstName { get; init; } = string.Empty;
-  public string LastName { get; init; } = string.Empty;
-  public string Email { get; init; } = string.Empty;
-  public UserStatus Status { get; init; }
-  public IReadOnlyList<Guid> RoleIds { get; init; } = [];
-}
-
 public sealed record RoleAssignmentOptionDto(Guid Id, string Name, bool IsSystem);
 
 public sealed record AdminUserSessionDto(
