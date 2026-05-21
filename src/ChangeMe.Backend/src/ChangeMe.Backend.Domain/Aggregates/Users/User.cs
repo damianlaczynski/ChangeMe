@@ -1,5 +1,4 @@
 ﻿using System.Net.Mail;
-using ChangeMe.Backend.Domain.Aggregates.Roles;
 
 namespace ChangeMe.Backend.Domain.Aggregates.Users;
 

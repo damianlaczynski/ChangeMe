@@ -1,6 +1,6 @@
-﻿using ChangeMe.Backend.Domain.Aggregates.Users;
+using ChangeMe.Backend.Domain.Aggregates.Roles;
 
-namespace ChangeMe.Backend.Domain.Aggregates.Roles;
+namespace ChangeMe.Backend.Domain.Aggregates.Users;
 
 public class UserRole
 {

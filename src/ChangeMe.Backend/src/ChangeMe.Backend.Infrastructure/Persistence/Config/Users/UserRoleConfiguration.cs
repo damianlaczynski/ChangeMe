@@ -1,6 +1,7 @@
-﻿using ChangeMe.Backend.Domain.Aggregates.Roles;
+using ChangeMe.Backend.Domain.Aggregates.Roles;
+using ChangeMe.Backend.Domain.Aggregates.Users;
 
-namespace ChangeMe.Backend.Infrastructure.Persistence.Config.Roles;
+namespace ChangeMe.Backend.Infrastructure.Persistence.Config.Users;
 
 public class UserRoleConfiguration : IEntityTypeConfiguration<UserRole>
 {
