@@ -12,9 +12,9 @@ public sealed record CreateUserCommand(
   UserStatus Status) : ICommand<UserDetailsDto>;
 
 public class CreateUserHandler(
+  IMediator mediator,
   ApplicationDbContext context,
-  IPasswordHasher passwordHasher,
-  IUserAccessor userAccessor) : ICommandHandler<CreateUserCommand, UserDetailsDto>
+  IPasswordHasher passwordHasher) : ICommandHandler<CreateUserCommand, UserDetailsDto>
 {
   public async Task<Result<UserDetailsDto>> Handle(CreateUserCommand command, CancellationToken cancellationToken)
   {
@@ -46,7 +46,10 @@ public class CreateUserHandler(
     await context.Users.AddAsync(user, cancellationToken);
     await context.SaveChangesAsync(cancellationToken);
 
-    return await new GetUserByIdHandler(context)
-      .Handle(new GetUserByIdQuery(user.Id), cancellationToken);
+    var createdUserResult = await mediator.Send(new GetUserByIdQuery(user.Id), cancellationToken);
+    if (!createdUserResult.IsSuccess)
+      return createdUserResult.Map();
+
+    return Result.Created(createdUserResult.Value, $"/users/{createdUserResult.Value.Id}");
   }
 }

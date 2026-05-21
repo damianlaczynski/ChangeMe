@@ -59,7 +59,9 @@ For build, run, and test commands from `src/ChangeMe.Backend` or from the reposi
 - Handlers live in the same file as their request contract in `UseCases/<Feature>/`.
 - Return `Result<T>` consistently.
 - Use `ApplicationDbContext` for persistence from the handler layer.
-- Use mediator chaining when the workflow should return a fully built DTO already supported by an existing query.
+- After `SaveChangesAsync`, return API DTOs through an existing query via `mediator.Send` — do not instantiate query handlers with `new`.
+- For create commands that return a resource body, wrap the query result in `Result.Created(dto, "/resource/{id}")` so `BaseEndpoint` responds with `201 Created`.
+- For update or state-change commands that return the same details DTO, return the query `Result` directly (`200 OK`).
 
 ## Persistence conventions
 

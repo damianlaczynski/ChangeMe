@@ -81,7 +81,7 @@ public class UpdateIssueHandler(
     if (!updatedIssueResult.IsSuccess)
       return updatedIssueResult.Map();
 
-    return Result.Success(updatedIssueResult.Value);
+    return updatedIssueResult;
   }
 
   private Result UpdateAcceptanceCriteria(List<UpdateIssueAcceptanceCriterionPayload>? acceptanceCriteria, Issue issue, Guid actorUserId)

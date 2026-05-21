@@ -1,6 +1,5 @@
 ﻿using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UseCases.Auth.Dtos;
-using ChangeMe.Backend.UseCases.Users;
 
 namespace ChangeMe.Backend.UseCases.Auth;
 
@@ -9,6 +8,7 @@ public sealed record UpdateMyAccountCommand(
   string LastName) : ICommand<MyAccountDto>;
 
 public class UpdateMyAccountHandler(
+  IMediator mediator,
   ApplicationDbContext context,
   IUserAccessor userAccessor) : ICommandHandler<UpdateMyAccountCommand, MyAccountDto>
 {
@@ -27,18 +27,10 @@ public class UpdateMyAccountHandler(
 
     await context.SaveChangesAsync(cancellationToken);
 
-    var effectivePermissions = await UsersSupport.GetEffectivePermissionsForUserAsync(
-      context,
-      userId,
-      cancellationToken);
+    var accountResult = await mediator.Send(new GetMyAccountQuery(), cancellationToken);
+    if (!accountResult.IsSuccess)
+      return accountResult.Map();
 
-    return Result.Success(new MyAccountDto(
-      user.Id,
-      user.FirstName,
-      user.LastName,
-      user.Email,
-      user.Status.ToString(),
-      user.CreatedAt,
-      effectivePermissions));
+    return accountResult;
   }
 }

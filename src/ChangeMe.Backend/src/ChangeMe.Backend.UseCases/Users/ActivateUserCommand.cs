@@ -5,6 +5,7 @@ namespace ChangeMe.Backend.UseCases.Users;
 public sealed record ActivateUserCommand(Guid Id) : ICommand<UserDetailsDto>;
 
 public class ActivateUserHandler(
+  IMediator mediator,
   ApplicationDbContext context) : ICommandHandler<ActivateUserCommand, UserDetailsDto>
 {
   public async Task<Result<UserDetailsDto>> Handle(ActivateUserCommand command, CancellationToken cancellationToken)
@@ -13,16 +14,16 @@ public class ActivateUserHandler(
     if (user is null)
       return Result<UserDetailsDto>.NotFound();
 
-    if (user.IsActive)
+    if (!user.IsActive)
     {
-      return await new GetUserByIdHandler(context)
-        .Handle(new GetUserByIdQuery(user.Id), cancellationToken);
+      user.Activate();
+      await context.SaveChangesAsync(cancellationToken);
     }
 
-    user.Activate();
-    await context.SaveChangesAsync(cancellationToken);
+    var userResult = await mediator.Send(new GetUserByIdQuery(user.Id), cancellationToken);
+    if (!userResult.IsSuccess)
+      return userResult.Map();
 
-    return await new GetUserByIdHandler(context)
-      .Handle(new GetUserByIdQuery(user.Id), cancellationToken);
+    return userResult;
   }
 }

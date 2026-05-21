@@ -9,6 +9,7 @@ public sealed record CreateRoleCommand(
   IReadOnlyList<string> PermissionCodes) : ICommand<RoleDetailsDto>;
 
 public class CreateRoleHandler(
+  IMediator mediator,
   ApplicationDbContext context) : ICommandHandler<CreateRoleCommand, RoleDetailsDto>
 {
   public async Task<Result<RoleDetailsDto>> Handle(CreateRoleCommand command, CancellationToken cancellationToken)
@@ -29,7 +30,10 @@ public class CreateRoleHandler(
     await context.Roles.AddAsync(role, cancellationToken);
     await context.SaveChangesAsync(cancellationToken);
 
-    return await new GetRoleByIdHandler(context)
-      .Handle(new GetRoleByIdQuery { Id = role.Id }, cancellationToken);
+    var createdRoleResult = await mediator.Send(new GetRoleByIdQuery { Id = role.Id }, cancellationToken);
+    if (!createdRoleResult.IsSuccess)
+      return createdRoleResult.Map();
+
+    return Result.Created(createdRoleResult.Value, $"/roles/{createdRoleResult.Value.Id}");
   }
 }

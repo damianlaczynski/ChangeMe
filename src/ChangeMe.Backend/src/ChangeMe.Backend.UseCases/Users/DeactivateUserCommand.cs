@@ -5,6 +5,7 @@ namespace ChangeMe.Backend.UseCases.Users;
 public sealed record DeactivateUserCommand(Guid Id) : ICommand<UserDetailsDto>;
 
 public class DeactivateUserHandler(
+  IMediator mediator,
   ApplicationDbContext context,
   IUserAccessor userAccessor) : ICommandHandler<DeactivateUserCommand, UserDetailsDto>
 {
@@ -17,17 +18,17 @@ public class DeactivateUserHandler(
     if (user is null)
       return Result<UserDetailsDto>.NotFound();
 
-    if (!user.IsActive)
+    if (user.IsActive)
     {
-      return await new GetUserByIdHandler(context)
-        .Handle(new GetUserByIdQuery(user.Id), cancellationToken);
+      user.Deactivate();
+      await UsersSupport.RevokeAllActiveSessionsAsync(context, user.Id, cancellationToken);
+      await context.SaveChangesAsync(cancellationToken);
     }
 
-    user.Deactivate();
-    await UsersSupport.RevokeAllActiveSessionsAsync(context, user.Id, cancellationToken);
-    await context.SaveChangesAsync(cancellationToken);
+    var userResult = await mediator.Send(new GetUserByIdQuery(user.Id), cancellationToken);
+    if (!userResult.IsSuccess)
+      return userResult.Map();
 
-    return await new GetUserByIdHandler(context)
-      .Handle(new GetUserByIdQuery(user.Id), cancellationToken);
+    return userResult;
   }
 }

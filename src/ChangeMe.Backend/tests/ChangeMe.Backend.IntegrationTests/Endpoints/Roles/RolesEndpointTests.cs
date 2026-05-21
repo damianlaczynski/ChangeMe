@@ -121,7 +121,7 @@ public sealed class RolesEndpointTests(BackendWebApplicationFactory factory)
   }
 
   [Fact]
-  public async Task PostRoles_WhenAdministratorCreatesRole_ShouldReturnOk()
+  public async Task PostRoles_WhenAdministratorCreatesRole_ShouldReturnCreated()
   {
     var cancellationToken = TestContext.Current.CancellationToken;
     var admin = await TestAuthHelper.CreateAdministratorUserAsync(factory, cancellationToken);
@@ -134,7 +134,7 @@ public sealed class RolesEndpointTests(BackendWebApplicationFactory factory)
       PermissionCodes = new[] { PermissionCodes.UsersView }
     }, cancellationToken);
 
-    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    Assert.Equal(HttpStatusCode.Created, response.StatusCode);
 
     var body = await response.Content.ReadAsStringAsync(cancellationToken);
     Assert.Contains(roleName, body, StringComparison.OrdinalIgnoreCase);

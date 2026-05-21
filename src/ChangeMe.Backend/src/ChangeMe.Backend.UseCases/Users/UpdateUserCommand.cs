@@ -13,6 +13,7 @@ public sealed record UpdateUserCommand(
   UserStatus? Status) : ICommand<UserDetailsDto>;
 
 public class UpdateUserHandler(
+  IMediator mediator,
   ApplicationDbContext context,
   IUserAccessor userAccessor) : ICommandHandler<UpdateUserCommand, UserDetailsDto>
 {
@@ -77,7 +78,10 @@ public class UpdateUserHandler(
 
     await context.SaveChangesAsync(cancellationToken);
 
-    return await new GetUserByIdHandler(context)
-      .Handle(new GetUserByIdQuery(user.Id), cancellationToken);
+    var updatedUserResult = await mediator.Send(new GetUserByIdQuery(user.Id), cancellationToken);
+    if (!updatedUserResult.IsSuccess)
+      return updatedUserResult.Map();
+
+    return updatedUserResult;
   }
 }

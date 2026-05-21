@@ -38,6 +38,6 @@ public class AddIssueCommentHandler(
     if (!issueResult.IsSuccess)
       return issueResult.Map();
 
-    return Result.Success(issueResult.Value);
+    return issueResult;
   }
 }

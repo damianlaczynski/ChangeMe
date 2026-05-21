@@ -52,7 +52,7 @@ public sealed class UsersEndpointTests(BackendWebApplicationFactory factory)
       Status = UserStatus.Active
     }, cancellationToken);
 
-    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    Assert.Equal(HttpStatusCode.Created, response.StatusCode);
 
     var body = await response.Content.ReadAsStringAsync(cancellationToken);
     Assert.Contains(email, body, StringComparison.OrdinalIgnoreCase);

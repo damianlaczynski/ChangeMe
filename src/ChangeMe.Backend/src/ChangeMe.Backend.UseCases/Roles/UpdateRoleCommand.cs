@@ -10,6 +10,7 @@ public sealed record UpdateRoleCommand(
   IReadOnlyList<string> PermissionCodes) : ICommand<RoleDetailsDto>;
 
 public class UpdateRoleHandler(
+  IMediator mediator,
   ApplicationDbContext context) : ICommandHandler<UpdateRoleCommand, RoleDetailsDto>
 {
   public async Task<Result<RoleDetailsDto>> Handle(UpdateRoleCommand command, CancellationToken cancellationToken)
@@ -38,7 +39,10 @@ public class UpdateRoleHandler(
     role.SetPermissions(command.PermissionCodes);
     await context.SaveChangesAsync(cancellationToken);
 
-    return await new GetRoleByIdHandler(context)
-      .Handle(new GetRoleByIdQuery { Id = role.Id }, cancellationToken);
+    var updatedRoleResult = await mediator.Send(new GetRoleByIdQuery { Id = role.Id }, cancellationToken);
+    if (!updatedRoleResult.IsSuccess)
+      return updatedRoleResult.Map();
+
+    return updatedRoleResult;
   }
 }
