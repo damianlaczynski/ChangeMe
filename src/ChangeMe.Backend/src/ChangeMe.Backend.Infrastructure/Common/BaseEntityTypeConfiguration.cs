@@ -15,8 +15,7 @@ public abstract class BaseEntityTypeConfiguration<TEntity> : IEntityTypeConfigur
         builder.Property(e => e.CreatedAt)
             .IsRequired();
 
-        builder.Property(e => e.UpdatedAt)
-            .IsRequired();
+        builder.Property(e => e.UpdatedAt);
 
         builder.Property(e => e.IsDeleted)
             .HasDefaultValue(false);
@@ -24,8 +23,7 @@ public abstract class BaseEntityTypeConfiguration<TEntity> : IEntityTypeConfigur
         builder.Property(e => e.CreatedBy)
             .IsRequired();
 
-        builder.Property(e => e.UpdatedBy)
-            .IsRequired();
+        builder.Property(e => e.UpdatedBy);
 
         builder.HasIndex(e => e.Id);
 
