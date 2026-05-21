@@ -3,16 +3,16 @@ import { ApiService } from '@shared/api/services/api.service';
 import { PaginationResult } from '@shared/data/models/pagination-result.model';
 import { Observable } from 'rxjs';
 import {
-  AdminUserSessionDto,
-  CreateUserRequest,
-  EffectivePermissionDto,
-  PreviewEffectivePermissionsRequest,
-  RoleAssignmentOptionDto,
-  UpdateUserRequest,
-  UserDetailsDto,
-  UserFormDto,
-  UserListItemDto,
-  UserSearchParameters
+    AdminUserSessionDto,
+    CreateUserRequest,
+    EffectivePermissionDto,
+    PreviewEffectivePermissionsRequest,
+    RoleAssignmentOptionDto,
+    UpdateUserRequest,
+    UserDetailsDto,
+    UserFormDto,
+    UserListItemDto,
+    UserSearchParameters
 } from '../models/user.model';
 
 @Injectable({
@@ -46,7 +46,7 @@ export class UsersService {
   previewEffectivePermissions(
     request: PreviewEffectivePermissionsRequest
   ): Observable<EffectivePermissionDto[]> {
-    return this.apiService.post<EffectivePermissionDto[]>(
+    return this.apiService.get<EffectivePermissionDto[]>(
       `${this.baseEndpoint}/effective-permissions/preview`,
       request
     );
