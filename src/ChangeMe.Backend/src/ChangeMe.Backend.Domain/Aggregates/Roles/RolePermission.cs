@@ -1,6 +1,6 @@
 ﻿namespace ChangeMe.Backend.Domain.Aggregates.Roles;
 
-public class RolePermission
+public class RolePermission : Entity
 {
   private RolePermission() { }
 

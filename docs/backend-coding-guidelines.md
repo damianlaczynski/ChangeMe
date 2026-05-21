@@ -31,6 +31,7 @@ For build, run, and test commands from `src/ChangeMe.Backend` or from the reposi
 ### Domain
 
 - Owns aggregates, entities, enums, interfaces, and business rules.
+- Persisted domain types (including child entities and join rows) inherit `Entity` so `CreatedAt`, `UpdatedAt`, `CreatedBy`, and `UpdatedBy` are set consistently via `ApplicationDbContext`.
 - Should be the place for invariants like issue title/description constraints.
 
 ### Infrastructure
