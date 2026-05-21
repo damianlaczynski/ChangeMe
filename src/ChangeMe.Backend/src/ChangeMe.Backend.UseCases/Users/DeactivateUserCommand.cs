@@ -1,5 +1,7 @@
 using ChangeMe.Backend.UseCases.Users.Dtos;
 
+using ChangeMe.Backend.UseCases.Users.Utils;
+
 namespace ChangeMe.Backend.UseCases.Users;
 
 public sealed record DeactivateUserCommand(Guid Id) : ICommand<UserDetailsDto>;
@@ -12,7 +14,7 @@ public class DeactivateUserHandler(
   public async Task<Result<UserDetailsDto>> Handle(DeactivateUserCommand command, CancellationToken cancellationToken)
   {
     if (userAccessor.UserId == command.Id)
-      return Result<UserDetailsDto>.Error(UsersSupport.CannotDeactivateOwnAccountMessage);
+      return Result<UserDetailsDto>.Error(UsersUtils.CannotDeactivateOwnAccountMessage);
 
     var user = await context.Users.FirstOrDefaultAsync(x => x.Id == command.Id, cancellationToken);
     if (user is null)
@@ -21,7 +23,7 @@ public class DeactivateUserHandler(
     if (user.IsActive)
     {
       user.Deactivate();
-      await UsersSupport.RevokeAllActiveSessionsAsync(context, user.Id, cancellationToken);
+      await UsersUtils.RevokeAllActiveSessionsAsync(context, user.Id, cancellationToken);
       await context.SaveChangesAsync(cancellationToken);
     }
 

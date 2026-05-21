@@ -2,6 +2,8 @@ using ChangeMe.Backend.Domain.Aggregates.Users;
 using ChangeMe.Backend.Domain.Authorization;
 using ChangeMe.Backend.UseCases.Users.Dtos;
 
+using ChangeMe.Backend.UseCases.Users.Utils;
+
 namespace ChangeMe.Backend.UseCases.Users;
 
 public sealed record UpdateUserCommand(
@@ -29,7 +31,7 @@ public class UpdateUserHandler(
       cancellationToken);
 
     if (emailTaken)
-      return Result<UserDetailsDto>.Conflict(UsersSupport.DuplicateEmailMessage);
+      return Result<UserDetailsDto>.Conflict(UsersUtils.DuplicateEmailMessage);
 
     var updateProfileResult = user.UpdateAdminProfile(command.FirstName, command.LastName, command.Email);
     if (!updateProfileResult.IsSuccess)
@@ -41,12 +43,12 @@ public class UpdateUserHandler(
     if (command.RoleIds is not null)
     {
       if (!userAccessor.HasPermission(PermissionCodes.RolesManage))
-        return Result<UserDetailsDto>.Forbidden(UsersSupport.PermissionDeniedMessage);
+        return Result<UserDetailsDto>.Forbidden(UsersUtils.PermissionDeniedMessage);
 
       if (editingSelf)
-        return Result<UserDetailsDto>.Error(UsersSupport.CannotChangeOwnRolesMessage);
+        return Result<UserDetailsDto>.Error(UsersUtils.CannotChangeOwnRolesMessage);
 
-      var roleResult = await UsersSupport.ReplaceUserRolesAsync(
+      var roleResult = await UsersUtils.ReplaceUserRolesAsync(
         context,
         user.Id,
         command.RoleIds,
@@ -60,15 +62,15 @@ public class UpdateUserHandler(
     if (command.Status.HasValue)
     {
       if (!userAccessor.HasPermission(PermissionCodes.UsersDeactivate))
-        return Result<UserDetailsDto>.Forbidden(UsersSupport.PermissionDeniedMessage);
+        return Result<UserDetailsDto>.Forbidden(UsersUtils.PermissionDeniedMessage);
 
       if (editingSelf && command.Status.Value == UserStatus.Inactive)
-        return Result<UserDetailsDto>.Error(UsersSupport.CannotDeactivateOwnAccountMessage);
+        return Result<UserDetailsDto>.Error(UsersUtils.CannotDeactivateOwnAccountMessage);
 
       if (command.Status.Value == UserStatus.Inactive && user.IsActive)
       {
         user.Deactivate();
-        await UsersSupport.RevokeAllActiveSessionsAsync(context, user.Id, cancellationToken);
+        await UsersUtils.RevokeAllActiveSessionsAsync(context, user.Id, cancellationToken);
       }
       else if (command.Status.Value == UserStatus.Active && !user.IsActive)
       {

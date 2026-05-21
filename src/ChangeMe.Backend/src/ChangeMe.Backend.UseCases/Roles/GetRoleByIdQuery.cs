@@ -1,5 +1,7 @@
 using ChangeMe.Backend.UseCases.Roles.Dtos;
 
+using ChangeMe.Backend.UseCases.Roles.Utils;
+
 namespace ChangeMe.Backend.UseCases.Roles;
 
 public sealed class GetRoleByIdQuery : IQuery<RoleDetailsDto>
@@ -33,7 +35,7 @@ public class GetRoleByIdHandler(
       IsSystem = role.IsSystem,
       PermissionCount = permissionCodes.Count,
       UserCount = userCount,
-      Permissions = RolesSupport.MapRolePermissions(permissionCodes)
+      Permissions = RolesUtils.MapRolePermissions(permissionCodes)
     });
   }
 }

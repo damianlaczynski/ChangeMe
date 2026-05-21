@@ -1,7 +1,9 @@
-﻿using ChangeMe.Backend.Domain.Aggregates.Sessions;
+using ChangeMe.Backend.Domain.Aggregates.Sessions;
 using ChangeMe.Backend.Domain.Aggregates.Users;
 using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UseCases.Auth.Dtos;
+
+using ChangeMe.Backend.UseCases.Auth.Utils;
 
 namespace ChangeMe.Backend.UseCases.Auth;
 
@@ -39,7 +41,7 @@ public class RefreshSessionHandler(
 
     await context.SaveChangesAsync(cancellationToken);
 
-    return await AuthSessionSupport.CreateAuthResponseAsync(
+    return await AuthSessionUtils.CreateAuthResponseAsync(
       context,
       jwtTokenGenerator,
       user,

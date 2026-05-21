@@ -1,8 +1,10 @@
-﻿using ChangeMe.Backend.Domain.Aggregates.Sessions;
+using ChangeMe.Backend.Domain.Aggregates.Sessions;
 using ChangeMe.Backend.Domain.Aggregates.Users;
 using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UseCases.Auth.Dtos;
 using Microsoft.AspNetCore.Http;
+
+using ChangeMe.Backend.UseCases.Auth.Utils;
 
 namespace ChangeMe.Backend.UseCases.Auth;
 
@@ -23,13 +25,13 @@ public class LoginUserHandler(
     var normalizedEmail = User.NormalizeEmail(command.Email);
     var user = await context.Users.FirstOrDefaultAsync(x => x.NormalizedEmail == normalizedEmail, cancellationToken);
     if (user is null)
-      return Result<AuthResponseDto>.Unauthorized(AuthSessionSupport.InvalidCredentialsMessage);
+      return Result<AuthResponseDto>.Unauthorized(AuthSessionUtils.InvalidCredentialsMessage);
 
     if (!user.IsActive)
-      return Result<AuthResponseDto>.Unauthorized(AuthSessionSupport.DeactivatedAccountMessage);
+      return Result<AuthResponseDto>.Unauthorized(AuthSessionUtils.DeactivatedAccountMessage);
 
     if (!passwordHasher.VerifyPassword(user.PasswordHash, command.Password))
-      return Result<AuthResponseDto>.Unauthorized(AuthSessionSupport.InvalidCredentialsMessage);
+      return Result<AuthResponseDto>.Unauthorized(AuthSessionUtils.InvalidCredentialsMessage);
 
     var sessionResult = await CreateSessionAsync(user, command.RememberMe, cancellationToken);
     if (!sessionResult.IsSuccess)
@@ -37,7 +39,7 @@ public class LoginUserHandler(
 
     await context.SaveChangesAsync(cancellationToken);
 
-    return await AuthSessionSupport.CreateAuthResponseAsync(
+    return await AuthSessionUtils.CreateAuthResponseAsync(
       context,
       jwtTokenGenerator,
       user,
@@ -57,7 +59,7 @@ public class LoginUserHandler(
     var refreshTokenExpiresAtUtc = sessionLifetime.GetRefreshTokenExpiresAtUtc(rememberMe, signedInAt);
     var httpContext = httpContextAccessor.HttpContext;
     var deviceLabel = ClientInfoParser.ParseDeviceBrowserLabel(httpContext?.Request.Headers.UserAgent);
-    var ipAddress = AuthSessionSupport.GetClientIpAddress(httpContext);
+    var ipAddress = AuthSessionUtils.GetClientIpAddress(httpContext);
 
     var sessionResult = UserSession.Create(
       user.Id,

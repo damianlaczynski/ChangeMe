@@ -1,13 +1,12 @@
-﻿using ChangeMe.Backend.Domain.Aggregates.Roles;
+using ChangeMe.Backend.Domain.Aggregates.Roles;
 using ChangeMe.Backend.Domain.Aggregates.Sessions;
 using ChangeMe.Backend.Domain.Authorization;
 using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UseCases.Users.Dtos;
-using Microsoft.EntityFrameworkCore;
 
-namespace ChangeMe.Backend.UseCases.Users;
+namespace ChangeMe.Backend.UseCases.Users.Utils;
 
-public static class UsersSupport
+public static class UsersUtils
 {
   public const string DuplicateEmailMessage = "A user with this email already exists.";
   public const string CannotRemoveOwnAdministratorMessage = "You cannot remove your own administrator access.";

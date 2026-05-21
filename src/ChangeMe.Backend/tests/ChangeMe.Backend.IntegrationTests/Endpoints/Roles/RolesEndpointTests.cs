@@ -1,10 +1,11 @@
-﻿using System.Net;
+using System.Net;
 using System.Net.Http.Json;
 using ChangeMe.Backend.Domain.Aggregates.Roles;
 using ChangeMe.Backend.Domain.Authorization;
 using ChangeMe.Backend.IntegrationTests.Fixtures;
 using ChangeMe.Backend.IntegrationTests.Support;
 using ChangeMe.Backend.UseCases.Roles;
+using ChangeMe.Backend.UseCases.Roles.Utils;
 
 namespace ChangeMe.Backend.IntegrationTests.Endpoints.Roles;
 
@@ -172,7 +173,7 @@ public sealed class RolesEndpointTests(BackendWebApplicationFactory factory)
     Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
 
     var body = await response.Content.ReadAsStringAsync(cancellationToken);
-    Assert.Contains(RolesSupport.DuplicateNameMessage, body, StringComparison.Ordinal);
+    Assert.Contains(RolesUtils.DuplicateNameMessage, body, StringComparison.Ordinal);
   }
 
   [Fact]
@@ -232,7 +233,7 @@ public sealed class RolesEndpointTests(BackendWebApplicationFactory factory)
     Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
 
     var body = await response.Content.ReadAsStringAsync(cancellationToken);
-    Assert.Contains(RolesSupport.SystemRoleCannotBeModifiedMessage, body, StringComparison.Ordinal);
+    Assert.Contains(RolesUtils.SystemRoleCannotBeModifiedMessage, body, StringComparison.Ordinal);
   }
 
   [Fact]
@@ -267,7 +268,7 @@ public sealed class RolesEndpointTests(BackendWebApplicationFactory factory)
     Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
 
     var body = await response.Content.ReadAsStringAsync(cancellationToken);
-    Assert.Contains(RolesSupport.RoleAssignedToUsersMessage, body, StringComparison.Ordinal);
+    Assert.Contains(RolesUtils.RoleAssignedToUsersMessage, body, StringComparison.Ordinal);
   }
 
   [Fact]
@@ -359,7 +360,7 @@ public sealed class RolesEndpointTests(BackendWebApplicationFactory factory)
     Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
 
     var body = await response.Content.ReadAsStringAsync(cancellationToken);
-    Assert.Contains(RolesSupport.UserMustHaveRoleMessage, body, StringComparison.Ordinal);
+    Assert.Contains(RolesUtils.UserMustHaveRoleMessage, body, StringComparison.Ordinal);
   }
 
 }

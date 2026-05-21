@@ -1,5 +1,7 @@
 using ChangeMe.Backend.UseCases.Users.Dtos;
 
+using ChangeMe.Backend.UseCases.Users.Utils;
+
 namespace ChangeMe.Backend.UseCases.Users;
 
 public sealed record GetUserByIdQuery(Guid Id) : IQuery<UserDetailsDto>;
@@ -23,12 +25,12 @@ public class GetUserByIdHandler(
       .Select(role => new UserRoleSummaryDto(role.Id, role.Name, role.IsSystem))
       .ToList();
 
-    var effectivePermissions = await UsersSupport.GetEffectivePermissionsForUserAsync(
+    var effectivePermissions = await UsersUtils.GetEffectivePermissionsForUserAsync(
       context,
       user.Id,
       cancellationToken);
 
-    var lastSignInAt = await UsersSupport.GetLastSignInAtAsync(context, user.Id, cancellationToken);
+    var lastSignInAt = await UsersUtils.GetLastSignInAtAsync(context, user.Id, cancellationToken);
 
     return Result.Success(new UserDetailsDto
     {

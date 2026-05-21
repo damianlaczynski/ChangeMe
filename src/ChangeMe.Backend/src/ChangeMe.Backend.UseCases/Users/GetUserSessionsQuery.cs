@@ -1,6 +1,8 @@
-﻿using ChangeMe.Backend.Domain.Aggregates.Sessions;
+using ChangeMe.Backend.Domain.Aggregates.Sessions;
 using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UseCases.Users.Dtos;
+
+using ChangeMe.Backend.UseCases.Users.Utils;
 
 namespace ChangeMe.Backend.UseCases.Users;
 
@@ -28,6 +30,6 @@ public class GetUserSessionsHandler(
       .Where(x => x.UserId == query.Id && x.RevokedAt == null)
       .ToListAsync(cancellationToken);
 
-    return Result.Success(UsersSupport.MapActiveSessions(sessions, utcNow, sessionLifetime));
+    return Result.Success(UsersUtils.MapActiveSessions(sessions, utcNow, sessionLifetime));
   }
 }

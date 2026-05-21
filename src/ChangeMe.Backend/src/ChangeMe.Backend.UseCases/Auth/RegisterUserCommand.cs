@@ -1,9 +1,11 @@
-﻿using ChangeMe.Backend.Domain.Aggregates.Roles;
+using ChangeMe.Backend.Domain.Aggregates.Roles;
 using ChangeMe.Backend.Domain.Aggregates.Sessions;
 using ChangeMe.Backend.Domain.Aggregates.Users;
 using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UseCases.Auth.Dtos;
 using Microsoft.AspNetCore.Http;
+
+using ChangeMe.Backend.UseCases.Auth.Utils;
 
 namespace ChangeMe.Backend.UseCases.Auth;
 
@@ -25,7 +27,7 @@ public class RegisterUserHandler(
     var normalizedEmail = User.NormalizeEmail(command.Email);
     var userExists = await context.Users.AnyAsync(x => x.NormalizedEmail == normalizedEmail, cancellationToken);
     if (userExists)
-      return Result<AuthResponseDto>.Conflict(AuthSessionSupport.DuplicateEmailMessage);
+      return Result<AuthResponseDto>.Conflict(AuthSessionUtils.DuplicateEmailMessage);
 
     var defaultRole = await context.Roles
       .FirstOrDefaultAsync(x => x.Name == RoleConstraints.UserRoleName, cancellationToken);
@@ -48,7 +50,7 @@ public class RegisterUserHandler(
 
     await context.SaveChangesAsync(cancellationToken);
 
-    var authResponse = await AuthSessionSupport.CreateAuthResponseAsync(
+    var authResponse = await AuthSessionUtils.CreateAuthResponseAsync(
       context,
       jwtTokenGenerator,
       user,
@@ -73,7 +75,7 @@ public class RegisterUserHandler(
     var refreshTokenExpiresAtUtc = sessionLifetime.GetRefreshTokenExpiresAtUtc(rememberMe, signedInAt);
     var httpContext = httpContextAccessor.HttpContext;
     var deviceLabel = ClientInfoParser.ParseDeviceBrowserLabel(httpContext?.Request.Headers.UserAgent);
-    var ipAddress = AuthSessionSupport.GetClientIpAddress(httpContext);
+    var ipAddress = AuthSessionUtils.GetClientIpAddress(httpContext);
 
     var sessionResult = UserSession.Create(
       user.Id,

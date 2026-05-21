@@ -25,7 +25,8 @@ For build, run, and test commands from `src/ChangeMe.Backend` or from the reposi
 - Should not duplicate domain invariants that already belong in aggregates.
 - Keep only `*Command.cs` and `*Query.cs` files at the top level of each feature folder.
 - Place feature DTOs under `UseCases/<Feature>/Dtos/`.
-- Place feature services under `UseCases/<Feature>/Services/`.
+- Place shared handler helpers (messages, validation, mapping, light EF queries) under `UseCases/<Feature>/Utils/` as `*Utils.cs` static classes — mirror the frontend `utils/<feature>.utils.ts` convention.
+- Place feature services under `UseCases/<Feature>/Services/` for orchestration with side effects (for example notifications).
 
 ### Domain
 

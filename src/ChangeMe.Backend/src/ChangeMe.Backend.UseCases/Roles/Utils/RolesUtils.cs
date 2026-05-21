@@ -1,10 +1,10 @@
-﻿using ChangeMe.Backend.Domain.Aggregates.Roles;
+using ChangeMe.Backend.Domain.Aggregates.Roles;
 using ChangeMe.Backend.Domain.Authorization;
 using ChangeMe.Backend.UseCases.Roles.Dtos;
 
-namespace ChangeMe.Backend.UseCases.Roles;
+namespace ChangeMe.Backend.UseCases.Roles.Utils;
 
-public static class RolesSupport
+public static class RolesUtils
 {
   public const string PermissionDeniedMessage = "You do not have permission to perform this action.";
   public const string DuplicateNameMessage = "A role with this name already exists.";

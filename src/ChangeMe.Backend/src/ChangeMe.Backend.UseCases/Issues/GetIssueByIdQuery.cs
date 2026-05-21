@@ -1,4 +1,5 @@
 using ChangeMe.Backend.UseCases.Issues.Dtos;
+using ChangeMe.Backend.UseCases.Issues.Utils;
 
 namespace ChangeMe.Backend.UseCases.Issues;
 
@@ -21,33 +22,10 @@ public class GetIssueByIdHandler(
     if (issue is null)
       return Result.NotFound();
 
-    var userIds = new HashSet<Guid>
-    {
-      issue.CreatedBy,
-    };
-
-    if (issue.AssignedToUserId.HasValue)
-      userIds.Add(issue.AssignedToUserId.Value);
-
-    foreach (var assigneeHistoryEntry in issue.HistoryEntries.Where(h => h.EventType == Domain.Aggregates.Issue.Enums.IssueHistoryEventType.ASSIGNEE_CHANGED))
-    {
-      if (Guid.TryParse(assigneeHistoryEntry.PreviousValue, out var previousAssigneeId))
-        userIds.Add(previousAssigneeId);
-
-      if (Guid.TryParse(assigneeHistoryEntry.CurrentValue, out var currentAssigneeId))
-        userIds.Add(currentAssigneeId);
-    }
-
-    foreach (var comment in issue.Comments)
-      userIds.Add(comment.CreatedBy);
-
-    foreach (var historyEntry in issue.HistoryEntries)
-      userIds.Add(historyEntry.ActorUserId);
-
-    var userLookup = await context.Users
-      .AsNoTracking()
-      .Where(u => userIds.Contains(u.Id))
-      .ToDictionaryAsync(u => u.Id, u => $"{u.FirstName} {u.LastName}", cancellationToken);
+    var userLookup = await IssuesUtils.GetUserDisplayNameLookupAsync(
+      context,
+      IssuesUtils.CollectRelatedUserIds(issue),
+      cancellationToken);
 
     return Result.Success(issue.ToDetailsDto(userLookup, userAccessor.UserId));
   }

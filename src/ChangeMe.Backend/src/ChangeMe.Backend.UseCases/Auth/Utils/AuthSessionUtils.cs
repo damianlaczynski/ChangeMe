@@ -1,12 +1,12 @@
-﻿using ChangeMe.Backend.Domain.Aggregates.Sessions;
+using ChangeMe.Backend.Domain.Aggregates.Sessions;
 using ChangeMe.Backend.Domain.Aggregates.Users;
 using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UseCases.Auth.Dtos;
 using Microsoft.AspNetCore.Http;
 
-namespace ChangeMe.Backend.UseCases.Auth;
+namespace ChangeMe.Backend.UseCases.Auth.Utils;
 
-public static class AuthSessionSupport
+public static class AuthSessionUtils
 {
   public const string InvalidCredentialsMessage = "Invalid email or password.";
   public const string DeactivatedAccountMessage = "This account has been deactivated. Contact an administrator.";

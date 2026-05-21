@@ -1,5 +1,7 @@
-﻿using ChangeMe.Backend.Domain.Aggregates.Roles;
+using ChangeMe.Backend.Domain.Aggregates.Roles;
 using ChangeMe.Backend.UseCases.Roles.Dtos;
+
+using ChangeMe.Backend.UseCases.Roles.Utils;
 
 namespace ChangeMe.Backend.UseCases.Roles;
 
@@ -14,10 +16,10 @@ public class CreateRoleHandler(
 {
   public async Task<Result<RoleDetailsDto>> Handle(CreateRoleCommand command, CancellationToken cancellationToken)
   {
-    if (await RolesSupport.IsNameTakenAsync(context, command.Name, null, cancellationToken))
-      return Result<RoleDetailsDto>.Conflict(RolesSupport.DuplicateNameMessage);
+    if (await RolesUtils.IsNameTakenAsync(context, command.Name, null, cancellationToken))
+      return Result<RoleDetailsDto>.Conflict(RolesUtils.DuplicateNameMessage);
 
-    var permissionValidation = RolesSupport.ValidatePermissionCodes(command.PermissionCodes);
+    var permissionValidation = RolesUtils.ValidatePermissionCodes(command.PermissionCodes);
     if (!permissionValidation.IsSuccess)
       return permissionValidation.Map();
 

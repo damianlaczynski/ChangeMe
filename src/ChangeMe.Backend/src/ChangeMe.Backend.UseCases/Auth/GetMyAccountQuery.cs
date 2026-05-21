@@ -1,6 +1,8 @@
-﻿using ChangeMe.Backend.Infrastructure.Auth;
+using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UseCases.Auth.Dtos;
 using ChangeMe.Backend.UseCases.Users;
+
+using ChangeMe.Backend.UseCases.Users.Utils;
 
 namespace ChangeMe.Backend.UseCases.Auth;
 
@@ -19,7 +21,7 @@ public class GetMyAccountHandler(
     if (user is null || !user.IsActive)
       return Result<MyAccountDto>.Unauthorized();
 
-    var effectivePermissions = await UsersSupport.GetEffectivePermissionsForUserAsync(
+    var effectivePermissions = await UsersUtils.GetEffectivePermissionsForUserAsync(
       context,
       userId,
       cancellationToken);

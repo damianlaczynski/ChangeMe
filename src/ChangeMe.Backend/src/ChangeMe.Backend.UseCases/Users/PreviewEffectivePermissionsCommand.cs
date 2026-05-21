@@ -1,4 +1,6 @@
-﻿using ChangeMe.Backend.UseCases.Users.Dtos;
+using ChangeMe.Backend.UseCases.Users.Dtos;
+
+using ChangeMe.Backend.UseCases.Users.Utils;
 
 namespace ChangeMe.Backend.UseCases.Users;
 
@@ -12,7 +14,7 @@ public class PreviewEffectivePermissionsHandler(ApplicationDbContext context)
     PreviewEffectivePermissionsCommand command,
     CancellationToken cancellationToken)
   {
-    var permissions = await UsersSupport.GetEffectivePermissionsForRolesAsync(
+    var permissions = await UsersUtils.GetEffectivePermissionsForRolesAsync(
       context,
       command.RoleIds,
       cancellationToken);

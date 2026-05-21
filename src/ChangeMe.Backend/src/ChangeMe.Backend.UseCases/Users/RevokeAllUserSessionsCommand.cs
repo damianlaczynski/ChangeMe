@@ -1,4 +1,6 @@
 
+using ChangeMe.Backend.UseCases.Users.Utils;
+
 namespace ChangeMe.Backend.UseCases.Users;
 
 public sealed record RevokeAllUserSessionsCommand(Guid Id) : ICommand<bool>;
@@ -12,7 +14,7 @@ public class RevokeAllUserSessionsHandler(
     if (!userExists)
       return Result<bool>.NotFound();
 
-    await UsersSupport.RevokeAllActiveSessionsAsync(context, command.Id, cancellationToken);
+    await UsersUtils.RevokeAllActiveSessionsAsync(context, command.Id, cancellationToken);
     await context.SaveChangesAsync(cancellationToken);
     return Result.Success(true);
   }

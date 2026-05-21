@@ -1,5 +1,7 @@
 using ChangeMe.Backend.UseCases.Roles.Dtos;
 
+using ChangeMe.Backend.UseCases.Roles.Utils;
+
 namespace ChangeMe.Backend.UseCases.Roles;
 
 public sealed class GetPermissionCatalogQuery : IQuery<IReadOnlyList<PermissionCatalogItemDto>>
@@ -14,6 +16,6 @@ public class GetPermissionCatalogHandler()
     GetPermissionCatalogQuery query,
     CancellationToken cancellationToken)
   {
-    return Result.Success(RolesSupport.GetPermissionCatalog());
+    return Result.Success(RolesUtils.GetPermissionCatalog());
   }
 }

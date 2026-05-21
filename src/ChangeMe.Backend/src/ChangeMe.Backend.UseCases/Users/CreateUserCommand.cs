@@ -1,5 +1,7 @@
-﻿using ChangeMe.Backend.Domain.Aggregates.Users;
+using ChangeMe.Backend.Domain.Aggregates.Users;
 using ChangeMe.Backend.UseCases.Users.Dtos;
+
+using ChangeMe.Backend.UseCases.Users.Utils;
 
 namespace ChangeMe.Backend.UseCases.Users;
 
@@ -21,7 +23,7 @@ public class CreateUserHandler(
     var normalizedEmail = User.NormalizeEmail(command.Email);
     var emailExists = await context.Users.AnyAsync(x => x.NormalizedEmail == normalizedEmail, cancellationToken);
     if (emailExists)
-      return Result<UserDetailsDto>.Conflict(UsersSupport.DuplicateEmailMessage);
+      return Result<UserDetailsDto>.Conflict(UsersUtils.DuplicateEmailMessage);
 
     var passwordHash = passwordHasher.HashPassword(command.Password);
     var createUserResult = User.Create(command.FirstName, command.LastName, command.Email, passwordHash);

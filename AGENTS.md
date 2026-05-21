@@ -76,6 +76,7 @@ From the repository root, run `npm install` once to install root devDependencies
 - Query and command contracts live in `src/ChangeMe.Backend.UseCases/<Feature>/`.
 - Keep only `*Query.cs` and `*Command.cs` files at the top level of each `UseCases` feature folder.
 - Place feature DTOs in `src/ChangeMe.Backend.UseCases/<Feature>/Dtos/`.
+- Place shared handler helpers in `src/ChangeMe.Backend.UseCases/<Feature>/Utils/` (for example `RolesUtils.cs`).
 - Place feature services in `src/ChangeMe.Backend.UseCases/<Feature>/Services/`.
 - Handlers still live with their matching command or query file.
 - Domain rules and aggregates live in `src/ChangeMe.Backend.Domain`.

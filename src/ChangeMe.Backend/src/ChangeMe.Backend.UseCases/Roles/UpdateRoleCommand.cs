@@ -1,5 +1,7 @@
-﻿using ChangeMe.Backend.Domain.Aggregates.Roles;
+using ChangeMe.Backend.Domain.Aggregates.Roles;
 using ChangeMe.Backend.UseCases.Roles.Dtos;
+
+using ChangeMe.Backend.UseCases.Roles.Utils;
 
 namespace ChangeMe.Backend.UseCases.Roles;
 
@@ -23,12 +25,12 @@ public class UpdateRoleHandler(
       return Result<RoleDetailsDto>.NotFound();
 
     if (role.IsSystem)
-      return Result<RoleDetailsDto>.Error(RolesSupport.SystemRoleCannotBeModifiedMessage);
+      return Result<RoleDetailsDto>.Error(RolesUtils.SystemRoleCannotBeModifiedMessage);
 
-    if (await RolesSupport.IsNameTakenAsync(context, command.Name, role.Id, cancellationToken))
-      return Result<RoleDetailsDto>.Conflict(RolesSupport.DuplicateNameMessage);
+    if (await RolesUtils.IsNameTakenAsync(context, command.Name, role.Id, cancellationToken))
+      return Result<RoleDetailsDto>.Conflict(RolesUtils.DuplicateNameMessage);
 
-    var permissionValidation = RolesSupport.ValidatePermissionCodes(command.PermissionCodes);
+    var permissionValidation = RolesUtils.ValidatePermissionCodes(command.PermissionCodes);
     if (!permissionValidation.IsSuccess)
       return permissionValidation.Map();
 

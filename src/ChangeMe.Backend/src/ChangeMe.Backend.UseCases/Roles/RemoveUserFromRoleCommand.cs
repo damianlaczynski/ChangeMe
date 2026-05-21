@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 
+using ChangeMe.Backend.UseCases.Roles.Utils;
+
 namespace ChangeMe.Backend.UseCases.Roles;
 
 public sealed record RemoveUserFromRoleCommand(Guid RoleId, Guid UserId) : ICommand<bool>;
@@ -23,7 +25,7 @@ public class RemoveUserFromRoleHandler(
     var removeResult = user.RemoveRole(command.RoleId);
     if (!removeResult.IsSuccess)
       return removeResult.Status == ResultStatus.Error
-        ? Result<bool>.Error(RolesSupport.UserMustHaveRoleMessage)
+        ? Result<bool>.Error(RolesUtils.UserMustHaveRoleMessage)
         : removeResult.Map();
 
     await context.SaveChangesAsync(cancellationToken);
