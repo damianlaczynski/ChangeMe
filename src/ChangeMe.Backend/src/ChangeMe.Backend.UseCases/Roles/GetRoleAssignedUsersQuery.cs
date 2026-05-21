@@ -1,23 +1,24 @@
-﻿using ChangeMe.Backend.UseCases.Roles.Dtos;
+using ChangeMe.Backend.UseCases.Common;
+using ChangeMe.Backend.UseCases.Roles.Dtos;
 
 namespace ChangeMe.Backend.UseCases.Roles;
 
-public sealed class GetRoleAssignedUsersQuery : IQuery<IReadOnlyList<RoleAssignedUserDto>>
+public sealed class GetRoleAssignedUsersQuery : PaginationQuery<RoleAssignedUserDto>
 {
   public Guid RoleId { get; set; }
   public string? SearchText { get; set; }
 }
 
 public class GetRoleAssignedUsersHandler(ApplicationDbContext context)
-  : IQueryHandler<GetRoleAssignedUsersQuery, IReadOnlyList<RoleAssignedUserDto>>
+  : IQueryHandler<GetRoleAssignedUsersQuery, PaginationResult<RoleAssignedUserDto>>
 {
-  public async Task<Result<IReadOnlyList<RoleAssignedUserDto>>> Handle(
+  public async Task<Result<PaginationResult<RoleAssignedUserDto>>> Handle(
     GetRoleAssignedUsersQuery query,
     CancellationToken cancellationToken)
   {
     var roleExists = await context.Roles.AsNoTracking().AnyAsync(x => x.Id == query.RoleId, cancellationToken);
     if (!roleExists)
-      return Result<IReadOnlyList<RoleAssignedUserDto>>.NotFound();
+      return Result<PaginationResult<RoleAssignedUserDto>>.NotFound();
 
     var usersQuery = context.Users
       .AsNoTracking()
@@ -39,18 +40,30 @@ public class GetRoleAssignedUsersHandler(ApplicationDbContext context)
 #endif
     }
 
-    var users = await usersQuery
-      .OrderBy(u => u.LastName)
-      .ThenBy(u => u.FirstName)
-      .Select(u => new RoleAssignedUserDto
-      {
-        Id = u.Id,
-        FullName = u.FirstName + " " + u.LastName,
-        Email = u.Email,
-        Status = u.Status
-      })
-      .ToListAsync(cancellationToken);
+    var projected = usersQuery.Select(u => new RoleAssignedUserDto
+    {
+      Id = u.Id,
+      FullName = u.FirstName + " " + u.LastName,
+      Email = u.Email,
+      Status = u.Status
+    });
 
-    return Result.Success<IReadOnlyList<RoleAssignedUserDto>>(users);
+    query.PaginationParameters.SortField = MapSortField(query.PaginationParameters.SortField);
+
+    var pagedUsers = await projected.ToPaginationResultAsync(
+      x => x,
+      query.PaginationParameters,
+      cancellationToken);
+
+    return Result.Success(pagedUsers);
   }
+
+  private static string MapSortField(string sortField) =>
+    sortField switch
+    {
+      "Name" or "FullName" => nameof(RoleAssignedUserDto.FullName),
+      "Email" => nameof(RoleAssignedUserDto.Email),
+      "Status" => nameof(RoleAssignedUserDto.Status),
+      _ => nameof(RoleAssignedUserDto.FullName)
+    };
 }

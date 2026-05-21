@@ -13,7 +13,6 @@ public class Notification : Entity, IAggregateRoot
   public string IssueTitle { get; private set; } = string.Empty;
   public string Message { get; private set; } = string.Empty;
   public string Link { get; private set; } = string.Empty;
-  public DateTime OccurredAt { get; private set; }
   public bool IsRead { get; private set; }
   public DateTime? ReadAt { get; private set; }
   public DateTime? EmailSentAt { get; private set; }
@@ -25,7 +24,6 @@ public class Notification : Entity, IAggregateRoot
     NotificationEventType eventType,
     string issueTitle,
     string message,
-    DateTime occurredAt,
     string link)
   {
     var validationErrors = new List<ValidationError>();
@@ -63,7 +61,6 @@ public class Notification : Entity, IAggregateRoot
       IssueTitle = issueTitle.Trim(),
       Message = message.Trim(),
       Link = link.Trim(),
-      OccurredAt = occurredAt,
       IsRead = false,
     });
   }

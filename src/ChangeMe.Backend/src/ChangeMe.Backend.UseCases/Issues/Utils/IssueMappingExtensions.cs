@@ -39,32 +39,49 @@ public static class IssueMappingExtensions
           CreatedBy = c.CreatedBy,
         })
         .ToList(),
-      Comments = issue.Comments
-        .OrderBy(c => c.CreatedAt)
-        .Select(c => new IssueCommentDto
-        {
-          Id = c.Id,
-          Content = c.Content,
-          AuthorUserId = c.CreatedBy,
-          AuthorName = userLookup.GetValueOrDefault(c.CreatedBy),
-          CreatedAt = c.CreatedAt,
-        })
-        .ToList(),
-      HistoryEntries = issue.HistoryEntries
-        .OrderByDescending(h => h.CreatedAt)
-        .Select(h => new IssueHistoryEntryDto
-        {
-          Id = h.Id,
-          EventType = h.EventType,
-          ActorUserId = h.ActorUserId,
-          ActorName = userLookup.GetValueOrDefault(h.ActorUserId),
-          Summary = h.Summary,
-          PreviousValue = FormatHistoryValue(h.EventType, h.PreviousValue, userLookup),
-          CurrentValue = FormatHistoryValue(h.EventType, h.CurrentValue, userLookup),
-          CreatedAt = h.CreatedAt,
-        })
-        .ToList(),
     };
+  }
+
+  public static IssueHistoryEntryDto ToHistoryEntryDto(
+    IssueHistoryEventType eventType,
+    Guid actorUserId,
+    string summary,
+    string? previousValue,
+    string? currentValue,
+    DateTime createdAt,
+    Guid id,
+    IReadOnlyDictionary<Guid, string> userLookup) =>
+    new()
+    {
+      Id = id,
+      EventType = eventType,
+      ActorUserId = actorUserId,
+      ActorName = userLookup.GetValueOrDefault(actorUserId),
+      Summary = summary,
+      PreviousValue = FormatHistoryValue(eventType, previousValue, userLookup),
+      CurrentValue = FormatHistoryValue(eventType, currentValue, userLookup),
+      CreatedAt = createdAt
+    };
+
+  public static IEnumerable<Guid> CollectHistoryRelatedUserIds(IEnumerable<IssueHistoryEntryDto> entries)
+  {
+    var userIds = new HashSet<Guid>();
+
+    foreach (var entry in entries)
+    {
+      userIds.Add(entry.ActorUserId);
+
+      if (entry.EventType != IssueHistoryEventType.ASSIGNEE_CHANGED)
+        continue;
+
+      if (Guid.TryParse(entry.PreviousValue, out var previousAssigneeId))
+        userIds.Add(previousAssigneeId);
+
+      if (Guid.TryParse(entry.CurrentValue, out var currentAssigneeId))
+        userIds.Add(currentAssigneeId);
+    }
+
+    return userIds;
   }
 
   private static string? FormatHistoryValue(

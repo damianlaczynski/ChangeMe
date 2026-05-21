@@ -14,8 +14,6 @@ public class GetIssueByIdHandler(
     var issue = await context.Issues
       .AsNoTracking()
       .Include(i => i.AcceptanceCriteria)
-      .Include(i => i.Comments)
-      .Include(i => i.HistoryEntries)
       .Include(i => i.Watchers)
       .FirstOrDefaultAsync(c => c.Id == query.Id, cancellationToken);
 

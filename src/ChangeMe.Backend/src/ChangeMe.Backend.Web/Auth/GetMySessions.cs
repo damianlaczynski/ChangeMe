@@ -3,7 +3,7 @@ using ChangeMe.Backend.UseCases.Auth.Dtos;
 
 namespace ChangeMe.Backend.Web.Auth;
 
-public class GetMySessions(IMediator mediator) : BaseEndpoint<GetMySessionsQuery, IReadOnlyList<UserSessionDto>>(mediator)
+public class GetMySessions(IMediator mediator) : BaseEndpoint<GetMySessionsQuery, PaginationResult<UserSessionDto>>(mediator)
 {
   protected override void ConfigureEndpoint()
   {

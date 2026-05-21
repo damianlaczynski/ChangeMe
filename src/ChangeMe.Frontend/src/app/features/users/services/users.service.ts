@@ -72,9 +72,13 @@ export class UsersService {
     );
   }
 
-  getUserSessions(id: string): Observable<AdminUserSessionDto[]> {
-    return this.apiService.get<AdminUserSessionDto[]>(
-      `${this.baseEndpoint}/${id}/sessions`
+  getUserSessions(
+    id: string,
+    params: { pageNumber: number; pageSize: number; sortField?: string; ascending?: boolean }
+  ): Observable<PaginationResult<AdminUserSessionDto>> {
+    return this.apiService.getPaginated<AdminUserSessionDto, typeof params>(
+      `${this.baseEndpoint}/${id}/sessions`,
+      params
     );
   }
 

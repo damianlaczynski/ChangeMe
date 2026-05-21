@@ -4,7 +4,7 @@ using ChangeMe.Backend.UseCases.Roles.Dtos;
 namespace ChangeMe.Backend.Web.Roles;
 
 public class GetRoleAssignedUsers(IMediator mediator)
-  : BaseEndpoint<GetRoleAssignedUsersQuery, IReadOnlyList<RoleAssignedUserDto>>(mediator)
+  : BaseEndpoint<GetRoleAssignedUsersQuery, PaginationResult<RoleAssignedUserDto>>(mediator)
 {
   protected override void ConfigureEndpoint()
   {

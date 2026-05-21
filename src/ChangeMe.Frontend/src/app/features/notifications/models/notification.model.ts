@@ -1,3 +1,6 @@
+import { PaginationParameters } from '@shared/data/models/pagination-parameters.model';
+import { PaginationResult } from '@shared/data/models/pagination-result.model';
+
 export interface NotificationDto {
   id: string;
   issueId: string;
@@ -5,14 +8,18 @@ export interface NotificationDto {
   issueTitle: string;
   message: string;
   link: string;
-  occurredAt: string;
+  createdAt: string;
   isRead: boolean;
   readAt?: string | null;
 }
 
 export interface NotificationListDto {
   unreadCount: number;
-  items: NotificationDto[];
+  page: PaginationResult<NotificationDto>;
+}
+
+export interface NotificationSearchParameters extends PaginationParameters {
+  isRead?: boolean;
 }
 
 export interface NotificationRealtimeMessage {
@@ -22,7 +29,7 @@ export interface NotificationRealtimeMessage {
   issueTitle: string;
   message: string;
   link: string;
-  occurredAt: string;
+  createdAt: string;
 }
 
 export enum NotificationEventType {

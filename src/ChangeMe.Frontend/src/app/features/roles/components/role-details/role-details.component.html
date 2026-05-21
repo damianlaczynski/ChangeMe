@@ -156,6 +156,18 @@
             </tr>
           </ng-template>
         </p-table>
+        @if (hasLoadedUsers()) {
+          <p-paginator
+            class="mt-4"
+            [rows]="assignedUsersPagination()?.pageSize ?? 10"
+            [totalRecords]="assignedUsersPagination()?.totalCount ?? 0"
+            [first]="
+              ((assignedUsersPagination()?.currentPage ?? 1) - 1) *
+              (assignedUsersPagination()?.pageSize ?? 10)
+            "
+            (onPageChange)="onAssignedUsersPageChange($event)"
+          />
+        }
       </section>
     </div>
   }

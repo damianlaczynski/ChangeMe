@@ -99,6 +99,16 @@
       </tr>
     </ng-template>
   </p-table>
+
+  @if (hasLoaded()) {
+    <p-paginator
+      class="mt-4"
+      [rows]="pagination()?.pageSize ?? 10"
+      [totalRecords]="pagination()?.totalCount ?? 0"
+      [first]="((pagination()?.currentPage ?? 1) - 1) * (pagination()?.pageSize ?? 10)"
+      (onPageChange)="onPageChange($event)"
+    />
+  }
 </p-card>
 
 <p-menu #roleActionsMenu [popup]="true" [model]="roleActionItems()" />

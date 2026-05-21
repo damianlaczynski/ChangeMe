@@ -187,6 +187,8 @@ The user must be able to review active sign-in sessions and revoke sessions they
 
 - The list shows **active sessions only**; revoked sessions do not appear.
 - Empty state: **`No active sessions.`**
+- The sessions table is **server-paginated** with **10** rows per page by default.
+- A paginator below the table shows the current page and total count; changing page or page size reloads the list.
 - While the list is loading, a loading indicator is shown in the list area; the rest of the screen remains visible.
 
 ### Actions

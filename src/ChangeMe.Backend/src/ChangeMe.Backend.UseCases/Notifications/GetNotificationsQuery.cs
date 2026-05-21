@@ -1,16 +1,26 @@
 using ChangeMe.Backend.UseCases.Notifications.Dtos;
 using ChangeMe.Backend.UseCases.Notifications.Services;
+using FastEndpoints;
 
 namespace ChangeMe.Backend.UseCases.Notifications;
 
-public record GetNotificationsQuery(bool? IsRead = null) : IQuery<NotificationListDto>;
+public sealed class GetNotificationsQuery : IQuery<NotificationListDto>
+{
+  public bool? IsRead { get; set; }
+
+  [FromQuery]
+  public PaginationParameters<NotificationDto> PaginationParameters { get; set; } =
+    new PaginationParameters<NotificationDto>();
+}
 
 public class GetNotificationsHandler(
   ApplicationDbContext context,
   IUserAccessor userAccessor,
   NotificationRetentionPolicy retentionPolicy) : IQueryHandler<GetNotificationsQuery, NotificationListDto>
 {
-  public async Task<Result<NotificationListDto>> Handle(GetNotificationsQuery query, CancellationToken cancellationToken)
+  public async Task<Result<NotificationListDto>> Handle(
+    GetNotificationsQuery query,
+    CancellationToken cancellationToken)
   {
     if (userAccessor.UserId is not Guid currentUserId)
       return Result<NotificationListDto>.Unauthorized();
@@ -23,21 +33,26 @@ public class GetNotificationsHandler(
     if (query.IsRead.HasValue)
       notificationsQuery = notificationsQuery.Where(n => n.IsRead == query.IsRead.Value);
 
-    var items = await notificationsQuery
-      .OrderByDescending(n => n.OccurredAt)
-      .Select(n => new NotificationDto
-      {
-        Id = n.Id,
-        IssueId = n.IssueId,
-        EventType = n.EventType,
-        IssueTitle = n.IssueTitle,
-        Message = n.Message,
-        Link = n.Link,
-        OccurredAt = n.OccurredAt,
-        IsRead = n.IsRead,
-        ReadAt = n.ReadAt,
-      })
-      .ToListAsync(cancellationToken);
+    var projected = notificationsQuery.Select(n => new NotificationDto
+    {
+      Id = n.Id,
+      IssueId = n.IssueId,
+      EventType = n.EventType,
+      IssueTitle = n.IssueTitle,
+      Message = n.Message,
+      Link = n.Link,
+      CreatedAt = n.CreatedAt,
+      IsRead = n.IsRead,
+      ReadAt = n.ReadAt,
+    });
+
+    query.PaginationParameters.SortField = MapSortField(query.PaginationParameters.SortField);
+    query.PaginationParameters.Ascending = false;
+
+    var pagedNotifications = await projected.ToPaginationResultAsync(
+      x => x,
+      query.PaginationParameters,
+      cancellationToken);
 
     var unreadNotificationsQuery = context.Notifications
       .AsNoTracking()
@@ -48,8 +63,14 @@ public class GetNotificationsHandler(
 
     return Result.Success(new NotificationListDto
     {
-      Items = items,
       UnreadCount = unreadCount,
+      Page = pagedNotifications
     });
   }
+
+  private static string MapSortField(string sortField) =>
+    sortField switch
+    {
+      "CreatedAt" or _ => nameof(NotificationDto.CreatedAt)
+    };
 }

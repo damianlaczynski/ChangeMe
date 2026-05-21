@@ -1,16 +1,17 @@
-using ChangeMe.Backend.UseCases.Notifications.Dtos;
 using ChangeMe.Backend.UseCases.Notifications.Services;
 
 namespace ChangeMe.Backend.UseCases.Notifications;
 
-public record MarkAllNotificationsAsReadCommand(bool doNothing) : ICommand<NotificationListDto>;
+public sealed record MarkAllNotificationsAsReadCommand(bool DoNothing = false) : ICommand<bool>;
 
 public class MarkAllNotificationsAsReadHandler(
   ApplicationDbContext context,
   IUserAccessor userAccessor,
-  NotificationRetentionPolicy retentionPolicy) : ICommandHandler<MarkAllNotificationsAsReadCommand, NotificationListDto>
+  NotificationRetentionPolicy retentionPolicy) : ICommandHandler<MarkAllNotificationsAsReadCommand, bool>
 {
-  public async Task<Result<NotificationListDto>> Handle(MarkAllNotificationsAsReadCommand command, CancellationToken cancellationToken)
+  public async Task<Result<bool>> Handle(
+    MarkAllNotificationsAsReadCommand command,
+    CancellationToken cancellationToken)
   {
     if (userAccessor.UserId is not Guid currentUserId)
       return Result.Unauthorized();
@@ -24,29 +25,6 @@ public class MarkAllNotificationsAsReadHandler(
 
     await context.SaveChangesAsync(cancellationToken);
 
-    var items = await retentionPolicy.ApplyActiveFilter(
-        context.Notifications
-          .AsNoTracking()
-          .Where(n => n.RecipientUserId == currentUserId))
-      .OrderByDescending(n => n.OccurredAt)
-      .Select(n => new NotificationDto
-      {
-        Id = n.Id,
-        IssueId = n.IssueId,
-        EventType = n.EventType,
-        IssueTitle = n.IssueTitle,
-        Message = n.Message,
-        Link = n.Link,
-        OccurredAt = n.OccurredAt,
-        IsRead = n.IsRead,
-        ReadAt = n.ReadAt,
-      })
-      .ToListAsync(cancellationToken);
-
-    return Result.Success(new NotificationListDto
-    {
-      Items = items,
-      UnreadCount = items.Count(n => !n.IsRead),
-    });
+    return Result.Success(true);
   }
 }

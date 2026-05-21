@@ -18,6 +18,7 @@ import {
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ToastService } from '@core/toast/services/toast.service';
 import {
+  IssueCommentDto,
   IssueDetailsDto,
   IssueHistoryEntryDto
 } from '@features/issues/models/issue.model';
@@ -32,6 +33,7 @@ import {
   IssueCommentConstraints
 } from '@features/issues/utils/issue.utils';
 import { BackButtonComponent } from '@shared/components/back-button/back-button.component';
+import { PaginationResult } from '@shared/data/models/pagination-result.model';
 import { ConfirmationService, PrimeTemplate } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
@@ -102,6 +104,33 @@ export class IssueDetailsComponent {
   readonly isTogglingWatch = signal(false);
   readonly isDeleting = signal(false);
   readonly activeTab = signal<IssueDetailsTab>('comments');
+  readonly comments = signal<IssueCommentDto[]>([]);
+  readonly commentsPagination = signal<PaginationResult<IssueCommentDto> | null>(null);
+  readonly commentsQuery = signal({
+    pageNumber: 1,
+    pageSize: 10,
+    sortField: 'CreatedAt',
+    ascending: false
+  });
+  readonly historyEntries = signal<IssueHistoryEntryDto[]>([]);
+  readonly historyPagination = signal<PaginationResult<IssueHistoryEntryDto> | null>(null);
+  readonly historyQuery = signal({
+    pageNumber: 1,
+    pageSize: 10,
+    sortField: 'CreatedAt',
+    ascending: false
+  });
+  readonly isLoadingComments = signal(false);
+  readonly isLoadingMoreComments = signal(false);
+  readonly isLoadingHistory = signal(false);
+  readonly isLoadingMoreHistory = signal(false);
+  readonly hasLoadedComments = signal(false);
+  readonly hasLoadedHistory = signal(false);
+
+  readonly canShowMoreComments = computed(
+    () => this.commentsPagination()?.hasNext ?? false
+  );
+  readonly canShowMoreHistory = computed(() => this.historyPagination()?.hasNext ?? false);
 
   readonly commentForm = new FormGroup<CommentForm>({
     content: new FormControl('', {
@@ -113,12 +142,10 @@ export class IssueDetailsComponent {
     })
   });
 
-  readonly sortedHistoryEntries = computed(() =>
-    [...(this.issue()?.historyEntries ?? [])].sort(this.sortByCreatedAtAscending)
-  );
-  readonly sortedComments = computed(() =>
-    [...(this.issue()?.comments ?? [])].sort(this.sortByCreatedAtAscending)
-  );
+  private lastLoadedIssueId: string | null = null;
+  private lastTabLoadKey: string | null = null;
+  private commentsRequestId = 0;
+  private historyRequestId = 0;
 
   constructor() {
     this.route.queryParamMap
@@ -135,19 +162,61 @@ export class IssueDetailsComponent {
         return;
       }
 
-      this.loadIssue(id);
+      if (id !== this.lastLoadedIssueId) {
+        this.lastLoadedIssueId = id;
+        this.lastTabLoadKey = null;
+        this.loadIssue(id);
+      }
+
+      this.loadActiveTabData(id);
     });
   }
 
   onTabChange(tab: string | number | undefined): void {
     const value: IssueDetailsTab = tab === 'history' ? 'history' : 'comments';
+    if (this.activeTab() === value) {
+      return;
+    }
+
     this.activeTab.set(value);
+    this.lastTabLoadKey = null;
+
+    const issueId = this.id();
+    if (issueId) {
+      this.loadActiveTabData(issueId);
+    }
 
     void this.router.navigate([], {
       relativeTo: this.route,
       queryParams: { tab: value === 'comments' ? null : value },
       queryParamsHandling: 'merge',
       replaceUrl: true
+    });
+  }
+
+  showMoreComments(): void {
+    const issueId = this.id();
+    const pagination = this.commentsPagination();
+    if (!issueId || !pagination?.hasNext || this.isLoadingMoreComments()) {
+      return;
+    }
+
+    this.loadComments(issueId, {
+      append: true,
+      pageNumber: pagination.currentPage + 1
+    });
+  }
+
+  showMoreHistory(): void {
+    const issueId = this.id();
+    const pagination = this.historyPagination();
+    if (!issueId || !pagination?.hasNext || this.isLoadingMoreHistory()) {
+      return;
+    }
+
+    this.loadHistory(issueId, {
+      append: true,
+      pageNumber: pagination.currentPage + 1
     });
   }
 
@@ -180,8 +249,8 @@ export class IssueDetailsComponent {
       })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (issue) => {
-          this.issue.set(issue);
+        next: () => {
+          this.reloadCommentsFromStart(issueId);
           this.commentForm.reset({ content: '' });
           this.commentForm.markAsPristine();
           this.commentForm.markAsUntouched();
@@ -306,14 +375,150 @@ export class IssueDetailsComponent {
       });
   }
 
-  private formatWatchersCount(count: number): string {
-    return count === 1 ? '1 watcher' : `${count} watchers`;
+  private loadActiveTabData(issueId: string): void {
+    const tab = this.activeTab();
+    const tabLoadKey = `${issueId}:${tab}`;
+    if (tabLoadKey === this.lastTabLoadKey) {
+      return;
+    }
+
+    this.lastTabLoadKey = tabLoadKey;
+
+    if (tab === 'history') {
+      this.reloadHistoryFromStart(issueId);
+      return;
+    }
+
+    this.reloadCommentsFromStart(issueId);
   }
 
-  private sortByCreatedAtAscending(
-    left: { createdAt: string },
-    right: { createdAt: string }
-  ): number {
-    return new Date(left.createdAt).getTime() - new Date(right.createdAt).getTime();
+  private reloadCommentsFromStart(issueId: string): void {
+    this.commentsQuery.set({
+      pageNumber: 1,
+      pageSize: 10,
+      sortField: 'CreatedAt',
+      ascending: false
+    });
+    this.loadComments(issueId);
+  }
+
+  private reloadHistoryFromStart(issueId: string): void {
+    this.historyQuery.set({
+      pageNumber: 1,
+      pageSize: 10,
+      sortField: 'CreatedAt',
+      ascending: false
+    });
+    this.loadHistory(issueId);
+  }
+
+  private loadComments(
+    issueId: string,
+    options: { append?: boolean; pageNumber?: number } = {}
+  ): void {
+    const append = options.append ?? false;
+    const pageNumber = options.pageNumber ?? this.commentsQuery().pageNumber;
+    const query = { ...this.commentsQuery(), pageNumber };
+    const requestId = ++this.commentsRequestId;
+
+    if (append) {
+      this.isLoadingMoreComments.set(true);
+    } else {
+      this.isLoadingComments.set(true);
+    }
+
+    this.issuesService
+      .getIssueComments(issueId, query)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (result) => {
+          if (requestId !== this.commentsRequestId) {
+            return;
+          }
+
+          if (append) {
+            this.comments.update((items) => [...items, ...result.items]);
+          } else {
+            this.comments.set(result.items);
+          }
+
+          this.commentsQuery.set({
+            pageNumber: result.currentPage,
+            pageSize: result.pageSize,
+            sortField: 'CreatedAt',
+            ascending: false
+          });
+          this.commentsPagination.set(result);
+          this.isLoadingComments.set(false);
+          this.isLoadingMoreComments.set(false);
+          this.hasLoadedComments.set(true);
+        },
+        error: (error: Error) => {
+          if (requestId !== this.commentsRequestId) {
+            return;
+          }
+
+          this.loadError.set(error.message);
+          this.isLoadingComments.set(false);
+          this.isLoadingMoreComments.set(false);
+        }
+      });
+  }
+
+  private loadHistory(
+    issueId: string,
+    options: { append?: boolean; pageNumber?: number } = {}
+  ): void {
+    const append = options.append ?? false;
+    const pageNumber = options.pageNumber ?? this.historyQuery().pageNumber;
+    const query = { ...this.historyQuery(), pageNumber };
+    const requestId = ++this.historyRequestId;
+
+    if (append) {
+      this.isLoadingMoreHistory.set(true);
+    } else {
+      this.isLoadingHistory.set(true);
+    }
+
+    this.issuesService
+      .getIssueHistory(issueId, query)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (result) => {
+          if (requestId !== this.historyRequestId) {
+            return;
+          }
+
+          if (append) {
+            this.historyEntries.update((items) => [...items, ...result.items]);
+          } else {
+            this.historyEntries.set(result.items);
+          }
+
+          this.historyQuery.set({
+            pageNumber: result.currentPage,
+            pageSize: result.pageSize,
+            sortField: 'CreatedAt',
+            ascending: false
+          });
+          this.historyPagination.set(result);
+          this.isLoadingHistory.set(false);
+          this.isLoadingMoreHistory.set(false);
+          this.hasLoadedHistory.set(true);
+        },
+        error: (error: Error) => {
+          if (requestId !== this.historyRequestId) {
+            return;
+          }
+
+          this.loadError.set(error.message);
+          this.isLoadingHistory.set(false);
+          this.isLoadingMoreHistory.set(false);
+        }
+      });
+  }
+
+  private formatWatchersCount(count: number): string {
+    return count === 1 ? '1 watcher' : `${count} watchers`;
   }
 }

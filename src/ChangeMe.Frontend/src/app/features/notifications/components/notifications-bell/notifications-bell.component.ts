@@ -18,7 +18,7 @@ import { Popover } from 'primeng/popover';
       badgeSeverity="danger"
       (onClick)="togglePanel($event)"
     />
-    <p-popover #popover [dismissable]="true">
+    <p-popover #popover [dismissable]="true" contentStyleClass="!p-0 overflow-hidden">
       <ng-template #content>
         <app-notifications-panel (closed)="hidePanel()" />
       </ng-template>

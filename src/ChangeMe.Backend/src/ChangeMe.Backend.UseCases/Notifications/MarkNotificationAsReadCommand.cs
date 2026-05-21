@@ -32,7 +32,7 @@ public class MarkNotificationAsReadHandler(
       IssueTitle = notification.IssueTitle,
       Message = notification.Message,
       Link = notification.Link,
-      OccurredAt = notification.OccurredAt,
+      CreatedAt = notification.CreatedAt,
       IsRead = notification.IsRead,
       ReadAt = notification.ReadAt,
     });

@@ -15,5 +15,5 @@ public class NotificationRealtimeMessage
   public string IssueTitle { get; set; } = string.Empty;
   public string Message { get; set; } = string.Empty;
   public string Link { get; set; } = string.Empty;
-  public DateTime OccurredAt { get; set; }
+  public DateTime CreatedAt { get; set; }
 }

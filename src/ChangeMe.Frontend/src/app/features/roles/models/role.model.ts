@@ -1,4 +1,5 @@
 import { UserStatus } from '@features/users/models/user.model';
+import { PaginationParameters } from '@shared/data/models/pagination-parameters.model';
 
 export interface RoleListItemDto {
   id: string;
@@ -40,10 +41,12 @@ export interface RoleAssignedUserDto {
   status: UserStatus;
 }
 
-export interface RoleSearchParameters {
+export interface RoleSearchParameters extends PaginationParameters {
   searchText?: string;
-  sortField?: string;
-  ascending?: boolean;
+}
+
+export interface RoleAssignedUsersSearchParameters extends PaginationParameters {
+  searchText?: string;
 }
 
 export interface CreateRoleRequest {

@@ -103,6 +103,12 @@ An authorized administrator must be able to browse roles, search and sort them, 
 - Menu actions the current user lacks permission for are **not shown**.
 - **Edit role** and **Delete role** are **not shown** for system roles (**Administrator**, **User**); system roles are opened via **Open details** only.
 
+### Pagination
+
+- The roles table is **server-paginated** with **10** rows per page by default.
+- A paginator below the table shows the current page and total count; changing page or page size reloads the list.
+- Search and sort reset to **page 1**.
+
 ### Loading
 
 - While the table is loading, a loading indicator is shown in the table area.
@@ -235,6 +241,9 @@ An authorized administrator must be able to review a role's metadata, permission
 - Search field placeholder within section: **`Search assigned users...`**; filters **name** and **email** (case-insensitive).
 - Empty state: **`No users are assigned to this role.`**
 - While loading, a loading indicator is shown in the section.
+- The assigned users table is **server-paginated** with **10** rows per page by default.
+- A paginator below the table shows the current page and total count; changing page or page size reloads the list.
+- Search resets to **page 1**.
 
 ### Header actions
 

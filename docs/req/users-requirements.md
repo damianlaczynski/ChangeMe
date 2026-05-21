@@ -103,6 +103,12 @@ An authorized administrator must be able to browse users, search and filter them
 
 - Menu actions the current user lacks permission for are **not shown**.
 
+### Pagination
+
+- The users table is **server-paginated** with **10** rows per page by default.
+- A paginator below the table shows the current page and total count; changing page or page size reloads the list.
+- Search, filters, and sort reset to **page 1**.
+
 ### Loading
 
 - While the table is loading, a loading indicator is shown in the table area.
@@ -260,11 +266,13 @@ Displays read-only: **Name**, **Email**, **Status** badge, **Member since**, and
 - **Revoke** button on each row requires **Sessions.ManageAny** and opens confirmation: **`Revoke this session? That device will be signed out.`**
 - Empty state: **`No active sessions.`**
 - While loading, a loading indicator is shown in the section.
+- The sessions table is **server-paginated** with **10** rows per page by default.
+- A paginator below the table shows the current page and total count; changing page or page size reloads the list.
 
 ### States and business rules
 
 - **Inactive** users display **Status** badge **`Inactive`**; the active sessions table shows empty state **`No active sessions.`**
-- Revoking a session signs out that device on next activity.
+- Revoking a session signs out that device on next activity; the list refreshes on the current page.
 
 ### Permissions and visibility
 

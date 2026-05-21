@@ -9,17 +9,19 @@ import { EffectivePermissionsComponent } from '@features/users/components/effect
 import { AdminUserSessionDto, UserDetailsDto } from '@features/users/models/user.model';
 import { UsersService } from '@features/users/services/users.service';
 import {
-  getActivateConfirmMessage,
-  getDeactivateConfirmMessage,
-  getUserStatusSeverity,
-  UserMessages
+    getActivateConfirmMessage,
+    getDeactivateConfirmMessage,
+    getUserStatusSeverity,
+    UserMessages
 } from '@features/users/utils/users.utils';
 import { PermissionCodes } from '@shared/authorization/permission-codes';
 import { BackButtonComponent } from '@shared/components/back-button/back-button.component';
+import { PaginationResult } from '@shared/data/models/pagination-result.model';
 import { ConfirmationService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { Message } from 'primeng/message';
+import { Paginator, PaginatorState } from 'primeng/paginator';
 import { TableModule } from 'primeng/table';
 import { Tag } from 'primeng/tag';
 
@@ -34,6 +36,7 @@ import { Tag } from 'primeng/tag';
     Message,
     Tag,
     TableModule,
+    Paginator,
     EffectivePermissionsComponent
   ],
   templateUrl: './user-details.component.html'
@@ -49,9 +52,17 @@ export class UserDetailsComponent {
 
   readonly user = signal<UserDetailsDto | null>(null);
   readonly sessions = signal<AdminUserSessionDto[]>([]);
+  readonly sessionsPagination = signal<PaginationResult<AdminUserSessionDto> | null>(null);
+  readonly sessionsQuery = signal({
+    pageNumber: 1,
+    pageSize: 10,
+    sortField: 'LastActivityAt',
+    ascending: false
+  });
   readonly errorMessage = signal<string | null>(null);
   readonly isLoading = signal(true);
   readonly isLoadingSessions = signal(false);
+  readonly hasLoadedSessions = signal(false);
   readonly pendingRevokeSessionIds = signal<string[]>([]);
 
   readonly UserMessages = UserMessages;
@@ -159,16 +170,27 @@ export class UserDetailsComponent {
       });
   }
 
+  onSessionsPageChange(event: PaginatorState): void {
+    this.sessionsQuery.update((current) => ({
+      ...current,
+      pageNumber: (event.page ?? 0) + 1,
+      pageSize: event.rows ?? current.pageSize
+    }));
+    this.loadSessions(this.id());
+  }
+
   private loadSessions(userId: string): void {
     this.isLoadingSessions.set(true);
 
     this.usersService
-      .getUserSessions(userId)
+      .getUserSessions(userId, this.sessionsQuery())
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (sessions) => {
-          this.sessions.set(sessions);
+        next: (result) => {
+          this.sessions.set(result.items);
+          this.sessionsPagination.set(result);
           this.isLoadingSessions.set(false);
+          this.hasLoadedSessions.set(true);
         },
         error: (error: Error) => {
           this.errorMessage.set(error.message);

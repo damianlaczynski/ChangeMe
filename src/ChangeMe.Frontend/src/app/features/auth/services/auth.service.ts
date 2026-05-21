@@ -18,7 +18,8 @@ import {
   MyAccountDto,
   RegisterRequest,
   UpdateMyAccountRequest,
-  UserSessionDto
+  UserSessionDto,
+  UserSessionSearchParameters
 } from '../models/auth.model';
 import { AuthConstraints } from '../utils/auth.utils';
 import { AuthStorageService } from './auth-storage.service';
@@ -129,8 +130,11 @@ export class AuthService {
       .pipe(finalize(() => this.clearLocalSession()));
   }
 
-  getMySessions() {
-    return this.apiService.get<UserSessionDto[]>('auth/sessions');
+  getMySessions(params: UserSessionSearchParameters) {
+    return this.apiService.getPaginated<UserSessionDto, UserSessionSearchParameters>(
+      'auth/sessions',
+      params
+    );
   }
 
   revokeSession(sessionId: string) {

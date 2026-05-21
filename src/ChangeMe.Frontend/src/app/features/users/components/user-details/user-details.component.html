@@ -164,6 +164,18 @@
               </tr>
             </ng-template>
           </p-table>
+          @if (hasLoadedSessions()) {
+            <p-paginator
+              class="mt-4"
+              [rows]="sessionsPagination()?.pageSize ?? 10"
+              [totalRecords]="sessionsPagination()?.totalCount ?? 0"
+              [first]="
+                ((sessionsPagination()?.currentPage ?? 1) - 1) *
+                (sessionsPagination()?.pageSize ?? 10)
+              "
+              (onPageChange)="onSessionsPageChange($event)"
+            />
+          }
         </section>
       }
     </div>

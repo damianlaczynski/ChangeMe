@@ -4,7 +4,7 @@ using ChangeMe.Backend.UseCases.Users.Dtos;
 namespace ChangeMe.Backend.Web.Users;
 
 public class GetUserSessions(IMediator mediator)
-  : BaseEndpoint<GetUserSessionsQuery, IReadOnlyList<AdminUserSessionDto>>(mediator)
+  : BaseEndpoint<GetUserSessionsQuery, PaginationResult<AdminUserSessionDto>>(mediator)
 {
   protected override void ConfigureEndpoint()
   {

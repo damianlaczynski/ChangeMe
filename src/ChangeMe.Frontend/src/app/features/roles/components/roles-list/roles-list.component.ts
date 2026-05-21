@@ -1,10 +1,10 @@
 import {
-  Component,
-  computed,
-  DestroyRef,
-  inject,
-  signal,
-  viewChild
+    Component,
+    computed,
+    DestroyRef,
+    inject,
+    signal,
+    viewChild
 } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
@@ -12,22 +12,24 @@ import { RouterLink } from '@angular/router';
 import { ToastService } from '@core/toast/services/toast.service';
 import { AuthService } from '@features/auth/services/auth.service';
 import {
-  RoleListItemDto,
-  RoleSearchParameters
+    RoleListItemDto,
+    RoleSearchParameters
 } from '@features/roles/models/role.model';
 import { RolesService } from '@features/roles/services/roles.service';
 import {
-  formatDescription,
-  getDeleteRoleConfirmMessage,
-  RoleMessages
+    formatDescription,
+    getDeleteRoleConfirmMessage,
+    RoleMessages
 } from '@features/roles/utils/roles.utils';
 import { PermissionCodes } from '@shared/authorization/permission-codes';
+import { PaginationResult } from '@shared/data/models/pagination-result.model';
 import { ConfirmationService, MenuItem } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { InputText } from 'primeng/inputtext';
 import { Menu } from 'primeng/menu';
 import { Message } from 'primeng/message';
+import { Paginator, PaginatorState } from 'primeng/paginator';
 import { TableModule } from 'primeng/table';
 import { Tag } from 'primeng/tag';
 import { catchError, of, switchMap, tap } from 'rxjs';
@@ -45,7 +47,8 @@ type RoleSortField = 'Name' | 'Users' | 'Permissions';
     TableModule,
     Message,
     Tag,
-    Menu
+    Menu,
+    Paginator
   ],
   templateUrl: './roles-list.component.html'
 })
@@ -61,7 +64,10 @@ export class RolesListComponent {
   readonly permissionCodes = PermissionCodes;
 
   readonly roles = signal<RoleListItemDto[]>([]);
+  readonly pagination = signal<PaginationResult<RoleListItemDto> | null>(null);
   readonly query = signal<RoleSearchParameters>({
+    pageNumber: 1,
+    pageSize: 10,
     sortField: 'Name',
     ascending: true
   });
@@ -90,14 +96,15 @@ export class RolesListComponent {
           this.rolesService.getRoles(params).pipe(
             catchError((error: Error) => {
               this.errorMessage.set(error.message);
-              return of([] as RoleListItemDto[]);
+              return of(this.createEmptyPaginationResult(params));
             })
           )
         ),
         takeUntilDestroyed(this.destroyRef)
       )
-      .subscribe((roles) => {
-        this.roles.set(roles);
+      .subscribe((result) => {
+        this.roles.set(result.items);
+        this.pagination.set(result);
         this.isLoading.set(false);
         this.hasLoaded.set(true);
       });
@@ -106,6 +113,7 @@ export class RolesListComponent {
   applyFilters(): void {
     this.query.update((current) => ({
       ...current,
+      pageNumber: 1,
       searchText: this.filtersForm.controls.searchText.value.trim() || undefined
     }));
   }
@@ -125,9 +133,18 @@ export class RolesListComponent {
 
     this.query.set({
       ...currentQuery,
+      pageNumber: 1,
       sortField,
       ascending
     });
+  }
+
+  onPageChange(event: PaginatorState): void {
+    this.query.update((current) => ({
+      ...current,
+      pageNumber: (event.page ?? 0) + 1,
+      pageSize: event.rows ?? current.pageSize
+    }));
   }
 
   openRoleActionsMenu(event: Event, role: RoleListItemDto): void {
@@ -174,5 +191,19 @@ export class RolesListComponent {
         });
       }
     });
+  }
+
+  private createEmptyPaginationResult(
+    params: RoleSearchParameters
+  ): PaginationResult<RoleListItemDto> {
+    return {
+      items: [],
+      totalCount: 0,
+      currentPage: params.pageNumber,
+      pageSize: params.pageSize,
+      totalPages: 0,
+      hasPrevious: false,
+      hasNext: false
+    };
   }
 }

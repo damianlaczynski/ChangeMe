@@ -1,17 +1,17 @@
-﻿using ChangeMe.Backend.UseCases.Roles.Dtos;
+using ChangeMe.Backend.UseCases.Common;
+using ChangeMe.Backend.UseCases.Roles.Dtos;
 
 namespace ChangeMe.Backend.UseCases.Roles;
 
-public sealed class GetRolesQuery : IQuery<IReadOnlyList<RoleListItemDto>>
+public sealed class GetRolesQuery : PaginationQuery<RoleListItemDto>
 {
   public string? SearchText { get; set; }
-  public string SortField { get; set; } = "Name";
-  public bool Ascending { get; set; } = true;
 }
 
-public class GetRolesHandler(ApplicationDbContext context) : IQueryHandler<GetRolesQuery, IReadOnlyList<RoleListItemDto>>
+public class GetRolesHandler(ApplicationDbContext context)
+  : IQueryHandler<GetRolesQuery, PaginationResult<RoleListItemDto>>
 {
-  public async Task<Result<IReadOnlyList<RoleListItemDto>>> Handle(
+  public async Task<Result<PaginationResult<RoleListItemDto>>> Handle(
     GetRolesQuery query,
     CancellationToken cancellationToken)
   {
@@ -41,23 +41,21 @@ public class GetRolesHandler(ApplicationDbContext context) : IQueryHandler<GetRo
       IsSystem = r.IsSystem
     });
 
-    projected = ApplySort(projected, query.SortField, query.Ascending);
+    query.PaginationParameters.SortField = MapSortField(query.PaginationParameters.SortField);
 
-    var roles = await projected.ToListAsync(cancellationToken);
-    return Result.Success<IReadOnlyList<RoleListItemDto>>(roles);
+    var pagedRoles = await projected.ToPaginationResultAsync(
+      x => x,
+      query.PaginationParameters,
+      cancellationToken);
+
+    return Result.Success(pagedRoles);
   }
 
-  private static IQueryable<RoleListItemDto> ApplySort(
-    IQueryable<RoleListItemDto> query,
-    string sortField,
-    bool ascending) =>
-    (sortField, ascending) switch
+  private static string MapSortField(string sortField) =>
+    sortField switch
     {
-      ("Users", true) => query.OrderBy(x => x.UserCount).ThenBy(x => x.Name),
-      ("Users", false) => query.OrderByDescending(x => x.UserCount).ThenBy(x => x.Name),
-      ("Permissions", true) => query.OrderBy(x => x.PermissionCount).ThenBy(x => x.Name),
-      ("Permissions", false) => query.OrderByDescending(x => x.PermissionCount).ThenBy(x => x.Name),
-      (_, false) => query.OrderByDescending(x => x.Name),
-      _ => query.OrderBy(x => x.Name)
+      "Users" => nameof(RoleListItemDto.UserCount),
+      "Permissions" => nameof(RoleListItemDto.PermissionCount),
+      "Name" or _ => nameof(RoleListItemDto.Name)
     };
 }

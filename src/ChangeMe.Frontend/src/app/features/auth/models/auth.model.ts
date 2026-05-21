@@ -1,4 +1,5 @@
 import { EffectivePermissionDto } from '@features/users/models/user.model';
+import { PaginationParameters } from '@shared/data/models/pagination-parameters.model';
 
 export interface AuthResponse {
   userId: string;
@@ -60,3 +61,5 @@ export interface ChangePasswordRequest {
   currentPassword: string;
   newPassword: string;
 }
+
+export type UserSessionSearchParameters = PaginationParameters;
