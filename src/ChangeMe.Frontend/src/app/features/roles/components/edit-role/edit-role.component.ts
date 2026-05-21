@@ -1,10 +1,10 @@
 import { Component, DestroyRef, effect, inject, input, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
-  FormControl,
-  FormGroup,
-  ReactiveFormsModule,
-  Validators
+    FormControl,
+    FormGroup,
+    ReactiveFormsModule,
+    Validators
 } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { ToastService } from '@core/toast/services/toast.service';
@@ -83,9 +83,9 @@ export class EditRoleComponent {
       this.isLoading.set(true);
       this.loadError.set(null);
 
-      this.rolesService.getRoleForm(roleId).subscribe({
-        next: (form) => {
-          if (form.isSystem) {
+      this.rolesService.getRoleById(roleId).subscribe({
+        next: (role) => {
+          if (role.isSystem) {
             void this.router.navigate(['/roles', roleId], {
               queryParams: { systemRoleEditBlocked: '1' }
             });
@@ -93,9 +93,9 @@ export class EditRoleComponent {
           }
 
           this.form.patchValue({
-            name: form.name,
-            description: form.description ?? '',
-            permissionCodes: [...form.permissionCodes]
+            name: role.name,
+            description: role.description ?? '',
+            permissionCodes: role.permissions.map((permission) => permission.code)
           });
           this.isLoading.set(false);
         },

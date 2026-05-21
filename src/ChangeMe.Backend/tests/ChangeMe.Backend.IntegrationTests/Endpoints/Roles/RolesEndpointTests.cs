@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Net.Http.Json;
 using ChangeMe.Backend.Domain.Aggregates.Roles;
 using ChangeMe.Backend.Domain.Authorization;
@@ -284,18 +284,6 @@ public sealed class RolesEndpointTests(BackendWebApplicationFactory factory)
     var response = await admin.Client.DeleteAsync($"/api/roles/{userRoleId}", cancellationToken);
 
     Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-  }
-
-  [Fact]
-  public async Task GetRoleForm_WhenAdministrator_ShouldReturnOk()
-  {
-    var cancellationToken = TestContext.Current.CancellationToken;
-    var admin = await TestAuthHelper.CreateAdministratorUserAsync(factory, cancellationToken);
-    var roleId = await RolesTestHelper.CreateCustomRoleAsync(admin.Client, cancellationToken);
-
-    var response = await admin.Client.GetAsync($"/api/roles/{roleId}/form", cancellationToken);
-
-    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
   }
 
   [Fact]

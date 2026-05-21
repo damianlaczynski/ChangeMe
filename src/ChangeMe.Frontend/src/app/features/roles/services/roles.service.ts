@@ -2,14 +2,13 @@ import { Injectable, inject } from '@angular/core';
 import { ApiService } from '@shared/api/services/api.service';
 import { Observable } from 'rxjs';
 import {
-  CreateRoleRequest,
-  PermissionCatalogItemDto,
-  RoleAssignedUserDto,
-  RoleDetailsDto,
-  RoleFormDto,
-  RoleListItemDto,
-  RoleSearchParameters,
-  UpdateRoleRequest
+    CreateRoleRequest,
+    PermissionCatalogItemDto,
+    RoleAssignedUserDto,
+    RoleDetailsDto,
+    RoleListItemDto,
+    RoleSearchParameters,
+    UpdateRoleRequest
 } from '../models/role.model';
 
 @Injectable({
@@ -25,10 +24,6 @@ export class RolesService {
 
   getRoleById(id: string): Observable<RoleDetailsDto> {
     return this.apiService.get<RoleDetailsDto>(`${this.baseEndpoint}/${id}`);
-  }
-
-  getRoleForm(id: string): Observable<RoleFormDto> {
-    return this.apiService.get<RoleFormDto>(`${this.baseEndpoint}/${id}/form`);
   }
 
   getPermissionCatalog(): Observable<PermissionCatalogItemDto[]> {

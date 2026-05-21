@@ -35,15 +35,6 @@ public sealed record RoleDetailsDto
   public IReadOnlyList<RolePermissionItemDto> Permissions { get; init; } = [];
 }
 
-public sealed record RoleFormDto
-{
-  public Guid Id { get; init; }
-  public string Name { get; init; } = string.Empty;
-  public string? Description { get; init; }
-  public bool IsSystem { get; init; }
-  public IReadOnlyList<string> PermissionCodes { get; init; } = [];
-}
-
 public sealed record RoleAssignedUserDto
 {
   public Guid Id { get; init; }

@@ -33,14 +33,6 @@ export interface RoleDetailsDto {
   permissions: RolePermissionItemDto[];
 }
 
-export interface RoleFormDto {
-  id: string;
-  name: string;
-  description: string | null;
-  isSystem: boolean;
-  permissionCodes: string[];
-}
-
 export interface RoleAssignedUserDto {
   id: string;
   fullName: string;
