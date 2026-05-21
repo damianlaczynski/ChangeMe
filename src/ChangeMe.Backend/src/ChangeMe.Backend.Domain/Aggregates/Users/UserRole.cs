@@ -2,7 +2,7 @@ using ChangeMe.Backend.Domain.Aggregates.Roles;
 
 namespace ChangeMe.Backend.Domain.Aggregates.Users;
 
-public class UserRole : Entity
+public class UserRole
 {
   private UserRole() { }
 

@@ -1,25 +1,21 @@
 using ChangeMe.Backend.Domain.Aggregates.Roles;
 using ChangeMe.Backend.Domain.Aggregates.Users;
-using ChangeMe.Backend.Infrastructure.Common;
 
 namespace ChangeMe.Backend.Infrastructure.Persistence.Config.Users;
 
-public class UserRoleConfiguration : BaseEntityTypeConfiguration<UserRole>
+public class UserRoleConfiguration : IEntityTypeConfiguration<UserRole>
 {
-  protected override string TableName => "user_roles";
-
-  public override void Configure(EntityTypeBuilder<UserRole> builder)
+  public void Configure(EntityTypeBuilder<UserRole> builder)
   {
-    base.Configure(builder);
+    builder.ToTable("user_roles");
+
+    builder.HasKey(x => new { x.UserId, x.RoleId });
 
     builder.Property(x => x.UserId)
       .IsRequired();
 
     builder.Property(x => x.RoleId)
       .IsRequired();
-
-    builder.HasIndex(x => new { x.UserId, x.RoleId })
-      .IsUnique();
 
     builder.HasOne(x => x.Role)
       .WithMany()

@@ -254,14 +254,15 @@ public sealed class RolesEndpointTests(BackendWebApplicationFactory factory)
     var cancellationToken = TestContext.Current.CancellationToken;
     var admin = await TestAuthHelper.CreateAdministratorUserAsync(factory, cancellationToken);
     var roleId = await RolesTestHelper.CreateCustomRoleAsync(admin.Client, cancellationToken);
-    var (userId, _) = await RolesTestHelper.CreateManagedUserAsync(admin.Client, factory, cancellationToken);
+    var (userId, email) = await RolesTestHelper.CreateManagedUserAsync(admin.Client, factory, cancellationToken);
+    var userRoleId = await RolesTestHelper.GetRoleIdByNameAsync(factory, RoleConstraints.UserRoleName, cancellationToken);
 
-    var assignResponse = await admin.Client.PutAsJsonAsync($"/api/roles/{roleId}/users", new
-    {
-      RoleId = roleId,
-      UserIds = new[] { userId }
-    }, cancellationToken);
-    Assert.Equal(HttpStatusCode.OK, assignResponse.StatusCode);
+    await RolesTestHelper.AssignUserRolesAsync(
+      admin.Client,
+      userId,
+      email,
+      [userRoleId, roleId],
+      cancellationToken);
 
     var response = await admin.Client.DeleteAsync($"/api/roles/{roleId}", cancellationToken);
 

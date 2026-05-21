@@ -121,9 +121,14 @@ public class User : Entity, IAggregateRoot
     if (distinctRoleIds.Count == 0)
       return Result.Error("At least one role is required.");
 
-    roles.Clear();
+    foreach (var assignment in roles.Where(x => !distinctRoleIds.Contains(x.RoleId)).ToList())
+      roles.Remove(assignment);
+
     foreach (var roleId in distinctRoleIds)
-      roles.Add(UserRole.Create(Id, roleId));
+    {
+      if (!roles.Any(x => x.RoleId == roleId))
+        roles.Add(UserRole.Create(Id, roleId));
+    }
 
     return Result.Success();
   }

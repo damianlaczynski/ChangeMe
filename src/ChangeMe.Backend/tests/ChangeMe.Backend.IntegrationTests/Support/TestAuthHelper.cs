@@ -2,6 +2,7 @@
 using System.Net.Http.Json;
 using System.Text.Json;
 using ChangeMe.Backend.Domain.Aggregates.Roles;
+using ChangeMe.Backend.Domain.Aggregates.Users;
 using ChangeMe.Backend.Infrastructure.Persistence;
 using ChangeMe.Backend.IntegrationTests.Fixtures;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -78,17 +79,20 @@ internal static class TestAuthHelper
     await using (var scope = factory.Services.CreateAsyncScope())
     {
       var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-      var administratorRole = await dbContext.Roles
+      var administratorRoleId = await dbContext.Roles
         .AsNoTracking()
-        .SingleAsync(x => x.Name == RoleConstraints.AdministratorRoleName, cancellationToken);
+        .Where(x => x.Name == RoleConstraints.AdministratorRoleName)
+        .Select(x => x.Id)
+        .SingleAsync(cancellationToken);
 
-      var administratorUser = await dbContext.Users
-        .Include(x => x.Roles)
-        .FirstAsync(x => x.Id == user.UserId, cancellationToken);
+      var alreadyAssigned = await dbContext.Set<UserRole>()
+        .AnyAsync(x => x.UserId == user.UserId && x.RoleId == administratorRoleId, cancellationToken);
 
-      if (!administratorUser.HasRole(administratorRole.Id))
+      if (!alreadyAssigned)
       {
-        administratorUser.AssignRole(administratorRole.Id);
+        await dbContext.Set<UserRole>().AddAsync(
+          UserRole.Create(user.UserId, administratorRoleId),
+          cancellationToken);
         await dbContext.SaveChangesAsync(cancellationToken);
       }
     }

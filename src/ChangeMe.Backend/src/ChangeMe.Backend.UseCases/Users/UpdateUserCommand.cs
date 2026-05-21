@@ -77,7 +77,6 @@ public class UpdateUserHandler(
         user.Activate();
       }
     }
-    await context.AddRangeAsync(user.Roles, cancellationToken);
     await context.SaveChangesAsync(cancellationToken);
 
     var updatedUserResult = await mediator.Send(new GetUserByIdQuery(user.Id), cancellationToken);

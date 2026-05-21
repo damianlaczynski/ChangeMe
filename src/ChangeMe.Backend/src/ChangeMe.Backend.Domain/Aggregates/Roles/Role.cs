@@ -88,9 +88,13 @@ public class Role : Entity, IAggregateRoot
 
   public void SetPermissions(IEnumerable<string> permissionCodes)
   {
-    permissions.Clear();
-    foreach (var code in permissionCodes.Distinct(StringComparer.Ordinal))
-      permissions.Add(RolePermission.Create(Id, code));
+    var distinctCodes = permissionCodes.Distinct(StringComparer.Ordinal).ToList();
+
+    foreach (var permission in permissions.Where(p => !distinctCodes.Contains(p.PermissionCode)).ToList())
+      permissions.Remove(permission);
+
+    foreach (var code in distinctCodes)
+      AddPermissionIfMissing(code);
   }
 
   public void AddPermissionIfMissing(string permissionCode)

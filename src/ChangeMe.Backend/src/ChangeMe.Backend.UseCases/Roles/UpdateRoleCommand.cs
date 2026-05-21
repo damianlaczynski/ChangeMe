@@ -39,7 +39,6 @@ public class UpdateRoleHandler(
       return updateResult.Map();
 
     role.SetPermissions(command.PermissionCodes);
-    await context.AddRangeAsync(role.Permissions, cancellationToken);
     await context.SaveChangesAsync(cancellationToken);
 
     var updatedRoleResult = await mediator.Send(new GetRoleByIdQuery { Id = role.Id }, cancellationToken);
