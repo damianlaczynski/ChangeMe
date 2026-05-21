@@ -5,10 +5,10 @@ import { Router } from '@angular/router';
 import { UserSessionDto } from '@features/auth/models/auth.model';
 import { AuthService } from '@features/auth/services/auth.service';
 import {
-    AuthMessages,
-    PermissionCodes,
-    formatIpAddress,
-    formatSessionType
+  AuthMessages,
+  PermissionCodes,
+  formatIpAddress,
+  formatSessionType
 } from '@features/auth/utils/auth.utils';
 import { BackButtonComponent } from '@shared/components/back-button/back-button.component';
 import { PaginationResult } from '@shared/data/models/pagination-result.model';

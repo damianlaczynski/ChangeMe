@@ -3,14 +3,14 @@ import { ApiService } from '@shared/api/services/api.service';
 import { PaginationResult } from '@shared/data/models/pagination-result.model';
 import { Observable } from 'rxjs';
 import {
-    CreateRoleRequest,
-    PermissionCatalogItemDto,
-    RoleAssignedUserDto,
-    RoleAssignedUsersSearchParameters,
-    RoleDetailsDto,
-    RoleListItemDto,
-    RoleSearchParameters,
-    UpdateRoleRequest
+  CreateRoleRequest,
+  PermissionCatalogItemDto,
+  RoleAssignedUserDto,
+  RoleAssignedUsersSearchParameters,
+  RoleDetailsDto,
+  RoleListItemDto,
+  RoleSearchParameters,
+  UpdateRoleRequest
 } from '../models/role.model';
 
 @Injectable({
@@ -20,7 +20,9 @@ export class RolesService {
   private readonly apiService = inject(ApiService);
   private readonly baseEndpoint = 'roles';
 
-  getRoles(params: RoleSearchParameters): Observable<PaginationResult<RoleListItemDto>> {
+  getRoles(
+    params: RoleSearchParameters
+  ): Observable<PaginationResult<RoleListItemDto>> {
     return this.apiService.getPaginated<RoleListItemDto, RoleSearchParameters>(
       this.baseEndpoint,
       params
@@ -56,10 +58,10 @@ export class RolesService {
     roleId: string,
     params: RoleAssignedUsersSearchParameters
   ): Observable<PaginationResult<RoleAssignedUserDto>> {
-    return this.apiService.getPaginated<RoleAssignedUserDto, RoleAssignedUsersSearchParameters>(
-      `${this.baseEndpoint}/${roleId}/users`,
-      params
-    );
+    return this.apiService.getPaginated<
+      RoleAssignedUserDto,
+      RoleAssignedUsersSearchParameters
+    >(`${this.baseEndpoint}/${roleId}/users`, params);
   }
 
   removeUserFromRole(roleId: string, userId: string): Observable<boolean> {

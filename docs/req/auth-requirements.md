@@ -17,11 +17,11 @@ The user must be able to register a new account or sign in with email and passwo
 
 ### Login screen
 
-| Field           | Behavior                                                                     |
-| --------------- | ---------------------------------------------------------------------------- |
-| **Email**       | Text field, **required**; valid email format; max **320** characters.        |
+| Field           | Behavior                                                                          |
+| --------------- | --------------------------------------------------------------------------------- |
+| **Email**       | Text field, **required**; valid email format; max **320** characters.             |
 | **Password**    | Password field, **required**; **8–128** characters (same bounds as registration). |
-| **Remember me** | Checkbox, **not required**; default **unchecked**. Label: **`Remember me`**. |
+| **Remember me** | Checkbox, **not required**; default **unchecked**. Label: **`Remember me`**.      |
 
 - Successful sign-in opens the **Issues list** screen with the user authenticated.
 - The system creates a **session** recording **signed in at**, **device / browser label**, **IP address**, and whether **Remember me** was selected.

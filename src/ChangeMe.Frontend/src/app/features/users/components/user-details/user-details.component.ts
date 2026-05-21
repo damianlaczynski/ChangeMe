@@ -9,10 +9,10 @@ import { EffectivePermissionsComponent } from '@features/users/components/effect
 import { AdminUserSessionDto, UserDetailsDto } from '@features/users/models/user.model';
 import { UsersService } from '@features/users/services/users.service';
 import {
-    getActivateConfirmMessage,
-    getDeactivateConfirmMessage,
-    getUserStatusSeverity,
-    UserMessages
+  getActivateConfirmMessage,
+  getDeactivateConfirmMessage,
+  getUserStatusSeverity,
+  UserMessages
 } from '@features/users/utils/users.utils';
 import { PermissionCodes } from '@shared/authorization/permission-codes';
 import { BackButtonComponent } from '@shared/components/back-button/back-button.component';
@@ -52,7 +52,9 @@ export class UserDetailsComponent {
 
   readonly user = signal<UserDetailsDto | null>(null);
   readonly sessions = signal<AdminUserSessionDto[]>([]);
-  readonly sessionsPagination = signal<PaginationResult<AdminUserSessionDto> | null>(null);
+  readonly sessionsPagination = signal<PaginationResult<AdminUserSessionDto> | null>(
+    null
+  );
   readonly sessionsQuery = signal({
     pageNumber: 1,
     pageSize: 10,

@@ -1,10 +1,10 @@
 import {
-    Component,
-    computed,
-    DestroyRef,
-    inject,
-    signal,
-    viewChild
+  Component,
+  computed,
+  DestroyRef,
+  inject,
+  signal,
+  viewChild
 } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
@@ -12,14 +12,14 @@ import { RouterLink } from '@angular/router';
 import { ToastService } from '@core/toast/services/toast.service';
 import { AuthService } from '@features/auth/services/auth.service';
 import {
-    RoleListItemDto,
-    RoleSearchParameters
+  RoleListItemDto,
+  RoleSearchParameters
 } from '@features/roles/models/role.model';
 import { RolesService } from '@features/roles/services/roles.service';
 import {
-    formatDescription,
-    getDeleteRoleConfirmMessage,
-    RoleMessages
+  formatDescription,
+  getDeleteRoleConfirmMessage,
+  RoleMessages
 } from '@features/roles/utils/roles.utils';
 import { PermissionCodes } from '@shared/authorization/permission-codes';
 import { PaginationResult } from '@shared/data/models/pagination-result.model';
