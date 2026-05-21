@@ -28,6 +28,8 @@ public sealed class LoginUserCommandValidator : Validator<LoginUserCommand>
       .MaximumLength(UserConstraints.EMAIL_MAX_LENGTH);
 
     RuleFor(x => x.Password)
-      .NotEmpty();
+      .NotEmpty()
+      .MinimumLength(UserConstraints.PASSWORD_MIN_LENGTH)
+      .MaximumLength(UserConstraints.PASSWORD_MAX_LENGTH);
   }
 }

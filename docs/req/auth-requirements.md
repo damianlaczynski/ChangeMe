@@ -20,7 +20,7 @@ The user must be able to register a new account or sign in with email and passwo
 | Field           | Behavior                                                                     |
 | --------------- | ---------------------------------------------------------------------------- |
 | **Email**       | Text field, **required**; valid email format; max **320** characters.        |
-| **Password**    | Password field, **required**.                                                |
+| **Password**    | Password field, **required**; **8–128** characters (same bounds as registration). |
 | **Remember me** | Checkbox, **not required**; default **unchecked**. Label: **`Remember me`**. |
 
 - Successful sign-in opens the **Issues list** screen with the user authenticated.
@@ -46,9 +46,20 @@ The user must be able to register a new account or sign in with email and passwo
 
 ### Validation
 
+**Login**
+
+- **Email**: required; valid email format; max **320** characters.
+- **Password**: required; **8–128** characters. Rejects out-of-range input before authentication (limits oversized requests; minimum matches passwords set at registration and user creation).
+
+**Register**
+
 - **First name** and **Last name**: required; max **100** characters.
 - **Email**: required; valid email format; max **320** characters.
 - **Password**: required; **8–128** characters.
+- **Confirm password**: required; must match **Password**.
+
+**Both screens**
+
 - Validation errors are shown inline next to the relevant field without closing the form.
 - The form does not navigate away on validation failure.
 

@@ -1,9 +1,9 @@
 import { Component, inject, signal } from '@angular/core';
 import {
-  FormControl,
-  FormGroup,
-  ReactiveFormsModule,
-  Validators
+    FormControl,
+    FormGroup,
+    ReactiveFormsModule,
+    Validators
 } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthPageComponent } from '@features/auth/components/auth-page/auth-page.component';
@@ -54,7 +54,11 @@ export class LoginComponent {
     }),
     password: new FormControl('', {
       nonNullable: true,
-      validators: [Validators.required]
+      validators: [
+        Validators.required,
+        Validators.minLength(AuthConstraints.PASSWORD_MIN_LENGTH),
+        Validators.maxLength(AuthConstraints.PASSWORD_MAX_LENGTH)
+      ]
     }),
     rememberMe: new FormControl(false, { nonNullable: true })
   });
