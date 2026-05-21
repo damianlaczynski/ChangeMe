@@ -1,8 +1,8 @@
 import { Routes } from '@angular/router';
 import { ChangePasswordComponent } from '@features/auth/components/change-password/change-password.component';
+import { EditMyAccountComponent } from '@features/auth/components/edit-my-account/edit-my-account.component';
 import { LoginComponent } from '@features/auth/components/login/login.component';
 import { MyAccountComponent } from '@features/auth/components/my-account/my-account.component';
-import { MySessionsComponent } from '@features/auth/components/my-sessions/my-sessions.component';
 import { RegisterComponent } from '@features/auth/components/register/register.component';
 import { authGuard } from '@features/auth/guards/auth.guard';
 import { guestGuard } from '@features/auth/guards/guest.guard';
@@ -66,9 +66,9 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
-    path: 'account/sessions',
-    component: MySessionsComponent,
-    canActivate: [authGuard, permissionGuard(PermissionCodes.sessionsViewOwn)]
+    path: 'account/edit',
+    component: EditMyAccountComponent,
+    canActivate: [authGuard]
   },
   {
     path: 'account/change-password',

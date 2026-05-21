@@ -22,7 +22,7 @@ public static class PermissionCatalog
     new(PermissionCodes.UsersDeactivate, "Deactivate users", "Deactivate and reactivate user accounts.", "Users"),
     new(PermissionCodes.RolesView, "View roles", "View the roles list and role details.", "Roles"),
     new(PermissionCodes.RolesManage, "Manage roles", "Create, edit, and delete custom roles; manage role and user assignments.", "Roles"),
-    new(PermissionCodes.SessionsViewOwn, "View own sessions", "View the current user's active sessions on My sessions.", "Sessions"),
+    new(PermissionCodes.SessionsViewOwn, "View own sessions", "View the current user's active sessions on My account.", "Sessions"),
     new(PermissionCodes.SessionsManageOwn, "Manage own sessions", "Revoke non-current own sessions and use Sign out everywhere.", "Sessions"),
     new(PermissionCodes.SessionsViewAny, "View user sessions", "View active sessions of any user in User details.", "Sessions"),
     new(PermissionCodes.SessionsManageAny, "Manage user sessions", "Revoke sessions of any user, including Revoke all sessions.", "Sessions")

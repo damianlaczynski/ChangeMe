@@ -1,10 +1,6 @@
-<p-card
-  class="mb-4"
-  header="Users"
-  subheader="Browse, search and manage user accounts."
->
+<p-card class="mb-4" header="Users" subheader="Browse, search and manage user accounts.">
   <form class="p-fluid" [formGroup]="filtersForm" (ngSubmit)="applyFilters()">
-    <div class="mb-4 flex flex-col gap-1.5">
+    <div class="flex flex-col gap-1.5 mb-4">
       <div class="flex flex-wrap items-center gap-2">
         <input
           id="searchText"
@@ -47,31 +43,31 @@
         </div>
       </div>
 
-      <div class="mt-4 flex flex-wrap items-center gap-3">
-        <p-button type="submit" label="Apply filters" icon="pi pi-filter" />
+      <div class="mt-4 flex flex-wrap items-center justify-end gap-2">
         <p-button
           type="button"
           label="Clear filters"
           icon="pi pi-filter-slash"
           severity="secondary"
           [outlined]="true"
+          [disabled]="!hasAppliedFilters()"
           (onClick)="clearFilters()"
         />
+        <p-button type="submit" label="Apply filters" icon="pi pi-filter" />
       </div>
     </p-panel>
-  </form>
 
-  @if (hasAppliedFilters()) {
     <app-applied-filters-chips
-      class="mb-4"
       [chips]="appliedFilterChips()"
       (chipRemove)="removeAppliedFilter($event)"
     />
-  }
+  </form>
 
   @if (errorMessage()) {
-    <p-message class="mb-4" severity="error">{{ errorMessage() }}</p-message>
+    <p-message severity="error" class="mb-4">{{ errorMessage() }}</p-message>
   }
+
+  <p-menu #userActionsMenu [model]="userActionItems()" [popup]="true" />
 
   <p-table
     [value]="users()"
@@ -134,12 +130,12 @@
         </td>
         <td>
           @if (user.lastSignInAt) {
-            {{ user.lastSignInAt | date: 'medium' }}
+            {{ user.lastSignInAt | date: 'dd.MM.yyyy HH:mm' }}
           } @else {
             {{ UserMessages.neverSignedIn }}
           }
         </td>
-        <td>{{ user.createdAt | date: 'medium' }}</td>
+        <td>{{ user.createdAt | date: 'dd.MM.yyyy HH:mm' }}</td>
         <td>
           <p-button
             type="button"
@@ -147,7 +143,9 @@
             severity="secondary"
             [text]="true"
             size="small"
-            ariaLabel="User actions"
+            pTooltip="User actions"
+            tooltipPosition="top"
+            [attr.aria-label]="'Actions for ' + user.fullName"
             (onClick)="openUserActionsMenu($event, user)"
           />
         </td>
@@ -155,14 +153,35 @@
     </ng-template>
     <ng-template #emptymessage>
       <tr>
-        <td colspan="7" class="text-muted-color text-center">No users found.</td>
+        <td colspan="7">
+          <div class="flex flex-col items-center gap-2 py-4">
+            <p class="text-muted-color m-0 text-center">No users found</p>
+            <div class="flex flex-wrap items-center justify-center gap-2">
+              @if (canCreateUsers()) {
+                <p-button
+                  size="small"
+                  label="Add user"
+                  icon="pi pi-plus"
+                  [routerLink]="['/users/create']"
+                />
+              }
+              <p-button
+                size="small"
+                label="Refresh"
+                icon="pi pi-refresh"
+                severity="secondary"
+                [outlined]="true"
+                (onClick)="refresh()"
+              />
+            </div>
+          </div>
+        </td>
       </tr>
     </ng-template>
   </p-table>
 
   @if (hasLoaded()) {
     <p-paginator
-      class="mt-4"
       [rows]="pagination()?.pageSize ?? 10"
       [totalRecords]="pagination()?.totalCount ?? 0"
       [first]="((pagination()?.currentPage ?? 1) - 1) * (pagination()?.pageSize ?? 10)"
@@ -170,5 +189,3 @@
     />
   }
 </p-card>
-
-<p-menu #userActionsMenu [model]="userActionItems()" [popup]="true" />

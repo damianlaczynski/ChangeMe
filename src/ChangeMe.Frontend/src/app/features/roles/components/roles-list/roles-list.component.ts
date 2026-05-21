@@ -32,6 +32,7 @@ import { Message } from 'primeng/message';
 import { Paginator, PaginatorState } from 'primeng/paginator';
 import { TableModule } from 'primeng/table';
 import { Tag } from 'primeng/tag';
+import { Tooltip } from 'primeng/tooltip';
 import { catchError, of, switchMap, tap } from 'rxjs';
 
 type RoleSortField = 'Name' | 'Users' | 'Permissions';
@@ -48,7 +49,8 @@ type RoleSortField = 'Name' | 'Users' | 'Permissions';
     Message,
     Tag,
     Menu,
-    Paginator
+    Paginator,
+    Tooltip
   ],
   templateUrl: './roles-list.component.html'
 })
@@ -191,6 +193,10 @@ export class RolesListComponent {
         });
       }
     });
+  }
+
+  refresh(): void {
+    this.query.update((current) => ({ ...current, pageNumber: 1 }));
   }
 
   private createEmptyPaginationResult(

@@ -1,10 +1,10 @@
-import { Component, DestroyRef, effect, inject, input, signal } from '@angular/core';
+import { Component, computed, DestroyRef, effect, inject, input, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
-    FormControl,
-    FormGroup,
-    ReactiveFormsModule,
-    Validators
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators
 } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { ToastService } from '@core/toast/services/toast.service';
@@ -13,9 +13,9 @@ import { EffectivePermissionsComponent } from '@features/users/components/effect
 import { EffectivePermissionDto, UserStatus } from '@features/users/models/user.model';
 import { UsersService } from '@features/users/services/users.service';
 import {
-    UserConstraints,
-    UserMessages,
-    userStatuses
+  UserConstraints,
+  UserMessages,
+  userStatuses
 } from '@features/users/utils/users.utils';
 import { PermissionCodes } from '@shared/authorization/permission-codes';
 import { BackButtonComponent } from '@shared/components/back-button/back-button.component';
@@ -24,6 +24,8 @@ import { Card } from 'primeng/card';
 import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
 import { MultiSelect } from 'primeng/multiselect';
+import { Panel } from 'primeng/panel';
+import { ProgressSpinner } from 'primeng/progressspinner';
 import { Select } from 'primeng/select';
 import { catchError, debounceTime, of, startWith, switchMap } from 'rxjs';
 
@@ -39,6 +41,8 @@ import { catchError, debounceTime, of, startWith, switchMap } from 'rxjs';
     MultiSelect,
     Select,
     Message,
+    Panel,
+    ProgressSpinner,
     EffectivePermissionsComponent
   ],
   templateUrl: './edit-user.component.html'
@@ -56,8 +60,13 @@ export class EditUserComponent {
   readonly roleOptions = signal<{ id: string; name: string; isSystem: boolean }[]>([]);
   readonly effectivePermissions = signal<EffectivePermissionDto[]>([]);
   readonly submitError = signal<string | null>(null);
+  readonly loadError = signal<string | null>(null);
   readonly isSubmitting = signal(false);
   readonly isLoading = signal(true);
+  readonly pageTitle = computed(() => {
+    const name = `${this.form.controls.firstName.value} ${this.form.controls.lastName.value}`.trim();
+    return name ? `Edit ${name}` : 'Edit User';
+  });
   readonly isEditingSelf = signal(false);
 
   readonly canManageRoles = this.authService.hasPermission(PermissionCodes.rolesManage);
@@ -119,6 +128,10 @@ export class EditUserComponent {
     });
   }
 
+  refresh(): void {
+    this.loadUser();
+  }
+
   private loadUser(): void {
     const userId = this.id();
     const currentUserId = this.authService.currentUser()?.id;
@@ -133,6 +146,7 @@ export class EditUserComponent {
     }
 
     this.isLoading.set(true);
+    this.loadError.set(null);
 
     this.usersService
       .getUserById(userId)
@@ -160,7 +174,7 @@ export class EditUserComponent {
           this.isLoading.set(false);
         },
         error: (error: Error) => {
-          this.submitError.set(error.message);
+          this.loadError.set(error.message);
           this.isLoading.set(false);
         }
       });

@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, DestroyRef, effect, inject, input, signal } from '@angular/core';
+import { Component, computed, DestroyRef, effect, inject, input, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { ToastService } from '@core/toast/services/toast.service';
@@ -22,6 +22,8 @@ import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { Message } from 'primeng/message';
 import { Paginator, PaginatorState } from 'primeng/paginator';
+import { Panel } from 'primeng/panel';
+import { ProgressSpinner } from 'primeng/progressspinner';
 import { TableModule } from 'primeng/table';
 import { Tag } from 'primeng/tag';
 
@@ -37,6 +39,8 @@ import { Tag } from 'primeng/tag';
     Tag,
     TableModule,
     Paginator,
+    Panel,
+    ProgressSpinner,
     EffectivePermissionsComponent
   ],
   templateUrl: './user-details.component.html'
@@ -51,6 +55,7 @@ export class UserDetailsComponent {
   private readonly destroyRef = inject(DestroyRef);
 
   readonly user = signal<UserDetailsDto | null>(null);
+  readonly pageTitle = computed(() => this.user()?.fullName ?? 'User details');
   readonly sessions = signal<AdminUserSessionDto[]>([]);
   readonly sessionsPagination = signal<PaginationResult<AdminUserSessionDto> | null>(
     null
@@ -144,6 +149,10 @@ export class UserDetailsComponent {
 
   isRevokePending(sessionId: string): boolean {
     return this.pendingRevokeSessionIds().includes(sessionId);
+  }
+
+  refresh(): void {
+    this.loadUser();
   }
 
   private loadUser(): void {

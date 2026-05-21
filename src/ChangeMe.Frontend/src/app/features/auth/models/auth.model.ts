@@ -1,4 +1,7 @@
-import { EffectivePermissionDto } from '@features/users/models/user.model';
+import {
+  EffectivePermissionDto,
+  UserRoleSummaryDto
+} from '@features/users/models/user.model';
 import { PaginationParameters } from '@shared/data/models/pagination-parameters.model';
 
 export interface AuthResponse {
@@ -49,6 +52,7 @@ export interface MyAccountDto {
   email: string;
   status: string;
   memberSince: string;
+  roles: UserRoleSummaryDto[];
   effectivePermissions: EffectivePermissionDto[];
 }
 

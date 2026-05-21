@@ -1,12 +1,12 @@
 import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
-  AbstractControl,
-  FormControl,
-  FormGroup,
-  ReactiveFormsModule,
-  ValidationErrors,
-  Validators
+    AbstractControl,
+    FormControl,
+    FormGroup,
+    ReactiveFormsModule,
+    ValidationErrors,
+    Validators
 } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '@features/auth/services/auth.service';
@@ -16,6 +16,7 @@ import { ConfirmationService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { Message } from 'primeng/message';
+import { Panel } from 'primeng/panel';
 import { Password } from 'primeng/password';
 
 @Component({
@@ -27,6 +28,7 @@ import { Password } from 'primeng/password';
     Card,
     Button,
     Message,
+    Panel,
     Password
   ],
   templateUrl: './change-password.component.html'

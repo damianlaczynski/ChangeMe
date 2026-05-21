@@ -28,7 +28,7 @@ The catalog contains exactly these permissions:
 | **Users.Deactivate**   | Deactivate users     | Deactivate and reactivate user accounts.                                      | Users    |
 | **Roles.View**         | View roles           | View the roles list and role details.                                         | Roles    |
 | **Roles.Manage**       | Manage roles         | Create, edit, and delete custom roles; manage role and user assignments.      | Roles    |
-| **Sessions.ViewOwn**   | View own sessions    | View the current user's active sessions on **My sessions**.                   | Sessions |
+| **Sessions.ViewOwn**   | View own sessions    | View the current user's active sessions on **My account**.                    | Sessions |
 | **Sessions.ManageOwn** | Manage own sessions  | Revoke non-current own sessions and use **Sign out everywhere**.              | Sessions |
 | **Sessions.ViewAny**   | View user sessions   | View active sessions of any user in **User details**.                         | Sessions |
 | **Sessions.ManageAny** | Manage user sessions | Revoke sessions of any user, including **Revoke all sessions**.               | Sessions |
@@ -288,7 +288,7 @@ An authorized administrator must be able to assign roles to users from **Create 
 - Saving **Create user** or **Edit user** replaces the user's entire role set with the selected set.
 - The **Roles** field is visible and editable only with permission **Roles.Manage**.
 - Without **Roles.Manage**, **Create user** is **not available** (every new user must receive role assignment at creation).
-- **Effective permissions** preview on create/edit follows REQ-USR-003.
+- **Permissions** preview on create/edit follows REQ-USR-003.
 
 - **User details** (REQ-USR-004) shows assigned roles and effective permissions read-only; role badges link to **Role details**.
 - Role changes are made only through **Edit user**, not from **User details**.
@@ -306,7 +306,7 @@ An authorized administrator must be able to assign roles to users from **Create 
 ### Self-service restrictions
 
 - Standard users cannot change their own roles.
-- On **Edit user**, when the administrator edits **their own** account, the **Roles** field and **Effective permissions** preview are **not shown**.
+- On **Edit user**, when the administrator edits **their own** account, the **Roles** field and **Permissions** preview are **not shown**.
 - Self role change from any entry point is rejected with message **`You cannot change your own roles.`**
 
 ### States and business rules
@@ -319,7 +319,7 @@ An authorized administrator must be able to assign roles to users from **Create 
 ### Permissions and visibility
 
 - **Roles.Manage**: required for the **Roles** field on **Create user** / **Edit user** and for **Remove from role** on **Role details**.
-- **Roles.View**: allows read-only **Roles** and **Effective permissions** on **User details** and read-only **Assigned users** on **Role details** when the user lacks **Roles.Manage**.
+- **Roles.View**: allows read-only **Roles** and **Permissions** on **User details** and read-only **Assigned users** on **Role details** when the user lacks **Roles.Manage**.
 
 ---
 

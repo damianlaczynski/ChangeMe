@@ -1,12 +1,12 @@
 import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
-  FormControl,
-  FormGroup,
-  ReactiveFormsModule,
-  Validators
+    FormControl,
+    FormGroup,
+    ReactiveFormsModule,
+    Validators
 } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { ToastService } from '@core/toast/services/toast.service';
 import { PermissionChecklistComponent } from '@features/roles/components/permission-checklist/permission-checklist.component';
 import { PermissionCatalogItemDto } from '@features/roles/models/role.model';
@@ -17,19 +17,20 @@ import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
+import { Panel } from 'primeng/panel';
 import { Textarea } from 'primeng/textarea';
 
 @Component({
   selector: 'app-create-role',
   imports: [
     ReactiveFormsModule,
-    RouterLink,
     BackButtonComponent,
     Card,
     Button,
     InputText,
     Textarea,
     Message,
+    Panel,
     PermissionChecklistComponent
   ],
   templateUrl: './create-role.component.html'
@@ -82,6 +83,10 @@ export class CreateRoleComponent {
     touched: boolean;
   }): boolean {
     return control.invalid && (control.dirty || control.touched);
+  }
+
+  cancel(): void {
+    void this.router.navigate(['/roles']);
   }
 
   onSubmit(): void {

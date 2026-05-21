@@ -1,22 +1,26 @@
 <p-card
   class="mb-4"
-  header="Role details"
-  subheader="Role metadata, permissions, and assigned users."
+  [header]="pageTitle()"
+  subheader="Review role metadata, permissions, and assigned users"
 >
   <div class="mb-4 flex flex-wrap items-center gap-2">
     <app-back-button label="Back to roles list" [route]="['/roles']" />
     @if (role(); as current) {
       @if (canManageRoles() && !current.isSystem) {
         <p-button
-          label="Edit role"
+          label="Edit"
           icon="pi pi-pencil"
+          severity="secondary"
+          [outlined]="true"
+          size="small"
           [routerLink]="['/roles', current.id, 'edit']"
         />
         <p-button
-          label="Delete role"
+          label="Delete"
           icon="pi pi-trash"
           severity="danger"
           [outlined]="true"
+          size="small"
           (onClick)="confirmDeleteRole()"
         />
       }
@@ -29,146 +33,140 @@
     </p-message>
   }
 
-  @if (errorMessage()) {
-    <p-message class="mb-4" severity="error">{{ errorMessage() }}</p-message>
-  }
-
   @if (isLoading()) {
-    <p class="text-muted-color text-sm">Loading role...</p>
+    <div class="flex flex-col items-center gap-2 py-8">
+      <p-progressSpinner ariaLabel="Loading role details" />
+      <p class="text-muted-color m-0 text-sm">Loading role details...</p>
+    </div>
+  } @else if (errorMessage()) {
+    <div class="flex flex-col items-center gap-2">
+      <p-message severity="error">{{ errorMessage() }}</p-message>
+      <p-button
+        size="small"
+        label="Try again"
+        icon="pi pi-refresh"
+        severity="secondary"
+        [outlined]="true"
+        [loading]="isLoading()"
+        (onClick)="refresh()"
+      />
+    </div>
   } @else if (role(); as current) {
-    <div class="flex flex-col gap-6">
-      <section class="grid gap-4 sm:grid-cols-2">
-        <div>
-          <span class="text-muted-color text-sm">Name</span>
-          <p class="text-color m-0 font-medium">{{ current.name }}</p>
+    <dl
+      class="mb-6 grid gap-4 rounded-lg border border-surface-200 p-4 sm:grid-cols-2 lg:grid-cols-3"
+    >
+      <div class="flex flex-col gap-1">
+        <dt class="text-muted-color text-sm">Name</dt>
+        <dd class="m-0 font-medium">{{ current.name }}</dd>
+      </div>
+      <div class="flex flex-col gap-1 sm:col-span-2">
+        <dt class="text-muted-color text-sm">Description</dt>
+        <dd class="m-0 font-medium">{{ formatDescription(current.description) }}</dd>
+      </div>
+      @if (current.isSystem) {
+        <div class="flex flex-col gap-1">
+          <dt class="text-muted-color text-sm">System</dt>
+          <dd class="m-0"><p-tag value="System" severity="info" /></dd>
         </div>
-        <div>
-          <span class="text-muted-color text-sm">Description</span>
-          <p class="text-color m-0 font-medium">
-            {{ formatDescription(current.description) }}
-          </p>
-        </div>
-        @if (current.isSystem) {
-          <div>
-            <span class="text-muted-color text-sm">System</span>
-            <p class="m-0 mt-1"><p-tag value="System" severity="info" /></p>
-          </div>
-        }
-        <div>
-          <span class="text-muted-color text-sm">Permissions</span>
-          <p class="text-color m-0 font-medium">
-            {{ RoleMessages.permissionsCount(current.permissionCount) }}
-          </p>
-        </div>
-        <div>
-          <span class="text-muted-color text-sm">Assigned users</span>
-          <p class="text-color m-0 font-medium">
-            {{ RoleMessages.usersCount(current.userCount) }}
-          </p>
-        </div>
-      </section>
+      }
+      <div class="flex flex-col gap-1">
+        <dt class="text-muted-color text-sm">Permissions</dt>
+        <dd class="m-0 font-medium">
+          {{ RoleMessages.permissionsCount(current.permissionCount) }}
+        </dd>
+      </div>
+      <div class="flex flex-col gap-1">
+        <dt class="text-muted-color text-sm">Assigned users</dt>
+        <dd class="m-0 font-medium">{{ RoleMessages.usersCount(current.userCount) }}</dd>
+      </div>
+    </dl>
 
-      <section>
-        <h3 class="text-color m-0 mb-3 text-base font-semibold">Permissions</h3>
-        @for (group of groupedPermissions(); track group.group) {
-          <div class="mb-4 flex flex-col gap-2">
-            <h4
-              class="text-muted-color m-0 text-sm font-semibold tracking-wide uppercase"
-            >
-              {{ group.group }}
-            </h4>
-            <ul class="m-0 flex list-none flex-col gap-3 p-0">
-              @for (permission of group.items; track permission.code) {
-                <li
-                  class="border-surface-200 rounded-lg border p-3 dark:border-surface-700"
-                >
-                  <div class="text-color font-medium">{{ permission.label }}</div>
-                  <p class="text-muted-color m-0 mt-1 text-sm">
-                    {{ permission.description }}
-                  </p>
-                </li>
-              }
-            </ul>
-          </div>
-        }
-      </section>
+    @if (current.permissions.length > 0) {
+      <app-effective-permissions
+        class="mb-4"
+        header="Permissions"
+        [permissions]="current.permissions"
+        [showFromRoles]="false"
+      />
+    }
 
-      <section>
-        <h3 class="text-color m-0 mb-3 text-base font-semibold">Assigned users</h3>
-        <div class="mb-4">
-          <input
-            type="text"
-            pInputText
-            [formControl]="usersSearchControl"
-            placeholder="Search assigned users..."
-            class="w-full"
-          />
-        </div>
-        <p-table [value]="assignedUsers()" [loading]="isLoadingUsers()" stripedRows>
-          <ng-template #header>
-            <tr>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Status</th>
-              @if (canManageRoles()) {
-                <th>Actions</th>
-              }
-            </tr>
-          </ng-template>
-          <ng-template #body let-user>
-            <tr>
+    <p-panel header="Assigned users" [toggleable]="true">
+      <div class="mb-4 flex flex-col gap-1.5">
+        <label for="assignedUsersSearch">Search assigned users</label>
+        <input
+          id="assignedUsersSearch"
+          type="text"
+          pInputText
+          [formControl]="usersSearchControl"
+          placeholder="Search assigned users..."
+          class="w-full"
+        />
+      </div>
+
+      <p-table [value]="assignedUsers()" [loading]="isLoadingUsers()" stripedRows>
+        <ng-template #header>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Status</th>
+            @if (canManageRoles()) {
+              <th>Actions</th>
+            }
+          </tr>
+        </ng-template>
+        <ng-template #body let-user>
+          <tr>
+            <td>
+              <a
+                class="text-primary font-medium hover:underline"
+                [routerLink]="['/users', user.id]"
+              >
+                {{ user.fullName }}
+              </a>
+            </td>
+            <td>{{ user.email }}</td>
+            <td>
+              <p-tag
+                [value]="user.status"
+                [severity]="getUserStatusSeverity(user.status)"
+              />
+            </td>
+            @if (canManageRoles()) {
               <td>
-                <a
-                  class="text-primary font-medium hover:underline"
-                  [routerLink]="['/users', user.id]"
-                >
-                  {{ user.fullName }}
-                </a>
-              </td>
-              <td>{{ user.email }}</td>
-              <td>
-                <p-tag
-                  [value]="user.status"
-                  [severity]="getUserStatusSeverity(user.status)"
+                <p-button
+                  label="Remove"
+                  icon="pi pi-user-minus"
+                  severity="danger"
+                  [text]="true"
+                  size="small"
+                  (onClick)="confirmRemoveUser(user)"
                 />
               </td>
-              @if (canManageRoles()) {
-                <td>
-                  <p-button
-                    label="Remove from role"
-                    icon="pi pi-user-minus"
-                    severity="danger"
-                    [text]="true"
-                    (onClick)="confirmRemoveUser(user)"
-                  />
-                </td>
-              }
-            </tr>
-          </ng-template>
-          <ng-template #emptymessage>
-            <tr>
-              <td
-                [attr.colspan]="canManageRoles() ? 4 : 3"
-                class="text-muted-color text-center"
-              >
+            }
+          </tr>
+        </ng-template>
+        <ng-template #emptymessage>
+          <tr>
+            <td [attr.colspan]="canManageRoles() ? 4 : 3">
+              <p class="text-muted-color m-0 py-4 text-center">
                 {{ RoleMessages.noAssignedUsers }}
-              </td>
-            </tr>
-          </ng-template>
-        </p-table>
-        @if (hasLoadedUsers()) {
-          <p-paginator
-            class="mt-4"
-            [rows]="assignedUsersPagination()?.pageSize ?? 10"
-            [totalRecords]="assignedUsersPagination()?.totalCount ?? 0"
-            [first]="
-              ((assignedUsersPagination()?.currentPage ?? 1) - 1) *
-              (assignedUsersPagination()?.pageSize ?? 10)
-            "
-            (onPageChange)="onAssignedUsersPageChange($event)"
-          />
-        }
-      </section>
-    </div>
+              </p>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+
+      @if (hasLoadedUsers()) {
+        <p-paginator
+          [rows]="assignedUsersPagination()?.pageSize ?? 10"
+          [totalRecords]="assignedUsersPagination()?.totalCount ?? 0"
+          [first]="
+            ((assignedUsersPagination()?.currentPage ?? 1) - 1) *
+            (assignedUsersPagination()?.pageSize ?? 10)
+          "
+          (onPageChange)="onAssignedUsersPageChange($event)"
+        />
+      }
+    </p-panel>
   }
 </p-card>

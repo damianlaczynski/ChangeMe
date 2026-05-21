@@ -1,7 +1,6 @@
 using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UseCases.Auth.Dtos;
-using ChangeMe.Backend.UseCases.Users;
-
+using ChangeMe.Backend.UseCases.Users.Dtos;
 using ChangeMe.Backend.UseCases.Users.Utils;
 
 namespace ChangeMe.Backend.UseCases.Auth;
@@ -17,9 +16,19 @@ public class GetMyAccountHandler(
     if (userAccessor.UserId is not Guid userId)
       return Result<MyAccountDto>.Unauthorized();
 
-    var user = await context.Users.AsNoTracking().FirstOrDefaultAsync(x => x.Id == userId, cancellationToken);
+    var user = await context.Users
+      .AsNoTracking()
+      .Include(x => x.Roles)
+      .ThenInclude(x => x.Role)
+      .FirstOrDefaultAsync(x => x.Id == userId, cancellationToken);
     if (user is null || !user.IsActive)
       return Result<MyAccountDto>.Unauthorized();
+
+    var roles = user.Roles
+      .Select(x => x.Role)
+      .OrderBy(role => role.Name)
+      .Select(role => new UserRoleSummaryDto(role.Id, role.Name, role.IsSystem))
+      .ToList();
 
     var effectivePermissions = await UsersUtils.GetEffectivePermissionsForUserAsync(
       context,
@@ -33,6 +42,7 @@ public class GetMyAccountHandler(
       user.Email,
       user.Status.ToString(),
       user.CreatedAt,
+      roles,
       effectivePermissions));
   }
 }

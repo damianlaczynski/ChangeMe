@@ -1,100 +1,106 @@
 <p-card
   class="mb-4"
-  header="Create user"
-  subheader="Add a new user account and assign roles."
+  header="Create User"
+  subheader="Add a new user account and assign roles"
 >
-  <div class="mb-4">
+  <div class="mb-4 flex flex-wrap items-center gap-2">
     <app-back-button label="Back to users list" [route]="['/users']" />
   </div>
 
   <form class="p-fluid flex flex-col gap-4" [formGroup]="form" (ngSubmit)="onSubmit()">
-    <div class="grid gap-4 sm:grid-cols-2">
-      <div class="flex flex-col gap-1.5">
-        <label for="firstName">First name</label>
+    <p-panel header="Profile" [toggleable]="true">
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div class="flex flex-col gap-1.5">
+          <label for="firstName">First name</label>
+          <input
+            id="firstName"
+            type="text"
+            pInputText
+            [formControl]="form.controls.firstName"
+            [invalid]="shouldShowError(form.controls.firstName)"
+          />
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <label for="lastName">Last name</label>
+          <input
+            id="lastName"
+            type="text"
+            pInputText
+            [formControl]="form.controls.lastName"
+            [invalid]="shouldShowError(form.controls.lastName)"
+          />
+        </div>
+      </div>
+
+      <div class="mt-4 flex flex-col gap-1.5">
+        <label for="email">Email</label>
         <input
-          id="firstName"
-          type="text"
+          id="email"
+          type="email"
           pInputText
-          [formControl]="form.controls.firstName"
-          [invalid]="shouldShowError(form.controls.firstName)"
+          [formControl]="form.controls.email"
+          [invalid]="shouldShowError(form.controls.email)"
         />
       </div>
-      <div class="flex flex-col gap-1.5">
-        <label for="lastName">Last name</label>
-        <input
-          id="lastName"
-          type="text"
-          pInputText
-          [formControl]="form.controls.lastName"
-          [invalid]="shouldShowError(form.controls.lastName)"
-        />
-      </div>
-    </div>
+    </p-panel>
 
-    <div class="flex flex-col gap-1.5">
-      <label for="email">Email</label>
-      <input
-        id="email"
-        type="email"
-        pInputText
-        [formControl]="form.controls.email"
-        [invalid]="shouldShowError(form.controls.email)"
-      />
-    </div>
+    <p-panel header="Credentials" [toggleable]="true">
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div class="flex flex-col gap-1.5">
+          <label for="password">Password</label>
+          <p-password
+            inputId="password"
+            [formControl]="form.controls.password"
+            [toggleMask]="true"
+            fluid
+            [invalid]="shouldShowError(form.controls.password)"
+          />
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <label for="confirmPassword">Confirm password</label>
+          <p-password
+            inputId="confirmPassword"
+            [formControl]="form.controls.confirmPassword"
+            [feedback]="false"
+            [toggleMask]="true"
+            fluid
+            [invalid]="
+              shouldShowError(form.controls.confirmPassword) ||
+              (form.touched && form.errors?.['passwordMismatch'])
+            "
+          />
+        </div>
+      </div>
+    </p-panel>
 
-    <div class="grid gap-4 sm:grid-cols-2">
-      <div class="flex flex-col gap-1.5">
-        <label for="password">Password</label>
-        <p-password
-          inputId="password"
-          [formControl]="form.controls.password"
-          [toggleMask]="true"
-          fluid
-          [invalid]="shouldShowError(form.controls.password)"
-        />
+    <p-panel header="Roles and status" [toggleable]="true">
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div class="flex flex-col gap-1.5">
+          <label for="roles">Roles</label>
+          <p-multiselect
+            inputId="roles"
+            [formControl]="form.controls.roleIds"
+            [options]="roleOptions()"
+            optionLabel="name"
+            optionValue="id"
+            placeholder="Select roles"
+            display="chip"
+            [loading]="isLoadingRoles()"
+            [invalid]="shouldShowError(form.controls.roleIds)"
+          />
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <label for="status">Status</label>
+          <p-select
+            inputId="status"
+            [formControl]="form.controls.status"
+            [options]="userStatuses"
+            optionLabel="label"
+            optionValue="value"
+          />
+        </div>
       </div>
-      <div class="flex flex-col gap-1.5">
-        <label for="confirmPassword">Confirm password</label>
-        <p-password
-          inputId="confirmPassword"
-          [formControl]="form.controls.confirmPassword"
-          [feedback]="false"
-          [toggleMask]="true"
-          fluid
-          [invalid]="
-            shouldShowError(form.controls.confirmPassword) ||
-            (form.touched && form.errors?.['passwordMismatch'])
-          "
-        />
-      </div>
-    </div>
-
-    <div class="grid gap-4 sm:grid-cols-2">
-      <div class="flex flex-col gap-1.5">
-        <label for="roles">Roles</label>
-        <p-multiselect
-          inputId="roles"
-          [formControl]="form.controls.roleIds"
-          [options]="roleOptions()"
-          optionLabel="name"
-          optionValue="id"
-          placeholder="Select roles"
-          display="chip"
-          [loading]="isLoadingRoles()"
-          [invalid]="shouldShowError(form.controls.roleIds)"
-        />
-      </div>
-      <div class="flex flex-col gap-1.5">
-        <label for="status">Status</label>
-        <p-select
-          inputId="status"
-          [formControl]="form.controls.status"
-          [options]="userStatuses"
-          optionLabel="label"
-          optionValue="value"
-        />
-      </div>
-    </div>
+    </p-panel>
 
     <app-effective-permissions
       [permissions]="effectivePermissions()"
@@ -105,7 +111,7 @@
       <p-message severity="error">{{ submitError() }}</p-message>
     }
 
-    <div class="flex flex-wrap items-center gap-3">
+    <div class="flex flex-wrap items-center justify-end gap-2">
       <p-button
         type="button"
         label="Cancel"
@@ -115,7 +121,7 @@
       />
       <p-button
         type="submit"
-        label="Create user"
+        [label]="isSubmitting() ? 'Creating user...' : 'Create user'"
         icon="pi pi-user-plus"
         [loading]="isSubmitting()"
       />

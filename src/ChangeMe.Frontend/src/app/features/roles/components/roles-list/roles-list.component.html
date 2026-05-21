@@ -1,10 +1,6 @@
-<p-card
-  class="mb-4"
-  header="Roles"
-  subheader="Browse, search and manage roles and permissions."
->
+<p-card class="mb-4" header="Roles" subheader="Browse, search and manage roles and permissions.">
   <form class="p-fluid" [formGroup]="filtersForm" (ngSubmit)="applyFilters()">
-    <div class="mb-4 flex flex-col gap-1.5">
+    <div class="flex flex-col gap-1.5 mb-4">
       <div class="flex flex-wrap items-center gap-2">
         <input
           id="searchText"
@@ -27,8 +23,10 @@
   </form>
 
   @if (errorMessage()) {
-    <p-message class="mb-4" severity="error">{{ errorMessage() }}</p-message>
+    <p-message severity="error" class="mb-4">{{ errorMessage() }}</p-message>
   }
+
+  <p-menu #roleActionsMenu [model]="roleActionItems()" [popup]="true" />
 
   <p-table
     [value]="roles()"
@@ -86,8 +84,12 @@
           <p-button
             type="button"
             icon="pi pi-ellipsis-v"
+            severity="secondary"
             [text]="true"
-            [rounded]="true"
+            size="small"
+            pTooltip="Role actions"
+            tooltipPosition="top"
+            [attr.aria-label]="'Actions for ' + role.name"
             (onClick)="openRoleActionsMenu($event, role)"
           />
         </td>
@@ -95,14 +97,35 @@
     </ng-template>
     <ng-template #emptymessage>
       <tr>
-        <td colspan="6" class="text-muted-color text-center">No roles found.</td>
+        <td colspan="6">
+          <div class="flex flex-col items-center gap-2 py-4">
+            <p class="text-muted-color m-0 text-center">No roles found</p>
+            <div class="flex flex-wrap items-center justify-center gap-2">
+              @if (canManageRoles()) {
+                <p-button
+                  size="small"
+                  label="Add role"
+                  icon="pi pi-plus"
+                  [routerLink]="['/roles/create']"
+                />
+              }
+              <p-button
+                size="small"
+                label="Refresh"
+                icon="pi pi-refresh"
+                severity="secondary"
+                [outlined]="true"
+                (onClick)="refresh()"
+              />
+            </div>
+          </div>
+        </td>
       </tr>
     </ng-template>
   </p-table>
 
   @if (hasLoaded()) {
     <p-paginator
-      class="mt-4"
       [rows]="pagination()?.pageSize ?? 10"
       [totalRecords]="pagination()?.totalCount ?? 0"
       [first]="((pagination()?.currentPage ?? 1) - 1) * (pagination()?.pageSize ?? 10)"
@@ -110,5 +133,3 @@
     />
   }
 </p-card>
-
-<p-menu #roleActionsMenu [popup]="true" [model]="roleActionItems()" />

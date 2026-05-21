@@ -10,28 +10,18 @@ import {
   formatIpAddress,
   formatSessionType
 } from '@features/auth/utils/auth.utils';
-import { BackButtonComponent } from '@shared/components/back-button/back-button.component';
 import { PaginationResult } from '@shared/data/models/pagination-result.model';
 import { ConfirmationService } from 'primeng/api';
 import { Button } from 'primeng/button';
-import { Card } from 'primeng/card';
 import { Message } from 'primeng/message';
 import { Paginator, PaginatorState } from 'primeng/paginator';
+import { Panel } from 'primeng/panel';
 import { TableModule } from 'primeng/table';
 import { Tag } from 'primeng/tag';
 
 @Component({
   selector: 'app-my-sessions',
-  imports: [
-    DatePipe,
-    BackButtonComponent,
-    Card,
-    Button,
-    Message,
-    TableModule,
-    Tag,
-    Paginator
-  ],
+  imports: [DatePipe, Button, Message, Panel, TableModule, Tag, Paginator],
   templateUrl: './my-sessions.component.html'
 })
 export class MySessionsComponent {
@@ -53,7 +43,6 @@ export class MySessionsComponent {
   readonly hasLoaded = signal(false);
   readonly pendingRevokeIds = signal<string[]>([]);
   readonly isSigningOutEverywhere = signal(false);
-  readonly permissionCodes = PermissionCodes;
   readonly authMessages = AuthMessages;
   readonly formatSessionType = formatSessionType;
   readonly formatIpAddress = formatIpAddress;
@@ -63,6 +52,10 @@ export class MySessionsComponent {
   );
 
   constructor() {
+    this.loadSessions();
+  }
+
+  refresh(): void {
     this.loadSessions();
   }
 

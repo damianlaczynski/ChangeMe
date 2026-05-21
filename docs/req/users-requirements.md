@@ -11,7 +11,7 @@ Role assignment is performed on **Create user** and **Edit user** (REQ-USR-003).
 
 ## Goal
 
-The signed-in user must be able to view and update their own profile and reach account security actions.
+The signed-in user must be able to view their own profile, edit it on a separate screen, and reach account security actions.
 
 ## Features
 
@@ -20,33 +20,48 @@ The signed-in user must be able to view and update their own profile and reach a
 - Screen: **My account**
 - Sidebar entry: **My account** (visible to all authenticated **Active** users).
 
-### Profile section
+### Profile section (read-only)
 
 | Field            | Behavior                                         |
 | ---------------- | ------------------------------------------------ |
-| **First name**   | Editable; **required**; max **100** characters.  |
-| **Last name**    | Editable; **required**; max **100** characters.  |
-| **Email**        | **Read-only**.                                   |
+| **First name**   | Read-only.                                       |
+| **Last name**    | Read-only.                                       |
+| **Email**        | Read-only.                                       |
 | **Status**       | Read-only badge: **`Active`** or **`Inactive`**. |
 | **Member since** | Read-only account creation date and time.        |
 
-### Security actions
+- **Roles** section: read-only list of assigned role names (badges); collapsible panel; links to **Role details** when the user has **Roles.View**, otherwise badges only.
+- Empty state: **`No roles assigned.`**
+- **Permissions** section: read-only list (REQ-ROL-001); collapsible panel; default **collapsed**.
 
-- Button **Change password** opens **Change password** (REQ-AUTH-005).
-- Button **Active sessions** opens **My sessions** (REQ-AUTH-004).
+### Header actions
 
-### Validation
+- **Edit** button (header action) opens **Edit profile** (same placement as **Edit** on other detail screens).
+- **Change password** button (header action) opens **Change password** (REQ-AUTH-005).
+- **Sign out everywhere** button (header action) when the user has **Sessions.ManageOwn**; same behavior as REQ-AUTH-003.
+
+### Edit profile screen
+
+- Screen: **Edit profile**
+- Route: linked from **My account** via header action **Edit**; **Back to my account** at the top.
+- **First name** and **Last name** are editable; **required**; max **100** characters.
+- **Email** is not shown on this screen (read-only on **My account** only).
+- **Save changes**: validate, save, show message **`Profile updated.`**, return to **My account**.
+- **Cancel**: return to **My account** without saving.
+
+### Active sessions section
+
+- Collapsible section **Active sessions** on the same screen when the user has **Sessions.ViewOwn** (REQ-AUTH-004).
+- Not a separate screen or sidebar entry.
+
+### Validation (edit profile)
 
 - **First name** and **Last name** follow the same rules as registration (REQ-AUTH-001); errors are inline on the relevant field.
 
-### Form actions
-
-- **Save changes** button: validate, save profile, show message **`Profile updated.`**, and refresh displayed values in place.
-- The screen does **not** expose role assignment or account status changes.
-
 ### Permissions and visibility
 
-- Any authenticated **Active** user can view and edit their own **First name** and **Last name**.
+- Any authenticated **Active** user can view **My account** and open **Edit profile** to change **First name** and **Last name**.
+- **My account** does **not** expose role assignment or account status changes.
 - **Out of scope for this REQ:** email change.
 
 ---
@@ -146,16 +161,16 @@ An authorized administrator must be able to create users and update their profil
 
 - **Roles** field is visible and editable only with permission **Roles.Manage**. Creating a user requires **Roles.Manage** so every new user receives role assignment.
 
-### Effective permissions preview (create and edit)
+### Permissions preview (create and edit)
 
-- Below the **Roles** field, a read-only section **Effective permissions** shows the union of permissions from the currently selected roles (REQ-ROL-001).
+- Below the **Roles** field, a read-only section **Permissions** shows the union of permissions from the currently selected roles (REQ-ROL-001).
 - Each permission row shows:
   - **Label** and **description** from the catalog;
   - **From roles** — comma-separated list of selected role **names** that grant this permission (for example **`From roles: Administrator, Support`**).
 - When a permission is granted by only one selected role, the text uses singular: **`From role: User`**.
 - Rows are grouped by **Users**, **Roles**, **Sessions**.
 - The preview updates immediately when the **Roles** selection changes, before save.
-- When no role is selected, the section shows: **`Select at least one role to preview effective permissions.`**
+- When no role is selected, the section shows: **`Select at least one role to preview permissions.`**
 - When the selected roles grant no permissions, the section shows: **`No permissions.`**
 - The section is read-only; it does not replace the **Roles** field for assignment.
 - The preview is shown only when the **Roles** field is visible (requires **Roles.Manage**).
@@ -194,7 +209,7 @@ An authorized administrator must be able to create users and update their profil
 - Public registration (REQ-AUTH-001) remains available; registered users receive the **User** role automatically (REQ-ROL-006).
 - Admin-created users receive exactly the roles selected in the form; no implicit **Administrator** assignment.
 - An administrator **cannot** remove their own **Administrator** role assignment; save is rejected with message **`You cannot remove your own administrator access.`**
-- On **Edit user**, when the administrator edits **their own** account, the **Roles** field is **not shown**; **Effective permissions** preview is **not shown**.
+- On **Edit user**, when the administrator edits **their own** account, the **Roles** field is **not shown**; **Permissions** preview is **not shown**.
 - An administrator **cannot** set their own **Status** to **Inactive**; save is rejected with message **`You cannot deactivate your own account.`**
 
 ### Permissions and visibility
@@ -229,9 +244,9 @@ Displays read-only: **Name**, **Email**, **Status** badge, **Member since**, and
 - Each role badge is a link to **Role details** for that role (REQ-ROL-004).
 - Empty state: **`No roles assigned.`**
 
-### Effective permissions section
+### Permissions section
 
-- Section title: **`Effective permissions`**
+- Section title: **`Permissions`**
 - Read-only list of the user's effective permissions (union of all assigned roles, REQ-ROL-001).
 - Each row shows:
   - permission **label** and **description**;
@@ -261,7 +276,7 @@ Displays read-only: **Name**, **Email**, **Status** badge, **Member since**, and
 
 - Visible only with permission **Sessions.ViewAny**.
 - Section title: **`Active sessions`**
-- Table columns match **My sessions** (REQ-AUTH-004): **Device / browser**, **IP address**, **Session type**, **Signed in at**, **Last activity**, **Actions**.
+- Table columns match **Active sessions** on **My account** (REQ-AUTH-004): **Device / browser**, **IP address**, **Session type**, **Signed in at**, **Last activity**, **Actions**.
 - The **Current session** badge is **not shown** in the administrator view.
 - **Revoke** button on each row requires **Sessions.ManageAny** and opens confirmation: **`Revoke this session? That device will be signed out.`**
 - Empty state: **`No active sessions.`**
@@ -276,7 +291,7 @@ Displays read-only: **Name**, **Email**, **Status** badge, **Member since**, and
 
 ### Permissions and visibility
 
-- **Users.View**: required for **User details**, **Roles** section, and **Effective permissions** section.
+- **Users.View**: required for **User details**, **Roles** section, and **Permissions** section.
 - **Sessions.ViewAny**: required to render the active sessions section.
 - **Sessions.ManageAny**: required for **Revoke** on session rows and **Revoke all sessions**.
 

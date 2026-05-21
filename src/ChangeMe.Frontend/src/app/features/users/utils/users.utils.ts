@@ -16,7 +16,7 @@ export const UserMessages = {
   profileUpdated: 'Profile updated.',
   noRolesAssigned: 'No roles assigned.',
   noPermissions: 'No permissions.',
-  selectRoleToPreview: 'Select at least one role to preview effective permissions.',
+  selectRoleToPreview: 'Select at least one role to preview permissions.',
   neverSignedIn: 'Never',
   noActiveSessions: 'No active sessions.',
   revokeSessionTitle: 'Revoke this session?',

@@ -9,4 +9,5 @@ public sealed record MyAccountDto(
   string Email,
   string Status,
   DateTime MemberSince,
+  IReadOnlyList<UserRoleSummaryDto> Roles,
   IReadOnlyList<EffectivePermissionDto> EffectivePermissions);

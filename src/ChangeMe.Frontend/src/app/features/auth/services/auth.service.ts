@@ -149,6 +149,19 @@ export class AuthService {
     return this.apiService.put<MyAccountDto>('auth/account', request);
   }
 
+  syncProfileToSession(firstName: string, lastName: string): void {
+    const current = this.session();
+    if (!current) {
+      return;
+    }
+
+    this.setSession({
+      ...current,
+      firstName,
+      lastName
+    });
+  }
+
   changePassword(request: ChangePasswordRequest) {
     return this.apiService.post<boolean>('auth/change-password', request);
   }

@@ -1,5 +1,6 @@
 using ChangeMe.Backend.Domain.Aggregates.Roles;
 using ChangeMe.Backend.Domain.Aggregates.Sessions;
+using ChangeMe.Backend.Domain.Aggregates.Users;
 using ChangeMe.Backend.Domain.Authorization;
 using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UseCases.Users.Dtos;
@@ -78,17 +79,11 @@ public static class UsersUtils
 
   public static async Task<Result> ReplaceUserRolesAsync(
     ApplicationDbContext context,
-    Guid userId,
+    User user,
     IReadOnlyList<Guid> roleIds,
     Guid actingUserId,
     CancellationToken cancellationToken)
   {
-    var user = await context.Users
-      .Include(x => x.Roles)
-      .FirstOrDefaultAsync(x => x.Id == userId, cancellationToken);
-
-    if (user is null)
-      return Result.NotFound();
 
     var distinctRoleIds = roleIds.Distinct().ToList();
     var existingRoleCount = await context.Roles
@@ -97,7 +92,7 @@ public static class UsersUtils
     if (existingRoleCount != distinctRoleIds.Count)
       return Result.NotFound();
 
-    if (actingUserId == userId)
+    if (actingUserId == user.Id)
     {
       var administratorRoleId = await context.Roles
         .AsNoTracking()

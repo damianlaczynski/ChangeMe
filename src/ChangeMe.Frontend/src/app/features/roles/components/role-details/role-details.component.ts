@@ -1,11 +1,11 @@
 import {
-  Component,
-  computed,
-  DestroyRef,
-  effect,
-  inject,
-  input,
-  signal
+    Component,
+    computed,
+    DestroyRef,
+    effect,
+    inject,
+    input,
+    signal
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
@@ -13,19 +13,19 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ToastService } from '@core/toast/services/toast.service';
 import { AuthService } from '@features/auth/services/auth.service';
 import {
-  RoleAssignedUserDto,
-  RoleAssignedUsersSearchParameters,
-  RoleDetailsDto
+    RoleAssignedUserDto,
+    RoleAssignedUsersSearchParameters,
+    RoleDetailsDto
 } from '@features/roles/models/role.model';
 import { RolesService } from '@features/roles/services/roles.service';
 import {
-  formatDescription,
-  getDeleteRoleConfirmMessage,
-  getRemoveUserFromRoleConfirmMessage,
-  getUserStatusSeverity,
-  groupEffectivePermissions,
-  RoleMessages
+    formatDescription,
+    getDeleteRoleConfirmMessage,
+    getRemoveUserFromRoleConfirmMessage,
+    getUserStatusSeverity,
+    RoleMessages
 } from '@features/roles/utils/roles.utils';
+import { EffectivePermissionsComponent } from '@features/users/components/effective-permissions/effective-permissions.component';
 import { PermissionCodes } from '@shared/authorization/permission-codes';
 import { BackButtonComponent } from '@shared/components/back-button/back-button.component';
 import { PaginationResult } from '@shared/data/models/pagination-result.model';
@@ -35,6 +35,8 @@ import { Card } from 'primeng/card';
 import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
 import { Paginator, PaginatorState } from 'primeng/paginator';
+import { Panel } from 'primeng/panel';
+import { ProgressSpinner } from 'primeng/progressspinner';
 import { TableModule } from 'primeng/table';
 import { Tag } from 'primeng/tag';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
@@ -51,7 +53,10 @@ import { debounceTime, distinctUntilChanged } from 'rxjs';
     TableModule,
     Message,
     Tag,
-    Paginator
+    Paginator,
+    Panel,
+    ProgressSpinner,
+    EffectivePermissionsComponent
   ],
   templateUrl: './role-details.component.html'
 })
@@ -71,6 +76,7 @@ export class RoleDetailsComponent {
   readonly getUserStatusSeverity = getUserStatusSeverity;
 
   readonly role = signal<RoleDetailsDto | null>(null);
+  readonly pageTitle = computed(() => this.role()?.name ?? 'Role details');
   readonly assignedUsers = signal<RoleAssignedUserDto[]>([]);
   readonly assignedUsersPagination =
     signal<PaginationResult<RoleAssignedUserDto> | null>(null);
@@ -90,11 +96,6 @@ export class RoleDetailsComponent {
   readonly canManageRoles = computed(() =>
     this.authService.hasPermission(PermissionCodes.rolesManage)
   );
-
-  readonly groupedPermissions = computed(() => {
-    const current = this.role();
-    return current ? groupEffectivePermissions(current.permissions) : [];
-  });
 
   constructor() {
     this.route.queryParamMap
@@ -134,6 +135,10 @@ export class RoleDetailsComponent {
       });
   }
 
+  refresh(): void {
+    this.loadRole();
+  }
+
   onAssignedUsersPageChange(event: PaginatorState): void {
     this.assignedUsersQuery.update((current) => ({
       ...current,
@@ -145,6 +150,7 @@ export class RoleDetailsComponent {
 
   private loadRole(): void {
     this.isLoading.set(true);
+    this.errorMessage.set(null);
     this.rolesService.getRoleById(this.id()).subscribe({
       next: (details) => {
         this.role.set(details);

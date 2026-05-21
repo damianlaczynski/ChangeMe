@@ -8,6 +8,7 @@ import { Button } from 'primeng/button';
   template: `
     <p-button
       [label]="label()"
+      size="small"
       icon="pi pi-arrow-left"
       severity="secondary"
       [outlined]="true"

@@ -1,4 +1,4 @@
-import { Component, DestroyRef, effect, inject, input, signal } from '@angular/core';
+import { Component, computed, DestroyRef, effect, inject, input, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
     FormControl,
@@ -17,6 +17,8 @@ import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
+import { Panel } from 'primeng/panel';
+import { ProgressSpinner } from 'primeng/progressspinner';
 import { Textarea } from 'primeng/textarea';
 
 @Component({
@@ -30,6 +32,8 @@ import { Textarea } from 'primeng/textarea';
     InputText,
     Textarea,
     Message,
+    Panel,
+    ProgressSpinner,
     PermissionChecklistComponent
   ],
   templateUrl: './edit-role.component.html'
@@ -50,6 +54,10 @@ export class EditRoleComponent {
   readonly permissionsError = signal(false);
   readonly isLoading = signal(true);
   readonly isSubmitting = signal(false);
+  readonly pageTitle = computed(() => {
+    const name = this.form.controls.name.value.trim();
+    return name ? `Edit ${name}` : 'Edit Role';
+  });
 
   readonly form = new FormGroup({
     name: new FormControl('', {
@@ -79,32 +87,39 @@ export class EditRoleComponent {
       });
 
     effect(() => {
-      const roleId = this.id();
-      this.isLoading.set(true);
-      this.loadError.set(null);
-
-      this.rolesService.getRoleById(roleId).subscribe({
-        next: (role) => {
-          if (role.isSystem) {
-            void this.router.navigate(['/roles', roleId], {
-              queryParams: { systemRoleEditBlocked: '1' }
-            });
-            return;
-          }
-
-          this.form.patchValue({
-            name: role.name,
-            description: role.description ?? '',
-            permissionCodes: role.permissions.map((permission) => permission.code)
-          });
-          this.isLoading.set(false);
-        },
-        error: (error: Error) => {
-          this.loadError.set(error.message);
-          this.isLoading.set(false);
-        }
-      });
+      this.loadRole(this.id());
     });
+  }
+
+  private loadRole(roleId: string): void {
+    this.isLoading.set(true);
+    this.loadError.set(null);
+
+    this.rolesService.getRoleById(roleId).subscribe({
+      next: (role) => {
+        if (role.isSystem) {
+          void this.router.navigate(['/roles', roleId], {
+            queryParams: { systemRoleEditBlocked: '1' }
+          });
+          return;
+        }
+
+        this.form.patchValue({
+          name: role.name,
+          description: role.description ?? '',
+          permissionCodes: role.permissions.map((permission) => permission.code)
+        });
+        this.isLoading.set(false);
+      },
+      error: (error: Error) => {
+        this.loadError.set(error.message);
+        this.isLoading.set(false);
+      }
+    });
+  }
+
+  refresh(): void {
+    this.loadRole(this.id());
   }
 
   shouldShowError(control: {

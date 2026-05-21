@@ -150,7 +150,7 @@ The user must be able to sign out from the current browser or from all devices.
 
 ### Sign out everywhere
 
-- **Sign out everywhere** button is available on **My sessions** (REQ-AUTH-004).
+- **Sign out everywhere** button is a header action on **My account** (REQ-USR-001).
 - Clicking **Sign out everywhere** opens confirmation dialog: **`Sign out from all devices? You will be signed out on every browser and device.`**
 - On confirm, the system revokes **all active sessions** for the user, signs out the current browser, and redirects to **Login**.
 
@@ -169,10 +169,10 @@ The user must be able to review active sign-in sessions and revoke sessions they
 
 ## Features
 
-### My sessions screen
+### Active sessions on My account
 
-- Screen: **My sessions**
-- Linked from **My account** via button **Active sessions**.
+- Section on **My account** (REQ-USR-001), not a separate screen.
+- Section title: **Active sessions**; collapsible panel; default **collapsed**.
 - Requires permission **Sessions.ViewOwn**.
 
 | Column               | Description                                                                                   |
@@ -200,7 +200,7 @@ The user must be able to review active sign-in sessions and revoke sessions they
 
 ### Permissions and visibility
 
-- **Sessions.ViewOwn**: required to open **My sessions** and view the list.
+- **Sessions.ViewOwn**: required to show the **Active sessions** section and view the list.
 - **Sessions.ManageOwn**: required for **Revoke** on non-current rows and **Sign out everywhere**.
 
 ---
@@ -216,7 +216,8 @@ The signed-in user must be able to change their password securely.
 ### Change password screen
 
 - Screen: **Change password**
-- Linked from **My account** via button **Change password**.
+- Linked from **My account** via header action **Change password**; not editable on **My account**.
+- **Back to my account** control at the top of the screen (same placement as **Back** on other detail screens).
 
 | Field                    | Behavior                                       |
 | ------------------------ | ---------------------------------------------- |

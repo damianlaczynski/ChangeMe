@@ -1,11 +1,11 @@
 import { DatePipe } from '@angular/common';
 import {
-  Component,
-  computed,
-  DestroyRef,
-  inject,
-  signal,
-  viewChild
+    Component,
+    computed,
+    DestroyRef,
+    inject,
+    signal,
+    viewChild
 } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
@@ -13,17 +13,17 @@ import { RouterLink } from '@angular/router';
 import { ToastService } from '@core/toast/services/toast.service';
 import { AuthService } from '@features/auth/services/auth.service';
 import {
-  UserListItemDto,
-  UserSearchParameters,
-  UserStatus
+    UserListItemDto,
+    UserSearchParameters,
+    UserStatus
 } from '@features/users/models/user.model';
 import { UsersService } from '@features/users/services/users.service';
 import {
-  getActivateConfirmMessage,
-  getDeactivateConfirmMessage,
-  getUserStatusSeverity,
-  UserMessages,
-  userStatuses
+    getActivateConfirmMessage,
+    getDeactivateConfirmMessage,
+    getUserStatusSeverity,
+    UserMessages,
+    userStatuses
 } from '@features/users/utils/users.utils';
 import { PermissionCodes } from '@shared/authorization/permission-codes';
 import { AppliedFiltersChipsComponent } from '@shared/components/applied-filters-chips/applied-filters-chips.component';
@@ -40,6 +40,7 @@ import { Paginator } from 'primeng/paginator';
 import { Panel } from 'primeng/panel';
 import { TableModule } from 'primeng/table';
 import { Tag } from 'primeng/tag';
+import { Tooltip } from 'primeng/tooltip';
 import { PaginatorState } from 'primeng/types/paginator';
 import { catchError, of, switchMap, tap } from 'rxjs';
 
@@ -66,7 +67,8 @@ type UserSortField = 'Name' | 'CreatedAt' | 'LastSignIn';
     Tag,
     Panel,
     Menu,
-    AppliedFiltersChipsComponent
+    AppliedFiltersChipsComponent,
+    Tooltip
   ],
   templateUrl: './users-list.component.html'
 })
@@ -297,8 +299,12 @@ export class UsersListComponent {
       });
   }
 
+  refresh(): void {
+    this.query.update((current) => ({ ...current, pageNumber: 1 }));
+  }
+
   private refreshList(): void {
-    this.query.update((current) => ({ ...current }));
+    this.refresh();
   }
 
   removeAppliedFilter(chip: AppliedFilterChip): void {

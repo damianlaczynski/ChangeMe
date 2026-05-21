@@ -1,12 +1,12 @@
 import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
-  AbstractControl,
-  FormControl,
-  FormGroup,
-  ReactiveFormsModule,
-  ValidationErrors,
-  Validators
+    AbstractControl,
+    FormControl,
+    FormGroup,
+    ReactiveFormsModule,
+    ValidationErrors,
+    Validators
 } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { ToastService } from '@core/toast/services/toast.service';
@@ -14,9 +14,9 @@ import { EffectivePermissionsComponent } from '@features/users/components/effect
 import { EffectivePermissionDto, UserStatus } from '@features/users/models/user.model';
 import { UsersService } from '@features/users/services/users.service';
 import {
-  UserConstraints,
-  UserMessages,
-  userStatuses
+    UserConstraints,
+    UserMessages,
+    userStatuses
 } from '@features/users/utils/users.utils';
 import { BackButtonComponent } from '@shared/components/back-button/back-button.component';
 import { Button } from 'primeng/button';
@@ -24,6 +24,7 @@ import { Card } from 'primeng/card';
 import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
 import { MultiSelect } from 'primeng/multiselect';
+import { Panel } from 'primeng/panel';
 import { Password } from 'primeng/password';
 import { Select } from 'primeng/select';
 import { catchError, debounceTime, of, startWith, switchMap } from 'rxjs';
@@ -41,6 +42,7 @@ import { catchError, debounceTime, of, startWith, switchMap } from 'rxjs';
     MultiSelect,
     Select,
     Message,
+    Panel,
     EffectivePermissionsComponent
   ],
   templateUrl: './create-user.component.html'

@@ -21,7 +21,7 @@ public class UpdateUserHandler(
 {
   public async Task<Result<UserDetailsDto>> Handle(UpdateUserCommand command, CancellationToken cancellationToken)
   {
-    var user = await context.Users.FirstOrDefaultAsync(x => x.Id == command.Id, cancellationToken);
+    var user = await context.Users.Include(x => x.Roles).FirstOrDefaultAsync(x => x.Id == command.Id, cancellationToken);
     if (user is null)
       return Result<UserDetailsDto>.NotFound();
 
@@ -50,7 +50,7 @@ public class UpdateUserHandler(
 
       var roleResult = await UsersUtils.ReplaceUserRolesAsync(
         context,
-        user.Id,
+        user,
         command.RoleIds,
         currentUserId,
         cancellationToken);
@@ -77,7 +77,7 @@ public class UpdateUserHandler(
         user.Activate();
       }
     }
-
+    await context.AddRangeAsync(user.Roles, cancellationToken);
     await context.SaveChangesAsync(cancellationToken);
 
     var updatedUserResult = await mediator.Send(new GetUserByIdQuery(user.Id), cancellationToken);
