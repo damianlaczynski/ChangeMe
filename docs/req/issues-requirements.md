@@ -117,7 +117,7 @@ The user must be able to create a new issue and edit an existing one by providin
 - **Description**: required; max **2000** characters.
 - **Status**: required; one of **New**, **In Progress**, **Resolved**, **Closed**.
 - **Priority**: required; one of **Low**, **Medium**, **High**, **Critical**.
-- **Assigned to**: when selected, must be an **Active** assignable user (REQ-USR-005).
+- **Assigned to**: when selected, must be an assignable user with **Deactivated** false (REQ-USR-005).
 - **Acceptance criterion**: when a row exists, its text is required; max **2000** characters.
 - Validation errors are inline next to the relevant field; the form stays open on failure.
 

@@ -14,6 +14,7 @@
 <!--#endif-->
 - `.config/dotnet-tools.json` - pins **`dotnet-ef`** for `dotnet ef migrations add` (optional; see `docs/database-and-docker.md`).
 - `docs/` - implementation, testing, and requirements guidance.
+- `docs/requirements-change-process.md` - analysts add **pending** deltas to `docs/req/*-requirements-changelog.md`; developers remove entries after implementation; REQ files hold full acceptance detail.
 - Root `package.json` - optional npm scripts that run frontend and backend tasks from the repository root (see Commands).
 
 ## Start here by task

@@ -34,7 +34,7 @@ The catalog contains exactly these permissions:
 | **Sessions.ManageAny** | Manage user sessions | Revoke sessions of any user, including **Revoke all sessions**.               | Sessions |
 
 - New permissions are added only by updating requirements and a subsequent release; administrators cannot create new permission codes in the UI.
-- **Out of scope for this REQ:** issue-level permissions. Issues remain available to all authenticated **Active** users until a separate requirements document introduces issue permissions.
+- **Out of scope for this REQ:** issue-level permissions. Issues remain available to all authenticated users with **Deactivated** false until a separate requirements document introduces issue permissions.
 
 ### Effective permissions
 
@@ -51,7 +51,7 @@ The catalog contains exactly these permissions:
 ### States and business rules
 
 - A role with zero permissions cannot be saved; validation error: **`At least one permission is required.`**
-- **Inactive** users cannot sign in and have no effective permissions (REQ-USR-005).
+- Users with **Deactivated** true cannot sign in and have no effective permissions (REQ-USR-005).
 
 ### Permissions and visibility
 
@@ -230,12 +230,12 @@ An authorized administrator must be able to review a role's metadata, permission
 - Visible with permission **Roles.View**.
 - Table columns:
 
-| Column      | Description                                              |
-| ----------- | -------------------------------------------------------- |
-| **Name**    | User full name; link to **User details** (REQ-USR-004).  |
-| **Email**   | User email address.                                      |
-| **Status**  | Badge **`Active`** or **`Inactive`**.                    |
-| **Actions** | **Remove from role** when the user has **Roles.Manage**. |
+| Column      | Description                                                                     |
+| ----------- | ------------------------------------------------------------------------------- |
+| **Name**    | **Full name** or **`Pending profile`**; link to **User details** (REQ-USR-004). |
+| **Email**   | User email address.                                                             |
+| **Account** | Badge **`Active`** or **`Deactivated`** (from **Deactivated**).                 |
+| **Actions** | **Remove from role** when the user has **Roles.Manage**.                        |
 
 - Default sort within section: **Name**, ascending.
 - Search field placeholder within section: **`Search assigned users...`**; filters **name** and **email** (case-insensitive).
@@ -247,10 +247,10 @@ An authorized administrator must be able to review a role's metadata, permission
 
 ### Header actions
 
-| Action           | Permission required | Behavior                                     |
-| ---------------- | ------------------- | -------------------------------------------- |
-| **Edit role**    | **Roles.Manage**    | Opens **Edit role** (custom roles only).     |
-| **Delete role**  | **Roles.Manage**    | Custom roles only; behavior per REQ-ROL-003. |
+| Action          | Permission required | Behavior                                     |
+| --------------- | ------------------- | -------------------------------------------- |
+| **Edit role**   | **Roles.Manage**    | Opens **Edit role** (custom roles only).     |
+| **Delete role** | **Roles.Manage**    | Custom roles only; behavior per REQ-ROL-003. |
 
 - Actions the current user lacks permission for are **not shown**.
 - **Edit role** and **Delete role** are **not shown** for system roles.
@@ -265,6 +265,7 @@ An authorized administrator must be able to review a role's metadata, permission
 
 - **Back** returns to **Roles list**.
 - Clicking a user **Name** in **Assigned users** opens **User details** for that user.
+
 ### Permissions and visibility
 
 - **Roles.View**: required for **Role details**, **Permissions** section, and read-only **Assigned users** list.
@@ -314,7 +315,7 @@ An authorized administrator must be able to assign roles to users from **Create 
 - Assignment changes from either entry point use the same replace semantics and validation rules.
 - Changes take effect for the affected user after credential renewal or next sign-in.
 - Changing role assignments does **not** revoke active sessions.
-- An **Inactive** user can remain assigned to a role; deactivation is controlled in REQ-USR-005.
+- A user with **Deactivated** true can remain assigned to a role; deactivation is controlled in REQ-USR-005.
 
 ### Permissions and visibility
 
@@ -342,7 +343,7 @@ The deployment supplies these values for the first administrator:
 | **First name** | Yes      |
 | **Last name**  | Yes      |
 
-- On first startup, if no administrator account exists for the configured **Email**, the system creates an **Active** administrator user with the supplied profile and password.
+- On first startup, if no administrator account exists for the configured **Email**, the system creates an administrator user with **Deactivated** false, the supplied profile, and password.
 - If an administrator with that **Email** already exists, the system does **not** recreate the account or reset the password.
 - The first administrator is assigned the **Administrator** role.
 - The first administrator signs in through **Login** (REQ-AUTH-001) and can access **Users list**, **Roles list**, and session administration per their permissions.
@@ -361,17 +362,18 @@ On first startup, the system ensures these roles exist:
 
 ### Registration default role
 
-- Public registration (REQ-AUTH-001) assigns the **User** role automatically.
+- Public registration (REQ-AUTH-001), when **Public registration enabled** is **true** (REQ-AUTH-012), assigns the **User** role automatically.
 - Registration does **not** assign **Administrator**.
 
 ### States and business rules
 
 - Initial administrator **Password** values must not appear in user-visible logs or messages.
-- Production deployments must change the initial administrator password after first sign-in.
+- Production deployments must use a strong, unique password for the initial administrator; password expiration (REQ-AUTH-009) applies under the same rules as for other accounts when enabled.
+- The initial administrator account is created with **Email verified** true so sign-in is possible when email verification is enabled (REQ-AUTH-011).
 
 ### Out of scope
 
-- **Out of scope for this REQ:** forced password change on first login.
+- **Out of scope for this REQ:** forced password change on first sign-in (including the seeded administrator).
 
 ### Permissions and visibility
 
