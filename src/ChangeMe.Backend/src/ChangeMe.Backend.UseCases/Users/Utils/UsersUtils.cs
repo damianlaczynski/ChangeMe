@@ -77,38 +77,6 @@ public static class UsersUtils
       .ToList();
   }
 
-  public static async Task<Result> ReplaceUserRolesAsync(
-    ApplicationDbContext context,
-    User user,
-    IReadOnlyList<Guid> roleIds,
-    Guid actingUserId,
-    CancellationToken cancellationToken)
-  {
-
-    var distinctRoleIds = roleIds.Distinct().ToList();
-    var existingRoleCount = await context.Roles
-      .CountAsync(x => distinctRoleIds.Contains(x.Id), cancellationToken);
-
-    if (existingRoleCount != distinctRoleIds.Count)
-      return Result.NotFound();
-
-    if (actingUserId == user.Id)
-    {
-      var administratorRoleId = await context.Roles
-        .AsNoTracking()
-        .Where(x => x.Name == RoleConstraints.AdministratorRoleName)
-        .Select(x => x.Id)
-        .FirstOrDefaultAsync(cancellationToken);
-
-      if (administratorRoleId != Guid.Empty
-          && user.HasRole(administratorRoleId)
-          && !distinctRoleIds.Contains(administratorRoleId))
-        return Result.Error(CannotRemoveOwnAdministratorMessage);
-    }
-
-    return user.ReplaceRoles(distinctRoleIds);
-  }
-
   public static async Task RevokeAllActiveSessionsAsync(
     ApplicationDbContext context,
     Guid userId,

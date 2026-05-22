@@ -1,3 +1,4 @@
+using ChangeMe.Backend.Domain.Aggregates.Roles;
 using ChangeMe.Backend.Domain.Aggregates.Users;
 using ChangeMe.Backend.Domain.Authorization;
 using ChangeMe.Backend.UseCases.Users.Dtos;
@@ -48,13 +49,28 @@ public class UpdateUserHandler(
       if (editingSelf)
         return Result<UserDetailsDto>.Error(UsersUtils.CannotChangeOwnRolesMessage);
 
-      var roleResult = await UsersUtils.ReplaceUserRolesAsync(
-        context,
-        user,
-        command.RoleIds,
-        currentUserId,
-        cancellationToken);
+      var distinctRoleIds = command.RoleIds.Distinct().ToList();
+      var existingRoleCount = await context.Roles
+        .CountAsync(x => distinctRoleIds.Contains(x.Id), cancellationToken);
 
+      if (existingRoleCount != distinctRoleIds.Count)
+        return Result.NotFound();
+
+      if (currentUserId == user.Id)
+      {
+        var administratorRoleId = await context.Roles
+          .AsNoTracking()
+          .Where(x => x.Name == RoleConstraints.AdministratorRoleName)
+          .Select(x => x.Id)
+          .FirstOrDefaultAsync(cancellationToken);
+
+        if (administratorRoleId != Guid.Empty
+            && user.HasRole(administratorRoleId)
+            && !distinctRoleIds.Contains(administratorRoleId))
+          return Result.Error(UsersUtils.CannotRemoveOwnAdministratorMessage);
+      }
+
+      var roleResult = user.ReplaceRoles(distinctRoleIds);
       if (!roleResult.IsSuccess)
         return roleResult.Map();
     }
