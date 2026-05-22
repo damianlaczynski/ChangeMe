@@ -32,27 +32,15 @@ public class User : Entity, IAggregateRoot
       LastName = lastName.Trim(),
       Email = email.Trim(),
       NormalizedEmail = normalizedEmail,
-      PasswordHash = passwordHash.Trim()
+      PasswordHash = passwordHash.Trim(),
+      Status = UserStatus.Active,
+      CreatedBy = Guid.Empty,
+      UpdatedBy = Guid.Empty,
     };
 
-    user.Status = UserStatus.Active;
-
     return Result.Success(user);
   }
 
-  public static Result<User> CreateInitialAdministrator(string firstName, string lastName, string email, string passwordHash)
-  {
-    var result = Create(firstName, lastName, email, passwordHash);
-    if (!result.IsSuccess)
-      return result;
-
-    var user = result.Value;
-
-    user.CreatedBy = Guid.Empty;
-    user.UpdatedBy = Guid.Empty;
-
-    return Result.Success(user);
-  }
   public Result UpdateProfile(string firstName, string lastName)
   {
     var validationErrors = new List<ValidationError>();

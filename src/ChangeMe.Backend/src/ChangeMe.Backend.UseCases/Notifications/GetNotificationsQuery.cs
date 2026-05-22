@@ -47,7 +47,6 @@ public class GetNotificationsHandler(
     });
 
     query.PaginationParameters.SortField = MapSortField(query.PaginationParameters.SortField);
-    query.PaginationParameters.Ascending = false;
 
     var pagedNotifications = await projected.ToPaginationResultAsync(
       x => x,
