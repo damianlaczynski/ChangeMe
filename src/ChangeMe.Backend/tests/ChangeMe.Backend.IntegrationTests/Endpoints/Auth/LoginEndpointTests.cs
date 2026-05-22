@@ -68,4 +68,23 @@ public sealed class LoginEndpointTests(BackendWebApplicationFactory factory)
 
     Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
   }
+
+  [Fact]
+  public async Task PostLogin_WhenPasswordIsTooShort_ShouldReturnBadRequest()
+  {
+    var cancellationToken = TestContext.Current.CancellationToken;
+
+    using var client = factory.CreateClient(new WebApplicationFactoryClientOptions
+    {
+      BaseAddress = new Uri("https://localhost")
+    });
+
+    var response = await client.PostAsJsonAsync("/api/auth/login", new
+    {
+      Email = "user@example.com",
+      Password = "short"
+    }, cancellationToken);
+
+    Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+  }
 }

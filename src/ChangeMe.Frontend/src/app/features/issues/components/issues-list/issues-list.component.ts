@@ -31,6 +31,7 @@ import {
 } from '@features/issues/utils/issue.utils';
 import { AppliedFiltersChipsComponent } from '@shared/components/applied-filters-chips/applied-filters-chips.component';
 import { PaginationResult } from '@shared/data/models/pagination-result.model';
+import { createEmptyPaginationResult } from '@shared/data/utils/pagination.utils';
 import { AppliedFilterChip } from '@shared/models/applied-filter-chip.model';
 import { ConfirmationService, MenuItem } from 'primeng/api';
 import { Button } from 'primeng/button';
@@ -183,7 +184,7 @@ export class IssuesComponent {
           this.issuesService.getAllIssues(query).pipe(
             catchError((error: Error) => {
               this.errorMessage.set(error.message);
-              return of(this.createEmptyPaginationResult(query));
+              return of(createEmptyPaginationResult<IssueDto>(query));
             })
           )
         ),
@@ -482,19 +483,5 @@ export class IssuesComponent {
 
   private formatWatchersCount(count: number): string {
     return count === 1 ? '1 watcher' : `${count} watchers`;
-  }
-
-  private createEmptyPaginationResult(
-    query: IssueSearchParameters
-  ): PaginationResult<IssueDto> {
-    return {
-      items: [],
-      totalCount: 0,
-      currentPage: query.pageNumber,
-      pageSize: query.pageSize,
-      totalPages: 0,
-      hasPrevious: false,
-      hasNext: false
-    };
   }
 }

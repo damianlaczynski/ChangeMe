@@ -1,0 +1,89 @@
+<p-card class="mb-4" header="Edit profile" subheader="Update your name.">
+  <div class="mb-4 flex flex-wrap items-center gap-2">
+    <app-back-button label="Back to my account" [route]="['/account']" />
+  </div>
+
+  @if (isLoading()) {
+    <div class="flex flex-col items-center gap-2 py-8">
+      <p-progressSpinner ariaLabel="Loading profile" />
+      <p class="text-muted-color m-0 text-sm">Loading profile...</p>
+    </div>
+  } @else if (loadError()) {
+    <div class="flex flex-col items-center gap-2">
+      <p-message severity="error">{{ loadError() }}</p-message>
+      <p-button
+        size="small"
+        label="Try again"
+        icon="pi pi-refresh"
+        severity="secondary"
+        [outlined]="true"
+        [loading]="isLoading()"
+        (onClick)="reload()"
+      />
+    </div>
+  } @else {
+    <form class="p-fluid flex flex-col gap-4" [formGroup]="form" (ngSubmit)="onSubmit()">
+      <p-panel header="Profile" [toggleable]="true">
+        <div class="grid gap-4 sm:grid-cols-2">
+          <div class="flex flex-col gap-1.5">
+            <label for="firstName">First name</label>
+            <input
+              id="firstName"
+              type="text"
+              pInputText
+              [formControl]="form.controls.firstName"
+              [invalid]="shouldShowError(form.controls.firstName)"
+            />
+            @if (
+              shouldShowError(form.controls.firstName) &&
+              form.controls.firstName.errors?.['required']
+            ) {
+              <p-message severity="error" variant="simple">
+                First name is required.
+              </p-message>
+            }
+          </div>
+
+          <div class="flex flex-col gap-1.5">
+            <label for="lastName">Last name</label>
+            <input
+              id="lastName"
+              type="text"
+              pInputText
+              [formControl]="form.controls.lastName"
+              [invalid]="shouldShowError(form.controls.lastName)"
+            />
+            @if (
+              shouldShowError(form.controls.lastName) &&
+              form.controls.lastName.errors?.['required']
+            ) {
+              <p-message severity="error" variant="simple">
+                Last name is required.
+              </p-message>
+            }
+          </div>
+        </div>
+      </p-panel>
+
+      @if (submitError()) {
+        <p-message severity="error">{{ submitError() }}</p-message>
+      }
+
+      <div class="flex flex-wrap items-center justify-end gap-2">
+        <p-button
+          type="button"
+          label="Cancel"
+          severity="secondary"
+          [outlined]="true"
+          [routerLink]="['/account']"
+        />
+        <p-button
+          type="submit"
+          [label]="isSubmitting() ? 'Saving...' : 'Save changes'"
+          icon="pi pi-save"
+          [loading]="isSubmitting()"
+        />
+      </div>
+    </form>
+  }
+</p-card>

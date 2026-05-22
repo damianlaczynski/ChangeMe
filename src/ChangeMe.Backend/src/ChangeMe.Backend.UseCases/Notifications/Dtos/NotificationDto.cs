@@ -1,4 +1,5 @@
 using ChangeMe.Backend.Domain.Aggregates.Notifications.Enums;
+using ChangeMe.Backend.Domain.Common;
 
 namespace ChangeMe.Backend.UseCases.Notifications.Dtos;
 
@@ -10,7 +11,7 @@ public class NotificationDto
   public string IssueTitle { get; set; } = string.Empty;
   public string Message { get; set; } = string.Empty;
   public string Link { get; set; } = string.Empty;
-  public DateTime OccurredAt { get; set; }
+  public DateTime CreatedAt { get; set; }
   public bool IsRead { get; set; }
   public DateTime? ReadAt { get; set; }
 }
@@ -18,5 +19,5 @@ public class NotificationDto
 public class NotificationListDto
 {
   public int UnreadCount { get; set; }
-  public IReadOnlyCollection<NotificationDto> Items { get; set; } = [];
+  public PaginationResult<NotificationDto> Page { get; set; } = PaginationResult<NotificationDto>.Empty();
 }

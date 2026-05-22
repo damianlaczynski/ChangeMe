@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { DatePipe } from '@angular/common';
 import {
   Component,
   computed,
@@ -9,30 +9,21 @@ import {
   signal
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import {
-  FormControl,
-  FormGroup,
-  ReactiveFormsModule,
-  Validators
-} from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ToastService } from '@core/toast/services/toast.service';
-import {
-  IssueDetailsDto,
-  IssueHistoryEntryDto
-} from '@features/issues/models/issue.model';
+import { IssueCommentsTabComponent } from '@features/issues/components/issue-comments-tab/issue-comments-tab.component';
+import { IssueHistoryTabComponent } from '@features/issues/components/issue-history-tab/issue-history-tab.component';
+import { IssueDetailsDto } from '@features/issues/models/issue.model';
 import { IssuesService } from '@features/issues/services/issues.service';
 import {
   getDeleteIssueConfirmMessage,
-  getIssueHistoryEventVisual,
   getIssuePriorityLabel,
   getIssuePrioritySeverity,
   getIssueStatusLabel,
-  getIssueStatusSeverity,
-  IssueCommentConstraints
+  getIssueStatusSeverity
 } from '@features/issues/utils/issue.utils';
 import { BackButtonComponent } from '@shared/components/back-button/back-button.component';
-import { ConfirmationService, PrimeTemplate } from 'primeng/api';
+import { ConfirmationService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { Message } from 'primeng/message';
@@ -40,30 +31,20 @@ import { Panel } from 'primeng/panel';
 import { ProgressSpinner } from 'primeng/progressspinner';
 import { Tab, TabList, TabPanel, TabPanels, Tabs } from 'primeng/tabs';
 import { Tag } from 'primeng/tag';
-import { Textarea } from 'primeng/textarea';
-import { Timeline } from 'primeng/timeline';
 import { Tooltip } from 'primeng/tooltip';
 
 type IssueDetailsTab = 'comments' | 'history';
 
-type CommentForm = {
-  content: FormControl<string>;
-};
-
 @Component({
   selector: 'app-issue-details',
   imports: [
-    CommonModule,
-    ReactiveFormsModule,
+    DatePipe,
     RouterLink,
     Card,
     Button,
-    Textarea,
     Message,
     Tag,
     Panel,
-    Timeline,
-    PrimeTemplate,
     ProgressSpinner,
     Tabs,
     TabList,
@@ -71,7 +52,9 @@ type CommentForm = {
     TabPanels,
     TabPanel,
     Tooltip,
-    BackButtonComponent
+    BackButtonComponent,
+    IssueCommentsTabComponent,
+    IssueHistoryTabComponent
   ],
   templateUrl: './issue-details.component.html'
 })
@@ -85,40 +68,20 @@ export class IssueDetailsComponent {
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
 
-  readonly issueCommentConstraints = IssueCommentConstraints;
   readonly getIssueStatusLabel = getIssueStatusLabel;
   readonly getIssueStatusSeverity = getIssueStatusSeverity;
   readonly getIssuePriorityLabel = getIssuePriorityLabel;
   readonly getIssuePrioritySeverity = getIssuePrioritySeverity;
-  readonly getIssueHistoryEventVisual = getIssueHistoryEventVisual;
 
   readonly issue = signal<IssueDetailsDto | null>(null);
   readonly pageTitle = computed(() => this.issue()?.title ?? 'Issue Details');
   readonly isLoading = signal(true);
   readonly loadError = signal<string | null>(null);
-  readonly commentError = signal<string | null>(null);
-  readonly isSubmitted = signal(false);
-  readonly isSubmittingComment = signal(false);
   readonly isTogglingWatch = signal(false);
   readonly isDeleting = signal(false);
   readonly activeTab = signal<IssueDetailsTab>('comments');
 
-  readonly commentForm = new FormGroup<CommentForm>({
-    content: new FormControl('', {
-      nonNullable: true,
-      validators: [
-        Validators.required,
-        Validators.maxLength(IssueCommentConstraints.CONTENT_MAX_LENGTH)
-      ]
-    })
-  });
-
-  readonly sortedHistoryEntries = computed(() =>
-    [...(this.issue()?.historyEntries ?? [])].sort(this.sortByCreatedAtAscending)
-  );
-  readonly sortedComments = computed(() =>
-    [...(this.issue()?.comments ?? [])].sort(this.sortByCreatedAtAscending)
-  );
+  private lastLoadedIssueId: string | null = null;
 
   constructor() {
     this.route.queryParamMap
@@ -135,12 +98,19 @@ export class IssueDetailsComponent {
         return;
       }
 
-      this.loadIssue(id);
+      if (id !== this.lastLoadedIssueId) {
+        this.lastLoadedIssueId = id;
+        this.loadIssue(id);
+      }
     });
   }
 
   onTabChange(tab: string | number | undefined): void {
     const value: IssueDetailsTab = tab === 'history' ? 'history' : 'comments';
+    if (this.activeTab() === value) {
+      return;
+    }
+
     this.activeTab.set(value);
 
     void this.router.navigate([], {
@@ -149,51 +119,6 @@ export class IssueDetailsComponent {
       queryParamsHandling: 'merge',
       replaceUrl: true
     });
-  }
-
-  shouldShowCommentError(): boolean {
-    return (
-      !!this.commentForm.controls.content.errors &&
-      (this.commentForm.controls.content.touched || this.isSubmitted())
-    );
-  }
-
-  addComment(): void {
-    this.isSubmitted.set(true);
-    this.commentError.set(null);
-
-    if (this.commentForm.invalid) {
-      this.commentForm.markAllAsTouched();
-      return;
-    }
-
-    const issueId = this.id();
-    if (!issueId) {
-      return;
-    }
-
-    this.isSubmittingComment.set(true);
-
-    this.issuesService
-      .addComment(issueId, {
-        content: this.commentForm.controls.content.value.trim()
-      })
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (issue) => {
-          this.issue.set(issue);
-          this.commentForm.reset({ content: '' });
-          this.commentForm.markAsPristine();
-          this.commentForm.markAsUntouched();
-          this.isSubmitted.set(false);
-          this.isSubmittingComment.set(false);
-          this.toastService.success('Comment added');
-        },
-        error: (error: Error) => {
-          this.commentError.set(error.message);
-          this.isSubmittingComment.set(false);
-        }
-      });
   }
 
   getWatchTooltip(issue: IssueDetailsDto): string {
@@ -251,16 +176,12 @@ export class IssueDetailsComponent {
     });
   }
 
-  trackHistoryEntry(_index: number, entry: IssueHistoryEntryDto): string {
-    return entry.id;
-  }
-
   refresh(): void {
     const issueId = this.id();
     if (!issueId) {
       return;
     }
-    this.loadIssue(issueId, false);
+    this.loadIssue(issueId);
   }
 
   private deleteIssue(issueId: string): void {
@@ -282,7 +203,7 @@ export class IssueDetailsComponent {
       });
   }
 
-  private loadIssue(issueId: string, resetState = true): void {
+  private loadIssue(issueId: string): void {
     this.isLoading.set(true);
     this.loadError.set(null);
 
@@ -294,10 +215,6 @@ export class IssueDetailsComponent {
           this.issue.set(issue);
           this.isLoading.set(false);
           this.loadError.set(null);
-
-          if (resetState) {
-            this.commentError.set(null);
-          }
         },
         error: (error: Error) => {
           this.loadError.set(error.message);
@@ -308,12 +225,5 @@ export class IssueDetailsComponent {
 
   private formatWatchersCount(count: number): string {
     return count === 1 ? '1 watcher' : `${count} watchers`;
-  }
-
-  private sortByCreatedAtAscending(
-    left: { createdAt: string },
-    right: { createdAt: string }
-  ): number {
-    return new Date(left.createdAt).getTime() - new Date(right.createdAt).getTime();
   }
 }

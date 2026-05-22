@@ -25,11 +25,13 @@ For build, run, and test commands from `src/ChangeMe.Backend` or from the reposi
 - Should not duplicate domain invariants that already belong in aggregates.
 - Keep only `*Command.cs` and `*Query.cs` files at the top level of each feature folder.
 - Place feature DTOs under `UseCases/<Feature>/Dtos/`.
-- Place feature services under `UseCases/<Feature>/Services/`.
+- Place shared handler helpers (messages, validation, mapping, light EF queries) under `UseCases/<Feature>/Utils/` as `*Utils.cs` static classes — mirror the frontend `utils/<feature>.utils.ts` convention.
+- Place feature services under `UseCases/<Feature>/Services/` for orchestration with side effects (for example notifications).
 
 ### Domain
 
 - Owns aggregates, entities, enums, interfaces, and business rules.
+- Persisted domain types (including child entities and join rows) inherit `Entity` so `CreatedAt`, `UpdatedAt`, `CreatedBy`, and `UpdatedBy` are set consistently via `ApplicationDbContext`.
 - Should be the place for invariants like issue title/description constraints.
 
 ### Infrastructure
@@ -59,7 +61,9 @@ For build, run, and test commands from `src/ChangeMe.Backend` or from the reposi
 - Handlers live in the same file as their request contract in `UseCases/<Feature>/`.
 - Return `Result<T>` consistently.
 - Use `ApplicationDbContext` for persistence from the handler layer.
-- Use mediator chaining when the workflow should return a fully built DTO already supported by an existing query.
+- After `SaveChangesAsync`, return API DTOs through an existing query via `mediator.Send` — do not instantiate query handlers with `new`.
+- For create commands that return a resource body, wrap the query result in `Result.Created(dto, "/resource/{id}")` so `BaseEndpoint` responds with `201 Created`.
+- For update or state-change commands that return the same details DTO, return the query `Result` directly (`200 OK`).
 
 ## Persistence conventions
 

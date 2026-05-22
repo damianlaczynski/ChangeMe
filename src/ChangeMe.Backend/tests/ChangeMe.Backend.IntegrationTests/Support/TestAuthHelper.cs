@@ -1,6 +1,8 @@
-using System.Net.Http.Headers;
+﻿using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
+using ChangeMe.Backend.Domain.Aggregates.Roles;
+using ChangeMe.Backend.Domain.Aggregates.Users;
 using ChangeMe.Backend.Infrastructure.Persistence;
 using ChangeMe.Backend.IntegrationTests.Fixtures;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -66,6 +68,52 @@ internal static class TestAuthHelper
       .SingleAsync(cancellationToken);
 
     return new AuthenticatedTestUser(authenticatedClient, userId, email);
+  }
+
+  public static async Task<AuthenticatedTestUser> CreateAdministratorUserAsync(
+    BackendWebApplicationFactory factory,
+    CancellationToken cancellationToken = default)
+  {
+    var user = await CreateAuthenticatedUserAsync(factory, cancellationToken);
+
+    await using (var scope = factory.Services.CreateAsyncScope())
+    {
+      var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+      var administratorRoleId = await dbContext.Roles
+        .AsNoTracking()
+        .Where(x => x.Name == RoleConstraints.AdministratorRoleName)
+        .Select(x => x.Id)
+        .SingleAsync(cancellationToken);
+
+      var alreadyAssigned = await dbContext.Set<UserRole>()
+        .AnyAsync(x => x.UserId == user.UserId && x.RoleId == administratorRoleId, cancellationToken);
+
+      if (!alreadyAssigned)
+      {
+        await dbContext.Set<UserRole>().AddAsync(
+          UserRole.Create(user.UserId, administratorRoleId),
+          cancellationToken);
+        await dbContext.SaveChangesAsync(cancellationToken);
+      }
+    }
+
+    const string password = "StrongPass123!";
+    using var loginClient = factory.CreateClient(new WebApplicationFactoryClientOptions
+    {
+      BaseAddress = new Uri("https://localhost")
+    });
+
+    var loginResponse = await loginClient.PostAsJsonAsync("/api/auth/login", new
+    {
+      Email = user.Email,
+      Password = password
+    }, cancellationToken);
+
+    loginResponse.EnsureSuccessStatusCode();
+    var token = ExtractToken(await loginResponse.Content.ReadAsStringAsync(cancellationToken));
+
+    user.Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+    return user;
   }
 
   private static string ExtractToken(string responseBody)

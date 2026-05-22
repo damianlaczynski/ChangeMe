@@ -112,15 +112,13 @@ public sealed class UpdateIssueEndpointTests(BackendWebApplicationFactory factor
 
     Assert.Equal(HttpStatusCode.OK, updateResponse.StatusCode);
 
-    var getResponse = await client.GetAsync($"/api/issues/{issueId}", cancellationToken);
-    var responseBody = await getResponse.Content.ReadAsStringAsync(cancellationToken);
+    var historyResponse = await client.GetAsync($"/api/issues/{issueId}/history", cancellationToken);
+    var responseBody = await historyResponse.Content.ReadAsStringAsync(cancellationToken);
 
-    Assert.Equal(HttpStatusCode.OK, getResponse.StatusCode);
+    Assert.Equal(HttpStatusCode.OK, historyResponse.StatusCode);
 
     using var document = JsonDocument.Parse(responseBody);
-    var historyEntries = document.RootElement
-      .GetProperty("value")
-      .GetProperty("historyEntries");
+    var historyEntries = document.RootElement.GetProperty("value").GetProperty("items");
 
     var assigneeChangedEntry = historyEntries
       .EnumerateArray()

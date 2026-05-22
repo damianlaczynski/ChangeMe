@@ -38,9 +38,6 @@ public class NotificationConfiguration : BaseEntityTypeConfiguration<Notificatio
       .IsRequired()
       .HasMaxLength(NotificationConstraints.LINK_MAX_LENGTH);
 
-    builder.Property(n => n.OccurredAt)
-      .IsRequired();
-
     builder.Property(n => n.IsRead)
       .IsRequired();
 

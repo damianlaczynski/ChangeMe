@@ -1,4 +1,5 @@
-﻿using ChangeMe.Backend.Infrastructure.Persistence;
+﻿using ChangeMe.Backend.Domain.Interfaces;
+using ChangeMe.Backend.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Hosting;
 
@@ -75,7 +76,23 @@ public static class DatabaseConfig
 
     await using var scope = app.Services.CreateAsyncScope();
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    await ApplyPendingMigrationsAsync(db);
+    await InitializeDatabaseAsync(
+      db,
+      scope.ServiceProvider.GetRequiredService<IConfiguration>(),
+      scope.ServiceProvider.GetRequiredService<IPasswordHasher>(),
+      scope.ServiceProvider.GetRequiredService<ILogger<ApplicationDbContext>>(),
+      CancellationToken.None);
+  }
+
+  public static async Task InitializeDatabaseAsync(
+    ApplicationDbContext dbContext,
+    IConfiguration configuration,
+    IPasswordHasher passwordHasher,
+    ILogger logger,
+    CancellationToken cancellationToken = default)
+  {
+    await ApplyPendingMigrationsAsync(dbContext, cancellationToken);
+    await ApplicationDataSeeder.SeedAsync(dbContext, configuration, passwordHasher, logger, cancellationToken);
   }
 
   public static async Task ApplyPendingMigrationsAsync(

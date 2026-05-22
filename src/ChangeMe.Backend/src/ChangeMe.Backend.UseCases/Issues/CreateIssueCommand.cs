@@ -1,6 +1,7 @@
 using ChangeMe.Backend.Domain.Aggregates.Issue;
 using ChangeMe.Backend.Domain.Aggregates.Issue.Enums;
 using ChangeMe.Backend.UseCases.Issues.Dtos;
+using ChangeMe.Backend.UseCases.Issues.Utils;
 
 namespace ChangeMe.Backend.UseCases.Issues;
 
@@ -25,17 +26,13 @@ public class CreateIssueHandler(
     if (userAccessor.UserId is not Guid actorUserId)
       return Result.Unauthorized();
 
-    if (command.AssignedToUserId.HasValue)
-    {
-      var assigneeExists = await context.Users
-        .AsNoTracking()
-        .AnyAsync(u => u.Id == command.AssignedToUserId.Value, cancellationToken);
-
-      if (!assigneeExists)
-        return Result.Invalid([
-          new ValidationError(nameof(command.AssignedToUserId), "assigned user does not exist")
-        ]);
-    }
+    var assigneeValidation = await IssuesUtils.ValidateAssigneeExistsAsync(
+      context,
+      command.AssignedToUserId,
+      nameof(command.AssignedToUserId),
+      cancellationToken);
+    if (!assigneeValidation.IsSuccess)
+      return assigneeValidation.Map();
 
     var issueResult = Issue.Create(
       command.Title,

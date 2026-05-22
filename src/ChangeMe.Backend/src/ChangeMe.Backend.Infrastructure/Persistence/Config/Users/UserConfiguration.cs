@@ -29,7 +29,20 @@ public class UserConfiguration : BaseEntityTypeConfiguration<User>
     builder.Property(x => x.PasswordHash)
       .IsRequired();
 
+    builder.Property(x => x.Status)
+      .IsRequired()
+      .HasConversion<string>()
+      .HasMaxLength(32);
+
     builder.HasIndex(x => x.NormalizedEmail)
       .IsUnique();
+
+    builder.HasMany(x => x.Roles)
+      .WithOne(x => x.User)
+      .HasForeignKey(x => x.UserId)
+      .OnDelete(DeleteBehavior.Cascade);
+
+    builder.Navigation(x => x.Roles)
+      .UsePropertyAccessMode(PropertyAccessMode.Field);
   }
 }

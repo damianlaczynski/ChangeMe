@@ -9,8 +9,6 @@ public sealed class NotificationTests
   [Fact]
   public void Create_WhenInputIsValid_ShouldTrimStringsAndInitializeUnreadState()
   {
-    var occurredAt = DateTime.UtcNow;
-
     var result = Notification.Create(
       Guid.CreateVersion7(),
       Guid.CreateVersion7(),
@@ -18,14 +16,12 @@ public sealed class NotificationTests
       NotificationEventType.STATUS_CHANGED,
       "  Issue title  ",
       "  Notification message  ",
-      occurredAt,
       "  /issues/123  ");
 
     Assert.True(result.IsSuccess);
     Assert.Equal("Issue title", result.Value.IssueTitle);
     Assert.Equal("Notification message", result.Value.Message);
     Assert.Equal("/issues/123", result.Value.Link);
-    Assert.Equal(occurredAt, result.Value.OccurredAt);
     Assert.False(result.Value.IsRead);
     Assert.Null(result.Value.ReadAt);
     Assert.Null(result.Value.EmailSentAt);
@@ -41,7 +37,6 @@ public sealed class NotificationTests
       (NotificationEventType)999,
       " ",
       " ",
-      DateTime.UtcNow,
       " ");
 
     Assert.False(result.IsSuccess);
@@ -75,7 +70,6 @@ public sealed class NotificationTests
       NotificationEventType.STATUS_CHANGED,
       issueTitle,
       message,
-      DateTime.UtcNow,
       link);
 
     Assert.False(result.IsSuccess);
@@ -95,7 +89,6 @@ public sealed class NotificationTests
       NotificationEventType.STATUS_CHANGED,
       "Issue title",
       "Notification message",
-      DateTime.UtcNow,
       "/issues/123").Value;
 
     notification.MarkAsRead();
@@ -117,7 +110,6 @@ public sealed class NotificationTests
       NotificationEventType.STATUS_CHANGED,
       "Issue title",
       "Notification message",
-      DateTime.UtcNow,
       "/issues/123").Value;
 
     notification.MarkEmailSent();

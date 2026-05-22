@@ -1,5 +1,6 @@
-using System.Text;
+﻿using System.Text;
 using ChangeMe.Backend.Infrastructure.Auth;
+using ChangeMe.Backend.Web.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
@@ -46,7 +47,7 @@ public static class AuthConfig
         };
       });
 
-    services.AddAuthorization();
+    services.AddPermissionAuthorization();
 
     return services;
   }

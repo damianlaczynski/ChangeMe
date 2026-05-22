@@ -1,0 +1,106 @@
+<p-card class="mb-4" header="My account" subheader="View your profile and account security.">
+  @if (isLoading()) {
+    <div class="flex flex-col items-center gap-2 py-8">
+      <p-progressSpinner ariaLabel="Loading account" />
+      <p class="text-muted-color m-0 text-sm">Loading account...</p>
+    </div>
+  } @else if (errorMessage() && !account()) {
+    <div class="flex flex-col items-center gap-2">
+      <p-message severity="error">{{ errorMessage() }}</p-message>
+      <p-button
+        size="small"
+        label="Try again"
+        icon="pi pi-refresh"
+        severity="secondary"
+        [outlined]="true"
+        [loading]="isLoading()"
+        (onClick)="reload()"
+      />
+    </div>
+  } @else if (account(); as profile) {
+    <div class="mb-4 flex flex-wrap items-center gap-2">
+      <p-button
+        label="Edit"
+        icon="pi pi-pencil"
+        severity="secondary"
+        [outlined]="true"
+        size="small"
+        [routerLink]="['/account/edit']"
+      />
+      <p-button
+        label="Change password"
+        icon="pi pi-lock"
+        severity="secondary"
+        [outlined]="true"
+        size="small"
+        [routerLink]="['/account/change-password']"
+      />
+      @if (canManageSessions()) {
+        <p-button
+          label="Sign out everywhere"
+          icon="pi pi-sign-out"
+          severity="danger"
+          [outlined]="true"
+          size="small"
+          [loading]="isSigningOutEverywhere()"
+          (onClick)="signOutEverywhere()"
+        />
+      }
+    </div>
+
+    <dl
+      class="mb-6 grid gap-4 rounded-lg border border-surface-200 p-4 sm:grid-cols-2 lg:grid-cols-3"
+    >
+      <div class="flex flex-col gap-1">
+        <dt class="text-muted-color text-sm">First name</dt>
+        <dd class="m-0 font-medium">{{ profile.firstName }}</dd>
+      </div>
+      <div class="flex flex-col gap-1">
+        <dt class="text-muted-color text-sm">Last name</dt>
+        <dd class="m-0 font-medium">{{ profile.lastName }}</dd>
+      </div>
+      <div class="flex flex-col gap-1">
+        <dt class="text-muted-color text-sm">Email</dt>
+        <dd class="m-0 font-medium">{{ profile.email }}</dd>
+      </div>
+      <div class="flex flex-col gap-1">
+        <dt class="text-muted-color text-sm">Status</dt>
+        <dd class="m-0"><p-tag [value]="profile.status" /></dd>
+      </div>
+      <div class="flex flex-col gap-1">
+        <dt class="text-muted-color text-sm">Member since</dt>
+        <dd class="m-0">{{ profile.memberSince | date: 'dd.MM.yyyy HH:mm' }}</dd>
+      </div>
+    </dl>
+
+    <p-panel header="Roles" [toggleable]="true" class="mb-4">
+      @if (profile.roles.length === 0) {
+        <p class="text-muted-color m-0 text-sm">{{ UserMessages.noRolesAssigned }}</p>
+      } @else {
+        <div class="flex flex-wrap gap-2">
+          @for (role of profile.roles; track role.id) {
+            @if (canViewRoles()) {
+              <a [routerLink]="['/roles', role.id]">
+                <p-tag
+                  [value]="role.isSystem ? role.name + ' (System)' : role.name"
+                  severity="secondary"
+                />
+              </a>
+            } @else {
+              <p-tag
+                [value]="role.isSystem ? role.name + ' (System)' : role.name"
+                severity="secondary"
+              />
+            }
+          }
+        </div>
+      }
+    </p-panel>
+
+    <app-effective-permissions [permissions]="effectivePermissions()" />
+
+    @if (canViewSessions()) {
+      <app-my-sessions class="mt-4 block" />
+    }
+  }
+</p-card>

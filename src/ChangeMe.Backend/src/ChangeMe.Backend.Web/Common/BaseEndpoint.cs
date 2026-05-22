@@ -16,6 +16,10 @@ public abstract class BaseEndpoint<TRequest, TResponse>(IMediator mediator) : En
   {
   }
 
+  protected void RequirePermission(string permissionCode) => Policies(permissionCode);
+
+  protected void RequirePermissions(params string[] permissionCodes) => Policies(permissionCodes);
+
   public override async Task HandleAsync(TRequest req, CancellationToken ct)
   {
     Result<TResponse> response = ValidationFailed switch

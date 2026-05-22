@@ -1,9 +1,8 @@
 using ChangeMe.Backend.UseCases.Notifications;
-using ChangeMe.Backend.UseCases.Notifications.Dtos;
 
 namespace ChangeMe.Backend.Web.Notifications;
 
-public class MarkAllNotificationsAsRead(IMediator mediator) : BaseEndpoint<MarkAllNotificationsAsReadCommand, NotificationListDto>(mediator)
+public class MarkAllNotificationsAsRead(IMediator mediator) : BaseEndpoint<MarkAllNotificationsAsReadCommand, bool>(mediator)
 {
   protected override void ConfigureEndpoint()
   {

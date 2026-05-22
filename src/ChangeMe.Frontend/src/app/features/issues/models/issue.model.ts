@@ -38,8 +38,16 @@ export interface IssueDetailsDto {
   isWatchedByCurrentUser: boolean;
   watchersCount: number;
   acceptanceCriteria: AcceptanceCriterionDto[];
-  comments: IssueCommentDto[];
-  historyEntries: IssueHistoryEntryDto[];
+}
+
+export interface IssueCommentsSearchParameters extends PaginationParameters {
+  sortField?: string;
+  ascending?: boolean;
+}
+
+export interface IssueHistorySearchParameters extends PaginationParameters {
+  sortField?: string;
+  ascending?: boolean;
 }
 
 export interface AcceptanceCriterionDto {

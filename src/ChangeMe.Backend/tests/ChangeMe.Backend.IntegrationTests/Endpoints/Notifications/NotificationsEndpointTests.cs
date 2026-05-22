@@ -194,6 +194,76 @@ public sealed class NotificationsEndpointTests(BackendWebApplicationFactory fact
   }
 
   [Fact]
+  public async Task GetNotifications_WithPagination_ShouldReturnDistinctPagesSortedNewestFirst()
+  {
+    var cancellationToken = TestContext.Current.CancellationToken;
+    var user = await CreateAuthenticatedUserAsync(cancellationToken);
+    using var client = user.Client;
+
+    await using var scope = factory.Services.CreateAsyncScope();
+    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+    var seededIds = new List<Guid>();
+    for (var index = 0; index < 12; index++)
+    {
+      var notificationId = await SeedNotificationAsync(
+        dbContext,
+        user.UserId,
+        $"Notification {index:D2}",
+        NotificationEventType.STATUS_CHANGED,
+        DateTime.UtcNow.AddMinutes(-index),
+        isRead: false,
+        readAt: null,
+        cancellationToken);
+      seededIds.Add(notificationId);
+    }
+
+    var pageOneResponse = await client.GetAsync(
+      "/api/notifications?isRead=false&pageNumber=1&pageSize=10&sortField=CreatedAt&ascending=false",
+      cancellationToken);
+    var pageOneBody = await pageOneResponse.Content.ReadAsStringAsync(cancellationToken);
+
+    Assert.Equal(HttpStatusCode.OK, pageOneResponse.StatusCode);
+
+    using var pageOneDocument = JsonDocument.Parse(pageOneBody);
+    var pageOneValue = pageOneDocument.RootElement.GetProperty("value");
+    var pageOneItems = pageOneValue.GetProperty("page").GetProperty("items").EnumerateArray().ToList();
+
+    Assert.Equal(10, pageOneItems.Count);
+    Assert.True(pageOneValue.GetProperty("page").GetProperty("hasNext").GetBoolean());
+
+    var pageOneIds = pageOneItems.Select(item => item.GetProperty("id").GetGuid()).ToList();
+    Assert.Equal(seededIds.Take(10), pageOneIds);
+
+    var pageOneCreatedAt = pageOneItems
+      .Select(item => item.GetProperty("createdAt").GetDateTime())
+      .ToList();
+    Assert.True(
+      pageOneCreatedAt.SequenceEqual(pageOneCreatedAt.OrderByDescending(timestamp => timestamp)));
+
+    var pageTwoResponse = await client.GetAsync(
+      "/api/notifications?isRead=false&pageNumber=2&pageSize=10&sortField=CreatedAt&ascending=false",
+      cancellationToken);
+    var pageTwoBody = await pageTwoResponse.Content.ReadAsStringAsync(cancellationToken);
+
+    Assert.Equal(HttpStatusCode.OK, pageTwoResponse.StatusCode);
+
+    using var pageTwoDocument = JsonDocument.Parse(pageTwoBody);
+    var pageTwoItems = pageTwoDocument.RootElement
+      .GetProperty("value")
+      .GetProperty("page")
+      .GetProperty("items")
+      .EnumerateArray()
+      .ToList();
+
+    Assert.Equal(2, pageTwoItems.Count);
+
+    var pageTwoIds = pageTwoItems.Select(item => item.GetProperty("id").GetGuid()).ToList();
+    Assert.Equal(seededIds.Skip(10), pageTwoIds);
+    Assert.Empty(pageOneIds.Intersect(pageTwoIds));
+  }
+
+  [Fact]
   public async Task GetNotifications_ShouldFilterOutExpiredNotificationsFromResponse()
   {
     var cancellationToken = TestContext.Current.CancellationToken;
@@ -285,7 +355,7 @@ public sealed class NotificationsEndpointTests(BackendWebApplicationFactory fact
   }
 
   [Fact]
-  public async Task MarkAllNotificationsAsRead_ShouldUpdateUnreadNotificationsAndReturnZeroUnreadCount()
+  public async Task MarkAllNotificationsAsRead_ShouldMarkUnreadNotificationsAsReadAndReturnSuccess()
   {
     var cancellationToken = TestContext.Current.CancellationToken;
     var user = await CreateAuthenticatedUserAsync(cancellationToken);
@@ -334,12 +404,7 @@ public sealed class NotificationsEndpointTests(BackendWebApplicationFactory fact
     Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
     using var document = JsonDocument.Parse(responseBody);
-    var value = document.RootElement.GetProperty("value");
-    Assert.Equal(0, value.GetProperty("unreadCount").GetInt32());
-
-    var items = value.GetProperty("items").EnumerateArray().ToList();
-    Assert.Equal(3, items.Count);
-    Assert.All(items, item => Assert.True(item.GetProperty("isRead").GetBoolean()));
+    Assert.True(document.RootElement.GetProperty("value").GetBoolean());
 
     await using var assertScope = factory.Services.CreateAsyncScope();
     var assertDb = assertScope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
@@ -425,7 +490,8 @@ public sealed class NotificationsEndpointTests(BackendWebApplicationFactory fact
   private static Guid ExtractFirstNotificationId(string responseBody)
   {
     using var document = JsonDocument.Parse(responseBody);
-    return document.RootElement.GetProperty("value").GetProperty("items")[0].GetProperty("id").GetGuid();
+    return document.RootElement.GetProperty("value").GetProperty("page").GetProperty("items")[0]
+      .GetProperty("id").GetGuid();
   }
 
   private static async Task<Guid> SeedNotificationAsync(
@@ -433,7 +499,7 @@ public sealed class NotificationsEndpointTests(BackendWebApplicationFactory fact
     Guid recipientUserId,
     string issueTitle,
     NotificationEventType eventType,
-    DateTime occurredAt,
+    DateTime createdAt,
     bool isRead,
     DateTime? readAt,
     CancellationToken cancellationToken)
@@ -445,7 +511,6 @@ public sealed class NotificationsEndpointTests(BackendWebApplicationFactory fact
       eventType,
       issueTitle,
       $"Message for {issueTitle}",
-      occurredAt,
       $"/issues/{Guid.NewGuid()}");
 
     Assert.True(notificationResult.IsSuccess);
@@ -459,7 +524,7 @@ public sealed class NotificationsEndpointTests(BackendWebApplicationFactory fact
     dbContext.Entry(notification).Property(nameof(Notification.UpdatedBy)).CurrentValue = recipientUserId;
     await dbContext.SaveChangesAsync(cancellationToken);
 
-    dbContext.Entry(notification).Property(nameof(Notification.OccurredAt)).CurrentValue = occurredAt;
+    dbContext.Entry(notification).Property(nameof(Notification.CreatedAt)).CurrentValue = createdAt;
 
     if (isRead)
       dbContext.Entry(notification).Property(nameof(Notification.ReadAt)).CurrentValue = readAt;

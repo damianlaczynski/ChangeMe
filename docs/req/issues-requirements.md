@@ -62,6 +62,12 @@ The user must be able to browse all issues, search, filter, sort, navigate to de
 - **Clear filters** resets the filter form and removes all filter constraints (search text included).
 - Applied filters list
 
+### Pagination
+
+- The issues table is **server-paginated** with **10** rows per page by default.
+- A paginator below the table shows the current page and total count; changing page or page size reloads the list.
+- Search, filters, and sort reset to **page 1**.
+
 ### Loading
 
 - While the table is loading, a loading indicator is shown in the table area; the screen layout remains visible.
@@ -178,10 +184,17 @@ The user must be able to create a new issue and edit an existing one by providin
 
 ### Comments section
 
+- Layout order (top to bottom): **Add a comment** form (textarea and **Add comment** button), then the comments list, then **Show more** when more comments exist.
+- The comment form is **always above** the list, including when the list is empty or loading.
 - Users add comments to an issue.
 - Each comment shows **author**, **date and time**, and **full content**.
-- Comments sorted chronologically ascending.
-- Adding a comment updates **Last activity** and shows the new comment without leaving the screen.
+- Comments are loaded **server-paginated**, sorted by **date and time** descending (**newest first**).
+- The first page shows up to **10** most recent comments.
+- When older comments exist beyond the loaded pages, a **Show more** control appears below the list; each activation loads the next page of **older** comments and **appends** them without leaving the screen.
+- **Show more** is hidden when all comments are loaded.
+- While the first page loads, a loading indicator is shown in the list area; the comment form stays visible.
+- While **Show more** is loading, the button shows a loading state; already loaded comments remain visible.
+- Adding a comment updates **Last activity**, reloads comments from the first page, and shows the new comment without leaving the screen.
 - Adding a comment triggers notifications for watchers (REQ-ISS-004).
 
 ### Comment validation
@@ -198,6 +211,12 @@ The user must be able to create a new issue and edit an existing one by providin
 - **Description** changes show summary only (no before/after inline).
 - History is read-only.
 - Event types use distinct timeline markers (icons and colors).
+- History entries are loaded **server-paginated**, sorted by **date and time** descending (**newest first**), consistent with comments.
+- The first page shows up to **10** most recent entries.
+- When older history exists beyond the loaded pages, a **Show more** control appears below the timeline; each activation loads the next page of **older** entries and **appends** them.
+- **Show more** is hidden when all history entries are loaded.
+- While the first page loads, a loading indicator is shown in the history area.
+- While **Show more** is loading, the button shows a loading state; already loaded entries remain visible.
 
 ### Actions and navigation
 
@@ -212,7 +231,8 @@ The user must be able to create a new issue and edit an existing one by providin
 
 ### Loading
 
-- While issue data is loading initially, a loading state covers the detail area until initial data arrives.
+- While issue header, description, and acceptance criteria load initially, a loading state covers those areas until initial data arrives.
+- Comments and history load independently per tab (see above); tab content may load after the main issue body is visible.
 
 ---
 
@@ -291,6 +311,10 @@ There is no separate **Notifications** screen or sidebar entry.
 - **Refresh** reloads the notification list.
 - **Mark all as read** marks every unread notification as read when any unread items exist.
 - Scrollable body with tabs: **Unread** and **Read**.
+- Each tab loads notifications **server-paginated** with **10** items per page by default, sorted **newest first** (`CreatedAt` descending).
+- When more notifications exist beyond the loaded pages, a **Show more** control appears at the bottom of the active tab; each activation loads the next page and **appends** it to the list.
+- **Show more** is hidden when all notifications in that tab are loaded; while loading, the button shows a loading state and already loaded items remain visible.
+- Switching tabs reloads that tab from **page 1**.
 - Each notification shows: **issue title**, **message**, **event time**, and actions.
 - **Open** follows the notification **link**, marks unread items as read when opened, and closes the dropdown.
 - **Mark read** per unread item without opening the issue.

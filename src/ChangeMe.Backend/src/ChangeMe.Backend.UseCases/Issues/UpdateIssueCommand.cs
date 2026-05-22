@@ -2,6 +2,7 @@ using ChangeMe.Backend.Domain.Aggregates.Issue;
 using ChangeMe.Backend.Domain.Aggregates.Issue.Enums;
 using ChangeMe.Backend.UseCases.Issues.Dtos;
 using ChangeMe.Backend.UseCases.Issues.Services;
+using ChangeMe.Backend.UseCases.Issues.Utils;
 
 namespace ChangeMe.Backend.UseCases.Issues;
 
@@ -36,17 +37,13 @@ public class UpdateIssueHandler(
     if (issue is null)
       return Result.NotFound();
 
-    if (command.AssignedToUserId.HasValue)
-    {
-      var assigneeExists = await context.Users
-        .AsNoTracking()
-        .AnyAsync(u => u.Id == command.AssignedToUserId.Value, cancellationToken);
-
-      if (!assigneeExists)
-        return Result.Invalid([
-          new ValidationError(nameof(command.AssignedToUserId), "assigned user does not exist")
-        ]);
-    }
+    var assigneeValidation = await IssuesUtils.ValidateAssigneeExistsAsync(
+      context,
+      command.AssignedToUserId,
+      nameof(command.AssignedToUserId),
+      cancellationToken);
+    if (!assigneeValidation.IsSuccess)
+      return assigneeValidation.Map();
 
     var updateResult = issue.UpdateDetails(
       command.Title,
@@ -73,7 +70,7 @@ public class UpdateIssueHandler(
     await context.SaveChangesAsync(cancellationToken);
 
     foreach (var historyEntryId in newHistoryEntries
-               .Where(h => IsNotificationEligible(h.EventType))
+               .Where(h => IssuesUtils.IsNotificationEligible(h.EventType))
                .Select(h => h.Id))
       await issueNotificationService.NotifyIssueActivityAsync(issue.Id, historyEntryId, actorUserId, cancellationToken);
 
@@ -81,7 +78,7 @@ public class UpdateIssueHandler(
     if (!updatedIssueResult.IsSuccess)
       return updatedIssueResult.Map();
 
-    return Result.Success(updatedIssueResult.Value);
+    return updatedIssueResult;
   }
 
   private Result UpdateAcceptanceCriteria(List<UpdateIssueAcceptanceCriterionPayload>? acceptanceCriteria, Issue issue, Guid actorUserId)
@@ -129,18 +126,5 @@ public class UpdateIssueHandler(
     }
 
     return Result.Success();
-  }
-
-  private static bool IsNotificationEligible(IssueHistoryEventType eventType)
-  {
-    return eventType is
-      IssueHistoryEventType.STATUS_CHANGED or
-      IssueHistoryEventType.PRIORITY_CHANGED or
-      IssueHistoryEventType.ASSIGNEE_CHANGED or
-      IssueHistoryEventType.TITLE_CHANGED or
-      IssueHistoryEventType.DESCRIPTION_CHANGED or
-      IssueHistoryEventType.ACCEPTANCE_CRITERION_ADDED or
-      IssueHistoryEventType.ACCEPTANCE_CRITERION_UPDATED or
-      IssueHistoryEventType.ACCEPTANCE_CRITERION_REMOVED;
   }
 }

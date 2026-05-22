@@ -63,7 +63,6 @@ public class IssueNotificationService(
         notificationType,
         issue.Title,
         message,
-        historyEntry.CreatedAt,
         $"/issues/{issue.Id}");
 
       if (!notificationResult.IsSuccess)
@@ -81,7 +80,7 @@ public class IssueNotificationService(
           EventType = notificationType,
           IssueTitle = issue.Title,
           Message = message,
-          OccurredAt = historyEntry.CreatedAt,
+          CreatedAt = notificationResult.Value.CreatedAt,
           Link = $"/issues/{issue.Id}",
         },
         cancellationToken);
@@ -148,7 +147,6 @@ public class IssueNotificationService(
         NotificationEventType.COMMENT_CREATED,
         issue.Title,
         message,
-        comment.CreatedAt,
         $"/issues/{issue.Id}");
 
       if (!notificationResult.IsSuccess)
@@ -166,7 +164,7 @@ public class IssueNotificationService(
           EventType = NotificationEventType.COMMENT_CREATED,
           IssueTitle = issue.Title,
           Message = message,
-          OccurredAt = comment.CreatedAt,
+          CreatedAt = notificationResult.Value.CreatedAt,
           Link = $"/issues/{issue.Id}",
         },
         cancellationToken);

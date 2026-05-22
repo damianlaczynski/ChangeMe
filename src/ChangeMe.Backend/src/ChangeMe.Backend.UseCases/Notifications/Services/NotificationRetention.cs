@@ -39,9 +39,9 @@ public sealed class NotificationRetentionPolicy(
     var readCutoff = nowUtc.AddDays(-retentionOptions.ReadRetentionDays);
 
     return notification =>
-      notification.OccurredAt > absoluteCutoff
+      notification.CreatedAt > absoluteCutoff
       && (
-        (!notification.IsRead && notification.OccurredAt > unreadCutoff)
+        (!notification.IsRead && notification.CreatedAt > unreadCutoff)
         || (notification.IsRead && (!notification.ReadAt.HasValue || notification.ReadAt > readCutoff))
       );
   }
@@ -53,8 +53,8 @@ public sealed class NotificationRetentionPolicy(
     var readCutoff = nowUtc.AddDays(-retentionOptions.ReadRetentionDays);
 
     return notification =>
-      notification.OccurredAt <= absoluteCutoff
-      || (!notification.IsRead && notification.OccurredAt <= unreadCutoff)
+      notification.CreatedAt <= absoluteCutoff
+      || (!notification.IsRead && notification.CreatedAt <= unreadCutoff)
       || (notification.IsRead && notification.ReadAt.HasValue && notification.ReadAt <= readCutoff);
   }
 }
