@@ -10,6 +10,8 @@
 
 **First-time EF migrations:** migration `.cs` files are not shipped. Ensure `Infrastructure/Persistence/Migrations` exists by adding a migration from the solution root before integration tests that call `MigrateAsync()` (see `docs/database-and-docker.md`).
 
+**DataGenerator:** integration and unit tests do not use `ChangeMe.Backend.DataGenerator`; they seed data via `IssueTestHelper`, `TestAuthHelper`, and Testcontainers (see `docs/data-generator.md`).
+
 ## From repository root
 
 After `npm install` in the repository root (for `concurrently`), you can run:

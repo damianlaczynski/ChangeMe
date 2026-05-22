@@ -84,6 +84,16 @@ dotnet build ChangeMe.Backend.sln
 dotnet run --project src/ChangeMe.Backend.Web
 ```
 
+### Sample data (optional)
+
+After migrations are applied, from the **repository root**:
+
+```powershell
+npm run data:generate
+```
+
+Creates demo users (`user1@demo.local`, password in `DataGenerator:DefaultPassword`), issues, comments, and notifications. Use `npm run data:generate -- --reset` to refresh. See `docs/data-generator.md`.
+
 Useful commands:
 
 ```powershell
@@ -104,6 +114,7 @@ This starts the frontend, backend, MailHog, and the database service defined in 
 ## Documentation
 
 - `docs/database-and-docker.md` - persistence, Compose, EF migration notes
+- `docs/data-generator.md` - optional demo data for local development
 - `docs/repo-map.md` - where code lives and which layer owns what
 - `docs/frontend-coding-guidelines.md` - frontend conventions
 - `docs/backend-coding-guidelines.md` - backend conventions

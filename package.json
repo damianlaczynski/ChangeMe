@@ -22,7 +22,8 @@
     "ef:restore": "dotnet tool restore",
     "ef:migrations:add": "dotnet ef migrations add --project src/ChangeMe.Backend/src/ChangeMe.Backend.Infrastructure/ChangeMe.Backend.Infrastructure.csproj --startup-project src/ChangeMe.Backend/src/ChangeMe.Backend.Web/ChangeMe.Backend.Web.csproj --output-dir Persistence/Migrations",
     "ef:migrations:remove": "dotnet ef migrations remove --project src/ChangeMe.Backend/src/ChangeMe.Backend.Infrastructure/ChangeMe.Backend.Infrastructure.csproj --startup-project src/ChangeMe.Backend/src/ChangeMe.Backend.Web/ChangeMe.Backend.Web.csproj",
-    "ef:database:update": "dotnet ef database update --project src/ChangeMe.Backend/src/ChangeMe.Backend.Infrastructure/ChangeMe.Backend.Infrastructure.csproj --startup-project src/ChangeMe.Backend/src/ChangeMe.Backend.Web/ChangeMe.Backend.Web.csproj"
+    "ef:database:update": "dotnet ef database update --project src/ChangeMe.Backend/src/ChangeMe.Backend.Infrastructure/ChangeMe.Backend.Infrastructure.csproj --startup-project src/ChangeMe.Backend/src/ChangeMe.Backend.Web/ChangeMe.Backend.Web.csproj",
+    "data:generate": "dotnet run --no-launch-profile --project src/ChangeMe.Backend/tools/ChangeMe.Backend.DataGenerator/ChangeMe.Backend.DataGenerator.csproj --"
   },
   "devDependencies": {
     "concurrently": "^9.2.0"
