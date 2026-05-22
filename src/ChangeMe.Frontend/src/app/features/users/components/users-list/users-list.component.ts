@@ -1,11 +1,11 @@
 import { DatePipe } from '@angular/common';
 import {
-    Component,
-    computed,
-    DestroyRef,
-    inject,
-    signal,
-    viewChild
+  Component,
+  computed,
+  DestroyRef,
+  inject,
+  signal,
+  viewChild
 } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
@@ -13,21 +13,22 @@ import { RouterLink } from '@angular/router';
 import { ToastService } from '@core/toast/services/toast.service';
 import { AuthService } from '@features/auth/services/auth.service';
 import {
-    UserListItemDto,
-    UserSearchParameters,
-    UserStatus
+  UserListItemDto,
+  UserSearchParameters,
+  UserStatus
 } from '@features/users/models/user.model';
 import { UsersService } from '@features/users/services/users.service';
 import {
-    getActivateConfirmMessage,
-    getDeactivateConfirmMessage,
-    getUserStatusSeverity,
-    UserMessages,
-    userStatuses
+  getActivateConfirmMessage,
+  getDeactivateConfirmMessage,
+  getUserStatusSeverity,
+  UserMessages,
+  userStatuses
 } from '@features/users/utils/users.utils';
 import { PermissionCodes } from '@shared/authorization/permission-codes';
 import { AppliedFiltersChipsComponent } from '@shared/components/applied-filters-chips/applied-filters-chips.component';
 import { PaginationResult } from '@shared/data/models/pagination-result.model';
+import { createEmptyPaginationResult } from '@shared/data/utils/pagination.utils';
 import { AppliedFilterChip } from '@shared/models/applied-filter-chip.model';
 import { ConfirmationService, MenuItem } from 'primeng/api';
 import { Button } from 'primeng/button';
@@ -143,7 +144,7 @@ export class UsersListComponent {
           this.usersService.getUsers(params).pipe(
             catchError((error: Error) => {
               this.errorMessage.set(error.message);
-              return of(this.createEmptyPaginationResult(params));
+              return of(createEmptyPaginationResult<UserListItemDto>(params));
             })
           )
         ),
@@ -316,19 +317,5 @@ export class UsersListComponent {
       this.filtersForm.controls.statuses.setValue(statuses);
       this.applyFilters();
     }
-  }
-
-  private createEmptyPaginationResult(
-    params: UserSearchParameters
-  ): PaginationResult<UserListItemDto> {
-    return {
-      items: [],
-      currentPage: params.pageNumber ?? 1,
-      pageSize: params.pageSize ?? 10,
-      totalCount: 0,
-      totalPages: 0,
-      hasPrevious: false,
-      hasNext: false
-    };
   }
 }

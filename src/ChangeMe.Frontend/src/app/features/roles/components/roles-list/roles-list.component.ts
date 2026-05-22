@@ -23,6 +23,7 @@ import {
 } from '@features/roles/utils/roles.utils';
 import { PermissionCodes } from '@shared/authorization/permission-codes';
 import { PaginationResult } from '@shared/data/models/pagination-result.model';
+import { createEmptyPaginationResult } from '@shared/data/utils/pagination.utils';
 import { ConfirmationService, MenuItem } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
@@ -98,7 +99,7 @@ export class RolesListComponent {
           this.rolesService.getRoles(params).pipe(
             catchError((error: Error) => {
               this.errorMessage.set(error.message);
-              return of(this.createEmptyPaginationResult(params));
+              return of(createEmptyPaginationResult<RoleListItemDto>(params));
             })
           )
         ),
@@ -197,19 +198,5 @@ export class RolesListComponent {
 
   refresh(): void {
     this.query.update((current) => ({ ...current, pageNumber: 1 }));
-  }
-
-  private createEmptyPaginationResult(
-    params: RoleSearchParameters
-  ): PaginationResult<RoleListItemDto> {
-    return {
-      items: [],
-      totalCount: 0,
-      currentPage: params.pageNumber,
-      pageSize: params.pageSize,
-      totalPages: 0,
-      hasPrevious: false,
-      hasNext: false
-    };
   }
 }
