@@ -1,5 +1,5 @@
-import { UserStatus } from '@features/users/models/user.model';
 import { groupEffectivePermissions } from '@features/users/utils/users.utils';
+import { highlightDialogValue } from '@shared/ui/utils/dialog-message.utils';
 
 export const RoleConstraints = {
   NAME_MIN_LENGTH: 2,
@@ -30,19 +30,15 @@ export function formatDescription(description: string | null | undefined): strin
   return description?.trim() ? description : RoleMessages.emptyDescription;
 }
 
-export function getUserStatusSeverity(status: UserStatus): 'success' | 'danger' {
-  return status === 'Active' ? 'success' : 'danger';
-}
+export { groupEffectivePermissions };
 
 export function getDeleteRoleConfirmMessage(roleName: string): string {
-  return `Delete role "${roleName}"? Users will lose permissions granted only through this role.`;
+  return `Delete role ${highlightDialogValue(roleName)}? Users will lose permissions granted only through this role.`;
 }
 
 export function getRemoveUserFromRoleConfirmMessage(
-  fullName: string,
+  userReference: string,
   roleName: string
 ): string {
-  return `Remove "${fullName}" from role "${roleName}"? The user will lose permissions granted only through this role.`;
+  return `Remove ${highlightDialogValue(userReference)} from role ${highlightDialogValue(roleName)}? The user will lose permissions granted only through this role.`;
 }
-
-export { groupEffectivePermissions };

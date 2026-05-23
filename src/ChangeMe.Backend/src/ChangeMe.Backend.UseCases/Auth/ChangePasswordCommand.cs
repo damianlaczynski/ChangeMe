@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.Domain.Aggregates.Users;
+using ChangeMe.Backend.Domain.Aggregates.Users;
 
 namespace ChangeMe.Backend.UseCases.Auth;
 
@@ -9,7 +9,8 @@ public sealed record ChangePasswordCommand(
 public class ChangePasswordHandler(
   ApplicationDbContext context,
   IPasswordHasher passwordHasher,
-  IUserAccessor userAccessor) : ICommandHandler<ChangePasswordCommand, bool>
+  IUserAccessor userAccessor,
+  IAuthEmailService authEmailService) : ICommandHandler<ChangePasswordCommand, bool>
 {
   public async Task<Result<bool>> Handle(ChangePasswordCommand command, CancellationToken cancellationToken)
   {
@@ -40,6 +41,10 @@ public class ChangePasswordHandler(
       return Result<bool>.Invalid(updateResult.ValidationErrors);
 
     await LogoutAllSessionsHandler.RevokeAllActiveSessionsAsync(context, userId, cancellationToken);
+    await context.SaveChangesAsync(cancellationToken);
+
+    await authEmailService.SendPasswordChangedAsync(user, cancellationToken);
+
     return Result.Success(true);
   }
 }

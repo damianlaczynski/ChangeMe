@@ -11,6 +11,8 @@ namespace ChangeMe.Backend.Infrastructure.Configurations;
 
 public sealed class HangfireOptions
 {
+  public const string SectionName = "Hangfire";
+
   public string DashboardPath { get; set; } = "/hangfire";
 }
 
@@ -18,7 +20,7 @@ public static class HangfireConfig
 {
   public static IServiceCollection AddHangfire(this IServiceCollection services, WebApplicationBuilder builder, ILogger logger)
   {
-    services.Configure<HangfireOptions>(builder.Configuration.GetSection("Hangfire"));
+    services.Configure<HangfireOptions>(builder.Configuration.GetSection(HangfireOptions.SectionName));
 
     var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
     if (string.IsNullOrWhiteSpace(connectionString))

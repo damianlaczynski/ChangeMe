@@ -1,13 +1,17 @@
 using ChangeMe.Backend.Domain.Aggregates.Issue.Enums;
 using ChangeMe.Backend.Domain.Aggregates.Notifications;
 using ChangeMe.Backend.Domain.Aggregates.Notifications.Enums;
+using ChangeMe.Backend.Infrastructure.Auth;
+using ChangeMe.Backend.Infrastructure.Email;
+using Microsoft.Extensions.Options;
 
 namespace ChangeMe.Backend.UseCases.Issues.Services;
 
 public class IssueNotificationService(
   ApplicationDbContext context,
   INotificationRealtimePublisher realtimePublisher,
-  IEmailService emailService)
+  IEmailService emailService,
+  IOptions<AuthOptions> authOptions)
 {
   public async Task NotifyIssueActivityAsync(
     Guid issueId,
@@ -85,10 +89,12 @@ public class IssueNotificationService(
         },
         cancellationToken);
 
-      await emailService.SendEmailAsync(
+      await SendIssueEmailAsync(
         recipient.Email,
-        $"Issue update: {issue.Title}",
-        $"{message}{Environment.NewLine}{Environment.NewLine}Open issue: /issues/{issue.Id}");
+        issue.Title,
+        message,
+        issue.Id,
+        cancellationToken);
 
       notificationResult.Value.MarkEmailSent();
       await context.SaveChangesAsync(cancellationToken);
@@ -169,14 +175,35 @@ public class IssueNotificationService(
         },
         cancellationToken);
 
-      await emailService.SendEmailAsync(
+      await SendIssueEmailAsync(
         recipient.Email,
-        $"Issue update: {issue.Title}",
-        $"{message}{Environment.NewLine}{Environment.NewLine}Open issue: /issues/{issue.Id}");
+        issue.Title,
+        message,
+        issue.Id,
+        cancellationToken);
 
       notificationResult.Value.MarkEmailSent();
       await context.SaveChangesAsync(cancellationToken);
     }
+  }
+
+  private Task SendIssueEmailAsync(
+    string recipientEmail,
+    string issueTitle,
+    string message,
+    Guid issueId,
+    CancellationToken cancellationToken)
+  {
+    var issueUrl = $"{authOptions.Value.FrontendBaseUrl.TrimEnd('/')}/issues/{issueId}";
+    var body = BrandedEmailTemplates.BuildNotificationEmail(
+      $"Issue update: {issueTitle}",
+      message,
+      issueUrl);
+
+    return emailService.SendEmailAsync(
+      recipientEmail,
+      $"Issue update: {issueTitle}",
+      body);
   }
 
   private static NotificationEventType MapNotificationEventType(Domain.Aggregates.Issue.Entities.IssueHistoryEntry historyEntry)

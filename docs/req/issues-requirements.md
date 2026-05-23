@@ -26,15 +26,15 @@ The user must be able to browse all issues, search, filter, sort, navigate to de
 
 ### Issues table — columns
 
-| Column            | Description                                                                       |
-| ----------------- | --------------------------------------------------------------------------------- |
-| **Title**         | Short issue title; clickable link to **Issue details**.                           |
-| **Status**        | Issue status badge (**New**, **In Progress**, **Resolved**, **Closed**).          |
-| **Priority**      | Priority badge (**Low**, **Medium**, **High**, **Critical**).                     |
-| **Assigned to**   | Full name of the assigned user or `**Unassigned`\*\*.                             |
-| **Created at**    | Issue creation date and time.                                                     |
-| **Last activity** | Date and time of the most recent change, comment, or other activity on the issue. |
-| **Actions**       | Watch control and overflow menu for row actions (see below).                      |
+| Column            | Description                                                                                       |
+| ----------------- | ------------------------------------------------------------------------------------------------- |
+| **Title**         | Short issue title; clickable link to **Issue details**.                                           |
+| **Status**        | Issue status badge (**New**, **In Progress**, **Resolved**, **Closed**).                          |
+| **Priority**      | Priority badge (**Low**, **Medium**, **High**, **Critical**).                                     |
+| **Assigned to**   | Assignee as **`{name} ({email})`** or **email** when name is missing; **`Unassigned`** when none. |
+| **Created at**    | Issue creation date and time.                                                                     |
+| **Last activity** | Date and time of the most recent change, comment, or other activity on the issue.                 |
+| **Actions**       | Watch control and overflow menu for row actions (see below).                                      |
 
 ### Sorting
 
@@ -89,14 +89,14 @@ The user must be able to create a new issue and edit an existing one by providin
 
 ### "Issue details" section (create and edit)
 
-| Field                    | Behavior                                                                                  |
-| ------------------------ | ----------------------------------------------------------------------------------------- |
-| **Title**                | Text field, **required**; **3–255** characters.                                           |
-| **Description**          | Multiline text area, **required**; up to **2000** characters.                             |
-| **Status**               | Issue status dropdown; **required**; default on create: **New**.                          |
-| **Priority**             | Priority dropdown; **required**; default on create: **Medium**.                           |
-| **Assigned to**          | User selector from assignable users (REQ-USR-005); **not required** (clear = unassigned). |
-| **Watch after creation** | Checkbox on create only; selected by default; adds the author as a watcher when checked.  |
+| Field                    | Behavior                                                                                                                  |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------- |
+| **Title**                | Text field, **required**; **3–255** characters.                                                                           |
+| **Description**          | Multiline text area, **required**; up to **2000** characters.                                                             |
+| **Status**               | Issue status dropdown; **required**; default on create: **New**.                                                          |
+| **Priority**             | Priority dropdown; **required**; default on create: **Medium**.                                                           |
+| **Assigned to**          | User selector from assignable users (REQ-USR-005); options show **Display label**; **not required** (clear = unassigned). |
+| **Watch after creation** | Checkbox on create only; selected by default; adds the author as a watcher when checked.                                  |
 
 ### "Acceptance criteria" section
 
@@ -117,7 +117,7 @@ The user must be able to create a new issue and edit an existing one by providin
 - **Description**: required; max **2000** characters.
 - **Status**: required; one of **New**, **In Progress**, **Resolved**, **Closed**.
 - **Priority**: required; one of **Low**, **Medium**, **High**, **Critical**.
-- **Assigned to**: when selected, must be an **Active** assignable user (REQ-USR-005).
+- **Assigned to**: when selected, must be an assignable user with **Deactivated** false (REQ-USR-005).
 - **Acceptance criterion**: when a row exists, its text is required; max **2000** characters.
 - Validation errors are inline next to the relevant field; the form stays open on failure.
 

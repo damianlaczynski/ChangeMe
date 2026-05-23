@@ -57,9 +57,7 @@ internal static class RolesTestHelper
       FirstName = "Role",
       LastName = "Assignee",
       Email = email,
-      Password = "StrongPass123!",
-      RoleIds = new[] { userRoleId },
-      Status = "Active"
+      RoleIds = new[] { userRoleId }
     }, cancellationToken);
 
     response.EnsureSuccessStatusCode();

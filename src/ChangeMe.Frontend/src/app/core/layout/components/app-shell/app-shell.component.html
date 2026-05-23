@@ -1,4 +1,4 @@
-@if (isAuthenticated()) {
+@if (showAuthenticatedChrome()) {
   <div class="flex min-h-screen w-full bg-surface-50 dark:bg-surface-950">
     <aside
       class="sticky top-0 hidden h-screen shrink-0 flex-col border-r border-surface-200 bg-surface-0 transition-[width] duration-200 ease-in-out dark:border-surface-700 dark:bg-surface-900 md:flex"
@@ -89,7 +89,7 @@
           <span
             class="text-muted-color hidden max-w-[12rem] truncate text-sm lg:inline"
           >
-            {{ currentUser()?.fullName }}
+            {{ formatUserReference(currentUser()!) }}
           </span>
           <p-button
             label="Logout"
@@ -116,6 +116,42 @@
         <router-outlet />
       </main>
     </div>
+  </div>
+} @else if (isAuthenticated()) {
+  <div class="flex min-h-screen w-full flex-col bg-surface-50 dark:bg-surface-950">
+    <header
+      class="flex h-14 shrink-0 items-center justify-between gap-4 border-b border-surface-200 bg-surface-0 px-4 dark:border-surface-700 dark:bg-surface-900"
+    >
+      <span class="text-color flex items-center gap-2 text-lg font-semibold">
+        <i class="pi pi-bolt text-primary" aria-hidden="true"></i>
+        ChangeMe
+      </span>
+      <nav class="flex items-center gap-2" aria-label="Account navigation">
+        <p-button
+          [icon]="layoutService.$themeMode() === 'dark' ? 'pi pi-sun' : 'pi pi-moon'"
+          [rounded]="true"
+          [text]="true"
+          severity="secondary"
+          [attr.aria-label]="
+            layoutService.$themeMode() === 'dark'
+              ? 'Switch to light mode'
+              : 'Switch to dark mode'
+          "
+          (onClick)="layoutService.toggleTheme()"
+        />
+        <p-button
+          label="Logout"
+          icon="pi pi-sign-out"
+          severity="secondary"
+          [outlined]="true"
+          (onClick)="logout()"
+        />
+      </nav>
+    </header>
+
+    <main class="mx-auto flex w-full max-w-6xl min-h-0 flex-1 flex-col p-4 md:p-6">
+      <router-outlet />
+    </main>
   </div>
 } @else {
   <div class="flex min-h-screen w-full flex-col bg-surface-50 dark:bg-surface-950">

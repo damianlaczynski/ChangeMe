@@ -1,4 +1,3 @@
-using ChangeMe.Backend.Domain.Aggregates.Users;
 using ChangeMe.Backend.UseCases.Users;
 using ChangeMe.Backend.UseCases.Users.Dtos;
 
@@ -18,13 +17,19 @@ public sealed class CreateUserCommandValidator : Validator<CreateUserCommand>
 {
   public CreateUserCommandValidator()
   {
-    RuleFor(x => x.FirstName).NotEmpty().MaximumLength(UserConstraints.NAME_MAX_LENGTH);
-    RuleFor(x => x.LastName).NotEmpty().MaximumLength(UserConstraints.NAME_MAX_LENGTH);
-    RuleFor(x => x.Email).NotEmpty().EmailAddress().MaximumLength(UserConstraints.EMAIL_MAX_LENGTH);
-    RuleFor(x => x.Password)
+    RuleFor(x => x.FirstName)
+      .MaximumLength(UserConstraints.NAME_MAX_LENGTH)
+      .When(x => !string.IsNullOrWhiteSpace(x.FirstName));
+
+    RuleFor(x => x.LastName)
+      .MaximumLength(UserConstraints.NAME_MAX_LENGTH)
+      .When(x => !string.IsNullOrWhiteSpace(x.LastName));
+
+    RuleFor(x => x.Email)
       .NotEmpty()
-      .MinimumLength(UserConstraints.PASSWORD_MIN_LENGTH)
-      .MaximumLength(UserConstraints.PASSWORD_MAX_LENGTH);
+      .EmailAddress()
+      .MaximumLength(UserConstraints.EMAIL_MAX_LENGTH);
+
     RuleFor(x => x.RoleIds).NotEmpty();
   }
 }

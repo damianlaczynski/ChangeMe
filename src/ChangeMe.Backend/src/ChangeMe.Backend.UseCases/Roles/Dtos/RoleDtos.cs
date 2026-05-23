@@ -1,6 +1,4 @@
-﻿using ChangeMe.Backend.Domain.Aggregates.Users;
-
-namespace ChangeMe.Backend.UseCases.Roles.Dtos;
+﻿namespace ChangeMe.Backend.UseCases.Roles.Dtos;
 
 public sealed record RoleListItemDto
 {
@@ -38,8 +36,9 @@ public sealed record RoleDetailsDto
 public sealed record RoleAssignedUserDto
 {
   public Guid Id { get; init; }
-  public string FullName { get; init; } = string.Empty;
+  public string FirstName { get; init; } = string.Empty;
+  public string LastName { get; init; } = string.Empty;
   public string Email { get; init; } = string.Empty;
-  public UserStatus Status { get; init; }
+  public bool Deactivated { get; init; }
 }
 

@@ -3,7 +3,6 @@ using ChangeMe.Backend.DataGenerator.Options;
 using ChangeMe.Backend.DataGenerator.Persistence;
 using ChangeMe.Backend.Domain.Aggregates.Roles;
 using DomainUser = global::ChangeMe.Backend.Domain.Aggregates.Users.User;
-using ChangeMe.Backend.Domain.Interfaces;
 using ChangeMe.Backend.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -31,7 +30,7 @@ internal sealed class UsersGenerator(
       var lastName = faker.Name.LastName();
       var email = $"user{index}@{config.EmailDomain.Trim().ToLowerInvariant()}";
 
-      var createResult = DomainUser.Create(firstName, lastName, email, passwordHash);
+      var createResult = DomainUser.CreateWithPassword(firstName, lastName, email, passwordHash);
       if (!createResult.IsSuccess)
         throw new InvalidOperationException($"Failed to create demo user {email}: {string.Join(", ", createResult.ValidationErrors.Select(e => e.ErrorMessage))}");
 

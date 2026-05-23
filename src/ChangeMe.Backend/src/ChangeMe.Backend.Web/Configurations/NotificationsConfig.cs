@@ -1,5 +1,4 @@
 using Hangfire;
-using ChangeMe.Backend.Domain.Interfaces;
 using ChangeMe.Backend.UseCases.Issues.Services;
 using ChangeMe.Backend.UseCases.Notifications.Services;
 using ChangeMe.Backend.Web.Notifications;

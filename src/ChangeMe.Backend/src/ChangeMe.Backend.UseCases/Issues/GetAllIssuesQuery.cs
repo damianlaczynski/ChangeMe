@@ -1,5 +1,7 @@
 using ChangeMe.Backend.Domain.Aggregates.Issue.Enums;
+using ChangeMe.Backend.Domain.Aggregates.Users;
 using ChangeMe.Backend.UseCases.Issues.Dtos;
+using ChangeMe.Backend.UseCases.Users.Utils;
 
 namespace ChangeMe.Backend.UseCases.Issues;
 
@@ -73,13 +75,13 @@ public class GetAllIssuesHandler(
         CreatedBy = i.CreatedBy,
         CreatedByName = context.Users
           .Where(u => u.Id == i.CreatedBy)
-          .Select(u => u.FirstName + " " + u.LastName)
+          .Select(UserDisplayFormat.DisplayLabelExpression)
           .FirstOrDefault(),
         AssignedToUserId = i.AssignedToUserId,
         AssignedToUserName = i.AssignedToUserId.HasValue
           ? context.Users
             .Where(u => u.Id == i.AssignedToUserId.Value)
-            .Select(u => u.FirstName + " " + u.LastName)
+            .Select(UserDisplayFormat.DisplayLabelExpression)
             .FirstOrDefault()
           : null,
         CreatedAt = i.CreatedAt,

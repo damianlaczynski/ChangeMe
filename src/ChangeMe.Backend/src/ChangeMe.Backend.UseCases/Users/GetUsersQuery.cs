@@ -7,7 +7,8 @@ namespace ChangeMe.Backend.UseCases.Users;
 public class GetUsersQuery : PaginationQuery<UserListItemDto>
 {
   public string? SearchText { get; set; }
-  public List<UserStatus>? Statuses { get; set; }
+  public List<bool>? Deactivated { get; set; }
+  public List<bool>? EmailVerified { get; set; }
 }
 
 public class GetUsersHandler(ApplicationDbContext context)
@@ -35,15 +36,21 @@ public class GetUsersHandler(ApplicationDbContext context)
 #endif
     }
 
-    if (query.Statuses?.Count > 0)
-      usersQuery = usersQuery.Where(u => query.Statuses.Contains(u.Status));
+    if (query.Deactivated?.Count > 0)
+      usersQuery = usersQuery.Where(u => query.Deactivated.Contains(u.Deactivated));
+
+    if (query.EmailVerified?.Count > 0)
+      usersQuery = usersQuery.Where(u => query.EmailVerified.Contains(u.EmailVerified));
 
     var projectedUsers = usersQuery.Select(u => new UserListItemDto
     {
       Id = u.Id,
-      FullName = u.FirstName + " " + u.LastName,
+      FirstName = u.FirstName,
+      LastName = u.LastName,
       Email = u.Email,
-      Status = u.Status,
+      Deactivated = u.Deactivated,
+      HasPasswordSet = u.HasPasswordSet,
+      EmailVerified = u.EmailVerified,
       RoleNames = u.Roles
         .Select(ur => ur.Role.Name)
         .OrderBy(name => name)
@@ -69,9 +76,11 @@ public class GetUsersHandler(ApplicationDbContext context)
   private static string MapSortField(string sortField) =>
     sortField switch
     {
-      "Name" or "FullName" => nameof(UserListItemDto.FullName),
+      "Name" or "DisplayName" or "FullName" or "LastName" => nameof(UserListItemDto.LastName),
+      "FirstName" => nameof(UserListItemDto.FirstName),
+      "Email" => nameof(UserListItemDto.Email),
       "CreatedAt" => nameof(UserListItemDto.CreatedAt),
       "LastSignIn" or "LastSignInAt" => nameof(UserListItemDto.LastSignInAt),
-      _ => nameof(UserListItemDto.FullName)
+      _ => nameof(UserListItemDto.LastName)
     };
 }

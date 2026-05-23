@@ -1,10 +1,11 @@
-﻿using ChangeMe.Backend.Domain.Aggregates.Users;
+using ChangeMe.Backend.Domain.Aggregates.Users;
 using ChangeMe.Backend.UseCases.Auth;
 using ChangeMe.Backend.UseCases.Auth.Dtos;
+using ChangeMe.Backend.Web.Validation;
 
 namespace ChangeMe.Backend.Web.Auth;
 
-public class Register(IMediator mediator) : BaseEndpoint<RegisterUserCommand, AuthResponseDto>(mediator)
+public class Register(IMediator mediator) : BaseEndpoint<RegisterUserCommand, RegisterUserResponseDto>(mediator)
 {
   protected override void ConfigureEndpoint()
   {
@@ -13,14 +14,15 @@ public class Register(IMediator mediator) : BaseEndpoint<RegisterUserCommand, Au
     Summary(s =>
     {
       s.Summary = "Register user";
-      s.Description = "Create a new user account and return JWT token.";
+      s.Description =
+        "Create a new user account. Returns a session when email verification is disabled; otherwise requires verification first.";
     });
   }
 }
 
 public sealed class RegisterUserCommandValidator : Validator<RegisterUserCommand>
 {
-  public RegisterUserCommandValidator()
+  public RegisterUserCommandValidator(IPasswordPolicyValidator passwordPolicyValidator)
   {
     RuleFor(x => x.FirstName)
       .NotEmpty()
@@ -37,7 +39,6 @@ public sealed class RegisterUserCommandValidator : Validator<RegisterUserCommand
 
     RuleFor(x => x.Password)
       .NotEmpty()
-      .MinimumLength(UserConstraints.PASSWORD_MIN_LENGTH)
-      .MaximumLength(UserConstraints.PASSWORD_MAX_LENGTH);
+      .MustSatisfyPasswordPolicy(passwordPolicyValidator);
   }
 }

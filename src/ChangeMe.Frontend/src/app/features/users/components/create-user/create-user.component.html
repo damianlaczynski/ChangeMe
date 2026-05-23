@@ -1,7 +1,7 @@
 <p-card
   class="mb-4"
   header="Create User"
-  subheader="Add a new user account and assign roles"
+  subheader="Invite a user by email; they will set their password from the invitation link"
 >
   <div class="mb-4 flex flex-wrap items-center gap-2">
     <app-back-button label="Back to users list" [route]="['/users']" />
@@ -11,7 +11,7 @@
     <p-panel header="Profile" [toggleable]="true">
       <div class="grid gap-4 sm:grid-cols-2">
         <div class="flex flex-col gap-1.5">
-          <label for="firstName">First name</label>
+          <label for="firstName">First name (optional)</label>
           <input
             id="firstName"
             type="text"
@@ -21,7 +21,7 @@
           />
         </div>
         <div class="flex flex-col gap-1.5">
-          <label for="lastName">Last name</label>
+          <label for="lastName">Last name (optional)</label>
           <input
             id="lastName"
             type="text"
@@ -41,64 +41,29 @@
           [formControl]="form.controls.email"
           [invalid]="shouldShowError(form.controls.email)"
         />
+        @if (
+          shouldShowError(form.controls.email) &&
+          form.controls.email.errors?.['required']
+        ) {
+          <p-message severity="error" variant="simple">Email is required.</p-message>
+        }
       </div>
     </p-panel>
 
-    <p-panel header="Credentials" [toggleable]="true">
-      <div class="grid gap-4 sm:grid-cols-2">
-        <div class="flex flex-col gap-1.5">
-          <label for="password">Password</label>
-          <p-password
-            inputId="password"
-            [formControl]="form.controls.password"
-            [toggleMask]="true"
-            fluid
-            [invalid]="shouldShowError(form.controls.password)"
-          />
-        </div>
-        <div class="flex flex-col gap-1.5">
-          <label for="confirmPassword">Confirm password</label>
-          <p-password
-            inputId="confirmPassword"
-            [formControl]="form.controls.confirmPassword"
-            [feedback]="false"
-            [toggleMask]="true"
-            fluid
-            [invalid]="
-              shouldShowError(form.controls.confirmPassword) ||
-              (form.touched && form.errors?.['passwordMismatch'])
-            "
-          />
-        </div>
-      </div>
-    </p-panel>
-
-    <p-panel header="Roles and status" [toggleable]="true">
-      <div class="grid gap-4 sm:grid-cols-2">
-        <div class="flex flex-col gap-1.5">
-          <label for="roles">Roles</label>
-          <p-multiselect
-            inputId="roles"
-            [formControl]="form.controls.roleIds"
-            [options]="roleOptions()"
-            optionLabel="name"
-            optionValue="id"
-            placeholder="Select roles"
-            display="chip"
-            [loading]="isLoadingRoles()"
-            [invalid]="shouldShowError(form.controls.roleIds)"
-          />
-        </div>
-        <div class="flex flex-col gap-1.5">
-          <label for="status">Status</label>
-          <p-select
-            inputId="status"
-            [formControl]="form.controls.status"
-            [options]="userStatuses"
-            optionLabel="label"
-            optionValue="value"
-          />
-        </div>
+    <p-panel header="Roles" [toggleable]="true">
+      <div class="flex flex-col gap-1.5">
+        <label for="roles">Roles</label>
+        <p-multiselect
+          inputId="roles"
+          [formControl]="form.controls.roleIds"
+          [options]="roleOptions()"
+          optionLabel="name"
+          optionValue="id"
+          placeholder="Select roles"
+          display="chip"
+          [loading]="isLoadingRoles()"
+          [invalid]="shouldShowError(form.controls.roleIds)"
+        />
       </div>
     </p-panel>
 

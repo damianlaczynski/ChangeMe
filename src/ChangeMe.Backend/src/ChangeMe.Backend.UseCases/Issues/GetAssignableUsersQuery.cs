@@ -1,29 +1,40 @@
-﻿using ChangeMe.Backend.Domain.Aggregates.Users;
+﻿using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UseCases.Issues.Dtos;
+using Microsoft.Extensions.Options;
 
 namespace ChangeMe.Backend.UseCases.Issues;
 
 public record GetAssignableUsersQuery(bool doNothing = false) : IQuery<List<IssueAssignableUserDto>>;
 
-public class GetAssignableUsersHandler(ApplicationDbContext context)
+public class GetAssignableUsersHandler(
+  ApplicationDbContext context,
+  IOptions<AuthOptions> authOptions)
   : IQueryHandler<GetAssignableUsersQuery, List<IssueAssignableUserDto>>
 {
   public async Task<Result<List<IssueAssignableUserDto>>> Handle(
     GetAssignableUsersQuery query,
     CancellationToken cancellationToken)
   {
+    var emailVerificationEnabled = authOptions.Value.EmailVerificationEnabled;
+
     var users = await context.Users
       .AsNoTracking()
-      .Where(u => u.Status == UserStatus.Active)
+      .Where(u =>
+        !u.Deactivated
+        && u.HasPasswordSet
+        && (!emailVerificationEnabled || u.EmailVerified))
       .OrderBy(u => u.LastName)
       .ThenBy(u => u.FirstName)
+      .ToListAsync(cancellationToken);
+
+    var assignableUsers = users
       .Select(u => new IssueAssignableUserDto
       {
         Id = u.Id,
-        FullName = u.FirstName + " " + u.LastName,
+        DisplayLabel = u.DisplayLabel,
       })
-      .ToListAsync(cancellationToken);
+      .ToList();
 
-    return Result.Success(users);
+    return Result.Success(assignableUsers);
   }
 }

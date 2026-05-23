@@ -1,17 +1,8 @@
-﻿using ChangeMe.Backend.Domain.Aggregates.Roles;
+using ChangeMe.Backend.Domain.Aggregates.Roles;
 using ChangeMe.Backend.Domain.Aggregates.Users;
 using ChangeMe.Backend.Domain.Authorization;
-using ChangeMe.Backend.Domain.Interfaces;
 
 namespace ChangeMe.Backend.Infrastructure.Persistence;
-
-public sealed class InitialAdministratorOptions
-{
-  public string Email { get; set; } = string.Empty;
-  public string Password { get; set; } = string.Empty;
-  public string FirstName { get; set; } = string.Empty;
-  public string LastName { get; set; } = string.Empty;
-}
 
 public static class ApplicationDataSeeder
 {
@@ -66,7 +57,7 @@ public static class ApplicationDataSeeder
     ILogger logger,
     CancellationToken cancellationToken)
   {
-    var options = configuration.GetSection("InitialAdministrator").Get<InitialAdministratorOptions>();
+    var options = configuration.GetSection(InitialAdministratorOptions.SectionName).Get<InitialAdministratorOptions>();
     if (options is null ||
         string.IsNullOrWhiteSpace(options.Email) ||
         string.IsNullOrWhiteSpace(options.Password) ||
@@ -90,7 +81,12 @@ public static class ApplicationDataSeeder
       return;
 
     var passwordHash = passwordHasher.HashPassword(options.Password);
-    var createUserResult = User.Create(options.FirstName, options.LastName, options.Email, passwordHash);
+    var createUserResult = User.CreateWithPassword(
+      options.FirstName,
+      options.LastName,
+      options.Email,
+      passwordHash,
+      emailVerified: true);
     if (!createUserResult.IsSuccess)
       return;
 

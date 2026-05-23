@@ -23,7 +23,7 @@ public class IssueDto
 public class IssueAssignableUserDto
 {
   public Guid Id { get; set; }
-  public string FullName { get; set; } = string.Empty;
+  public string DisplayLabel { get; set; } = string.Empty;
 }
 
 public class IssueDetailsDto

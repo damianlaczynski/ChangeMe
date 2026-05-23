@@ -122,7 +122,7 @@ export class IssuesComponent {
 
     const search = query.searchText?.trim();
     if (search) {
-      chips.push({ id: 'search', label: `Search: "${search}"` });
+      chips.push({ id: 'search', label: `Search: ${search}` });
     }
 
     for (const status of query.statuses ?? []) {
@@ -145,7 +145,7 @@ export class IssuesComponent {
       );
       chips.push({
         id: 'assignee',
-        label: `Assignee: ${assignee?.fullName ?? 'Unknown'}`
+        label: `Assignee: ${assignee?.displayLabel ?? 'Unknown'}`
       });
     }
 

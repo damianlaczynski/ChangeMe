@@ -1,13 +1,14 @@
-﻿using System.Net;
+using System.Net;
 using System.Net.Mail;
 using Ardalis.Result;
-using ChangeMe.Backend.Domain.Interfaces;
 using Microsoft.Extensions.Options;
 
 namespace ChangeMe.Backend.Infrastructure.Email;
 
 public sealed class EmailOptions
 {
+  public const string SectionName = "Email";
+
   public string Host { get; set; } = string.Empty;
   public int Port { get; set; }
   public bool EnableSsl { get; set; }

@@ -7,7 +7,8 @@ namespace ChangeMe.Backend.UseCases.Users;
 public sealed record GetUserByIdQuery(Guid Id) : IQuery<UserDetailsDto>;
 
 public class GetUserByIdHandler(
-  ApplicationDbContext context) : IQueryHandler<GetUserByIdQuery, UserDetailsDto>
+  ApplicationDbContext context,
+  IPasswordExpirationEvaluator passwordExpirationEvaluator) : IQueryHandler<GetUserByIdQuery, UserDetailsDto>
 {
   public async Task<Result<UserDetailsDto>> Handle(GetUserByIdQuery query, CancellationToken cancellationToken)
   {
@@ -32,18 +33,7 @@ public class GetUserByIdHandler(
 
     var lastSignInAt = await UsersUtils.GetLastSignInAtAsync(context, user.Id, cancellationToken);
 
-    return Result.Success(new UserDetailsDto
-    {
-      Id = user.Id,
-      FirstName = user.FirstName,
-      LastName = user.LastName,
-      FullName = user.FullName,
-      Email = user.Email,
-      Status = user.Status,
-      MemberSince = user.CreatedAt,
-      LastSignInAt = lastSignInAt,
-      Roles = roles,
-      EffectivePermissions = effectivePermissions
-    });
+    return Result.Success(
+      user.ToDetailsDto(lastSignInAt, roles, effectivePermissions, passwordExpirationEvaluator));
   }
 }

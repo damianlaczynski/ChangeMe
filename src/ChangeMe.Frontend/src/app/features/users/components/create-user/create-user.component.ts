@@ -1,23 +1,17 @@
 import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
-    AbstractControl,
-    FormControl,
-    FormGroup,
-    ReactiveFormsModule,
-    ValidationErrors,
-    Validators
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators
 } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { ToastService } from '@core/toast/services/toast.service';
 import { EffectivePermissionsComponent } from '@features/users/components/effective-permissions/effective-permissions.component';
-import { EffectivePermissionDto, UserStatus } from '@features/users/models/user.model';
+import { EffectivePermissionDto } from '@features/users/models/user.model';
 import { UsersService } from '@features/users/services/users.service';
-import {
-    UserConstraints,
-    UserMessages,
-    userStatuses
-} from '@features/users/utils/users.utils';
+import { UserConstraints, UserMessages } from '@features/users/utils/users.utils';
 import { BackButtonComponent } from '@shared/components/back-button/back-button.component';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
@@ -25,8 +19,6 @@ import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
 import { MultiSelect } from 'primeng/multiselect';
 import { Panel } from 'primeng/panel';
-import { Password } from 'primeng/password';
-import { Select } from 'primeng/select';
 import { catchError, debounceTime, of, startWith, switchMap } from 'rxjs';
 
 @Component({
@@ -38,9 +30,7 @@ import { catchError, debounceTime, of, startWith, switchMap } from 'rxjs';
     Card,
     Button,
     InputText,
-    Password,
     MultiSelect,
-    Select,
     Message,
     Panel,
     EffectivePermissionsComponent
@@ -54,57 +44,34 @@ export class CreateUserComponent {
   private readonly destroyRef = inject(DestroyRef);
 
   readonly userConstraints = UserConstraints;
-  readonly userStatuses = userStatuses;
   readonly roleOptions = signal<{ id: string; name: string; isSystem: boolean }[]>([]);
   readonly effectivePermissions = signal<EffectivePermissionDto[]>([]);
   readonly submitError = signal<string | null>(null);
   readonly isSubmitting = signal(false);
   readonly isLoadingRoles = signal(true);
 
-  readonly form = new FormGroup(
-    {
-      firstName: new FormControl('', {
-        nonNullable: true,
-        validators: [
-          Validators.required,
-          Validators.maxLength(UserConstraints.NAME_MAX_LENGTH)
-        ]
-      }),
-      lastName: new FormControl('', {
-        nonNullable: true,
-        validators: [
-          Validators.required,
-          Validators.maxLength(UserConstraints.NAME_MAX_LENGTH)
-        ]
-      }),
-      email: new FormControl('', {
-        nonNullable: true,
-        validators: [
-          Validators.required,
-          Validators.email,
-          Validators.maxLength(UserConstraints.EMAIL_MAX_LENGTH)
-        ]
-      }),
-      password: new FormControl('', {
-        nonNullable: true,
-        validators: [
-          Validators.required,
-          Validators.minLength(UserConstraints.PASSWORD_MIN_LENGTH),
-          Validators.maxLength(UserConstraints.PASSWORD_MAX_LENGTH)
-        ]
-      }),
-      confirmPassword: new FormControl('', {
-        nonNullable: true,
-        validators: [Validators.required]
-      }),
-      roleIds: new FormControl<string[]>([], {
-        nonNullable: true,
-        validators: [Validators.required]
-      }),
-      status: new FormControl<UserStatus>('Active', { nonNullable: true })
-    },
-    { validators: [passwordMatchValidator] }
-  );
+  readonly form = new FormGroup({
+    firstName: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.maxLength(UserConstraints.NAME_MAX_LENGTH)]
+    }),
+    lastName: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.maxLength(UserConstraints.NAME_MAX_LENGTH)]
+    }),
+    email: new FormControl('', {
+      nonNullable: true,
+      validators: [
+        Validators.required,
+        Validators.email,
+        Validators.maxLength(UserConstraints.EMAIL_MAX_LENGTH)
+      ]
+    }),
+    roleIds: new FormControl<string[]>([], {
+      nonNullable: true,
+      validators: [Validators.required]
+    })
+  });
 
   constructor() {
     this.usersService
@@ -156,9 +123,7 @@ export class CreateUserComponent {
         firstName: raw.firstName.trim(),
         lastName: raw.lastName.trim(),
         email: raw.email.trim(),
-        password: raw.password,
-        roleIds: raw.roleIds,
-        status: raw.status
+        roleIds: raw.roleIds
       })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
@@ -180,18 +145,7 @@ export class CreateUserComponent {
     return role.isSystem ? `${role.name} (System)` : role.name;
   }
 
-  shouldShowError(control: FormControl<string | UserStatus | string[]>): boolean {
+  shouldShowError(control: FormControl<string | string[]>): boolean {
     return control.touched && control.invalid;
   }
-}
-
-function passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
-  const password = control.get('password')?.value;
-  const confirmPassword = control.get('confirmPassword')?.value;
-
-  if (!password || !confirmPassword) {
-    return null;
-  }
-
-  return password === confirmPassword ? null : { passwordMismatch: true };
 }

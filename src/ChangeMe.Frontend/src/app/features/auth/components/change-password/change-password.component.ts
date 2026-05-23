@@ -1,16 +1,21 @@
 import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
-    AbstractControl,
-    FormControl,
-    FormGroup,
-    ReactiveFormsModule,
-    ValidationErrors,
-    Validators
+  AbstractControl,
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+  ValidationErrors,
+  Validators
 } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { PasswordPolicySettings } from '@features/auth/models/auth.model';
 import { AuthService } from '@features/auth/services/auth.service';
-import { AuthConstraints, AuthMessages } from '@features/auth/utils/auth.utils';
+import { AuthMessages } from '@features/auth/utils/auth.utils';
+import {
+  buildPasswordPolicyValidators,
+  defaultPasswordPolicySettings
+} from '@features/auth/utils/password-policy.utils';
 import { BackButtonComponent } from '@shared/components/back-button/back-button.component';
 import { ConfirmationService } from 'primeng/api';
 import { Button } from 'primeng/button';
@@ -41,7 +46,6 @@ export class ChangePasswordComponent {
 
   readonly submitError = signal<string | null>(null);
   readonly isSubmitting = signal(false);
-  readonly authConstraints = AuthConstraints;
   readonly changePasswordNotice = AuthMessages.changePasswordNotice;
 
   readonly form = new FormGroup(
@@ -52,11 +56,7 @@ export class ChangePasswordComponent {
       }),
       newPassword: new FormControl('', {
         nonNullable: true,
-        validators: [
-          Validators.required,
-          Validators.minLength(AuthConstraints.PASSWORD_MIN_LENGTH),
-          Validators.maxLength(AuthConstraints.PASSWORD_MAX_LENGTH)
-        ]
+        validators: buildPasswordPolicyValidators(defaultPasswordPolicySettings())
       }),
       confirmNewPassword: new FormControl('', {
         nonNullable: true,
@@ -65,6 +65,17 @@ export class ChangePasswordComponent {
     },
     { validators: [newPasswordMatchValidator] }
   );
+
+  constructor() {
+    this.applyPasswordPolicy(defaultPasswordPolicySettings());
+
+    this.authService
+      .getAuthSettings()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (settings) => this.applyPasswordPolicy(settings.passwordPolicy)
+      });
+  }
 
   onSubmit(): void {
     this.submitError.set(null);
@@ -113,6 +124,11 @@ export class ChangePasswordComponent {
 
   shouldShowError(control: FormControl<string>): boolean {
     return control.touched && control.invalid;
+  }
+
+  private applyPasswordPolicy(policy: PasswordPolicySettings): void {
+    this.form.controls.newPassword.setValidators(buildPasswordPolicyValidators(policy));
+    this.form.controls.newPassword.updateValueAndValidity();
   }
 }
 

@@ -13,14 +13,25 @@ import { Observable, firstValueFrom, from, of, throwError } from 'rxjs';
 import { catchError, finalize, map, switchMap, tap } from 'rxjs/operators';
 import {
   AuthResponse,
+  AuthSettings,
   ChangePasswordRequest,
+  EmailVerificationAck,
   LoginRequest,
   MyAccountDto,
   RegisterRequest,
+  RegisterResponse,
+  RequiredChangePasswordRequest,
   UpdateMyAccountRequest,
   UserSessionDto,
   UserSessionSearchParameters
 } from '../models/auth.model';
+import { AcceptInvitationRequest, InvitationPreview } from '../models/invitation.model';
+import {
+  PasswordResetAck,
+  PasswordResetPreview,
+  RequestPasswordResetRequest,
+  ResetPasswordRequest
+} from '../models/password-reset.model';
 import { AuthConstraints } from '../utils/auth.utils';
 import { AuthStorageService } from './auth-storage.service';
 
@@ -45,6 +56,9 @@ export class AuthService {
     const current = this.session();
     return current !== null && this.getAccessTokenLifetimeMs(current) > 0;
   });
+  readonly passwordChangeRequired = computed(
+    () => this.session()?.passwordChangeRequired === true
+  );
   readonly token = computed(() => {
     const current = this.session();
     if (!current || this.getAccessTokenLifetimeMs(current) <= 0) {
@@ -64,7 +78,6 @@ export class AuthService {
       id: session.userId,
       firstName: session.firstName,
       lastName: session.lastName,
-      fullName: `${session.firstName} ${session.lastName}`,
       email: session.email
     };
   });
@@ -102,15 +115,54 @@ export class AuthService {
     );
   }
 
+  getAuthSettings() {
+    return this.apiService.get<AuthSettings>('auth/settings');
+  }
+
+  getInvitationPreview(token: string) {
+    return this.apiService.get<InvitationPreview>('auth/invitation', { token });
+  }
+
+  acceptInvitation(request: AcceptInvitationRequest) {
+    return this.apiService.post<boolean>('auth/accept-invitation', request);
+  }
+
+  requestPasswordReset(request: RequestPasswordResetRequest) {
+    return this.apiService.post<PasswordResetAck>('auth/forgot-password', request);
+  }
+
+  getPasswordResetPreview(token: string) {
+    return this.apiService.get<PasswordResetPreview>('auth/password-reset', { token });
+  }
+
+  resetPassword(request: ResetPasswordRequest) {
+    return this.apiService.post<boolean>('auth/reset-password', request);
+  }
+
   register(request: RegisterRequest) {
-    return this.apiService.post<AuthResponse>('auth/register', request).pipe(
-      tap((session) =>
-        this.setSession({
-          ...session,
-          isPersistent: false
-        })
-      )
+    return this.apiService.post<RegisterResponse>('auth/register', request).pipe(
+      tap((response) => {
+        if (response.authSession) {
+          this.setSession({
+            ...response.authSession,
+            isPersistent: false
+          });
+        }
+      })
     );
+  }
+
+  requestEmailVerification(email: string) {
+    return this.apiService.post<EmailVerificationAck>(
+      'auth/request-email-verification',
+      {
+        email
+      }
+    );
+  }
+
+  verifyEmail(token: string) {
+    return this.apiService.post<boolean>('auth/verify-email', { token });
   }
 
   refreshSession() {
@@ -164,6 +216,22 @@ export class AuthService {
 
   changePassword(request: ChangePasswordRequest) {
     return this.apiService.post<boolean>('auth/change-password', request);
+  }
+
+  requiredChangePassword(request: RequiredChangePasswordRequest) {
+    return this.apiService.post<boolean>('auth/required-change-password', request);
+  }
+
+  clearPasswordChangeRequired(): void {
+    const current = this.session();
+    if (!current?.passwordChangeRequired) {
+      return;
+    }
+
+    this.setSession({
+      ...current,
+      passwordChangeRequired: false
+    });
   }
 
   tryRefreshAndRetry(req: HttpRequest<unknown>, next: HttpHandlerFn) {

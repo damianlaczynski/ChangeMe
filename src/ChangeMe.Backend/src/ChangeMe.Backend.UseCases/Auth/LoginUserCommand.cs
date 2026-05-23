@@ -3,6 +3,7 @@ using ChangeMe.Backend.Domain.Aggregates.Users;
 using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UseCases.Auth.Dtos;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Options;
 
 using ChangeMe.Backend.UseCases.Auth.Utils;
 
@@ -18,6 +19,8 @@ public class LoginUserHandler(
   IPasswordHasher passwordHasher,
   IJwtTokenGenerator jwtTokenGenerator,
   ISessionLifetimeService sessionLifetime,
+  IPasswordExpirationEvaluator passwordExpirationEvaluator,
+  IOptions<AuthOptions> authOptions,
   IHttpContextAccessor httpContextAccessor) : ICommandHandler<LoginUserCommand, AuthResponseDto>
 {
   public async Task<Result<AuthResponseDto>> Handle(LoginUserCommand command, CancellationToken cancellationToken)
@@ -30,6 +33,12 @@ public class LoginUserHandler(
     if (!user.IsActive)
       return Result<AuthResponseDto>.Unauthorized(AuthSessionUtils.DeactivatedAccountMessage);
 
+    if (!user.HasPasswordSet)
+      return Result<AuthResponseDto>.Unauthorized(AuthSessionUtils.InvitePendingAccountMessage);
+
+    if (authOptions.Value.EmailVerificationEnabled && !user.EmailVerified)
+      return Result<AuthResponseDto>.Unauthorized(AuthSessionUtils.EmailNotVerifiedMessage);
+
     if (!passwordHasher.VerifyPassword(user.PasswordHash, command.Password))
       return Result<AuthResponseDto>.Unauthorized(AuthSessionUtils.InvalidCredentialsMessage);
 
@@ -39,12 +48,16 @@ public class LoginUserHandler(
 
     await context.SaveChangesAsync(cancellationToken);
 
+    var utcNow = DateTime.UtcNow;
+    var passwordChangeRequired = passwordExpirationEvaluator.IsPasswordChangeRequired(user, utcNow);
+
     return await AuthSessionUtils.CreateAuthResponseAsync(
       context,
       jwtTokenGenerator,
       user,
       sessionResult.Value.Session,
       sessionResult.Value.RefreshToken,
+      passwordChangeRequired,
       cancellationToken);
   }
 

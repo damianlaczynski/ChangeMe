@@ -112,15 +112,23 @@
       ) {
         <p-message severity="error" variant="simple">
           Password must be at least
-          {{ authConstraints.PASSWORD_MIN_LENGTH }} characters long.
+          {{ form.controls.password.errors?.['minlength'].requiredLength }} characters.
         </p-message>
       }
       @if (
         form.controls.password.touched && form.controls.password.errors?.['maxlength']
       ) {
         <p-message severity="error" variant="simple">
-          Password must be less than
-          {{ authConstraints.PASSWORD_MAX_LENGTH }} characters long.
+          Password must not exceed
+          {{ form.controls.password.errors?.['maxlength'].requiredLength }} characters.
+        </p-message>
+      }
+      @if (
+        form.controls.password.touched &&
+        form.controls.password.errors?.['passwordPolicy']
+      ) {
+        <p-message severity="error" variant="simple">
+          {{ form.controls.password.errors?.['passwordPolicy'] }}
         </p-message>
       }
     </div>

@@ -13,7 +13,7 @@ public sealed record UpdateUserCommand(
   string LastName,
   string Email,
   IReadOnlyList<Guid>? RoleIds,
-  UserStatus? Status) : ICommand<UserDetailsDto>;
+  bool? Deactivated) : ICommand<UserDetailsDto>;
 
 public class UpdateUserHandler(
   IMediator mediator,
@@ -75,20 +75,20 @@ public class UpdateUserHandler(
         return roleResult.Map();
     }
 
-    if (command.Status.HasValue)
+    if (command.Deactivated.HasValue)
     {
       if (!userAccessor.HasPermission(PermissionCodes.UsersDeactivate))
         return Result<UserDetailsDto>.Forbidden(UsersUtils.PermissionDeniedMessage);
 
-      if (editingSelf && command.Status.Value == UserStatus.Inactive)
+      if (editingSelf && command.Deactivated.Value)
         return Result<UserDetailsDto>.Error(UsersUtils.CannotDeactivateOwnAccountMessage);
 
-      if (command.Status.Value == UserStatus.Inactive && user.IsActive)
+      if (command.Deactivated.Value && user.IsActive)
       {
         user.Deactivate();
         await UsersUtils.RevokeAllActiveSessionsAsync(context, user.Id, cancellationToken);
       }
-      else if (command.Status.Value == UserStatus.Active && !user.IsActive)
+      else if (!command.Deactivated.Value && !user.IsActive)
       {
         user.Activate();
       }

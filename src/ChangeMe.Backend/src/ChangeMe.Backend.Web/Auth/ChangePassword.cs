@@ -1,5 +1,5 @@
-﻿using ChangeMe.Backend.Domain.Aggregates.Users;
 using ChangeMe.Backend.UseCases.Auth;
+using ChangeMe.Backend.Web.Validation;
 
 namespace ChangeMe.Backend.Web.Auth;
 
@@ -18,14 +18,13 @@ public class ChangePassword(IMediator mediator) : BaseEndpoint<ChangePasswordCom
 
 public sealed class ChangePasswordCommandValidator : Validator<ChangePasswordCommand>
 {
-  public ChangePasswordCommandValidator()
+  public ChangePasswordCommandValidator(IPasswordPolicyValidator passwordPolicyValidator)
   {
     RuleFor(x => x.CurrentPassword)
       .NotEmpty();
 
     RuleFor(x => x.NewPassword)
       .NotEmpty()
-      .MinimumLength(UserConstraints.PASSWORD_MIN_LENGTH)
-      .MaximumLength(UserConstraints.PASSWORD_MAX_LENGTH);
+      .MustSatisfyPasswordPolicy(passwordPolicyValidator);
   }
 }

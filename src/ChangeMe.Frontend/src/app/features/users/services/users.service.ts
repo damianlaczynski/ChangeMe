@@ -72,6 +72,27 @@ export class UsersService {
     );
   }
 
+  resendInvitation(id: string): Observable<UserDetailsDto> {
+    return this.apiService.post<UserDetailsDto>(
+      `${this.baseEndpoint}/${id}/resend-invitation`,
+      {}
+    );
+  }
+
+  sendPasswordReset(id: string): Observable<UserDetailsDto> {
+    return this.apiService.post<UserDetailsDto>(
+      `${this.baseEndpoint}/${id}/send-password-reset`,
+      {}
+    );
+  }
+
+  confirmUserEmail(id: string): Observable<UserDetailsDto> {
+    return this.apiService.post<UserDetailsDto>(
+      `${this.baseEndpoint}/${id}/confirm-email`,
+      {}
+    );
+  }
+
   getUserSessions(
     id: string,
     params: {

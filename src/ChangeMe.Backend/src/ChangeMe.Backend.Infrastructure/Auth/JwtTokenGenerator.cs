@@ -1,26 +1,25 @@
-﻿using System.IdentityModel.Tokens.Jwt;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using ChangeMe.Backend.Domain.Aggregates.Sessions;
 using ChangeMe.Backend.Domain.Aggregates.Users;
 using ChangeMe.Backend.Domain.Authorization;
-using ChangeMe.Backend.Domain.Interfaces;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
 namespace ChangeMe.Backend.Infrastructure.Auth;
 
-public class JwtTokenGenerator(IOptions<JwtOptions> options) : IJwtTokenGenerator
+public class JwtTokenGenerator(IOptions<AuthOptions> options) : IJwtTokenGenerator
 {
   public const string SessionIdClaimType = "sid";
 
-  private readonly JwtOptions jwtOptions = options.Value;
+  private JwtOptions Jwt => options.Value.Jwt;
 
   public AccessTokenResult GenerateToken(User user, Guid sessionId, IReadOnlyList<string> permissions)
   {
     var expiresAtUtc = DateTime.UtcNow.AddMinutes(
-      jwtOptions.ExpirationMinutes > 0
-        ? jwtOptions.ExpirationMinutes
+      Jwt.ExpirationMinutes > 0
+        ? Jwt.ExpirationMinutes
         : SessionConstraints.ACCESS_TOKEN_LIFETIME_MINUTES);
 
     var claims = new List<Claim>
@@ -36,12 +35,12 @@ public class JwtTokenGenerator(IOptions<JwtOptions> options) : IJwtTokenGenerato
     claims.AddRange(permissions.Select(permission => new Claim(PermissionClaimTypes.Permission, permission)));
 
     var credentials = new SigningCredentials(
-      new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.SigningKey)),
+      new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Jwt.SigningKey)),
       SecurityAlgorithms.HmacSha256);
 
     var token = new JwtSecurityToken(
-      issuer: jwtOptions.Issuer,
-      audience: jwtOptions.Audience,
+      issuer: Jwt.Issuer,
+      audience: Jwt.Audience,
       claims: claims.ToArray(),
       expires: expiresAtUtc,
       signingCredentials: credentials);

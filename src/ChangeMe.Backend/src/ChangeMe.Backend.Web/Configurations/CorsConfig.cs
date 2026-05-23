@@ -6,14 +6,16 @@ public static class CorsConfig
 
   public static IServiceCollection AddCors(this IServiceCollection services, WebApplicationBuilder builder)
   {
-    var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
+    var corsOptions = builder.Configuration
+      .GetSection(CorsOptions.SectionName)
+      .Get<CorsOptions>() ?? new CorsOptions();
 
     services.AddCors(options =>
     {
       options.AddPolicy(name: CorsPolicyName,
               policy =>
               {
-                policy.WithOrigins(allowedOrigins)
+                policy.WithOrigins(corsOptions.AllowedOrigins)
                         .AllowAnyMethod()
                         .AllowAnyHeader()
                         .AllowCredentials();

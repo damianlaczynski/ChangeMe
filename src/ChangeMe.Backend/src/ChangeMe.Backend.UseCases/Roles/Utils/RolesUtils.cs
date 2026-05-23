@@ -61,7 +61,7 @@ public static class RolesUtils
         cancellationToken);
   }
 
-  public static async Task<string> GetUserFullNameAsync(
+  public static async Task<(string FirstName, string LastName, string Email)> GetUserIdentityAsync(
     ApplicationDbContext context,
     Guid userId,
     CancellationToken cancellationToken)
@@ -69,7 +69,7 @@ public static class RolesUtils
     return await context.Users
       .AsNoTracking()
       .Where(x => x.Id == userId)
-      .Select(x => x.FirstName + " " + x.LastName)
+      .Select(x => new ValueTuple<string, string, string>(x.FirstName, x.LastName, x.Email))
       .SingleAsync(cancellationToken);
   }
 }

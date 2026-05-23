@@ -10,4 +10,5 @@ public sealed record AuthResponseDto(
   DateTime ExpiresAtUtc,
   string RefreshToken,
   DateTime RefreshTokenExpiresAtUtc,
-  IReadOnlyList<string> Permissions);
+  IReadOnlyList<string> Permissions,
+  bool PasswordChangeRequired = false);

@@ -4,6 +4,7 @@ import {
   IssuePriority,
   IssueStatus
 } from '@features/issues/models/issue.model';
+import { highlightDialogValue } from '@shared/ui/utils/dialog-message.utils';
 
 export const IssueConstraints = {
   TITLE_MIN_LENGTH: 3,
@@ -72,7 +73,7 @@ export function getIssuePrioritySeverity(priority: IssuePriority): IssueBadgeSev
 }
 
 export function getDeleteIssueConfirmMessage(title: string): string {
-  return `Delete "${title}"? This cannot be undone.`;
+  return `Delete ${highlightDialogValue(title)}? This cannot be undone.`;
 }
 
 export const issueDeleteMenuItemDangerClasses = {

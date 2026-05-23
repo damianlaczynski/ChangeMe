@@ -1,6 +1,5 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
-using ChangeMe.Backend.Domain.Aggregates.Users;
 using ChangeMe.Backend.IntegrationTests.Fixtures;
 using ChangeMe.Backend.IntegrationTests.Support;
 using Microsoft.EntityFrameworkCore;
@@ -47,15 +46,24 @@ public sealed class UsersEndpointTests(BackendWebApplicationFactory factory)
       FirstName = "Managed",
       LastName = "User",
       Email = email,
-      Password = "StrongPass123!",
-      RoleIds = new[] { userRoleId },
-      Status = UserStatus.Active
+      RoleIds = new[] { userRoleId }
     }, cancellationToken);
 
     Assert.Equal(HttpStatusCode.Created, response.StatusCode);
 
     var body = await response.Content.ReadAsStringAsync(cancellationToken);
     Assert.Contains(email, body, StringComparison.OrdinalIgnoreCase);
+
+    await using var scope = factory.Services.CreateAsyncScope();
+    var dbContext = scope.ServiceProvider.GetRequiredService<ChangeMe.Backend.Infrastructure.Persistence.ApplicationDbContext>();
+    var createdUser = await dbContext.Users.SingleAsync(x => x.Email == email, cancellationToken);
+    Assert.False(createdUser.HasPasswordSet);
+    Assert.NotNull(createdUser.InvitationSentAt);
+
+    var fakeEmail = scope.ServiceProvider.GetRequiredService<ChangeMe.Backend.Domain.Common.IEmailService>()
+      as ChangeMe.Backend.IntegrationTests.Support.Fakes.FakeEmailService;
+    Assert.NotNull(fakeEmail);
+    Assert.Contains(fakeEmail.SentEmails, e => e.Subject == "You're invited to ChangeMe");
   }
 
   private static async Task<Guid> GetRoleIdByNameAsync(

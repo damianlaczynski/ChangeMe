@@ -1,9 +1,9 @@
 <app-auth-page
   title="Welcome back"
   subtitle="Sign in to create, edit and delete issues."
-  footerPrompt="No account yet?"
-  footerLinkLabel="Create an account"
-  footerRoute="/register"
+  [footerPrompt]="publicRegistrationEnabled() ? 'No account yet?' : ''"
+  [footerLinkLabel]="publicRegistrationEnabled() ? 'Create an account' : ''"
+  [footerRoute]="publicRegistrationEnabled() ? '/register' : ''"
 >
   <form class="p-fluid flex flex-col gap-4" [formGroup]="form" (ngSubmit)="onSubmit()">
     <div class="flex flex-col gap-1.5">
@@ -79,8 +79,25 @@
       <p-message severity="info">{{ infoMessage() }}</p-message>
     }
 
+    <div class="flex justify-end">
+      <a routerLink="/forgot-password" class="text-primary text-sm font-medium">
+        Forgot password?
+      </a>
+    </div>
+
     @if (errorMessage()) {
       <p-message severity="error">{{ errorMessage() }}</p-message>
+    }
+
+    @if (showEmailVerificationResend()) {
+      <p class="text-muted-color m-0 text-sm">
+        <a
+          routerLink="/verify-email"
+          [queryParams]="{ email: form.controls.email.value }"
+        >
+          Resend verification email
+        </a>
+      </p>
     }
 
     <p-button

@@ -1,6 +1,5 @@
 using System.Collections.Concurrent;
 using Ardalis.Result;
-using ChangeMe.Backend.Domain.Interfaces;
 
 namespace ChangeMe.Backend.IntegrationTests.Support.Fakes;
 

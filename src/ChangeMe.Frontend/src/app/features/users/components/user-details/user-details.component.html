@@ -16,8 +16,38 @@
           [routerLink]="['/users', profile.id, 'edit']"
         />
       }
+      @if (canResendInvitation()) {
+        <p-button
+          label="Resend invitation"
+          icon="pi pi-envelope"
+          severity="secondary"
+          [outlined]="true"
+          size="small"
+          (onClick)="confirmResendInvitation()"
+        />
+      }
+      @if (canManageUsers() && emailVerificationEnabled() && !profile.emailVerified) {
+        <p-button
+          label="Confirm email"
+          icon="pi pi-check-circle"
+          severity="secondary"
+          [outlined]="true"
+          size="small"
+          (onClick)="confirmConfirmEmail()"
+        />
+      }
+      @if (canManageUsers() && !profile.deactivated && profile.hasPasswordSet) {
+        <p-button
+          label="Send password reset"
+          icon="pi pi-key"
+          severity="secondary"
+          [outlined]="true"
+          size="small"
+          (onClick)="confirmSendPasswordReset()"
+        />
+      }
       @if (canDeactivateUsers()) {
-        @if (profile.status === 'Active') {
+        @if (!profile.deactivated) {
           <p-button
             label="Deactivate"
             icon="pi pi-ban"
@@ -37,7 +67,7 @@
           />
         }
       }
-      @if (canManageSessions() && profile.status === 'Active') {
+      @if (canManageSessions() && !profile.deactivated) {
         <p-button
           label="Revoke all sessions"
           icon="pi pi-times-circle"
@@ -73,20 +103,56 @@
       class="mb-6 grid gap-4 rounded-lg border border-surface-200 p-4 sm:grid-cols-2 lg:grid-cols-3"
     >
       <div class="flex flex-col gap-1">
-        <dt class="text-muted-color text-sm">Name</dt>
-        <dd class="m-0 font-medium">{{ profile.fullName }}</dd>
+        <dt class="text-muted-color text-sm">First name</dt>
+        <dd class="m-0 font-medium">{{ profile.firstName.trim() || '—' }}</dd>
+      </div>
+      <div class="flex flex-col gap-1">
+        <dt class="text-muted-color text-sm">Last name</dt>
+        <dd class="m-0 font-medium">{{ profile.lastName.trim() || '—' }}</dd>
       </div>
       <div class="flex flex-col gap-1">
         <dt class="text-muted-color text-sm">Email</dt>
         <dd class="m-0 font-medium">{{ profile.email }}</dd>
       </div>
       <div class="flex flex-col gap-1">
-        <dt class="text-muted-color text-sm">Status</dt>
+        <dt class="text-muted-color text-sm">Account</dt>
         <dd class="m-0">
           <p-tag
-            [value]="profile.status"
-            [severity]="getUserStatusSeverity(profile.status)"
+            [value]="getAccountBadgeLabel(profile.deactivated)"
+            [severity]="getAccountBadgeSeverity(profile.deactivated)"
           />
+        </dd>
+      </div>
+      @if (emailVerificationEnabled()) {
+        <div class="flex flex-col gap-1">
+          <dt class="text-muted-color text-sm">Email verified</dt>
+          <dd class="m-0">
+            <p-tag
+              [value]="profile.emailVerified ? 'Verified' : 'Unverified'"
+              [severity]="profile.emailVerified ? 'success' : 'warn'"
+            />
+          </dd>
+        </div>
+        @if (profile.emailVerified && profile.emailVerifiedAt) {
+          <div class="flex flex-col gap-1">
+            <dt class="text-muted-color text-sm">Email verified at</dt>
+            <dd class="m-0">
+              {{ profile.emailVerifiedAt | date: 'dd.MM.yyyy HH:mm' }}
+            </dd>
+          </div>
+        }
+      }
+      <div class="flex flex-col gap-1">
+        <dt class="text-muted-color text-sm">Account state</dt>
+        <dd class="m-0">
+          @if (
+            getAccountStateLabel(profile, emailVerificationEnabled());
+            as accountState
+          ) {
+            <p-tag [value]="accountState" severity="secondary" />
+          } @else {
+            —
+          }
         </dd>
       </div>
       <div class="flex flex-col gap-1">
@@ -103,6 +169,38 @@
           }
         </dd>
       </div>
+      <div class="flex flex-col gap-1">
+        <dt class="text-muted-color text-sm">Password last changed at</dt>
+        <dd class="m-0">
+          @if (profile.hasPasswordSet && profile.passwordLastChangedAt) {
+            {{ profile.passwordLastChangedAt | date: 'dd.MM.yyyy HH:mm' }}
+          } @else {
+            —
+          }
+        </dd>
+      </div>
+      @if (profile.deactivated && profile.deactivatedAt) {
+        <div class="flex flex-col gap-1">
+          <dt class="text-muted-color text-sm">Deactivated at</dt>
+          <dd class="m-0">{{ profile.deactivatedAt | date: 'dd.MM.yyyy HH:mm' }}</dd>
+        </div>
+      }
+      @if (passwordExpirationEnabled()) {
+        <div class="flex flex-col gap-1">
+          <dt class="text-muted-color text-sm">Password expires at</dt>
+          <dd class="m-0">
+            @if (
+              profile.hasPasswordSet &&
+              profile.passwordLastChangedAt &&
+              profile.passwordExpiresAtUtc
+            ) {
+              {{ profile.passwordExpiresAtUtc | date: 'dd.MM.yyyy HH:mm' }}
+            } @else {
+              —
+            }
+          </dd>
+        </div>
+      }
     </dl>
 
     <p-panel header="Roles" [toggleable]="true" class="mb-4">
@@ -127,6 +225,51 @@
       [permissions]="profile.effectivePermissions"
       [roleIdsSelected]="true"
     />
+
+    @if (!profile.hasPasswordSet) {
+      <p-panel header="Invitation" [toggleable]="true" class="mb-4">
+        <dl class="grid gap-4 sm:grid-cols-2">
+          <div class="flex flex-col gap-1">
+            <dt class="text-muted-color text-sm">Invitation status</dt>
+            <dd class="m-0 font-medium">Pending</dd>
+          </div>
+          <div class="flex flex-col gap-1">
+            <dt class="text-muted-color text-sm">Invitation sent at</dt>
+            <dd class="m-0">
+              @if (profile.invitationSentAt) {
+                {{ profile.invitationSentAt | date: 'dd.MM.yyyy HH:mm' }}
+              } @else {
+                —
+              }
+            </dd>
+          </div>
+          @if (emailVerificationEnabled()) {
+            <div class="flex flex-col gap-1">
+              <dt class="text-muted-color text-sm">Email verified</dt>
+              <dd class="m-0">Yes</dd>
+            </div>
+          }
+          <div class="flex flex-col gap-1">
+            <dt class="text-muted-color text-sm">Profile name</dt>
+            <dd class="m-0">
+              {{ formatUserName(profile) || 'Not set' }}
+            </dd>
+          </div>
+        </dl>
+        @if (canResendInvitation()) {
+          <div class="mt-4 flex justify-end">
+            <p-button
+              label="Resend invitation"
+              icon="pi pi-envelope"
+              severity="secondary"
+              [outlined]="true"
+              size="small"
+              (onClick)="confirmResendInvitation()"
+            />
+          </div>
+        }
+      </p-panel>
+    }
 
     @if (canViewSessions()) {
       <p-panel header="Active sessions" [toggleable]="true">

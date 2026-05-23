@@ -1,4 +1,5 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, DestroyRef, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   AbstractControl,
   FormControl,
@@ -9,8 +10,13 @@ import {
 } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthPageComponent } from '@features/auth/components/auth-page/auth-page.component';
+import { PasswordPolicySettings } from '@features/auth/models/auth.model';
 import { AuthService } from '@features/auth/services/auth.service';
 import { AuthConstraints, AuthMessages } from '@features/auth/utils/auth.utils';
+import {
+  buildPasswordPolicyValidators,
+  defaultPasswordPolicySettings
+} from '@features/auth/utils/password-policy.utils';
 import { Button } from 'primeng/button';
 import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
@@ -32,6 +38,7 @@ import { Password } from 'primeng/password';
 export class RegisterComponent {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly errorMessage = signal('');
   readonly isSubmitting = signal(false);
@@ -63,11 +70,7 @@ export class RegisterComponent {
       }),
       password: new FormControl('', {
         nonNullable: true,
-        validators: [
-          Validators.required,
-          Validators.minLength(AuthConstraints.PASSWORD_MIN_LENGTH),
-          Validators.maxLength(AuthConstraints.PASSWORD_MAX_LENGTH)
-        ]
+        validators: buildPasswordPolicyValidators(defaultPasswordPolicySettings())
       }),
       confirmPassword: new FormControl('', {
         nonNullable: true,
@@ -76,6 +79,17 @@ export class RegisterComponent {
     },
     { validators: [passwordMatchValidator] }
   );
+
+  constructor() {
+    this.applyPasswordPolicy(defaultPasswordPolicySettings());
+
+    this.authService
+      .getAuthSettings()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (settings) => this.applyPasswordPolicy(settings.passwordPolicy)
+      });
+  }
 
   onSubmit(): void {
     if (this.form.invalid || this.isSubmitting()) {
@@ -89,8 +103,20 @@ export class RegisterComponent {
     const { firstName, lastName, email, password } = this.form.getRawValue();
 
     this.authService.register({ firstName, lastName, email, password }).subscribe({
-      next: () => {
-        this.router.navigateByUrl('/issues');
+      next: (response) => {
+        if (response.requiresEmailVerification) {
+          void this.router.navigate(['/verify-email'], {
+            queryParams: { email, accountCreated: '1' }
+          });
+          return;
+        }
+
+        if (this.authService.passwordChangeRequired()) {
+          void this.router.navigateByUrl('/required-password-change');
+          return;
+        }
+
+        void this.router.navigateByUrl('/issues');
       },
       error: (error) => {
         const message = error instanceof Error ? error.message : 'Registration failed.';
@@ -103,6 +129,11 @@ export class RegisterComponent {
         this.isSubmitting.set(false);
       }
     });
+  }
+
+  private applyPasswordPolicy(policy: PasswordPolicySettings): void {
+    this.form.controls.password.setValidators(buildPasswordPolicyValidators(policy));
+    this.form.controls.password.updateValueAndValidity();
   }
 }
 

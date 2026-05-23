@@ -1,4 +1,5 @@
 ﻿using System.Net.Mail;
+using ChangeMe.Backend.Domain.Aggregates.Users.Entities;
 
 namespace ChangeMe.Backend.Domain.Aggregates.Users;
 
@@ -15,25 +16,74 @@ public class User : Entity, IAggregateRoot
   public string Email { get; private set; } = string.Empty;
   public string NormalizedEmail { get; private set; } = string.Empty;
   public string PasswordHash { get; private set; } = string.Empty;
-  public UserStatus Status { get; private set; } = UserStatus.Active;
-  public string FullName => $"{FirstName} {LastName}";
-  public bool IsActive => Status == UserStatus.Active;
+  public bool Deactivated { get; private set; }
+  public DateTime? DeactivatedAt { get; private set; }
+  public bool HasPasswordSet { get; private set; }
+  public bool EmailVerified { get; private set; }
+  public DateTime? EmailVerifiedAt { get; private set; }
+  public DateTime? PasswordLastChangedAt { get; private set; }
+  public DateTime? InvitationSentAt { get; private set; }
 
-  public static Result<User> Create(string firstName, string lastName, string email, string passwordHash)
+  public bool IsActive => !Deactivated;
+  public bool HasCompleteProfile =>
+    !string.IsNullOrWhiteSpace(FirstName) && !string.IsNullOrWhiteSpace(LastName);
+
+  public string DisplayLabel => UserDisplayFormat.DisplayLabel(FirstName, LastName, Email);
+
+  public static Result<User> CreateWithPassword(
+    string firstName,
+    string lastName,
+    string email,
+    string passwordHash,
+    bool emailVerified = true)
   {
-    var validationErrors = Validate(firstName, lastName, email, passwordHash);
+    var validationErrors = ValidateWithPassword(firstName, lastName, email, passwordHash);
     if (validationErrors.Count > 0)
       return Result.Invalid(validationErrors);
 
-    var normalizedEmail = NormalizeEmail(email);
+    var utcNow = DateTime.UtcNow;
     var user = new User
     {
       FirstName = firstName.Trim(),
       LastName = lastName.Trim(),
       Email = email.Trim(),
-      NormalizedEmail = normalizedEmail,
+      NormalizedEmail = NormalizeEmail(email),
       PasswordHash = passwordHash.Trim(),
-      Status = UserStatus.Active,
+      HasPasswordSet = true,
+      PasswordLastChangedAt = utcNow,
+      EmailVerified = emailVerified,
+      EmailVerifiedAt = emailVerified ? utcNow : null,
+      CreatedBy = Guid.Empty,
+      UpdatedBy = Guid.Empty,
+    };
+
+    return Result.Success(user);
+  }
+
+  public static Result<User> CreateInvited(
+    string email,
+    string? firstName = null,
+    string? lastName = null,
+    bool emailVerified = true)
+  {
+    var validationErrors = new List<ValidationError>();
+    ValidateEmail(email, validationErrors);
+    ValidateOptionalName(firstName, nameof(FirstName), validationErrors);
+    ValidateOptionalName(lastName, nameof(LastName), validationErrors);
+
+    if (validationErrors.Count > 0)
+      return Result.Invalid(validationErrors);
+
+    var utcNow = DateTime.UtcNow;
+    var user = new User
+    {
+      FirstName = firstName?.Trim() ?? string.Empty,
+      LastName = lastName?.Trim() ?? string.Empty,
+      Email = email.Trim(),
+      NormalizedEmail = NormalizeEmail(email),
+      HasPasswordSet = false,
+      EmailVerified = emailVerified,
+      EmailVerifiedAt = emailVerified ? utcNow : null,
       CreatedBy = Guid.Empty,
       UpdatedBy = Guid.Empty,
     };
@@ -58,33 +108,25 @@ public class User : Entity, IAggregateRoot
   public Result UpdateAdminProfile(string firstName, string lastName, string email)
   {
     var validationErrors = new List<ValidationError>();
-    ValidateName(firstName, nameof(FirstName), validationErrors);
-    ValidateName(lastName, nameof(LastName), validationErrors);
 
-    if (string.IsNullOrWhiteSpace(email))
+    if (HasPasswordSet)
     {
-      validationErrors.Add(new ValidationError(nameof(Email), "cannot be null or empty"));
+      ValidateName(firstName, nameof(FirstName), validationErrors);
+      ValidateName(lastName, nameof(LastName), validationErrors);
     }
     else
     {
-      if (email.Trim().Length > UserConstraints.EMAIL_MAX_LENGTH)
-        validationErrors.Add(new ValidationError(nameof(Email), $"cannot be longer than {UserConstraints.EMAIL_MAX_LENGTH} characters"));
-
-      try
-      {
-        _ = new MailAddress(email.Trim());
-      }
-      catch (FormatException)
-      {
-        validationErrors.Add(new ValidationError(nameof(Email), "has invalid format"));
-      }
+      ValidateOptionalName(firstName, nameof(FirstName), validationErrors);
+      ValidateOptionalName(lastName, nameof(LastName), validationErrors);
     }
+
+    ValidateEmail(email, validationErrors);
 
     if (validationErrors.Count > 0)
       return Result.Invalid(validationErrors);
 
-    FirstName = firstName.Trim();
-    LastName = lastName.Trim();
+    FirstName = firstName?.Trim() ?? string.Empty;
+    LastName = lastName?.Trim() ?? string.Empty;
     Email = email.Trim();
     NormalizedEmail = NormalizeEmail(email);
     return Result.Success();
@@ -96,12 +138,39 @@ public class User : Entity, IAggregateRoot
       return Result.Invalid(new ValidationError(nameof(PasswordHash), "cannot be null or empty"));
 
     PasswordHash = newPasswordHash.Trim();
+    HasPasswordSet = true;
+    PasswordLastChangedAt = DateTime.UtcNow;
     return Result.Success();
   }
 
-  public void Deactivate() => Status = UserStatus.Inactive;
+  public void Deactivate()
+  {
+    if (Deactivated)
+      return;
 
-  public void Activate() => Status = UserStatus.Active;
+    Deactivated = true;
+    DeactivatedAt = DateTime.UtcNow;
+  }
+
+  public void Activate()
+  {
+    Deactivated = false;
+    DeactivatedAt = null;
+  }
+
+  public void MarkEmailVerified()
+  {
+    if (EmailVerified)
+      return;
+
+    EmailVerified = true;
+    EmailVerifiedAt = DateTime.UtcNow;
+  }
+
+  public void RecordInvitationSent()
+  {
+    InvitationSentAt = DateTime.UtcNow;
+  }
 
   public Result ReplaceRoles(IEnumerable<Guid> roleIds)
   {
@@ -147,36 +216,42 @@ public class User : Entity, IAggregateRoot
 
   public static string NormalizeEmail(string email) => email.Trim().ToUpperInvariant();
 
-  private static List<ValidationError> Validate(string firstName, string lastName, string email, string passwordHash)
+  private static List<ValidationError> ValidateWithPassword(
+    string firstName,
+    string lastName,
+    string email,
+    string passwordHash)
   {
     var validationErrors = new List<ValidationError>();
-
     ValidateName(firstName, nameof(FirstName), validationErrors);
     ValidateName(lastName, nameof(LastName), validationErrors);
-
-    if (string.IsNullOrWhiteSpace(email))
-    {
-      validationErrors.Add(new ValidationError(nameof(Email), "cannot be null or empty"));
-    }
-    else
-    {
-      if (email.Trim().Length > UserConstraints.EMAIL_MAX_LENGTH)
-        validationErrors.Add(new ValidationError(nameof(Email), $"cannot be longer than {UserConstraints.EMAIL_MAX_LENGTH} characters"));
-
-      try
-      {
-        _ = new MailAddress(email.Trim());
-      }
-      catch (FormatException)
-      {
-        validationErrors.Add(new ValidationError(nameof(Email), "has invalid format"));
-      }
-    }
+    ValidateEmail(email, validationErrors);
 
     if (string.IsNullOrWhiteSpace(passwordHash))
       validationErrors.Add(new ValidationError(nameof(PasswordHash), "cannot be null or empty"));
 
     return validationErrors;
+  }
+
+  private static void ValidateEmail(string email, ICollection<ValidationError> validationErrors)
+  {
+    if (string.IsNullOrWhiteSpace(email))
+    {
+      validationErrors.Add(new ValidationError(nameof(Email), "cannot be null or empty"));
+      return;
+    }
+
+    if (email.Trim().Length > UserConstraints.EMAIL_MAX_LENGTH)
+      validationErrors.Add(new ValidationError(nameof(Email), $"cannot be longer than {UserConstraints.EMAIL_MAX_LENGTH} characters"));
+
+    try
+    {
+      _ = new MailAddress(email.Trim());
+    }
+    catch (FormatException)
+    {
+      validationErrors.Add(new ValidationError(nameof(Email), "has invalid format"));
+    }
   }
 
   private static void ValidateName(string value, string propertyName, ICollection<ValidationError> validationErrors)
@@ -186,6 +261,18 @@ public class User : Entity, IAggregateRoot
       validationErrors.Add(new ValidationError(propertyName, "cannot be null or empty"));
       return;
     }
+
+    if (value.Trim().Length > UserConstraints.NAME_MAX_LENGTH)
+      validationErrors.Add(new ValidationError(propertyName, $"cannot be longer than {UserConstraints.NAME_MAX_LENGTH} characters"));
+  }
+
+  private static void ValidateOptionalName(
+    string? value,
+    string propertyName,
+    ICollection<ValidationError> validationErrors)
+  {
+    if (string.IsNullOrWhiteSpace(value))
+      return;
 
     if (value.Trim().Length > UserConstraints.NAME_MAX_LENGTH)
       validationErrors.Add(new ValidationError(propertyName, $"cannot be longer than {UserConstraints.NAME_MAX_LENGTH} characters"));

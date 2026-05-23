@@ -1,11 +1,11 @@
-﻿using System.Reflection;
+using System.Reflection;
 using ChangeMe.Backend.Domain.Aggregates.Issue;
 using ChangeMe.Backend.Domain.Aggregates.Issue.Entities;
 using ChangeMe.Backend.Domain.Aggregates.Notifications;
 using ChangeMe.Backend.Domain.Aggregates.Roles;
 using ChangeMe.Backend.Domain.Aggregates.Sessions;
 using ChangeMe.Backend.Domain.Aggregates.Users;
-using ChangeMe.Backend.Domain.Interfaces;
+using ChangeMe.Backend.Domain.Aggregates.Users.Entities;
 
 namespace ChangeMe.Backend.Infrastructure.Persistence;
 
@@ -23,6 +23,7 @@ public class ApplicationDbContext(
   public DbSet<User> Users => Set<User>();
   public DbSet<Role> Roles => Set<Role>();
   public DbSet<UserSession> UserSessions => Set<UserSession>();
+  public DbSet<UserAuthToken> UserAuthTokens => Set<UserAuthToken>();
 
   protected override void OnModelCreating(ModelBuilder modelBuilder)
   {

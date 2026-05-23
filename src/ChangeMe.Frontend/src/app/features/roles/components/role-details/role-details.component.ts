@@ -1,31 +1,38 @@
 import {
-    Component,
-    computed,
-    DestroyRef,
-    effect,
-    inject,
-    input,
-    signal
+  Component,
+  computed,
+  DestroyRef,
+  effect,
+  inject,
+  input,
+  signal
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ToastService } from '@core/toast/services/toast.service';
+import {
+  formatUserName,
+  formatUserReference
+} from '@core/user/utils/user-display.utils';
 import { AuthService } from '@features/auth/services/auth.service';
 import {
-    RoleAssignedUserDto,
-    RoleAssignedUsersSearchParameters,
-    RoleDetailsDto
+  RoleAssignedUserDto,
+  RoleAssignedUsersSearchParameters,
+  RoleDetailsDto
 } from '@features/roles/models/role.model';
 import { RolesService } from '@features/roles/services/roles.service';
 import {
-    formatDescription,
-    getDeleteRoleConfirmMessage,
-    getRemoveUserFromRoleConfirmMessage,
-    getUserStatusSeverity,
-    RoleMessages
+  formatDescription,
+  getDeleteRoleConfirmMessage,
+  getRemoveUserFromRoleConfirmMessage,
+  RoleMessages
 } from '@features/roles/utils/roles.utils';
 import { EffectivePermissionsComponent } from '@features/users/components/effective-permissions/effective-permissions.component';
+import {
+  getAccountBadgeLabel,
+  getAccountBadgeSeverity
+} from '@features/users/utils/users.utils';
 import { PermissionCodes } from '@shared/authorization/permission-codes';
 import { BackButtonComponent } from '@shared/components/back-button/back-button.component';
 import { PaginationResult } from '@shared/data/models/pagination-result.model';
@@ -61,6 +68,8 @@ import { debounceTime, distinctUntilChanged } from 'rxjs';
   templateUrl: './role-details.component.html'
 })
 export class RoleDetailsComponent {
+  readonly formatUserName = formatUserName;
+
   readonly id = input.required<string>();
 
   private readonly rolesService = inject(RolesService);
@@ -73,7 +82,8 @@ export class RoleDetailsComponent {
 
   readonly RoleMessages = RoleMessages;
   readonly formatDescription = formatDescription;
-  readonly getUserStatusSeverity = getUserStatusSeverity;
+  readonly getAccountBadgeLabel = getAccountBadgeLabel;
+  readonly getAccountBadgeSeverity = getAccountBadgeSeverity;
 
   readonly role = signal<RoleDetailsDto | null>(null);
   readonly pageTitle = computed(() => this.role()?.name ?? 'Role details');
@@ -212,7 +222,10 @@ export class RoleDetailsComponent {
 
     this.confirmationService.confirm({
       header: 'Remove from role',
-      message: getRemoveUserFromRoleConfirmMessage(user.fullName, current.name),
+      message: getRemoveUserFromRoleConfirmMessage(
+        formatUserReference(user),
+        current.name
+      ),
       accept: () => {
         this.rolesService.removeUserFromRole(current.id, user.id).subscribe({
           next: () => {

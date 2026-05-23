@@ -15,6 +15,15 @@ public static class UsersUtils
   public const string CannotChangeOwnRolesMessage = "You cannot change your own roles.";
   public const string AtLeastOneRoleRequiredMessage = "At least one role is required.";
   public const string PermissionDeniedMessage = "You do not have permission to perform this action.";
+  public const string InvitationAlreadyAcceptedMessage = "This account has already been activated.";
+  public const string CannotSendPasswordResetToDeactivatedMessage =
+    "Password reset cannot be sent to a deactivated account.";
+  public const string CannotSendPasswordResetToInvitePendingMessage =
+    "Password reset cannot be sent while the invitation is pending. Resend the invitation instead.";
+  public const string CannotResendInvitationToDeactivatedMessage =
+    "Invitation cannot be resent to a deactivated account.";
+  public const string EmailAlreadyVerifiedMessage = "This email is already verified.";
+  public const string EmailMarkedAsVerifiedMessage = "Email marked as verified.";
 
   public static async Task<DateTime?> GetLastSignInAtAsync(
     ApplicationDbContext context,

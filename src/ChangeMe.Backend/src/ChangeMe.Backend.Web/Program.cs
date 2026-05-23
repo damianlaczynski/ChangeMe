@@ -1,5 +1,6 @@
 ﻿using ChangeMe.Backend.Infrastructure.Configurations;
 using ChangeMe.Backend.Web.Configurations;
+using ChangeMe.Backend.Web.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,6 +31,7 @@ app.UseExceptionHandler();
 app.UseCors(CorsConfig.CorsPolicyName);
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseMiddleware<PasswordChangeRequiredMiddleware>();
 
 app.UseFastEndpointsWithSwagger();
 app.UseHangfireDashboard();

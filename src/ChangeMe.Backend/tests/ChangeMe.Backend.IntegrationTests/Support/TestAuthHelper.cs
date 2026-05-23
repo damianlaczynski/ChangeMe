@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using ChangeMe.Backend.Domain.Aggregates.Roles;
 using ChangeMe.Backend.Domain.Aggregates.Users;
+using ChangeMe.Backend.Domain.Aggregates.Users.Entities;
 using ChangeMe.Backend.Infrastructure.Persistence;
 using ChangeMe.Backend.IntegrationTests.Fixtures;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -46,6 +47,21 @@ internal static class TestAuthHelper
       Email = email,
       Password = password
     }, cancellationToken);
+
+    if (!loginResponse.IsSuccessStatusCode)
+    {
+      await using var verifyScope = factory.Services.CreateAsyncScope();
+      var verifyDbContext = verifyScope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+      var unverifiedUser = await verifyDbContext.Users.SingleAsync(x => x.Email == email, cancellationToken);
+      unverifiedUser.MarkEmailVerified();
+      await verifyDbContext.SaveChangesAsync(cancellationToken);
+
+      loginResponse = await anonymousClient.PostAsJsonAsync("/api/auth/login", new
+      {
+        Email = email,
+        Password = password
+      }, cancellationToken);
+    }
 
     loginResponse.EnsureSuccessStatusCode();
 
