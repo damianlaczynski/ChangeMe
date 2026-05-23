@@ -1,4 +1,4 @@
-using System.Reflection;
+﻿using System.Reflection;
 using ChangeMe.Backend.Domain.Aggregates.Issue;
 using ChangeMe.Backend.Domain.Aggregates.Issue.Entities;
 using ChangeMe.Backend.Domain.Aggregates.Notifications;

@@ -1,4 +1,4 @@
-using ChangeMe.Backend.Infrastructure.Auth;
+﻿using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UseCases.Auth.Dtos;
 using Microsoft.Extensions.Options;
 

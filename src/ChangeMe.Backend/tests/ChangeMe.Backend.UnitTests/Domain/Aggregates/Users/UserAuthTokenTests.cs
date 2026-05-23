@@ -1,4 +1,4 @@
-using ChangeMe.Backend.Domain.Aggregates.Users.Entities;
+﻿using ChangeMe.Backend.Domain.Aggregates.Users.Entities;
 using ChangeMe.Backend.Domain.Aggregates.Users.Enums;
 
 namespace ChangeMe.Backend.UnitTests.Domain.Aggregates.Users;

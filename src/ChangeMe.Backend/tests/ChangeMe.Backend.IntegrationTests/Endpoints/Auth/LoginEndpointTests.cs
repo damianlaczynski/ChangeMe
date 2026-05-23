@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Net.Http.Json;
 using ChangeMe.Backend.IntegrationTests.Fixtures;
 using Microsoft.AspNetCore.Mvc.Testing;

@@ -1,5 +1,12 @@
 import { DatePipe } from '@angular/common';
-import { Component, computed, DestroyRef, inject, signal, viewChild } from '@angular/core';
+import {
+  Component,
+  computed,
+  DestroyRef,
+  inject,
+  signal,
+  viewChild
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { MySessionsComponent } from '@features/auth/components/my-sessions/my-sessions.component';

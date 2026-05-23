@@ -1,4 +1,4 @@
-namespace ChangeMe.Backend.IntegrationTests.Fixtures;
+﻿namespace ChangeMe.Backend.IntegrationTests.Fixtures;
 
 [CollectionDefinition(Name, DisableParallelization = true)]
 public sealed class IntegrationTestCollection : ICollectionFixture<BackendWebApplicationFactory>

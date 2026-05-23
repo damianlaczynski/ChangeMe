@@ -1,6 +1,4 @@
-using ChangeMe.Backend.Domain.Common;
-
-namespace ChangeMe.Backend.DataGenerator.Persistence;
+﻿namespace ChangeMe.Backend.DataGenerator.Persistence;
 
 internal static class EntityAudit
 {

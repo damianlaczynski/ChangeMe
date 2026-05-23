@@ -1,4 +1,4 @@
-using Ardalis.Result;
+﻿using Ardalis.Result;
 using ChangeMe.Backend.Infrastructure.Email;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;

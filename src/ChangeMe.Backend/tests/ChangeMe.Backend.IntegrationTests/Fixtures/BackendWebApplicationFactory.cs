@@ -1,4 +1,4 @@
-using ChangeMe.Backend.Infrastructure.Configurations;
+﻿using ChangeMe.Backend.Infrastructure.Configurations;
 using ChangeMe.Backend.Infrastructure.Persistence;
 using ChangeMe.Backend.IntegrationTests.Support.Fakes;
 using Microsoft.AspNetCore.Hosting;

@@ -1,4 +1,4 @@
-using ChangeMe.Backend.Domain.Aggregates.Notifications;
+﻿using ChangeMe.Backend.Domain.Aggregates.Notifications;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 

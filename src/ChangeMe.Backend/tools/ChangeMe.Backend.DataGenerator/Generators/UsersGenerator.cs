@@ -1,11 +1,11 @@
-using Bogus;
+﻿using Bogus;
 using ChangeMe.Backend.DataGenerator.Options;
 using ChangeMe.Backend.DataGenerator.Persistence;
 using ChangeMe.Backend.Domain.Aggregates.Roles;
-using DomainUser = global::ChangeMe.Backend.Domain.Aggregates.Users.User;
 using ChangeMe.Backend.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using DomainUser = global::ChangeMe.Backend.Domain.Aggregates.Users.User;
 
 namespace ChangeMe.Backend.DataGenerator.Generators;
 

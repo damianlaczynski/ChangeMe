@@ -1,4 +1,4 @@
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 
 namespace ChangeMe.Backend.IntegrationTests.Support;
 

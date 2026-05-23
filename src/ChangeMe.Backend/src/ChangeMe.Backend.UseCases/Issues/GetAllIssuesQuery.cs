@@ -1,7 +1,6 @@
-using ChangeMe.Backend.Domain.Aggregates.Issue.Enums;
+﻿using ChangeMe.Backend.Domain.Aggregates.Issue.Enums;
 using ChangeMe.Backend.Domain.Aggregates.Users;
 using ChangeMe.Backend.UseCases.Issues.Dtos;
-using ChangeMe.Backend.UseCases.Users.Utils;
 
 namespace ChangeMe.Backend.UseCases.Issues;
 

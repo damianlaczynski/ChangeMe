@@ -1,4 +1,4 @@
-namespace ChangeMe.Backend.IntegrationTests.Fixtures;
+﻿namespace ChangeMe.Backend.IntegrationTests.Fixtures;
 
 public sealed class PublicRegistrationDisabledWebApplicationFactory : BackendWebApplicationFactory
 {

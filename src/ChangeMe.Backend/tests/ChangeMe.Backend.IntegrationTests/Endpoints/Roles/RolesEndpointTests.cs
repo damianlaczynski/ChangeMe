@@ -4,7 +4,6 @@ using ChangeMe.Backend.Domain.Aggregates.Roles;
 using ChangeMe.Backend.Domain.Authorization;
 using ChangeMe.Backend.IntegrationTests.Fixtures;
 using ChangeMe.Backend.IntegrationTests.Support;
-using ChangeMe.Backend.UseCases.Roles;
 using ChangeMe.Backend.UseCases.Roles.Utils;
 
 namespace ChangeMe.Backend.IntegrationTests.Endpoints.Roles;

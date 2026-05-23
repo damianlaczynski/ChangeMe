@@ -1,9 +1,9 @@
-using Ardalis.Result;
+﻿using Ardalis.Result;
 using ChangeMe.Backend.Domain.Aggregates.Users;
 using ChangeMe.Backend.Infrastructure.Auth;
+using ChangeMe.Backend.UnitTests.Support;
 using ChangeMe.Backend.UseCases.Auth;
 using ChangeMe.Backend.UseCases.Auth.Utils;
-using ChangeMe.Backend.UnitTests.Support;
 using Microsoft.AspNetCore.Http;
 
 namespace ChangeMe.Backend.UnitTests.UseCases.Auth;

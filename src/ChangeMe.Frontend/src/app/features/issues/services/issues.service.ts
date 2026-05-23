@@ -3,18 +3,18 @@ import { ApiService } from '@shared/api/services/api.service';
 import { PaginationResult } from '@shared/data/models/pagination-result.model';
 import { Observable } from 'rxjs';
 import {
-    AddIssueCommentRequest,
-    CreateIssueRequest,
-    IssueAssignableUserDto,
-    IssueCommentDto,
-    IssueCommentsSearchParameters,
-    IssueDetailsDto,
-    IssueDto,
-    IssueHistoryEntryDto,
-    IssueHistorySearchParameters,
-    IssueSearchParameters,
-    IssueWatchStateDto,
-    UpdateIssueRequest
+  AddIssueCommentRequest,
+  CreateIssueRequest,
+  IssueAssignableUserDto,
+  IssueCommentDto,
+  IssueCommentsSearchParameters,
+  IssueDetailsDto,
+  IssueDto,
+  IssueHistoryEntryDto,
+  IssueHistorySearchParameters,
+  IssueSearchParameters,
+  IssueWatchStateDto,
+  UpdateIssueRequest
 } from '../models/issue.model';
 
 @Injectable({
@@ -50,10 +50,10 @@ export class IssuesService {
     issueId: string,
     params: IssueHistorySearchParameters
   ): Observable<PaginationResult<IssueHistoryEntryDto>> {
-    return this.apiService.getPaginated<IssueHistoryEntryDto, IssueHistorySearchParameters>(
-      `${this.baseEndpoint}/${issueId}/history`,
-      params
-    );
+    return this.apiService.getPaginated<
+      IssueHistoryEntryDto,
+      IssueHistorySearchParameters
+    >(`${this.baseEndpoint}/${issueId}/history`, params);
   }
 
   getAssignableUsers(): Observable<IssueAssignableUserDto[]> {

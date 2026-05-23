@@ -1,4 +1,4 @@
-using ChangeMe.Backend.Domain.Aggregates.Issue;
+﻿using ChangeMe.Backend.Domain.Aggregates.Issue;
 
 namespace ChangeMe.Backend.Infrastructure.Persistence.Config.Issues;
 

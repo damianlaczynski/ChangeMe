@@ -1,4 +1,4 @@
-using ChangeMe.Backend.IntegrationTests.Fixtures;
+﻿using ChangeMe.Backend.IntegrationTests.Fixtures;
 using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace ChangeMe.Backend.IntegrationTests;

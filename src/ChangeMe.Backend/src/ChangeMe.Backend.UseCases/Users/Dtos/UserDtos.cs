@@ -1,6 +1,4 @@
-﻿using ChangeMe.Backend.Domain.Authorization;
-
-namespace ChangeMe.Backend.UseCases.Users.Dtos;
+﻿namespace ChangeMe.Backend.UseCases.Users.Dtos;
 
 public sealed record UserListItemDto
 {

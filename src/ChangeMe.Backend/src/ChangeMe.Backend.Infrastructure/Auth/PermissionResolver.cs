@@ -1,5 +1,4 @@
 ﻿using ChangeMe.Backend.Infrastructure.Persistence;
-using Microsoft.EntityFrameworkCore;
 
 namespace ChangeMe.Backend.Infrastructure.Auth;
 

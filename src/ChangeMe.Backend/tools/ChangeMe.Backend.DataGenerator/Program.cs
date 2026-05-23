@@ -1,10 +1,9 @@
-using ChangeMe.Backend.DataGenerator;
+﻿using ChangeMe.Backend.DataGenerator;
 using ChangeMe.Backend.DataGenerator.Services;
-using Microsoft.Extensions.Configuration;
 using ChangeMe.Backend.Infrastructure.Configurations;
 using ChangeMe.Backend.Infrastructure.Persistence;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 var host = DataGeneratorHost.BuildHost(args);

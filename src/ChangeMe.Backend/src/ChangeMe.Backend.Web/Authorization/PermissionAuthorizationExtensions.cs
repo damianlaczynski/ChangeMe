@@ -1,6 +1,4 @@
-using ChangeMe.Backend.Domain.Authorization;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Authorization.Policy;
+﻿using Microsoft.AspNetCore.Authorization;
 
 namespace ChangeMe.Backend.Web.Authorization;
 

@@ -1,10 +1,18 @@
-import { Component, computed, DestroyRef, effect, inject, input, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  DestroyRef,
+  effect,
+  inject,
+  input,
+  signal
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
-    FormControl,
-    FormGroup,
-    ReactiveFormsModule,
-    Validators
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators
 } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { ToastService } from '@core/toast/services/toast.service';

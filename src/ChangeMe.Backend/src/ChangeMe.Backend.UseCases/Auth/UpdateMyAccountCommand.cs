@@ -1,5 +1,4 @@
-﻿using ChangeMe.Backend.Infrastructure.Auth;
-using ChangeMe.Backend.UseCases.Auth.Dtos;
+﻿using ChangeMe.Backend.UseCases.Auth.Dtos;
 
 namespace ChangeMe.Backend.UseCases.Auth;
 
