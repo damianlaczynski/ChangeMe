@@ -112,6 +112,7 @@ export class RegisterComponent {
         }
 
         if (this.authService.passwordChangeRequired()) {
+          this.authService.enablePasswordChangeScreen();
           void this.router.navigateByUrl('/required-password-change');
           return;
         }

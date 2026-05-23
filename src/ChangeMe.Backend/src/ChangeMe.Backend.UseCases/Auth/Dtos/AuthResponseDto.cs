@@ -11,4 +11,5 @@ public sealed record AuthResponseDto(
   string RefreshToken,
   DateTime RefreshTokenExpiresAtUtc,
   IReadOnlyList<string> Permissions,
-  bool PasswordChangeRequired = false);
+  bool PasswordChangeRequired = false,
+  DateTime? PasswordExpiresAtUtc = null);

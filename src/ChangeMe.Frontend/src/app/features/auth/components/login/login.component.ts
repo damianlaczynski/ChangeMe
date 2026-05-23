@@ -87,6 +87,7 @@ export class LoginComponent {
     this.authService.login(this.form.getRawValue()).subscribe({
       next: () => {
         if (this.authService.passwordChangeRequired()) {
+          this.authService.enablePasswordChangeScreen();
           void this.router.navigateByUrl('/required-password-change');
           return;
         }

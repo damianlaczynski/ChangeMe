@@ -379,24 +379,51 @@ When password expiration is enabled in deployment settings, users whose password
 - If the password is within age, sign-in opens **Issues list** as usual.
 - The initial administrator account created at first startup is subject to the same expiration rules as other users; first sign-in does **not** require a password change solely because the account is new.
 
-### Required password change screen
+### Password expiry warnings (signed-in)
 
-- Screen: **Required password change**
-- User cannot navigate to other application screens until the password is changed (except **Logout**).
+- When **Password expiration enabled** is **true** and the signed-in user has **Has password set** true, the client receives **Password expires at** (UTC) on each successful sign-in and session refresh (same derivation as **Password expires at** on **User details** in REQ-USR-004).
+- While the password is still within age, the application shows **expiry warning toasts** at **14**, **7**, and **1** calendar day(s) before **Password expires at** (inclusive of the warning day; compare using the deployment time zone for display only).
+- Each warning threshold is shown **at most once per browser profile** until the password is changed or the threshold no longer applies (for example after a voluntary password change resets **password last changed at**).
+- Warning toast copy includes how many day(s) remain and an action to open **Required password change** (dialog; see below). Suggested summary: **`Password expiring soon`**; detail states the remaining day count and that changing the password now avoids interruption.
+
+### Expiration during an active session
+
+- When **Password expiration enabled** is **true** and the password age exceeds **Maximum password age (days)** while the user is already signed in, the user **stays on the current screen and route**; the application does **not** force navigation away from in-progress work on the client.
+- The application shows a **sticky expiry toast** with summary **`Password expired`** and detail **`Your password has expired. Set a new password to save your work to the server.`** The toast includes an action **`Change password`** that opens **Required password change** (dialog).
+- Until the password is changed, server requests for application data (except sign-out, session refresh, and required password change) are rejected; purely local UI state on the current screen remains available so the user can copy or note work before changing the password.
+- When session refresh or the next blocked request establishes that **password change required** is true, the sticky expiry toast is shown if it is not already visible.
+- **Logout** remains available at all times.
+
+### Required password change
+
+Two surfaces share the same validation and API behavior:
+
+| Surface                               | When used                                                                                                |
+| ------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| **Required password change** (screen) | After sign-in when the password is already expired (see **Sign-in and expiration**).                     |
+| **Required password change** (dialog) | From expiry warning toasts, the sticky expiry toast, or when expiration occurs during an active session. |
 
 | Field                    | Behavior                                                                                         |
 | ------------------------ | ------------------------------------------------------------------------------------------------ |
 | **New password**         | **Required**; **Password policy** (REQ-AUTH-008); must differ from the password used to sign in. |
 | **Confirm new password** | **Required**; must match **New password**.                                                       |
 
-- **Change password** button: on success updates the password, sets **password last changed at** to the current time, revokes all other active sessions for the user, keeps the current session, opens **Issues list** with message **`Password updated.`**
+- **Change password** button: on success updates the password, sets **password last changed at** to the current time, revokes all other active sessions for the user, keeps the current session, clears expiry warnings and the sticky expiry toast, and shows message **`Password updated.`**
+- After success following **Sign-in and expiration**, the application opens **Issues list**.
+- After success from the dialog during an active session, the application **closes the dialog** and **keeps the current route**; the user may retry server actions without signing in again.
 - Sends **Password changed** email (REQ-AUTH-007).
+
+#### Required password change screen
+
+- Full-page route: **Required password change**
+- After sign-in with an expired password, the client enters **strict password change** mode: the user cannot navigate to other application screens until the password is changed (except **Logout**); the application shows only the minimal chrome (no sidebar or main navigation).
+- **Strict password change** applies only after sign-in (or register) with an expired password, not when expiration is detected during an active session.
 
 ### States and business rules
 
 - Voluntary **Change password** (REQ-AUTH-005) and completed **Reset password** (REQ-AUTH-006) update **password last changed at**; the user signs in again before expiration is evaluated.
 - **Send password reset** (REQ-USR-006) does not change age until the user completes **Reset password**.
-- **Out of scope for this REQ:** email warnings before expiry, grace logins after expiry, per-user exemption from expiration.
+- **Out of scope for this REQ:** email warnings before expiry, grace logins after expiry, per-user exemption from expiration, configurable warning day thresholds (fixed at 14, 7, and 1).
 
 ---
 

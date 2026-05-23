@@ -14,7 +14,7 @@ export const authGuard: CanActivateFn = (_route, state) => {
     });
   }
 
-  if (authService.passwordChangeRequired()) {
+  if (authService.requiresPasswordChangeScreen()) {
     return router.createUrlTree(['/required-password-change']);
   }
 

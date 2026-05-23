@@ -17,6 +17,8 @@ export interface AuthResponse {
   permissions: string[];
   isPersistent: boolean;
   passwordChangeRequired: boolean;
+  passwordChangeStrict: boolean;
+  passwordExpiresAtUtc: string | null;
 }
 
 export interface LoginRequest {

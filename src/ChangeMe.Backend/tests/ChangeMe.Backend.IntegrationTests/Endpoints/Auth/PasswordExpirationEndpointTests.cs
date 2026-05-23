@@ -55,6 +55,49 @@ public sealed class PasswordExpirationEndpointTests(AuthFeaturesWebApplicationFa
     var auth = await IntegrationApiJson.ReadValueAsync<AuthResponseDto>(loginResponse.Content, cancellationToken);
     Assert.NotNull(auth);
     Assert.True(auth!.PasswordChangeRequired);
+    Assert.NotNull(auth.PasswordExpiresAtUtc);
+  }
+
+  [Fact]
+  public async Task PostLogin_WhenPasswordWithinAge_ShouldReturnPasswordExpiresAtUtc()
+  {
+    var cancellationToken = TestContext.Current.CancellationToken;
+    var email = $"valid-{Guid.NewGuid():N}@example.com";
+    const string password = "StrongPass123!";
+
+    using var client = factory.CreateClient(new WebApplicationFactoryClientOptions
+    {
+      BaseAddress = new Uri("https://localhost")
+    });
+
+    await client.PostAsJsonAsync("/api/auth/register", new
+    {
+      FirstName = "Valid",
+      LastName = "User",
+      Email = email,
+      Password = password
+    }, cancellationToken);
+
+    await using var scope = factory.Services.CreateAsyncScope();
+    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    var user = await dbContext.Users.SingleAsync(x => x.Email == email, cancellationToken);
+    user.MarkEmailVerified();
+    await dbContext.SaveChangesAsync(cancellationToken);
+
+    var loginResponse = await client.PostAsJsonAsync("/api/auth/login", new
+    {
+      Email = email,
+      Password = password,
+      RememberMe = false
+    }, cancellationToken);
+
+    loginResponse.EnsureSuccessStatusCode();
+
+    var auth = await IntegrationApiJson.ReadValueAsync<AuthResponseDto>(loginResponse.Content, cancellationToken);
+    Assert.NotNull(auth);
+    Assert.False(auth!.PasswordChangeRequired);
+    Assert.NotNull(auth.PasswordExpiresAtUtc);
+    Assert.True(auth.PasswordExpiresAtUtc > DateTime.UtcNow);
   }
 
   [Fact]

@@ -1,8 +1,10 @@
-import { HttpInterceptorFn } from '@angular/common/http';
+import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
+import { Result } from '@shared/api/models/api-response.model';
 import { throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { AuthService } from '../services/auth.service';
+import { isPasswordExpiredApiError } from '../utils/password-expiration.utils';
 
 const AUTH_ENDPOINTS_WITHOUT_REFRESH = [
   '/auth/login',
@@ -14,6 +16,15 @@ function shouldAttemptTokenRefresh(requestUrl: string): boolean {
   return !AUTH_ENDPOINTS_WITHOUT_REFRESH.some((segment) =>
     requestUrl.includes(segment)
   );
+}
+
+function getApiErrorMessage(error: HttpErrorResponse): string | null {
+  const body = error.error as Partial<Result<unknown>> | null;
+  if (!body?.errors?.length) {
+    return null;
+  }
+
+  return body.errors.filter((message) => message.trim().length > 0).join(' ');
 }
 
 export const authTokenInterceptor: HttpInterceptorFn = (req, next) => {
@@ -34,6 +45,13 @@ export const authTokenInterceptor: HttpInterceptorFn = (req, next) => {
         error && typeof error === 'object' && 'status' in error
           ? (error as { status: number }).status
           : undefined;
+
+      if (error instanceof HttpErrorResponse && status === 403) {
+        const apiMessage = getApiErrorMessage(error);
+        if (apiMessage && isPasswordExpiredApiError(new Error(apiMessage))) {
+          authService.markPasswordChangeRequired();
+        }
+      }
 
       if (status !== 401 || !shouldAttemptTokenRefresh(req.url)) {
         return throwError(() => error);
