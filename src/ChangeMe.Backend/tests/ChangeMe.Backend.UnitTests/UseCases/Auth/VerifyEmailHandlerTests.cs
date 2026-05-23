@@ -1,5 +1,6 @@
 using Ardalis.Result;
-using ChangeMe.Backend.Domain.Aggregates.Auth;
+using ChangeMe.Backend.Domain.Aggregates.Users.Entities;
+using ChangeMe.Backend.Domain.Aggregates.Users.Enums;
 using Microsoft.EntityFrameworkCore;
 using ChangeMe.Backend.Domain.Aggregates.Users;
 using ChangeMe.Backend.Infrastructure.Auth;

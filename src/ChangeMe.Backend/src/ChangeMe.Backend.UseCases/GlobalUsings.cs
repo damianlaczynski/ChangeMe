@@ -1,5 +1,6 @@
 ﻿global using System.Linq.Expressions;
 global using Ardalis.Result;
+global using ChangeMe.Backend.Domain.Aggregates.Users.Enums;
 global using ChangeMe.Backend.Domain.Common;
 global using ChangeMe.Backend.Domain.Interfaces;
 global using ChangeMe.Backend.Infrastructure.Common;

@@ -1,6 +1,7 @@
-using ChangeMe.Backend.Domain.Aggregates.Auth;
+using ChangeMe.Backend.Domain.Aggregates.Users.Entities;
+using ChangeMe.Backend.Domain.Aggregates.Users.Enums;
 
-namespace ChangeMe.Backend.UnitTests.Domain.Aggregates.Auth;
+namespace ChangeMe.Backend.UnitTests.Domain.Aggregates.Users;
 
 public sealed class UserAuthTokenTests
 {

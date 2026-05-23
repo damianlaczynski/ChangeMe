@@ -1,4 +1,6 @@
-namespace ChangeMe.Backend.Domain.Aggregates.Auth;
+using ChangeMe.Backend.Domain.Aggregates.Users.Enums;
+
+namespace ChangeMe.Backend.Domain.Aggregates.Users.Entities;
 
 public class UserAuthToken : Entity
 {
@@ -48,4 +50,10 @@ public class UserAuthToken : Entity
   {
     UsedAtUtc = utcNow;
   }
+}
+
+public static class UserAuthTokenConstraints
+{
+  public const int TOKEN_BYTES = 32;
+  public const int TOKEN_HASH_MAX_LENGTH = 128;
 }

@@ -1,6 +1,6 @@
 using System.Security.Cryptography;
 using System.Text;
-using ChangeMe.Backend.Domain.Aggregates.Auth;
+using ChangeMe.Backend.Domain.Aggregates.Users.Entities;
 
 namespace ChangeMe.Backend.Infrastructure.Auth;
 

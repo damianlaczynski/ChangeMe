@@ -1,6 +1,6 @@
-using ChangeMe.Backend.Domain.Aggregates.Auth;
+using ChangeMe.Backend.Domain.Aggregates.Users.Entities;
 
-namespace ChangeMe.Backend.Infrastructure.Persistence.Config.Auth;
+namespace ChangeMe.Backend.Infrastructure.Persistence.Config.Users;
 
 public class UserAuthTokenConfiguration : BaseEntityTypeConfiguration<UserAuthToken>
 {

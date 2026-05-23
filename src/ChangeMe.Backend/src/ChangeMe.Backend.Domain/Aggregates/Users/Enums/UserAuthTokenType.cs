@@ -1,4 +1,4 @@
-namespace ChangeMe.Backend.Domain.Aggregates.Auth;
+namespace ChangeMe.Backend.Domain.Aggregates.Users.Enums;
 
 public enum UserAuthTokenType
 {
