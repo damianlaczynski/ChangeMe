@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.Domain.Interfaces;
+using ChangeMe.Backend.Domain.Interfaces;
 using ChangeMe.Backend.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Hosting;
@@ -16,14 +16,22 @@ public sealed class DatabaseOptions
 public static class DatabaseConfig
 {
   public static IServiceCollection AddDatabase(this IServiceCollection services, WebApplicationBuilder builder, ILogger logger)
-  {
-    services.Configure<DatabaseOptions>(builder.Configuration.GetSection(DatabaseOptions.SectionName));
+    => AddDatabase(services, builder.Configuration, builder.Environment, logger, configureHealthChecks: true);
 
-    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+  public static IServiceCollection AddDatabase(
+    this IServiceCollection services,
+    IConfiguration configuration,
+    IHostEnvironment environment,
+    ILogger logger,
+    bool configureHealthChecks = false)
+  {
+    services.Configure<DatabaseOptions>(configuration.GetSection(DatabaseOptions.SectionName));
+
+    var connectionString = configuration.GetConnectionString("DefaultConnection");
     if (string.IsNullOrWhiteSpace(connectionString))
     {
       var keys = string.Join(", ",
-          builder.Configuration.GetSection("ConnectionStrings").GetChildren().Select(c => c.Key));
+          configuration.GetSection("ConnectionStrings").GetChildren().Select(c => c.Key));
       throw new InvalidOperationException(
           $"Connection string 'DefaultConnection' is not configured. Available connection string keys: {keys}");
     }
@@ -36,7 +44,7 @@ public static class DatabaseConfig
       options.UseNpgsql(connectionString, npgsql =>
           npgsql.MigrationsHistoryTable("__EFMigrationsHistory", DatabaseSchema.Default));
 
-      if (builder.Environment.IsDevelopment())
+      if (environment.IsDevelopment())
       {
         options.EnableSensitiveDataLogging();
         options.EnableDetailedErrors();
@@ -44,8 +52,11 @@ public static class DatabaseConfig
       }
     });
 
-    services.AddHealthChecks()
-        .AddNpgSql(connectionString, name: "postgres", tags: ["db", "ready"]);
+    if (configureHealthChecks)
+    {
+      services.AddHealthChecks()
+          .AddNpgSql(connectionString, name: "postgres", tags: ["db", "ready"]);
+    }
 
     logger.LogInformation("PostgreSQL database connection configured");
 #else
@@ -56,7 +67,7 @@ public static class DatabaseConfig
       options.UseSqlServer(connectionString, sql =>
           sql.MigrationsHistoryTable("__EFMigrationsHistory", DatabaseSchema.Default));
 
-      if (builder.Environment.IsDevelopment())
+      if (environment.IsDevelopment())
       {
         options.EnableSensitiveDataLogging();
         options.EnableDetailedErrors();
@@ -64,8 +75,11 @@ public static class DatabaseConfig
       }
     });
 
-    services.AddHealthChecks()
-        .AddSqlServer(connectionString, name: "sqlserver", tags: ["db", "ready"]);
+    if (configureHealthChecks)
+    {
+      services.AddHealthChecks()
+          .AddSqlServer(connectionString, name: "sqlserver", tags: ["db", "ready"]);
+    }
 
     logger.LogInformation("SQL Server database connection configured");
 #endif
