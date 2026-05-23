@@ -16,7 +16,11 @@ import {
   formatUserReference
 } from '@core/user/utils/user-display.utils';
 import { AuthService } from '@features/auth/services/auth.service';
-import { formatIpAddress, formatSessionType } from '@features/auth/utils/auth.utils';
+import {
+  AuthMessages,
+  formatIpAddress,
+  formatSessionType
+} from '@features/auth/utils/auth.utils';
 import { EffectivePermissionsComponent } from '@features/users/components/effective-permissions/effective-permissions.component';
 import { AdminUserSessionDto, UserDetailsDto } from '@features/users/models/user.model';
 import { UsersService } from '@features/users/services/users.service';
@@ -102,6 +106,8 @@ export class UserDetailsComponent {
   readonly pendingRevokeSessionIds = signal<string[]>([]);
   readonly passwordExpirationEnabled = signal(false);
   readonly emailVerificationEnabled = signal(false);
+  readonly twoFactorAuthenticationEnabled = signal(false);
+  readonly externalProvidersEnabled = signal(false);
 
   readonly UserMessages = UserMessages;
   readonly formatSessionType = formatSessionType;
@@ -119,6 +125,17 @@ export class UserDetailsComponent {
   readonly canManageSessions = () =>
     this.authService.hasPermission(PermissionCodes.sessionsManageAny);
 
+  readonly canResetTwoFactor = computed(() => {
+    const profile = this.user();
+    return (
+      !!profile &&
+      this.twoFactorAuthenticationEnabled() &&
+      profile.twoFactorEnabled &&
+      this.canManageUsers() &&
+      !profile.deactivated
+    );
+  });
+
   constructor() {
     this.authService
       .getAuthSettings()
@@ -127,6 +144,10 @@ export class UserDetailsComponent {
         next: (settings) => {
           this.passwordExpirationEnabled.set(settings.passwordExpirationEnabled);
           this.emailVerificationEnabled.set(settings.emailVerificationEnabled);
+          this.twoFactorAuthenticationEnabled.set(
+            settings.twoFactorAuthenticationEnabled
+          );
+          this.externalProvidersEnabled.set(settings.externalProvidersEnabled);
         }
       });
 
@@ -165,6 +186,43 @@ export class UserDetailsComponent {
       acceptButtonProps: { label: 'Activate', severity: 'success' },
       rejectButtonProps: { label: 'Cancel', severity: 'secondary', outlined: true },
       accept: () => this.activateUser()
+    });
+  }
+
+  confirmUnlinkExternal(providerKey: string, displayName: string): void {
+    const profile = this.user();
+    if (!profile) {
+      return;
+    }
+
+    if (!profile.hasPasswordSet && profile.externalLogins.length <= 1) {
+      this.toastService.error(AuthMessages.cannotRemoveOnlySignInMethod);
+      return;
+    }
+
+    this.confirmationService.confirm({
+      header: AuthMessages.unlinkExternalProviderTitle,
+      message: AuthMessages.unlinkExternalProviderMessage(displayName),
+      icon: 'pi pi-exclamation-triangle',
+      acceptButtonProps: { label: 'Remove', severity: 'danger' },
+      rejectButtonProps: { label: 'Cancel', severity: 'secondary', outlined: true },
+      accept: () => this.unlinkExternal(providerKey)
+    });
+  }
+
+  confirmResetTwoFactor(): void {
+    const profile = this.user();
+    if (!profile) {
+      return;
+    }
+
+    this.confirmationService.confirm({
+      header: UserMessages.resetTwoFactorTitle,
+      message: UserMessages.resetTwoFactorMessage(formatUserReference(profile)),
+      icon: 'pi pi-exclamation-triangle',
+      acceptButtonProps: { label: 'Reset', severity: 'danger' },
+      rejectButtonProps: { label: 'Cancel', severity: 'secondary', outlined: true },
+      accept: () => this.resetTwoFactor()
     });
   }
 
@@ -298,6 +356,32 @@ export class UserDetailsComponent {
           this.errorMessage.set(error.message);
           this.isLoadingSessions.set(false);
         }
+      });
+  }
+
+  private unlinkExternal(providerKey: string): void {
+    this.usersService
+      .unlinkExternalLogin(this.id(), providerKey)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (user) => {
+          this.user.set(user);
+          this.toastService.success(AuthMessages.externalAccountUnlinked);
+        },
+        error: (error: Error) => this.errorMessage.set(error.message)
+      });
+  }
+
+  private resetTwoFactor(): void {
+    this.usersService
+      .resetTwoFactor(this.id())
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (user) => {
+          this.user.set(user);
+          this.toastService.success(UserMessages.twoFactorReset);
+        },
+        error: (error: Error) => this.errorMessage.set(error.message)
       });
   }
 

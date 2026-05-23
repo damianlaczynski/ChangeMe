@@ -23,6 +23,7 @@
 - Backend change: read `docs/repo-map.md` and `docs/backend-coding-guidelines.md`.
 - Test work or bugfix verification: read `docs/testing-playbook.md`.
 - Cross-stack feature: read all four docs above before editing.
+- Auth deployment, 2FA, or OIDC providers: read `docs/auth-operations-guide.md`.
 
 ## Commands
 

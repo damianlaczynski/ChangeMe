@@ -39,11 +39,20 @@ export interface UserDetailsDto {
   emailVerifiedAt: string | null;
   passwordLastChangedAt: string | null;
   passwordExpiresAtUtc: string | null;
+  twoFactorEnabled: boolean;
+  twoFactorEnabledAt: string | null;
   invitationSentAt: string | null;
   memberSince: string;
   lastSignInAt: string | null;
   roles: UserRoleSummaryDto[];
   effectivePermissions: EffectivePermissionDto[];
+  externalLogins: UserExternalLoginDto[];
+}
+
+export interface UserExternalLoginDto {
+  providerKey: string;
+  displayName: string;
+  linkedAtUtc: string;
 }
 
 export interface RoleAssignmentOptionDto {
