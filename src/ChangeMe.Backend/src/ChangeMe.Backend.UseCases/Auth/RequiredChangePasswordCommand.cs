@@ -1,4 +1,3 @@
-using ChangeMe.Backend.Domain.Interfaces;
 
 namespace ChangeMe.Backend.UseCases.Auth;
 

@@ -1,4 +1,3 @@
-﻿using ChangeMe.Backend.Domain.Interfaces;
 using ChangeMe.Backend.UseCases.Auth;
 using ChangeMe.Backend.Web.Validation;
 

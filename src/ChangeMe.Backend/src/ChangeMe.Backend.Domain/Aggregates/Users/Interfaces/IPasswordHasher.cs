@@ -1,4 +1,4 @@
-﻿namespace ChangeMe.Backend.Domain.Interfaces;
+namespace ChangeMe.Backend.Domain.Aggregates.Users.Interfaces;
 
 public interface IPasswordHasher
 {

@@ -1,6 +1,5 @@
 using ChangeMe.Backend.Domain.Aggregates.Users.Entities;
 using ChangeMe.Backend.Domain.Aggregates.Users;
-using ChangeMe.Backend.Domain.Interfaces;
 using ChangeMe.Backend.UseCases.Auth.Utils;
 
 namespace ChangeMe.Backend.UseCases.Auth;

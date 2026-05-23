@@ -1,7 +1,6 @@
 using ChangeMe.Backend.DataGenerator;
 using ChangeMe.Backend.DataGenerator.Services;
 using Microsoft.Extensions.Configuration;
-using ChangeMe.Backend.Domain.Interfaces;
 using ChangeMe.Backend.Infrastructure.Configurations;
 using ChangeMe.Backend.Infrastructure.Persistence;
 using Microsoft.Extensions.DependencyInjection;

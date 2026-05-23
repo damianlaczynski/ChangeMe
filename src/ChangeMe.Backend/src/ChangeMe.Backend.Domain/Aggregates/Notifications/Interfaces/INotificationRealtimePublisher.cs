@@ -1,6 +1,6 @@
 using ChangeMe.Backend.Domain.Aggregates.Notifications.Enums;
 
-namespace ChangeMe.Backend.Domain.Interfaces;
+namespace ChangeMe.Backend.Domain.Aggregates.Notifications.Interfaces;
 
 public interface INotificationRealtimePublisher
 {

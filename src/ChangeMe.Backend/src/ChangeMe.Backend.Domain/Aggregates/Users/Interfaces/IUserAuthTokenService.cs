@@ -1,7 +1,7 @@
 using ChangeMe.Backend.Domain.Aggregates.Users.Entities;
 using ChangeMe.Backend.Domain.Aggregates.Users.Enums;
 
-namespace ChangeMe.Backend.Domain.Interfaces;
+namespace ChangeMe.Backend.Domain.Aggregates.Users.Interfaces;
 
 public interface IUserAuthTokenService
 {

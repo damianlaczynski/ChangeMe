@@ -1,4 +1,3 @@
-using ChangeMe.Backend.Domain.Interfaces;
 using FluentValidation;
 
 namespace ChangeMe.Backend.Web.Validation;

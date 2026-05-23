@@ -3,7 +3,6 @@ using ChangeMe.Backend.DataGenerator.Options;
 using ChangeMe.Backend.DataGenerator.Persistence;
 using ChangeMe.Backend.Domain.Aggregates.Roles;
 using DomainUser = global::ChangeMe.Backend.Domain.Aggregates.Users.User;
-using ChangeMe.Backend.Domain.Interfaces;
 using ChangeMe.Backend.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;

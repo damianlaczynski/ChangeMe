@@ -1,6 +1,4 @@
-﻿using ChangeMe.Backend.Domain.Aggregates.Users;
-
-namespace ChangeMe.Backend.Domain.Interfaces;
+namespace ChangeMe.Backend.Domain.Aggregates.Users.Interfaces;
 
 public sealed record AccessTokenResult(string Token, DateTime ExpiresAtUtc);
 

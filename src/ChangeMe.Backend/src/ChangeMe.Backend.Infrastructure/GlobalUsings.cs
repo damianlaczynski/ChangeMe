@@ -2,7 +2,9 @@
 global using System;
 global using System.Linq;
 global using System.Threading.Tasks;
+global using ChangeMe.Backend.Domain.Aggregates.Notifications.Interfaces;
 global using ChangeMe.Backend.Domain.Aggregates.Users.Enums;
+global using ChangeMe.Backend.Domain.Aggregates.Users.Interfaces;
 global using ChangeMe.Backend.Domain.Common;
 global using ChangeMe.Backend.Infrastructure.Common;
 global using Microsoft.EntityFrameworkCore;

@@ -60,7 +60,7 @@ public sealed class UsersEndpointTests(BackendWebApplicationFactory factory)
     Assert.False(createdUser.HasPasswordSet);
     Assert.NotNull(createdUser.InvitationSentAt);
 
-    var fakeEmail = scope.ServiceProvider.GetRequiredService<ChangeMe.Backend.Domain.Interfaces.IEmailService>()
+    var fakeEmail = scope.ServiceProvider.GetRequiredService<ChangeMe.Backend.Domain.Common.IEmailService>()
       as ChangeMe.Backend.IntegrationTests.Support.Fakes.FakeEmailService;
     Assert.NotNull(fakeEmail);
     Assert.Contains(fakeEmail.SentEmails, e => e.Subject == "You're invited to ChangeMe");

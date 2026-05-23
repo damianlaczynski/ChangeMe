@@ -1,4 +1,3 @@
-using ChangeMe.Backend.Domain.Interfaces;
 using Microsoft.Extensions.Options;
 
 namespace ChangeMe.Backend.Infrastructure.Auth;

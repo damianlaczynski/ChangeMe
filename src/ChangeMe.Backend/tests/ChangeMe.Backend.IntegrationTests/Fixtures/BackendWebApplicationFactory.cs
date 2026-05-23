@@ -1,4 +1,3 @@
-﻿using ChangeMe.Backend.Domain.Interfaces;
 using ChangeMe.Backend.Infrastructure.Configurations;
 using ChangeMe.Backend.Infrastructure.Persistence;
 using ChangeMe.Backend.IntegrationTests.Support.Fakes;

@@ -1,7 +1,6 @@
-﻿using ChangeMe.Backend.Domain.Aggregates.Roles;
+using ChangeMe.Backend.Domain.Aggregates.Roles;
 using ChangeMe.Backend.Domain.Aggregates.Users;
 using ChangeMe.Backend.Domain.Authorization;
-using ChangeMe.Backend.Domain.Interfaces;
 
 namespace ChangeMe.Backend.Infrastructure.Persistence;
 

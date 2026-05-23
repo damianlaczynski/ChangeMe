@@ -1,7 +1,6 @@
-﻿using System.IdentityModel.Tokens.Jwt;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using ChangeMe.Backend.Domain.Authorization;
-using ChangeMe.Backend.Domain.Interfaces;
 using Microsoft.AspNetCore.Http;
 
 namespace ChangeMe.Backend.Infrastructure.Auth;

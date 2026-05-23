@@ -1,7 +1,6 @@
 using ChangeMe.Backend.DataGenerator.Generators;
 using ChangeMe.Backend.DataGenerator.Options;
 using ChangeMe.Backend.DataGenerator.Services;
-using ChangeMe.Backend.Domain.Interfaces;
 using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.Infrastructure.Configurations;
 using ChangeMe.Backend.Infrastructure.Persistence;

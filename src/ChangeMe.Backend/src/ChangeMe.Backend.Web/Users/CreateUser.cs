@@ -1,4 +1,3 @@
-using ChangeMe.Backend.Domain.Interfaces;
 using ChangeMe.Backend.UseCases.Users;
 using ChangeMe.Backend.UseCases.Users.Dtos;
 

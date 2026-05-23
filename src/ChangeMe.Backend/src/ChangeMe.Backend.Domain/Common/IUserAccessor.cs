@@ -1,4 +1,4 @@
-﻿namespace ChangeMe.Backend.Domain.Interfaces;
+namespace ChangeMe.Backend.Domain.Common;
 
 public interface IUserAccessor
 {
