@@ -76,6 +76,9 @@ Each current feature follows a simple slice structure:
   - entity configuration and migrations
   - auth and email adapters
   - persistence and infrastructure registrations
+- `tools/ChangeMe.Backend.DataGenerator`
+  - dev-only console tool for demo/test data (`npm run data:generate`)
+  - see `docs/data-generator.md`
 
 ### Endpoint flow
 

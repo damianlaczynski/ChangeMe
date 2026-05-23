@@ -48,3 +48,16 @@ Each EF Core provider emits **different DDL** and stores provider-specific metad
 <!--#endif-->
 
 - **Integration tests** use disposable databases via Testcontainers (`BackendWebApplicationFactory`).
+
+## Demo data (optional)
+
+**System seed** (`ApplicationDataSeeder`) runs when migrations are applied at startup or via the DataGenerator tool: system roles and optional `InitialAdministrator` from configuration.
+
+**Demo dataset** (sample users, issues, comments, notifications) is separate. Use the DataGenerator console tool after migrations:
+
+```powershell
+npm run data:generate
+npm run data:generate -- --reset
+```
+
+See [data-generator.md](data-generator.md) for architecture, configuration, and troubleshooting.
