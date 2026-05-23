@@ -59,6 +59,11 @@ export class AuthService {
   readonly passwordChangeRequired = computed(
     () => this.session()?.passwordChangeRequired === true
   );
+  readonly requiresPasswordChangeScreen = computed(
+    () =>
+      this.session()?.passwordChangeRequired === true &&
+      this.session()?.passwordChangeStrict === true
+  );
   readonly token = computed(() => {
     const current = this.session();
     if (!current || this.getAccessTokenLifetimeMs(current) <= 0) {
@@ -109,7 +114,8 @@ export class AuthService {
       tap((session) =>
         this.setSession({
           ...session,
-          isPersistent: request.rememberMe
+          isPersistent: request.rememberMe,
+          passwordChangeStrict: false
         })
       )
     );
@@ -145,7 +151,8 @@ export class AuthService {
         if (response.authSession) {
           this.setSession({
             ...response.authSession,
-            isPersistent: false
+            isPersistent: false,
+            passwordChangeStrict: false
           });
         }
       })
@@ -222,15 +229,42 @@ export class AuthService {
     return this.apiService.post<boolean>('auth/required-change-password', request);
   }
 
-  clearPasswordChangeRequired(): void {
+  enablePasswordChangeScreen(): void {
     const current = this.session();
-    if (!current?.passwordChangeRequired) {
+    if (!current) {
       return;
     }
 
     this.setSession({
       ...current,
-      passwordChangeRequired: false
+      passwordChangeRequired: true,
+      passwordChangeStrict: true
+    });
+  }
+
+  markPasswordChangeRequired(): void {
+    const current = this.session();
+    if (!current || current.passwordChangeRequired) {
+      return;
+    }
+
+    this.setSession({
+      ...current,
+      passwordChangeRequired: true,
+      passwordChangeStrict: false
+    });
+  }
+
+  clearPasswordChangeRequired(): void {
+    const current = this.session();
+    if (!current?.passwordChangeRequired && !current?.passwordChangeStrict) {
+      return;
+    }
+
+    this.setSession({
+      ...current,
+      passwordChangeRequired: false,
+      passwordChangeStrict: false
     });
   }
 
@@ -294,7 +328,8 @@ export class AuthService {
         tap((session) =>
           this.setSession({
             ...session,
-            isPersistent: current.isPersistent
+            isPersistent: current.isPersistent,
+            passwordChangeStrict: current.passwordChangeStrict
           })
         ),
         catchError((error: unknown) => {

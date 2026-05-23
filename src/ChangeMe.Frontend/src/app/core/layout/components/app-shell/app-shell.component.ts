@@ -6,7 +6,10 @@ import { SidebarNavComponent } from '@core/layout/components/sidebar-nav/sidebar
 import { LayoutNavItem } from '@core/layout/models/layout-nav-item.model';
 import { LayoutService } from '@core/layout/services/layout.service';
 import { formatUserReference } from '@core/user/utils/user-display.utils';
+import { PasswordExpirationBannerComponent } from '@features/auth/components/password-expiration-banner/password-expiration-banner.component';
+import { RequiredPasswordChangeDialogComponent } from '@features/auth/components/required-password-change-dialog/required-password-change-dialog.component';
 import { AuthService } from '@features/auth/services/auth.service';
+import { PasswordExpirationNoticeService } from '@features/auth/services/password-expiration-notice.service';
 import { NotificationsBellComponent } from '@features/notifications/components/notifications-bell/notifications-bell.component';
 import { PermissionCodes } from '@shared/authorization/permission-codes';
 import { Button } from 'primeng/button';
@@ -20,6 +23,8 @@ import { filter, map } from 'rxjs/operators';
     RouterLink,
     SidebarNavComponent,
     NotificationsBellComponent,
+    PasswordExpirationBannerComponent,
+    RequiredPasswordChangeDialogComponent,
     Button,
     Drawer
   ],
@@ -36,9 +41,9 @@ export class AppShellComponent {
   readonly currentUser = this.authService.currentUser;
   readonly formatUserReference = formatUserReference;
   readonly isAuthenticated = this.authService.isAuthenticated;
-  readonly passwordChangeRequired = this.authService.passwordChangeRequired;
+  readonly requiresPasswordChangeScreen = this.authService.requiresPasswordChangeScreen;
   readonly showAuthenticatedChrome = computed(
-    () => this.isAuthenticated() && !this.passwordChangeRequired()
+    () => this.isAuthenticated() && !this.requiresPasswordChangeScreen()
   );
   readonly isDesktop = toSignal(
     this.breakpointObserver
@@ -76,6 +81,8 @@ export class AppShellComponent {
   });
 
   constructor() {
+    inject(PasswordExpirationNoticeService);
+
     this.router.events
       .pipe(
         filter((event): event is NavigationEnd => event instanceof NavigationEnd),

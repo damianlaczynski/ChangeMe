@@ -33,6 +33,10 @@ export const AuthMessages = {
   requiredPasswordChangeTitle: 'Required password change',
   requiredPasswordChangeSubtitle:
     'Your password has expired. Set a new password to continue using the application.',
+  passwordExpiringSoon: 'Password expiring soon',
+  passwordExpiredSummary: 'Password expired',
+  passwordExpiredDetail:
+    'Your password has expired. Set a new password to save your work to the server.',
   passwordUpdated: 'Password updated.',
   emailNotVerified: 'Verify your email before signing in.',
   registrationDisabled: 'Registration is disabled. Contact an administrator.',
@@ -55,4 +59,9 @@ export function formatSessionType(isPersistent: boolean): string {
 
 export function formatIpAddress(ipAddress: string | null | undefined): string {
   return ipAddress?.trim() ? ipAddress : 'Unknown';
+}
+
+export function passwordExpiryWarningDetail(daysRemaining: number): string {
+  const dayLabel = daysRemaining === 1 ? '1 day' : `${daysRemaining} days`;
+  return `Your password expires in ${dayLabel}. Change it now to avoid interruption.`;
 }

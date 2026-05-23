@@ -50,6 +50,7 @@ public class LoginUserHandler(
 
     var utcNow = DateTime.UtcNow;
     var passwordChangeRequired = passwordExpirationEvaluator.IsPasswordChangeRequired(user, utcNow);
+    var passwordExpiresAtUtc = passwordExpirationEvaluator.GetPasswordExpiresAtUtc(user);
 
     return await AuthSessionUtils.CreateAuthResponseAsync(
       context,
@@ -58,6 +59,7 @@ public class LoginUserHandler(
       sessionResult.Value.Session,
       sessionResult.Value.RefreshToken,
       passwordChangeRequired,
+      passwordExpiresAtUtc,
       cancellationToken);
   }
 

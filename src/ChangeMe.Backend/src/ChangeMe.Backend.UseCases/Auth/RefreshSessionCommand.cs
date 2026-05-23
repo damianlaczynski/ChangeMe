@@ -43,6 +43,7 @@ public class RefreshSessionHandler(
     await context.SaveChangesAsync(cancellationToken);
 
     var passwordChangeRequired = passwordExpirationEvaluator.IsPasswordChangeRequired(user, utcNow);
+    var passwordExpiresAtUtc = passwordExpirationEvaluator.GetPasswordExpiresAtUtc(user);
 
     return await AuthSessionUtils.CreateAuthResponseAsync(
       context,
@@ -51,6 +52,7 @@ public class RefreshSessionHandler(
       session,
       newRefreshToken,
       passwordChangeRequired,
+      passwordExpiresAtUtc,
       cancellationToken);
   }
 }

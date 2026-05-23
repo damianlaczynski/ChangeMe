@@ -21,6 +21,7 @@ public class RegisterUserHandler(
   IPasswordHasher passwordHasher,
   IJwtTokenGenerator jwtTokenGenerator,
   ISessionLifetimeService sessionLifetime,
+  IPasswordExpirationEvaluator passwordExpirationEvaluator,
   UserEmailVerificationService emailVerificationService,
   IOptions<AuthOptions> authOptions,
   IHttpContextAccessor httpContextAccessor) : ICommandHandler<RegisterUserCommand, RegisterUserResponseDto>
@@ -85,6 +86,7 @@ public class RegisterUserHandler(
       sessionResult.Value.Session,
       sessionResult.Value.RefreshToken,
       passwordChangeRequired: false,
+      passwordExpirationEvaluator.GetPasswordExpiresAtUtc(user),
       cancellationToken);
 
     if (!authResponse.IsSuccess)

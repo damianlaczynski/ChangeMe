@@ -86,6 +86,7 @@ public sealed class RegisterUserHandlerTests
       new PasswordHasherAdapter(),
       new JwtTokenGenerator(authOptions),
       new SessionLifetimeService(authOptions),
+      new PasswordExpirationEvaluator(authOptions),
       new UserEmailVerificationService(
         new UserAuthTokenService(context, authOptions, TimeProvider.System),
         new FakeAuthEmailService()),
