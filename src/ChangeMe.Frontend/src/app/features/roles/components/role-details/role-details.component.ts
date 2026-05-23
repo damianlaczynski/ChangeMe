@@ -11,6 +11,10 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ToastService } from '@core/toast/services/toast.service';
+import {
+  formatUserName,
+  formatUserReference
+} from '@core/user/utils/user-display.utils';
 import { AuthService } from '@features/auth/services/auth.service';
 import {
   RoleAssignedUserDto,
@@ -64,6 +68,8 @@ import { debounceTime, distinctUntilChanged } from 'rxjs';
   templateUrl: './role-details.component.html'
 })
 export class RoleDetailsComponent {
+  readonly formatUserName = formatUserName;
+
   readonly id = input.required<string>();
 
   private readonly rolesService = inject(RolesService);
@@ -216,7 +222,10 @@ export class RoleDetailsComponent {
 
     this.confirmationService.confirm({
       header: 'Remove from role',
-      message: getRemoveUserFromRoleConfirmMessage(user.fullName, current.name),
+      message: getRemoveUserFromRoleConfirmMessage(
+        formatUserReference(user),
+        current.name
+      ),
       accept: () => {
         this.rolesService.removeUserFromRole(current.id, user.id).subscribe({
           next: () => {

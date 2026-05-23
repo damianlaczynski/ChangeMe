@@ -2,7 +2,8 @@ import { PaginationParameters } from '@shared/data/models/pagination-parameters.
 
 export interface UserListItemDto {
   id: string;
-  fullName: string;
+  firstName: string;
+  lastName: string;
   email: string;
   deactivated: boolean;
   hasPasswordSet: boolean;
@@ -30,7 +31,6 @@ export interface UserDetailsDto {
   id: string;
   firstName: string;
   lastName: string;
-  fullName: string;
   email: string;
   deactivated: boolean;
   deactivatedAt: string | null;

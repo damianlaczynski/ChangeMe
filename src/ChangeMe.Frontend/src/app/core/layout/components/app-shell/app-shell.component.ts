@@ -5,6 +5,7 @@ import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router
 import { SidebarNavComponent } from '@core/layout/components/sidebar-nav/sidebar-nav.component';
 import { LayoutNavItem } from '@core/layout/models/layout-nav-item.model';
 import { LayoutService } from '@core/layout/services/layout.service';
+import { formatUserReference } from '@core/user/utils/user-display.utils';
 import { AuthService } from '@features/auth/services/auth.service';
 import { NotificationsBellComponent } from '@features/notifications/components/notifications-bell/notifications-bell.component';
 import { PermissionCodes } from '@shared/authorization/permission-codes';
@@ -33,6 +34,7 @@ export class AppShellComponent {
   readonly layoutService = inject(LayoutService);
 
   readonly currentUser = this.authService.currentUser;
+  readonly formatUserReference = formatUserReference;
   readonly isAuthenticated = this.authService.isAuthenticated;
   readonly passwordChangeRequired = this.authService.passwordChangeRequired;
   readonly showAuthenticatedChrome = computed(

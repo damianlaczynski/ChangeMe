@@ -36,7 +36,8 @@ public sealed record RoleDetailsDto
 public sealed record RoleAssignedUserDto
 {
   public Guid Id { get; init; }
-  public string FullName { get; init; } = string.Empty;
+  public string FirstName { get; init; } = string.Empty;
+  public string LastName { get; init; } = string.Empty;
   public string Email { get; init; } = string.Empty;
   public bool Deactivated { get; init; }
 }

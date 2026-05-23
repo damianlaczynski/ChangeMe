@@ -11,6 +11,10 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { ToastService } from '@core/toast/services/toast.service';
+import {
+  formatUserName,
+  formatUserReference
+} from '@core/user/utils/user-display.utils';
 import { AuthService } from '@features/auth/services/auth.service';
 import { formatIpAddress, formatSessionType } from '@features/auth/utils/auth.utils';
 import { EffectivePermissionsComponent } from '@features/users/components/effective-permissions/effective-permissions.component';
@@ -65,7 +69,13 @@ export class UserDetailsComponent {
   private readonly destroyRef = inject(DestroyRef);
 
   readonly user = signal<UserDetailsDto | null>(null);
-  readonly pageTitle = computed(() => this.user()?.fullName ?? 'User details');
+  readonly pageTitle = computed(() => {
+    const profile = this.user();
+    return profile ? formatUserReference(profile) : 'User details';
+  });
+
+  readonly formatUserName = formatUserName;
+
   readonly canResendInvitation = computed(() => {
     const profile = this.user();
     return (
@@ -134,7 +144,7 @@ export class UserDetailsComponent {
 
     this.confirmationService.confirm({
       header: 'Deactivate user',
-      message: getDeactivateConfirmMessage(profile.fullName),
+      message: getDeactivateConfirmMessage(formatUserReference(profile)),
       icon: 'pi pi-exclamation-triangle',
       acceptButtonProps: { label: 'Deactivate', severity: 'danger' },
       rejectButtonProps: { label: 'Cancel', severity: 'secondary', outlined: true },
@@ -150,7 +160,7 @@ export class UserDetailsComponent {
 
     this.confirmationService.confirm({
       header: 'Activate user',
-      message: getActivateConfirmMessage(profile.fullName),
+      message: getActivateConfirmMessage(formatUserReference(profile)),
       icon: 'pi pi-exclamation-triangle',
       acceptButtonProps: { label: 'Activate', severity: 'success' },
       rejectButtonProps: { label: 'Cancel', severity: 'secondary', outlined: true },
@@ -182,7 +192,7 @@ export class UserDetailsComponent {
 
     this.confirmationService.confirm({
       header: UserMessages.confirmEmailTitle,
-      message: UserMessages.confirmEmailMessage(profile.fullName),
+      message: UserMessages.confirmEmailMessage(formatUserReference(profile)),
       icon: 'pi pi-exclamation-triangle',
       acceptButtonProps: { label: 'Confirm', severity: 'warn' },
       rejectButtonProps: { label: 'Cancel', severity: 'secondary', outlined: true },

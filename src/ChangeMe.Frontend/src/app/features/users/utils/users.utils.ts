@@ -1,3 +1,5 @@
+import { highlightDialogValue } from '@shared/ui/utils/dialog-message.utils';
+
 export const UserConstraints = {
   NAME_MAX_LENGTH: 100,
   EMAIL_MAX_LENGTH: 320,
@@ -12,14 +14,14 @@ export const UserMessages = {
   passwordResetSent: 'Password reset email sent.',
   emailMarkedAsVerified: 'Email marked as verified.',
   confirmEmailTitle: 'Confirm email',
-  confirmEmailMessage: (fullName: string) =>
-    `Mark email as verified for "${fullName}"?`,
+  confirmEmailMessage: (userReference: string) =>
+    `Mark email as verified for ${highlightDialogValue(userReference)}?`,
   sendPasswordResetTitle: 'Send password reset?',
   sendPasswordResetMessage: (email: string) =>
-    `Send a password reset link to "${email}"?`,
+    `Send a password reset link to ${highlightDialogValue(email)}?`,
   resendInvitationTitle: 'Resend invitation?',
   resendInvitationMessage: (email: string) =>
-    `Resend invitation to "${email}"? A new invitation link will be sent. Previous unused links will stop working.`,
+    `Resend invitation to ${highlightDialogValue(email)}? A new invitation link will be sent. Previous unused links will stop working.`,
   userSaved: 'User saved.',
   userDeactivated: 'User deactivated.',
   userActivated: 'User activated.',
@@ -97,12 +99,12 @@ export function formatFromRoles(roleNames: string[]): string {
   return `From roles: ${roleNames.join(', ')}`;
 }
 
-export function getDeactivateConfirmMessage(fullName: string): string {
-  return `Deactivate "${fullName}"? The user will be signed out and cannot sign in until reactivated.`;
+export function getDeactivateConfirmMessage(userReference: string): string {
+  return `Deactivate ${highlightDialogValue(userReference)}? The user will be signed out and cannot sign in until reactivated.`;
 }
 
-export function getActivateConfirmMessage(fullName: string): string {
-  return `Activate "${fullName}"? The user will be able to sign in again.`;
+export function getActivateConfirmMessage(userReference: string): string {
+  return `Activate ${highlightDialogValue(userReference)}? The user will be able to sign in again.`;
 }
 
 export function groupEffectivePermissions<T extends { group: string }>(

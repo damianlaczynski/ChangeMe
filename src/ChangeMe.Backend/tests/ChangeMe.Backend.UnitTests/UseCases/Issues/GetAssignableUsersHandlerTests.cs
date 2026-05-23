@@ -62,5 +62,8 @@ public sealed class GetAssignableUsersHandlerTests
     Assert.True(result.IsSuccess);
     Assert.DoesNotContain(result.Value, x => x.Id == unverified.Id);
     Assert.Contains(result.Value, x => x.Id == verified.Id);
+    Assert.Equal(
+      "Verified User (verified@example.com)",
+      result.Value.Single(x => x.Id == verified.Id).DisplayLabel);
   }
 }

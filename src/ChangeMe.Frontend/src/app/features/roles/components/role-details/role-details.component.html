@@ -123,7 +123,7 @@
                 class="text-primary font-medium hover:underline"
                 [routerLink]="['/users', user.id]"
               >
-                {{ user.fullName }}
+                {{ formatUserName(user) || '—' }}
               </a>
             </td>
             <td>{{ user.email }}</td>

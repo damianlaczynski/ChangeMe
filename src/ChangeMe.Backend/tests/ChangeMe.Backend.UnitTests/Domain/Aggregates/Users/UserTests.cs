@@ -22,7 +22,7 @@ public sealed class UserTests
     Assert.NotNull(user.EmailVerifiedAt);
     Assert.NotNull(user.PasswordLastChangedAt);
     Assert.False(user.Deactivated);
-    Assert.Equal("John Doe", user.DisplayName);
+    Assert.Equal("John Doe (Test@Example.com)", user.DisplayLabel);
   }
 
   [Fact]
@@ -36,8 +36,24 @@ public sealed class UserTests
     Assert.Equal(string.Empty, user.LastName);
     Assert.False(user.HasPasswordSet);
     Assert.Equal(string.Empty, user.PasswordHash);
-    Assert.Equal("Pending profile", user.DisplayName);
+    Assert.Equal("invite@example.com", user.DisplayLabel);
     Assert.True(user.EmailVerified);
+  }
+
+  [Fact]
+  public void DisplayLabel_WhenProfileIsComplete_ShouldIncludeNameAndEmail()
+  {
+    var user = User.CreateWithPassword("Jan", "Kowalski", "jan@example.com", "hash").Value;
+
+    Assert.Equal("Jan Kowalski (jan@example.com)", user.DisplayLabel);
+  }
+
+  [Fact]
+  public void DisplayLabel_WhenOnlyFirstNameIsSet_ShouldIncludeFirstNameAndEmail()
+  {
+    var user = User.CreateInvited("jan@example.com", "Jan").Value;
+
+    Assert.Equal("Jan (jan@example.com)", user.DisplayLabel);
   }
 
   [Fact]
@@ -48,7 +64,7 @@ public sealed class UserTests
     Assert.True(result.IsSuccess);
     Assert.Equal("Ada", result.Value.FirstName);
     Assert.Equal("Lovelace", result.Value.LastName);
-    Assert.Equal("Ada Lovelace", result.Value.DisplayName);
+    Assert.Equal("Ada Lovelace (invite@example.com)", result.Value.DisplayLabel);
   }
 
   [Theory]

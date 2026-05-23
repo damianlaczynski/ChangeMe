@@ -89,7 +89,7 @@
           <span
             class="text-muted-color hidden max-w-[12rem] truncate text-sm lg:inline"
           >
-            {{ currentUser()?.fullName }}
+            {{ formatUserReference(currentUser()!) }}
           </span>
           <p-button
             label="Logout"

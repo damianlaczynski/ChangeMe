@@ -43,9 +43,8 @@ public class GetRoleAssignedUsersHandler(ApplicationDbContext context)
     var projected = usersQuery.Select(u => new RoleAssignedUserDto
     {
       Id = u.Id,
-      FullName = u.FirstName != "" && u.LastName != ""
-        ? u.FirstName + " " + u.LastName
-        : "Pending profile",
+      FirstName = u.FirstName,
+      LastName = u.LastName,
       Email = u.Email,
       Deactivated = u.Deactivated
     });
@@ -63,9 +62,10 @@ public class GetRoleAssignedUsersHandler(ApplicationDbContext context)
   private static string MapSortField(string sortField) =>
     sortField switch
     {
-      "Name" or "FullName" => nameof(RoleAssignedUserDto.FullName),
+      "Name" or "DisplayName" or "FullName" or "LastName" => nameof(RoleAssignedUserDto.LastName),
+      "FirstName" => nameof(RoleAssignedUserDto.FirstName),
       "Email" => nameof(RoleAssignedUserDto.Email),
       "Deactivated" => nameof(RoleAssignedUserDto.Deactivated),
-      _ => nameof(RoleAssignedUserDto.FullName)
+      _ => nameof(RoleAssignedUserDto.LastName)
     };
 }

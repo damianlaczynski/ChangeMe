@@ -17,7 +17,6 @@ public static class UsersMappingExtensions
       Id = user.Id,
       FirstName = user.FirstName,
       LastName = user.LastName,
-      FullName = user.DisplayName,
       Email = user.Email,
       Deactivated = user.Deactivated,
       DeactivatedAt = user.DeactivatedAt,

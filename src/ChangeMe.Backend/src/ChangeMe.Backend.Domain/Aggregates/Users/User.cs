@@ -27,8 +27,7 @@ public class User : Entity, IAggregateRoot
   public bool HasCompleteProfile =>
     !string.IsNullOrWhiteSpace(FirstName) && !string.IsNullOrWhiteSpace(LastName);
 
-  public string DisplayName =>
-    HasCompleteProfile ? $"{FirstName.Trim()} {LastName.Trim()}" : "Pending profile";
+  public string DisplayLabel => UserDisplayFormat.DisplayLabel(FirstName, LastName, Email);
 
   public static Result<User> CreateWithPassword(
     string firstName,

@@ -230,12 +230,12 @@ An authorized administrator must be able to review a role's metadata, permission
 - Visible with permission **Roles.View**.
 - Table columns:
 
-| Column      | Description                                                                     |
-| ----------- | ------------------------------------------------------------------------------- |
-| **Name**    | **Full name** or **`Pending profile`**; link to **User details** (REQ-USR-004). |
-| **Email**   | User email address.                                                             |
-| **Account** | Badge **`Active`** or **`Deactivated`** (from **Deactivated**).                 |
-| **Actions** | **Remove from role** when the user has **Roles.Manage**.                        |
+| Column      | Description                                                                                                 |
+| ----------- | ----------------------------------------------------------------------------------------------------------- |
+| **Name**    | **First name** and **Last name** when set; **`—`** when both empty; link to **User details** (REQ-USR-004). |
+| **Email**   | User email address.                                                                                         |
+| **Account** | Badge **`Active`** or **`Deactivated`** (from **Deactivated**).                                             |
+| **Actions** | **Remove from role** when the user has **Roles.Manage**.                                                    |
 
 - Default sort within section: **Name**, ascending.
 - Search field placeholder within section: **`Search assigned users...`**; filters **name** and **email** (case-insensitive).

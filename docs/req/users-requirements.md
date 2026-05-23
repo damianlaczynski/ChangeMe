@@ -32,7 +32,7 @@ When verification is disabled, every account is **Email verified** true.
 
 **Account state** (UI only, read-only): **`Complete`**, **`Awaiting invitation`**, or **`Awaiting email verification`** — derived from the flags above when **Deactivated** is **false**; hidden or **`—`** when the account is deactivated.
 
-**Profile name:** **Full name** is shown when **First name** and **Last name** are both set; otherwise UI shows **`Pending profile`**. On admin invite, **First name** and **Last name** are **optional** on **Create user** and **Edit user** (REQ-USR-003). On **Accept invitation** (REQ-AUTH-010), fields are pre-filled from values already stored (including admin-set names) and the user may edit them before submit.
+On admin invite, **First name** and **Last name** are **optional** on **Create user** and **Edit user** (REQ-USR-003). On **Accept invitation** (REQ-AUTH-010), fields are pre-filled from values already stored (including admin-set names) and the user may edit them before submit.
 
 **Password expires at (admin UI only):** Not stored. When **Password expiration enabled** is **true** (REQ-AUTH-009), **User details** shows **Password expires at** as **Password last changed at** plus **Maximum password age (days)**. Omitted when expiration is disabled; **`—`** when **Has password set** is **false**. Not shown on **My account** (REQ-USR-001).
 
@@ -115,7 +115,7 @@ An authorized administrator must be able to browse users, search and filter them
 
 | Column             | Description                                                                                                                                  |
 | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Name**           | **Full name** when **First name** and **Last name** are both set; **`Pending profile`** otherwise; link to **User details**.                 |
+| **Name**           | **First name** and **Last name** when set; **`—`** when both empty; link to **User details**.                                                |
 | **Email**          | User email address.                                                                                                                          |
 | **Account**        | Badge **`Active`** or **`Deactivated`**.                                                                                                     |
 | **Account state**  | **`Complete`**, **`Awaiting invitation`**, or **`Awaiting email verification`** when **Deactivated** is **false**; omitted when deactivated. |
@@ -276,7 +276,8 @@ Displays read-only:
 
 | Field                        | Behavior                                                                                                                                                                                                                                                                                    |
 | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Name**                     | **Full name** when **First name** and **Last name** are both set; **`Pending profile`** otherwise.                                                                                                                                                                                          |
+| **First name**               | Read-only; **`—`** when empty.                                                                                                                                                                                                                                                              |
+| **Last name**                | Read-only; **`—`** when empty.                                                                                                                                                                                                                                                              |
 | **Email**                    | Email address.                                                                                                                                                                                                                                                                              |
 | **Account**                  | Badge **`Active`** or **`Deactivated`**.                                                                                                                                                                                                                                                    |
 | **Account state**            | **`Complete`**, **`Awaiting invitation`**, or **`Awaiting email verification`** when **Deactivated** is **false**; **`—`** when deactivated.                                                                                                                                                |
@@ -296,7 +297,7 @@ Displays read-only:
   - **Invitation status:** **`Pending`** — user has not yet accepted the invitation.
   - **Invitation sent at:** **Invitation sent at** date and time (last invitation email from **Create user** or **Resend invitation**).
   - **Email verified:** **`Yes`** when email verification is enabled — the invitation was sent to this email address.
-  - **Profile name:** **Full name** when both names are set (admin and/or user); **`Not set`** when both are empty; user confirms or updates on **Accept invitation** (REQ-AUTH-010).
+  - **Profile name:** **First name** and **Last name** when set (admin and/or user); **`Not set`** when both are empty; user confirms or updates on **Accept invitation** (REQ-AUTH-010).
 - **Resend invitation** action (REQ-USR-008) is available in this section and in the screen header.
 - Empty state when **Has password set** is **true**: section is **not shown** (not an empty panel).
 
@@ -404,6 +405,7 @@ An authorized administrator must be able to set **Deactivated** to **true** or *
 
 - Assignable-user lists include only users with **Deactivated** false.
 - When email verification is enabled (REQ-AUTH-011), assignable users must also have **Email verified** true and **Has password set** true.
+- Each option shows **Display label** (`displayLabel`): **`{first name} {last name} ({email})`** or **Email** only when both names are empty.
 
 ### Permissions and visibility
 

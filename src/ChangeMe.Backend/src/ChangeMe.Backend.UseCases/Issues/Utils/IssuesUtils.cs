@@ -1,6 +1,5 @@
 using ChangeMe.Backend.Domain.Aggregates.Issue;
 using ChangeMe.Backend.Domain.Aggregates.Issue.Enums;
-
 namespace ChangeMe.Backend.UseCases.Issues.Utils;
 
 public static class IssuesUtils
@@ -60,10 +59,12 @@ public static class IssuesUtils
     if (distinctUserIds.Count == 0)
       return [];
 
-    return await context.Users
+    var users = await context.Users
       .AsNoTracking()
       .Where(u => distinctUserIds.Contains(u.Id))
-      .ToDictionaryAsync(u => u.Id, u => $"{u.FirstName} {u.LastName}", cancellationToken);
+      .ToListAsync(cancellationToken);
+
+    return users.ToDictionary(u => u.Id, u => u.DisplayLabel);
   }
 
   public static bool IsNotificationEligible(IssueHistoryEventType eventType) =>

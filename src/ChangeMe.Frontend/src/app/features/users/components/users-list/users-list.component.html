@@ -133,7 +133,7 @@
             class="text-primary font-medium hover:underline"
             [routerLink]="['/users', user.id]"
           >
-            {{ user.fullName }}
+            {{ formatUserName(user) || '—' }}
           </a>
         </td>
         <td>{{ user.email }}</td>
@@ -183,7 +183,7 @@
             size="small"
             pTooltip="User actions"
             tooltipPosition="top"
-            [attr.aria-label]="'Actions for ' + user.fullName"
+            [attr.aria-label]="'Actions for ' + formatUserReference(user)"
             (onClick)="openUserActionsMenu($event, user)"
           />
         </td>

@@ -45,9 +45,8 @@ public class GetUsersHandler(ApplicationDbContext context)
     var projectedUsers = usersQuery.Select(u => new UserListItemDto
     {
       Id = u.Id,
-      FullName = u.FirstName != "" && u.LastName != ""
-        ? u.FirstName + " " + u.LastName
-        : "Pending profile",
+      FirstName = u.FirstName,
+      LastName = u.LastName,
       Email = u.Email,
       Deactivated = u.Deactivated,
       HasPasswordSet = u.HasPasswordSet,
@@ -77,9 +76,11 @@ public class GetUsersHandler(ApplicationDbContext context)
   private static string MapSortField(string sortField) =>
     sortField switch
     {
-      "Name" or "FullName" => nameof(UserListItemDto.FullName),
+      "Name" or "DisplayName" or "FullName" or "LastName" => nameof(UserListItemDto.LastName),
+      "FirstName" => nameof(UserListItemDto.FirstName),
+      "Email" => nameof(UserListItemDto.Email),
       "CreatedAt" => nameof(UserListItemDto.CreatedAt),
       "LastSignIn" or "LastSignInAt" => nameof(UserListItemDto.LastSignInAt),
-      _ => nameof(UserListItemDto.FullName)
+      _ => nameof(UserListItemDto.LastName)
     };
 }

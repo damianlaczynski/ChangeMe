@@ -11,6 +11,10 @@ import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { ToastService } from '@core/toast/services/toast.service';
+import {
+  formatUserName,
+  formatUserReference
+} from '@core/user/utils/user-display.utils';
 import { AuthService } from '@features/auth/services/auth.service';
 import {
   UserListItemDto,
@@ -79,6 +83,9 @@ type UserSortField = 'Name' | 'CreatedAt' | 'LastSignIn';
   templateUrl: './users-list.component.html'
 })
 export class UsersListComponent {
+  readonly formatUserName = formatUserName;
+  readonly formatUserReference = formatUserReference;
+
   private readonly usersService = inject(UsersService);
   private readonly authService = inject(AuthService);
   private readonly confirmationService = inject(ConfirmationService);
@@ -295,7 +302,7 @@ export class UsersListComponent {
   confirmDeactivate(user: UserListItemDto): void {
     this.confirmationService.confirm({
       header: 'Deactivate user',
-      message: getDeactivateConfirmMessage(user.fullName),
+      message: getDeactivateConfirmMessage(formatUserReference(user)),
       icon: 'pi pi-exclamation-triangle',
       acceptButtonProps: { label: 'Deactivate', severity: 'danger' },
       rejectButtonProps: { label: 'Cancel', severity: 'secondary', outlined: true },
@@ -306,7 +313,7 @@ export class UsersListComponent {
   confirmActivate(user: UserListItemDto): void {
     this.confirmationService.confirm({
       header: 'Activate user',
-      message: getActivateConfirmMessage(user.fullName),
+      message: getActivateConfirmMessage(formatUserReference(user)),
       icon: 'pi pi-exclamation-triangle',
       acceptButtonProps: { label: 'Activate', severity: 'success' },
       rejectButtonProps: { label: 'Cancel', severity: 'secondary', outlined: true },
