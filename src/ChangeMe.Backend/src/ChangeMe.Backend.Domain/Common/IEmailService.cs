@@ -1,4 +1,4 @@
-namespace ChangeMe.Backend.Domain.Common;
+﻿namespace ChangeMe.Backend.Domain.Common;
 
 public interface IEmailService
 {

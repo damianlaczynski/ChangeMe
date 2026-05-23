@@ -85,9 +85,7 @@
         ) {
           <p-message severity="error" variant="simple">
             Password must be at least
-            {{
-              form.controls.password.errors?.['minlength'].requiredLength
-            }}
+            {{ form.controls.password.errors?.['minlength'].requiredLength }}
             characters.
           </p-message>
         }

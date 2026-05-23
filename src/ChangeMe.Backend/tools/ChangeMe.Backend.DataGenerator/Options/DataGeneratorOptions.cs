@@ -1,4 +1,4 @@
-namespace ChangeMe.Backend.DataGenerator.Options;
+﻿namespace ChangeMe.Backend.DataGenerator.Options;
 
 public sealed class DataGeneratorOptions
 {

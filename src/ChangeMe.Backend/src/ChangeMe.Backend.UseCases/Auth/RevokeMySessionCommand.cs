@@ -1,4 +1,4 @@
-namespace ChangeMe.Backend.UseCases.Auth;
+﻿namespace ChangeMe.Backend.UseCases.Auth;
 
 public sealed record RevokeMySessionCommand(Guid SessionId) : ICommand<bool>;
 

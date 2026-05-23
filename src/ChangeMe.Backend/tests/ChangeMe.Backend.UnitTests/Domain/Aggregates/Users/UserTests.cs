@@ -1,4 +1,4 @@
-using Ardalis.Result;
+﻿using Ardalis.Result;
 using ChangeMe.Backend.Domain.Aggregates.Users;
 
 namespace ChangeMe.Backend.UnitTests;

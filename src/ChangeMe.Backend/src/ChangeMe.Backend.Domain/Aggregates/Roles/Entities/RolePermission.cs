@@ -1,4 +1,4 @@
-namespace ChangeMe.Backend.Domain.Aggregates.Roles.Entities;
+﻿namespace ChangeMe.Backend.Domain.Aggregates.Roles.Entities;
 
 public class RolePermission
 {

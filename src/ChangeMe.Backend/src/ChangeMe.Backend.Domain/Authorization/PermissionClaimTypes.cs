@@ -1,4 +1,4 @@
-namespace ChangeMe.Backend.Domain.Authorization;
+﻿namespace ChangeMe.Backend.Domain.Authorization;
 
 public static class PermissionClaimTypes
 {

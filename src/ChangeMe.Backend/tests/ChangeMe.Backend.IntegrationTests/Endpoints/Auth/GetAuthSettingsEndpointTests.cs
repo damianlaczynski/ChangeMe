@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using ChangeMe.Backend.IntegrationTests.Fixtures;
 using ChangeMe.Backend.IntegrationTests.Support;
 using ChangeMe.Backend.UseCases.Auth.Dtos;

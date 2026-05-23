@@ -28,7 +28,11 @@
       />
     </div>
   } @else {
-    <form class="p-fluid flex flex-col gap-4" [formGroup]="form" (ngSubmit)="onSubmit()">
+    <form
+      class="p-fluid flex flex-col gap-4"
+      [formGroup]="form"
+      (ngSubmit)="onSubmit()"
+    >
       <p-panel header="Role details" [toggleable]="true">
         <div class="flex flex-col gap-1.5">
           <label for="name">Name</label>

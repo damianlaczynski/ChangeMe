@@ -1,4 +1,4 @@
-namespace ChangeMe.Backend.Domain.Aggregates.Issue.Entities;
+﻿namespace ChangeMe.Backend.Domain.Aggregates.Issue.Entities;
 
 public class IssueComment : Entity
 {

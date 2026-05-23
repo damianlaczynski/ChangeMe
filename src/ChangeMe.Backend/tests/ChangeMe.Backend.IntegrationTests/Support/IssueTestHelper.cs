@@ -1,6 +1,5 @@
-using ChangeMe.Backend.Domain.Aggregates.Issue;
+﻿using ChangeMe.Backend.Domain.Aggregates.Issue;
 using ChangeMe.Backend.Domain.Aggregates.Issue.Enums;
-using ChangeMe.Backend.Domain.Common;
 using ChangeMe.Backend.Infrastructure.Persistence;
 using ChangeMe.Backend.IntegrationTests.Fixtures;
 using Microsoft.Extensions.DependencyInjection;

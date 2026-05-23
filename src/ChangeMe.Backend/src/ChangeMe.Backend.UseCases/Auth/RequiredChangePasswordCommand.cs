@@ -1,4 +1,4 @@
-
+﻿
 namespace ChangeMe.Backend.UseCases.Auth;
 
 public sealed record RequiredChangePasswordCommand(string NewPassword) : ICommand<bool>;

@@ -1,4 +1,4 @@
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using Ardalis.Result;
 
 namespace ChangeMe.Backend.IntegrationTests.Support.Fakes;

@@ -1,4 +1,4 @@
-using ChangeMe.Backend.Infrastructure.Email;
+﻿using ChangeMe.Backend.Infrastructure.Email;
 
 namespace ChangeMe.Backend.UnitTests.Infrastructure.Email;
 

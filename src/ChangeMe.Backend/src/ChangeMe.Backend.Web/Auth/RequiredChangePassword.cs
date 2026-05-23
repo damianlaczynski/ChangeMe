@@ -1,4 +1,4 @@
-using ChangeMe.Backend.UseCases.Auth;
+﻿using ChangeMe.Backend.UseCases.Auth;
 using ChangeMe.Backend.Web.Validation;
 
 namespace ChangeMe.Backend.Web.Auth;

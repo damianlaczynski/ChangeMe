@@ -1,4 +1,4 @@
-using ChangeMe.Backend.Domain.Aggregates.Notifications;
+﻿using ChangeMe.Backend.Domain.Aggregates.Notifications;
 
 namespace ChangeMe.Backend.Infrastructure.Persistence.Config.Notifications;
 

@@ -1,4 +1,4 @@
-
+﻿
 namespace ChangeMe.Backend.UseCases.Users;
 
 public sealed record RevokeUserSessionCommand(Guid Id, Guid SessionId) : ICommand<bool>;

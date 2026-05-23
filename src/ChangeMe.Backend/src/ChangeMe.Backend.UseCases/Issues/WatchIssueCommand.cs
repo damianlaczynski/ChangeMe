@@ -1,4 +1,4 @@
-namespace ChangeMe.Backend.UseCases.Issues;
+﻿namespace ChangeMe.Backend.UseCases.Issues;
 
 public record WatchIssueCommand(Guid IssueId) : ICommand<IssueWatchStateDto>;
 public record UnwatchIssueCommand(Guid IssueId) : ICommand<IssueWatchStateDto>;

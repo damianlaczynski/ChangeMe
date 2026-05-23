@@ -1,4 +1,4 @@
-namespace ChangeMe.Backend.Domain.Aggregates.Issue.Enums;
+﻿namespace ChangeMe.Backend.Domain.Aggregates.Issue.Enums;
 
 public enum IssueHistoryEventType
 {

@@ -1,8 +1,7 @@
-using ChangeMe.Backend.Domain.Aggregates.Users;
-using Microsoft.EntityFrameworkCore;
+﻿using ChangeMe.Backend.Domain.Aggregates.Users;
 using ChangeMe.Backend.Infrastructure.Auth;
-using ChangeMe.Backend.UseCases.Auth;
 using ChangeMe.Backend.UnitTests.Support;
+using ChangeMe.Backend.UseCases.Auth;
 
 namespace ChangeMe.Backend.UnitTests.UseCases.Auth;
 

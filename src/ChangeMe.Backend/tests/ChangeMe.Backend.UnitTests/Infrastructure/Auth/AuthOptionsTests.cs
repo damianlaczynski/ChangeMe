@@ -1,7 +1,6 @@
-using ChangeMe.Backend.Domain.Aggregates.Users;
+﻿using ChangeMe.Backend.Domain.Aggregates.Users;
 using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UseCases.Auth;
-using ChangeMe.Backend.UseCases.Auth.Dtos;
 using Microsoft.Extensions.Options;
 
 namespace ChangeMe.Backend.UnitTests;

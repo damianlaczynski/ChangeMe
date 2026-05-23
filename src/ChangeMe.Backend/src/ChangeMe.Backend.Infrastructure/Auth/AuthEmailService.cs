@@ -1,6 +1,5 @@
-using ChangeMe.Backend.Domain.Aggregates.Users;
+﻿using ChangeMe.Backend.Domain.Aggregates.Users;
 using ChangeMe.Backend.Infrastructure.Email;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace ChangeMe.Backend.Infrastructure.Auth;

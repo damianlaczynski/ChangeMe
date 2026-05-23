@@ -1,5 +1,4 @@
-using ChangeMe.Backend.Domain.Aggregates.Users.Entities;
-using ChangeMe.Backend.Domain.Aggregates.Users.Enums;
+﻿using ChangeMe.Backend.Domain.Aggregates.Users.Enums;
 using ChangeMe.Backend.IntegrationTests.Fixtures;
 using ChangeMe.Backend.IntegrationTests.Support;
 using Microsoft.Extensions.DependencyInjection;

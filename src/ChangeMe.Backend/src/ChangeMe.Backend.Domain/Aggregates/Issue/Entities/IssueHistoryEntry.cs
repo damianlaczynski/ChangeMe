@@ -1,4 +1,4 @@
-using ChangeMe.Backend.Domain.Aggregates.Issue.Enums;
+﻿using ChangeMe.Backend.Domain.Aggregates.Issue.Enums;
 
 namespace ChangeMe.Backend.Domain.Aggregates.Issue.Entities;
 

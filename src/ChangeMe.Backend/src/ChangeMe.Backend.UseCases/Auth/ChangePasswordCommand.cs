@@ -1,6 +1,4 @@
-using ChangeMe.Backend.Domain.Aggregates.Users;
-
-namespace ChangeMe.Backend.UseCases.Auth;
+﻿namespace ChangeMe.Backend.UseCases.Auth;
 
 public sealed record ChangePasswordCommand(
   string CurrentPassword,

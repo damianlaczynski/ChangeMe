@@ -1,5 +1,4 @@
-using ChangeMe.Backend.UseCases.Common;
-using ChangeMe.Backend.UseCases.Issues.Dtos;
+﻿using ChangeMe.Backend.UseCases.Issues.Dtos;
 using ChangeMe.Backend.UseCases.Issues.Utils;
 
 namespace ChangeMe.Backend.UseCases.Issues;

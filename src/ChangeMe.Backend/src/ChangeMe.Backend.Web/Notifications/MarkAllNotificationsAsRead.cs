@@ -1,4 +1,4 @@
-using ChangeMe.Backend.UseCases.Notifications;
+﻿using ChangeMe.Backend.UseCases.Notifications;
 
 namespace ChangeMe.Backend.Web.Notifications;
 

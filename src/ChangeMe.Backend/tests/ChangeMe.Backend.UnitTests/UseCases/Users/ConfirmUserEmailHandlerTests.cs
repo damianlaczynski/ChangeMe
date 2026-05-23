@@ -1,10 +1,10 @@
-using Ardalis.Result;
+﻿using Ardalis.Result;
 using ChangeMe.Backend.Domain.Aggregates.Users;
 using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.Infrastructure.Persistence;
+using ChangeMe.Backend.UnitTests.Support;
 using ChangeMe.Backend.UseCases.Users;
 using ChangeMe.Backend.UseCases.Users.Utils;
-using ChangeMe.Backend.UnitTests.Support;
 using MediatR;
 
 namespace ChangeMe.Backend.UnitTests.UseCases.Users;

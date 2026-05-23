@@ -1,4 +1,4 @@
-using ChangeMe.Backend.Infrastructure.Auth;
+﻿using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.Infrastructure.Email;
 
 namespace ChangeMe.Backend.Infrastructure.Configurations;

@@ -1,9 +1,8 @@
-using ChangeMe.Backend.Domain.Aggregates.Users;
-using ChangeMe.Backend.Domain.Common;
+﻿using ChangeMe.Backend.Domain.Aggregates.Users;
 using ChangeMe.Backend.Infrastructure.Auth;
+using ChangeMe.Backend.UnitTests.Support;
 using ChangeMe.Backend.UseCases.Users;
 using ChangeMe.Backend.UseCases.Users.Dtos;
-using ChangeMe.Backend.UnitTests.Support;
 
 namespace ChangeMe.Backend.UnitTests.UseCases.Users;
 

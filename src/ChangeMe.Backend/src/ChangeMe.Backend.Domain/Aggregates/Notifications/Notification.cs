@@ -1,4 +1,4 @@
-using ChangeMe.Backend.Domain.Aggregates.Notifications.Enums;
+﻿using ChangeMe.Backend.Domain.Aggregates.Notifications.Enums;
 
 namespace ChangeMe.Backend.Domain.Aggregates.Notifications;
 

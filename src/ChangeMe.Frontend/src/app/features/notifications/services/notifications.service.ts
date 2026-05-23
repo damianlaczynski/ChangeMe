@@ -47,7 +47,9 @@ export class NotificationsService {
   readonly hasLoaded = signal(false);
   readonly errorMessage = signal<string | null>(null);
 
-  readonly canShowMoreUnread = computed(() => this.unreadPagination()?.hasNext ?? false);
+  readonly canShowMoreUnread = computed(
+    () => this.unreadPagination()?.hasNext ?? false
+  );
   readonly canShowMoreRead = computed(() => this.readPagination()?.hasNext ?? false);
 
   readonly notifications = computed(() => [
@@ -180,36 +182,42 @@ export class NotificationsService {
     const query = { ...this.unreadQuery(), pageNumber };
     const requestId = ++this.unreadRequestId;
 
-    this.loadNotificationsPage(query, requestId, append, (result) => {
-      if (requestId !== this.unreadRequestId) {
-        return;
-      }
+    this.loadNotificationsPage(
+      query,
+      requestId,
+      append,
+      (result) => {
+        if (requestId !== this.unreadRequestId) {
+          return;
+        }
 
-      if (append) {
-        const current = this.unreadNotifications();
-        const merged = this.appendUniqueNotifications(current, result.page.items);
-        const addedCount = merged.length - current.length;
-        this.unreadNotifications.set(merged);
-        this.unreadPagination.set(
-          addedCount === 0 && result.page.hasNext
-            ? { ...result.page, hasNext: false }
-            : result.page
-        );
-      } else {
-        this.unreadNotifications.set(result.page.items);
-        this.unreadPagination.set(result.page);
-      }
+        if (append) {
+          const current = this.unreadNotifications();
+          const merged = this.appendUniqueNotifications(current, result.page.items);
+          const addedCount = merged.length - current.length;
+          this.unreadNotifications.set(merged);
+          this.unreadPagination.set(
+            addedCount === 0 && result.page.hasNext
+              ? { ...result.page, hasNext: false }
+              : result.page
+          );
+        } else {
+          this.unreadNotifications.set(result.page.items);
+          this.unreadPagination.set(result.page);
+        }
 
-      this.unreadQuery.set({
-        pageNumber: result.page.currentPage,
-        pageSize: result.page.pageSize,
-        sortField: 'CreatedAt',
-        ascending: false,
-        isRead: false
-      });
-      this.unreadCount.set(result.unreadCount);
-      this.isLoadingMoreUnread.set(false);
-    }, true);
+        this.unreadQuery.set({
+          pageNumber: result.page.currentPage,
+          pageSize: result.page.pageSize,
+          sortField: 'CreatedAt',
+          ascending: false,
+          isRead: false
+        });
+        this.unreadCount.set(result.unreadCount);
+        this.isLoadingMoreUnread.set(false);
+      },
+      true
+    );
   }
 
   loadReadNotifications(options: { append?: boolean; pageNumber?: number } = {}): void {
@@ -218,36 +226,42 @@ export class NotificationsService {
     const query = { ...this.readQuery(), pageNumber };
     const requestId = ++this.readRequestId;
 
-    this.loadNotificationsPage(query, requestId, append, (result) => {
-      if (requestId !== this.readRequestId) {
-        return;
-      }
+    this.loadNotificationsPage(
+      query,
+      requestId,
+      append,
+      (result) => {
+        if (requestId !== this.readRequestId) {
+          return;
+        }
 
-      if (append) {
-        const current = this.readNotifications();
-        const merged = this.appendUniqueNotifications(current, result.page.items);
-        const addedCount = merged.length - current.length;
-        this.readNotifications.set(merged);
-        this.readPagination.set(
-          addedCount === 0 && result.page.hasNext
-            ? { ...result.page, hasNext: false }
-            : result.page
-        );
-      } else {
-        this.readNotifications.set(result.page.items);
-        this.readPagination.set(result.page);
-      }
+        if (append) {
+          const current = this.readNotifications();
+          const merged = this.appendUniqueNotifications(current, result.page.items);
+          const addedCount = merged.length - current.length;
+          this.readNotifications.set(merged);
+          this.readPagination.set(
+            addedCount === 0 && result.page.hasNext
+              ? { ...result.page, hasNext: false }
+              : result.page
+          );
+        } else {
+          this.readNotifications.set(result.page.items);
+          this.readPagination.set(result.page);
+        }
 
-      this.readQuery.set({
-        pageNumber: result.page.currentPage,
-        pageSize: result.page.pageSize,
-        sortField: 'CreatedAt',
-        ascending: false,
-        isRead: true
-      });
-      this.unreadCount.set(result.unreadCount);
-      this.isLoadingMoreRead.set(false);
-    }, false);
+        this.readQuery.set({
+          pageNumber: result.page.currentPage,
+          pageSize: result.page.pageSize,
+          sortField: 'CreatedAt',
+          ascending: false,
+          isRead: true
+        });
+        this.unreadCount.set(result.unreadCount);
+        this.isLoadingMoreRead.set(false);
+      },
+      false
+    );
   }
 
   markAsRead(notificationId: string): void {
@@ -263,7 +277,9 @@ export class NotificationsService {
           );
           this.readNotifications.update((items) => {
             if (items.some((item) => item.id === notification.id)) {
-              return items.map((item) => (item.id === notification.id ? notification : item));
+              return items.map((item) =>
+                item.id === notification.id ? notification : item
+              );
             }
 
             return [notification, ...items];

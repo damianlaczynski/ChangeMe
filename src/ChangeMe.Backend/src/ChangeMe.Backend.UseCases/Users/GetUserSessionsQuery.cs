@@ -1,5 +1,4 @@
-using ChangeMe.Backend.Infrastructure.Auth;
-using ChangeMe.Backend.UseCases.Common;
+﻿using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UseCases.Users.Dtos;
 using ChangeMe.Backend.UseCases.Users.Utils;
 

@@ -1,4 +1,4 @@
-namespace ChangeMe.Backend.UseCases.Auth;
+﻿namespace ChangeMe.Backend.UseCases.Auth;
 
 public sealed record LogoutAllSessionsCommand(bool doNothing = false) : ICommand<bool>;
 

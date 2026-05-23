@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 
 namespace ChangeMe.Backend.Infrastructure.Email;
 
