@@ -47,6 +47,21 @@ internal static class TestAuthHelper
       Password = password
     }, cancellationToken);
 
+    if (!loginResponse.IsSuccessStatusCode)
+    {
+      await using var verifyScope = factory.Services.CreateAsyncScope();
+      var verifyDbContext = verifyScope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+      var unverifiedUser = await verifyDbContext.Users.SingleAsync(x => x.Email == email, cancellationToken);
+      unverifiedUser.MarkEmailVerified();
+      await verifyDbContext.SaveChangesAsync(cancellationToken);
+
+      loginResponse = await anonymousClient.PostAsJsonAsync("/api/auth/login", new
+      {
+        Email = email,
+        Password = password
+      }, cancellationToken);
+    }
+
     loginResponse.EnsureSuccessStatusCode();
 
     var responseBody = await loginResponse.Content.ReadAsStringAsync(cancellationToken);

@@ -1,5 +1,4 @@
-﻿using ChangeMe.Backend.Domain.Aggregates.Users;
-using ChangeMe.Backend.Domain.Authorization;
+﻿using ChangeMe.Backend.Domain.Authorization;
 
 namespace ChangeMe.Backend.UseCases.Users.Dtos;
 
@@ -8,7 +7,9 @@ public sealed record UserListItemDto
   public Guid Id { get; init; }
   public string FullName { get; init; } = string.Empty;
   public string Email { get; init; } = string.Empty;
-  public UserStatus Status { get; init; }
+  public bool Deactivated { get; init; }
+  public bool HasPasswordSet { get; init; }
+  public bool EmailVerified { get; init; }
   public IReadOnlyList<string> RoleNames { get; init; } = [];
   public DateTime? LastSignInAt { get; init; }
   public DateTime CreatedAt { get; init; }
@@ -30,7 +31,14 @@ public sealed record UserDetailsDto
   public string LastName { get; init; } = string.Empty;
   public string FullName { get; init; } = string.Empty;
   public string Email { get; init; } = string.Empty;
-  public UserStatus Status { get; init; }
+  public bool Deactivated { get; init; }
+  public DateTime? DeactivatedAt { get; init; }
+  public bool HasPasswordSet { get; init; }
+  public bool EmailVerified { get; init; }
+  public DateTime? EmailVerifiedAt { get; init; }
+  public DateTime? PasswordLastChangedAt { get; init; }
+  public DateTime? PasswordExpiresAtUtc { get; init; }
+  public DateTime? InvitationSentAt { get; init; }
   public DateTime MemberSince { get; init; }
   public DateTime? LastSignInAt { get; init; }
   public IReadOnlyList<UserRoleSummaryDto> Roles { get; init; } = [];

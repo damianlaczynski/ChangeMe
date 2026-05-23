@@ -34,6 +34,10 @@ export class AppShellComponent {
 
   readonly currentUser = this.authService.currentUser;
   readonly isAuthenticated = this.authService.isAuthenticated;
+  readonly passwordChangeRequired = this.authService.passwordChangeRequired;
+  readonly showAuthenticatedChrome = computed(
+    () => this.isAuthenticated() && !this.passwordChangeRequired()
+  );
   readonly isDesktop = toSignal(
     this.breakpointObserver
       .observe('(min-width: 768px)')

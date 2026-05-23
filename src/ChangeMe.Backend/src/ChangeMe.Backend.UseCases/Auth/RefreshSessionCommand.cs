@@ -1,5 +1,6 @@
 using ChangeMe.Backend.Domain.Aggregates.Sessions;
 using ChangeMe.Backend.Domain.Aggregates.Users;
+using ChangeMe.Backend.Domain.Interfaces;
 using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UseCases.Auth.Dtos;
 
@@ -12,7 +13,8 @@ public sealed record RefreshSessionCommand(string RefreshToken) : ICommand<AuthR
 public class RefreshSessionHandler(
   ApplicationDbContext context,
   IJwtTokenGenerator jwtTokenGenerator,
-  ISessionLifetimeService sessionLifetime) : ICommandHandler<RefreshSessionCommand, AuthResponseDto>
+  ISessionLifetimeService sessionLifetime,
+  IPasswordExpirationEvaluator passwordExpirationEvaluator) : ICommandHandler<RefreshSessionCommand, AuthResponseDto>
 {
   public async Task<Result<AuthResponseDto>> Handle(RefreshSessionCommand command, CancellationToken cancellationToken)
   {
@@ -41,12 +43,15 @@ public class RefreshSessionHandler(
 
     await context.SaveChangesAsync(cancellationToken);
 
+    var passwordChangeRequired = passwordExpirationEvaluator.IsPasswordChangeRequired(user, utcNow);
+
     return await AuthSessionUtils.CreateAuthResponseAsync(
       context,
       jwtTokenGenerator,
       user,
       session,
       newRefreshToken,
+      passwordChangeRequired,
       cancellationToken);
   }
 }

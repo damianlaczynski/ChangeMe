@@ -14,16 +14,20 @@ import { ToastService } from '@core/toast/services/toast.service';
 import { AuthService } from '@features/auth/services/auth.service';
 import {
   UserListItemDto,
-  UserSearchParameters,
-  UserStatus
+  UserSearchParameters
 } from '@features/users/models/user.model';
 import { UsersService } from '@features/users/services/users.service';
 import {
+  accountFilters,
+  emailVerifiedFilters,
+  getAccountBadgeLabel,
+  getAccountBadgeSeverity,
+  getAccountStateLabel,
   getActivateConfirmMessage,
   getDeactivateConfirmMessage,
-  getUserStatusSeverity,
-  UserMessages,
-  userStatuses
+  getEmailVerifiedBadgeLabel,
+  getEmailVerifiedBadgeSeverity,
+  UserMessages
 } from '@features/users/utils/users.utils';
 import { PermissionCodes } from '@shared/authorization/permission-codes';
 import { AppliedFiltersChipsComponent } from '@shared/components/applied-filters-chips/applied-filters-chips.component';
@@ -47,7 +51,8 @@ import { catchError, of, switchMap, tap } from 'rxjs';
 
 type UsersFilterForm = {
   searchText: FormControl<string>;
-  statuses: FormControl<UserStatus[]>;
+  deactivated: FormControl<boolean[]>;
+  emailVerified: FormControl<boolean[]>;
 };
 
 type UserSortField = 'Name' | 'CreatedAt' | 'LastSignIn';
@@ -80,9 +85,15 @@ export class UsersListComponent {
   private readonly toastService = inject(ToastService);
   private readonly destroyRef = inject(DestroyRef);
 
-  readonly userStatuses = userStatuses;
-  readonly getUserStatusSeverity = getUserStatusSeverity;
+  readonly accountFilters = accountFilters;
+  readonly emailVerifiedFilters = emailVerifiedFilters;
+  readonly getAccountBadgeLabel = getAccountBadgeLabel;
+  readonly getAccountBadgeSeverity = getAccountBadgeSeverity;
+  readonly getAccountStateLabel = getAccountStateLabel;
+  readonly getEmailVerifiedBadgeLabel = getEmailVerifiedBadgeLabel;
+  readonly getEmailVerifiedBadgeSeverity = getEmailVerifiedBadgeSeverity;
   readonly UserMessages = UserMessages;
+  readonly emailVerificationEnabled = signal(false);
   readonly permissionCodes = PermissionCodes;
 
   readonly users = signal<UserListItemDto[]>([]);
@@ -114,26 +125,46 @@ export class UsersListComponent {
 
   readonly filtersForm = new FormGroup<UsersFilterForm>({
     searchText: new FormControl('', { nonNullable: true }),
-    statuses: new FormControl<UserStatus[]>([], { nonNullable: true })
+    deactivated: new FormControl<boolean[]>([], { nonNullable: true }),
+    emailVerified: new FormControl<boolean[]>([], { nonNullable: true })
   });
 
   readonly appliedFilterChips = computed(() => {
     const activeQuery = this.query();
     const chips: AppliedFilterChip[] = [];
 
-    for (const status of activeQuery.statuses ?? []) {
+    for (const deactivated of activeQuery.deactivated ?? []) {
       chips.push({
-        id: `status-${status}`,
-        label: `Status: ${status}`
+        id: `account-${deactivated}`,
+        label: `Account: ${getAccountBadgeLabel(deactivated)}`
       });
+    }
+
+    if (this.emailVerificationEnabled()) {
+      for (const emailVerified of activeQuery.emailVerified ?? []) {
+        chips.push({
+          id: `emailVerified-${emailVerified}`,
+          label: `Email verified: ${getEmailVerifiedBadgeLabel(emailVerified)}`
+        });
+      }
     }
 
     return chips;
   });
 
+  readonly tableColumnCount = computed(() => (this.emailVerificationEnabled() ? 9 : 8));
+
   readonly hasAppliedFilters = computed(() => this.appliedFilterChips().length > 0);
 
   constructor() {
+    this.authService
+      .getAuthSettings()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (settings) =>
+          this.emailVerificationEnabled.set(settings.emailVerificationEnabled)
+      });
+
     toObservable(this.query)
       .pipe(
         tap(() => {
@@ -159,27 +190,48 @@ export class UsersListComponent {
   }
 
   applyFilters(): void {
-    const { searchText, statuses } = this.filtersForm.getRawValue();
+    const { searchText, deactivated, emailVerified } = this.filtersForm.getRawValue();
     this.query.update((current) => ({
       ...current,
       pageNumber: 1,
       searchText: searchText.trim() || undefined,
-      statuses: statuses.length > 0 ? statuses : undefined
+      deactivated: deactivated.length > 0 ? deactivated : undefined,
+      emailVerified:
+        this.emailVerificationEnabled() && emailVerified.length > 0
+          ? emailVerified
+          : undefined
     }));
   }
 
   clearFilters(): void {
-    this.filtersForm.reset({ searchText: '', statuses: [] });
+    this.filtersForm.reset({ searchText: '', deactivated: [], emailVerified: [] });
     this.query.update((current) => ({
       ...current,
       pageNumber: 1,
       searchText: undefined,
-      statuses: undefined
+      deactivated: undefined,
+      emailVerified: undefined
     }));
   }
 
   onFiltersCollapsedChange(collapsed: boolean | undefined): void {
     this.filtersCollapsed.set(collapsed ?? true);
+  }
+
+  onPageChange(event: PaginatorState): void {
+    const pageSize = event.rows ?? this.query().pageSize ?? 10;
+    const pageNumber = Math.floor((event.first ?? 0) / pageSize) + 1;
+    const currentQuery = this.query();
+
+    if (currentQuery.pageNumber === pageNumber && currentQuery.pageSize === pageSize) {
+      return;
+    }
+
+    this.query.set({
+      ...currentQuery,
+      pageNumber,
+      pageSize
+    });
   }
 
   onTableSort(event: { field?: string | null; order?: number | null }): void {
@@ -203,18 +255,6 @@ export class UsersListComponent {
     });
   }
 
-  onPageChange(event: PaginatorState): void {
-    this.query.update((current) => ({
-      ...current,
-      pageNumber: (event.page ?? 0) + 1,
-      pageSize: event.rows ?? current.pageSize
-    }));
-  }
-
-  formatLastSignIn(lastSignInAt: string | null): string {
-    return lastSignInAt ? '' : UserMessages.neverSignedIn;
-  }
-
   openUserActionsMenu(event: Event, user: UserListItemDto): void {
     const items: MenuItem[] = [
       {
@@ -233,7 +273,7 @@ export class UsersListComponent {
     }
 
     if (this.canDeactivateUsers()) {
-      if (user.status === 'Active') {
+      if (!user.deactivated) {
         items.push({
           label: 'Deactivate',
           icon: 'pi pi-ban',
@@ -301,7 +341,7 @@ export class UsersListComponent {
   }
 
   refresh(): void {
-    this.query.update((current) => ({ ...current, pageNumber: 1 }));
+    this.query.set({ ...this.query(), pageNumber: 1 });
   }
 
   private refreshList(): void {
@@ -309,12 +349,22 @@ export class UsersListComponent {
   }
 
   removeAppliedFilter(chip: AppliedFilterChip): void {
-    if (chip.id.startsWith('status-')) {
-      const status = chip.id.slice('status-'.length) as UserStatus;
-      const statuses = this.filtersForm.controls.statuses.value.filter(
-        (item) => item !== status
+    if (chip.id.startsWith('account-')) {
+      const deactivated = chip.id.slice('account-'.length) === 'true';
+      const values = this.filtersForm.controls.deactivated.value.filter(
+        (item) => item !== deactivated
       );
-      this.filtersForm.controls.statuses.setValue(statuses);
+      this.filtersForm.controls.deactivated.setValue(values);
+      this.applyFilters();
+      return;
+    }
+
+    if (chip.id.startsWith('emailVerified-')) {
+      const emailVerified = chip.id.slice('emailVerified-'.length) === 'true';
+      const values = this.filtersForm.controls.emailVerified.value.filter(
+        (item) => item !== emailVerified
+      );
+      this.filtersForm.controls.emailVerified.setValue(values);
       this.applyFilters();
     }
   }

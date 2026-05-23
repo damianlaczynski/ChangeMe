@@ -1,4 +1,12 @@
-import { Component, computed, DestroyRef, effect, inject, input, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  DestroyRef,
+  effect,
+  inject,
+  input,
+  signal
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   FormControl,
@@ -10,23 +18,19 @@ import { Router, RouterLink } from '@angular/router';
 import { ToastService } from '@core/toast/services/toast.service';
 import { AuthService } from '@features/auth/services/auth.service';
 import { EffectivePermissionsComponent } from '@features/users/components/effective-permissions/effective-permissions.component';
-import { EffectivePermissionDto, UserStatus } from '@features/users/models/user.model';
+import { EffectivePermissionDto } from '@features/users/models/user.model';
 import { UsersService } from '@features/users/services/users.service';
-import {
-  UserConstraints,
-  UserMessages,
-  userStatuses
-} from '@features/users/utils/users.utils';
+import { UserConstraints, UserMessages } from '@features/users/utils/users.utils';
 import { PermissionCodes } from '@shared/authorization/permission-codes';
 import { BackButtonComponent } from '@shared/components/back-button/back-button.component';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
+import { Checkbox } from 'primeng/checkbox';
 import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
 import { MultiSelect } from 'primeng/multiselect';
 import { Panel } from 'primeng/panel';
 import { ProgressSpinner } from 'primeng/progressspinner';
-import { Select } from 'primeng/select';
 import { catchError, debounceTime, of, startWith, switchMap } from 'rxjs';
 
 @Component({
@@ -39,7 +43,7 @@ import { catchError, debounceTime, of, startWith, switchMap } from 'rxjs';
     Button,
     InputText,
     MultiSelect,
-    Select,
+    Checkbox,
     Message,
     Panel,
     ProgressSpinner,
@@ -56,7 +60,6 @@ export class EditUserComponent {
   private readonly toastService = inject(ToastService);
   private readonly destroyRef = inject(DestroyRef);
 
-  readonly userStatuses = userStatuses;
   readonly roleOptions = signal<{ id: string; name: string; isSystem: boolean }[]>([]);
   readonly effectivePermissions = signal<EffectivePermissionDto[]>([]);
   readonly submitError = signal<string | null>(null);
@@ -64,7 +67,8 @@ export class EditUserComponent {
   readonly isSubmitting = signal(false);
   readonly isLoading = signal(true);
   readonly pageTitle = computed(() => {
-    const name = `${this.form.controls.firstName.value} ${this.form.controls.lastName.value}`.trim();
+    const name =
+      `${this.form.controls.firstName.value} ${this.form.controls.lastName.value}`.trim();
     return name ? `Edit ${name}` : 'Edit User';
   });
   readonly isEditingSelf = signal(false);
@@ -100,7 +104,7 @@ export class EditUserComponent {
       ]
     }),
     roleIds: new FormControl<string[]>([], { nonNullable: true }),
-    status: new FormControl<UserStatus>('Active', { nonNullable: true })
+    deactivated: new FormControl(false, { nonNullable: true })
   });
 
   constructor() {
@@ -158,8 +162,20 @@ export class EditUserComponent {
             lastName: user.lastName,
             email: user.email,
             roleIds: user.roles.map((role) => role.id),
-            status: user.status
+            deactivated: user.deactivated
           });
+
+          const nameValidators = user.hasPasswordSet
+            ? [
+                Validators.required,
+                Validators.maxLength(UserConstraints.NAME_MAX_LENGTH)
+              ]
+            : [Validators.maxLength(UserConstraints.NAME_MAX_LENGTH)];
+
+          this.form.controls.firstName.setValidators(nameValidators);
+          this.form.controls.lastName.setValidators(nameValidators);
+          this.form.controls.firstName.updateValueAndValidity();
+          this.form.controls.lastName.updateValueAndValidity();
 
           if (this.showRolesField()) {
             this.effectivePermissions.set(user.effectivePermissions);
@@ -198,7 +214,7 @@ export class EditUserComponent {
         lastName: raw.lastName.trim(),
         email: raw.email.trim(),
         roleIds: this.showRolesField() ? raw.roleIds : undefined,
-        status: this.showStatusField() ? raw.status : undefined
+        deactivated: this.showStatusField() ? raw.deactivated : undefined
       })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
@@ -213,7 +229,7 @@ export class EditUserComponent {
       });
   }
 
-  shouldShowError(control: FormControl<string | UserStatus | string[]>): boolean {
+  shouldShowError(control: FormControl<string | boolean | string[]>): boolean {
     return control.touched && control.invalid;
   }
 }

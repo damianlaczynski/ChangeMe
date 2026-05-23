@@ -1,4 +1,3 @@
-import { UserStatus } from '@features/users/models/user.model';
 import { PaginationParameters } from '@shared/data/models/pagination-parameters.model';
 
 export interface RoleListItemDto {
@@ -38,7 +37,7 @@ export interface RoleAssignedUserDto {
   id: string;
   fullName: string;
   email: string;
-  status: UserStatus;
+  deactivated: boolean;
 }
 
 export interface RoleSearchParameters extends PaginationParameters {

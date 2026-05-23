@@ -2,11 +2,14 @@
 using ChangeMe.Backend.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 
 namespace ChangeMe.Backend.Infrastructure.Configurations;
 
 public sealed class DatabaseOptions
 {
+  public const string SectionName = "Database";
+
   public bool ApplyMigrationsOnStartup { get; set; }
 }
 
@@ -14,7 +17,7 @@ public static class DatabaseConfig
 {
   public static IServiceCollection AddDatabase(this IServiceCollection services, WebApplicationBuilder builder, ILogger logger)
   {
-    services.Configure<DatabaseOptions>(builder.Configuration.GetSection("Database"));
+    services.Configure<DatabaseOptions>(builder.Configuration.GetSection(DatabaseOptions.SectionName));
 
     var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
     if (string.IsNullOrWhiteSpace(connectionString))
@@ -71,7 +74,8 @@ public static class DatabaseConfig
 
   public static async Task UseDatabase(this WebApplication app)
   {
-    if (!app.Configuration.GetValue("Database:ApplyMigrationsOnStartup", false))
+    var databaseOptions = app.Services.GetRequiredService<IOptions<DatabaseOptions>>().Value;
+    if (!databaseOptions.ApplyMigrationsOnStartup)
       return;
 
     await using var scope = app.Services.CreateAsyncScope();

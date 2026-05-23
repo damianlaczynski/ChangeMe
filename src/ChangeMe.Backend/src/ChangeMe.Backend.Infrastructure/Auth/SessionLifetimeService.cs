@@ -3,9 +3,9 @@ using Microsoft.Extensions.Options;
 
 namespace ChangeMe.Backend.Infrastructure.Auth;
 
-public sealed class SessionLifetimeService(IOptions<SessionOptions> options) : ISessionLifetimeService
+public sealed class SessionLifetimeService(IOptions<AuthOptions> options) : ISessionLifetimeService
 {
-  private readonly SessionOptions sessionOptions = options.Value;
+  private readonly AuthSessionOptions sessionOptions = options.Value.Session;
 
   public int PersistentSessionLifetimeDays =>
     sessionOptions.PersistentSessionLifetimeDays > 0

@@ -1,4 +1,8 @@
-<p-card class="mb-4" header="My account" subheader="View your profile and account security.">
+<p-card
+  class="mb-4"
+  header="My account"
+  subheader="View your profile and account security."
+>
   @if (isLoading()) {
     <div class="flex flex-col items-center gap-2 py-8">
       <p-progressSpinner ariaLabel="Loading account" />
@@ -62,10 +66,6 @@
       <div class="flex flex-col gap-1">
         <dt class="text-muted-color text-sm">Email</dt>
         <dd class="m-0 font-medium">{{ profile.email }}</dd>
-      </div>
-      <div class="flex flex-col gap-1">
-        <dt class="text-muted-color text-sm">Status</dt>
-        <dd class="m-0"><p-tag [value]="profile.status" /></dd>
       </div>
       <div class="flex flex-col gap-1">
         <dt class="text-muted-color text-sm">Member since</dt>

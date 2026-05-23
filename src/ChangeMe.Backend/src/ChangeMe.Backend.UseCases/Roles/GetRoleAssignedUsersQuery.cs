@@ -43,9 +43,11 @@ public class GetRoleAssignedUsersHandler(ApplicationDbContext context)
     var projected = usersQuery.Select(u => new RoleAssignedUserDto
     {
       Id = u.Id,
-      FullName = u.FirstName + " " + u.LastName,
+      FullName = u.FirstName != "" && u.LastName != ""
+        ? u.FirstName + " " + u.LastName
+        : "Pending profile",
       Email = u.Email,
-      Status = u.Status
+      Deactivated = u.Deactivated
     });
 
     query.PaginationParameters.SortField = MapSortField(query.PaginationParameters.SortField);
@@ -63,7 +65,7 @@ public class GetRoleAssignedUsersHandler(ApplicationDbContext context)
     {
       "Name" or "FullName" => nameof(RoleAssignedUserDto.FullName),
       "Email" => nameof(RoleAssignedUserDto.Email),
-      "Status" => nameof(RoleAssignedUserDto.Status),
+      "Deactivated" => nameof(RoleAssignedUserDto.Deactivated),
       _ => nameof(RoleAssignedUserDto.FullName)
     };
 }

@@ -27,12 +27,23 @@ public class UserConfiguration : BaseEntityTypeConfiguration<User>
       .HasMaxLength(UserConstraints.EMAIL_MAX_LENGTH);
 
     builder.Property(x => x.PasswordHash)
+      .IsRequired()
+      .HasMaxLength(512);
+
+    builder.Property(x => x.Deactivated)
       .IsRequired();
 
-    builder.Property(x => x.Status)
-      .IsRequired()
-      .HasConversion<string>()
-      .HasMaxLength(32);
+    builder.Property(x => x.DeactivatedAt);
+
+    builder.Property(x => x.HasPasswordSet)
+      .IsRequired();
+
+    builder.Property(x => x.EmailVerified)
+      .IsRequired();
+
+    builder.Property(x => x.EmailVerifiedAt);
+    builder.Property(x => x.PasswordLastChangedAt);
+    builder.Property(x => x.InvitationSentAt);
 
     builder.HasIndex(x => x.NormalizedEmail)
       .IsUnique();

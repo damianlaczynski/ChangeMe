@@ -11,9 +11,12 @@ public static class AuthConfig
 {
   public static IServiceCollection AddJwtAuthentication(this IServiceCollection services, WebApplicationBuilder builder)
   {
-    services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
+    services.Configure<AuthOptions>(builder.Configuration.GetSection(AuthOptions.SectionName));
 
-    var jwtOptions = builder.Configuration.GetSection("Jwt").Get<JwtOptions>() ?? new JwtOptions();
+    var jwtOptions = builder.Configuration
+      .GetSection(AuthOptions.SectionName)
+      .Get<AuthOptions>()?.Jwt ?? new JwtOptions();
+
     var signingKey = Encoding.UTF8.GetBytes(jwtOptions.SigningKey);
 
     services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

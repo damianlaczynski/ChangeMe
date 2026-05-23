@@ -30,4 +30,21 @@ public class LogoutAllSessionsHandler(
 
     await context.SaveChangesAsync(cancellationToken);
   }
+
+  internal static async Task RevokeAllActiveSessionsExceptAsync(
+    ApplicationDbContext context,
+    Guid userId,
+    Guid exceptSessionId,
+    CancellationToken cancellationToken)
+  {
+    var utcNow = DateTime.UtcNow;
+    var sessions = await context.UserSessions
+      .Where(x => x.UserId == userId && x.RevokedAt == null && x.Id != exceptSessionId)
+      .ToListAsync(cancellationToken);
+
+    foreach (var session in sessions)
+      session.Revoke(utcNow);
+
+    await context.SaveChangesAsync(cancellationToken);
+  }
 }

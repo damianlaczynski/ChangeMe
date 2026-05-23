@@ -1,11 +1,12 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, DestroyRef, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
-    FormControl,
-    FormGroup,
-    ReactiveFormsModule,
-    Validators
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators
 } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthPageComponent } from '@features/auth/components/auth-page/auth-page.component';
 import { AuthService } from '@features/auth/services/auth.service';
 import { AuthConstraints, AuthMessages } from '@features/auth/utils/auth.utils';
@@ -21,6 +22,7 @@ import { Password } from 'primeng/password';
   imports: [
     ReactiveFormsModule,
     AuthPageComponent,
+    RouterLink,
     Button,
     Checkbox,
     InputText,
@@ -33,15 +35,14 @@ export class LoginComponent {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly errorMessage = signal('');
-  readonly infoMessage = signal(
-    this.route.snapshot.queryParamMap.get('passwordChanged') === '1'
-      ? AuthMessages.passwordChangedLogin
-      : ''
-  );
+  readonly infoMessage = signal(this.readLoginInfoMessage());
   readonly isSubmitting = signal(false);
   readonly authConstraints = AuthConstraints;
+  readonly showEmailVerificationResend = signal(false);
+  readonly publicRegistrationEnabled = signal(true);
 
   readonly form = new FormGroup({
     email: new FormControl('', {
@@ -63,6 +64,16 @@ export class LoginComponent {
     rememberMe: new FormControl(false, { nonNullable: true })
   });
 
+  constructor() {
+    this.authService
+      .getAuthSettings()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (settings) =>
+          this.publicRegistrationEnabled.set(settings.publicRegistrationEnabled)
+      });
+  }
+
   onSubmit(): void {
     if (this.form.invalid || this.isSubmitting()) {
       this.form.markAllAsTouched();
@@ -71,18 +82,27 @@ export class LoginComponent {
 
     this.isSubmitting.set(true);
     this.errorMessage.set('');
+    this.showEmailVerificationResend.set(false);
 
     this.authService.login(this.form.getRawValue()).subscribe({
       next: () => {
+        if (this.authService.passwordChangeRequired()) {
+          void this.router.navigateByUrl('/required-password-change');
+          return;
+        }
+
         const returnUrl =
           this.route.snapshot.queryParamMap.get('returnUrl') ?? '/issues';
-        this.router.navigateByUrl(returnUrl);
+        void this.router.navigateByUrl(returnUrl);
       },
       error: (error) => {
         const message =
           error instanceof Error ? error.message : AuthMessages.invalidCredentials;
         if (message === AuthMessages.deactivatedAccount) {
           this.errorMessage.set(message);
+        } else if (message === AuthMessages.emailNotVerified) {
+          this.errorMessage.set(message);
+          this.showEmailVerificationResend.set(true);
         } else {
           this.errorMessage.set(
             message === 'Please sign in to continue.' ||
@@ -97,5 +117,25 @@ export class LoginComponent {
         this.isSubmitting.set(false);
       }
     });
+  }
+
+  private readLoginInfoMessage(): string {
+    const params = this.route.snapshot.queryParamMap;
+    if (params.get('accountActivated') === '1') {
+      return AuthMessages.accountActivatedLogin;
+    }
+    if (params.get('passwordReset') === '1') {
+      return AuthMessages.passwordResetLogin;
+    }
+    if (params.get('passwordChanged') === '1') {
+      return AuthMessages.passwordChangedLogin;
+    }
+    if (params.get('emailVerified') === '1') {
+      return AuthMessages.emailVerifiedLogin;
+    }
+    if (params.get('registrationDisabled') === '1') {
+      return AuthMessages.registrationDisabled;
+    }
+    return '';
   }
 }

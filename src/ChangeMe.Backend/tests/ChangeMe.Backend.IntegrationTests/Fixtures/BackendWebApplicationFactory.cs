@@ -15,7 +15,7 @@ using Testcontainers.MsSql;
 
 namespace ChangeMe.Backend.IntegrationTests.Fixtures;
 
-public sealed class BackendWebApplicationFactory : WebApplicationFactory<Program>, IAsyncLifetime
+public class BackendWebApplicationFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
   private readonly Dictionary<string, string?> environmentOverrides = new();
 #if PostgreSQL
@@ -87,24 +87,29 @@ public sealed class BackendWebApplicationFactory : WebApplicationFactory<Program
 #else
     environmentOverrides["ConnectionStrings__DefaultConnection"] = msSqlContainer.GetConnectionString();
 #endif
-    environmentOverrides["Database__ApplyMigrationsOnStartup"] = "false";
-    environmentOverrides["DatabaseOptions__ApplyMigrationsOnStartup"] = "false";
-    environmentOverrides["Jwt__Issuer"] = "ChangeMe.Tests";
-    environmentOverrides["Jwt__Audience"] = "ChangeMe.Tests";
-    environmentOverrides["Jwt__SigningKey"] = "Integration-Tests-Signing-Key-Needs-32-Chars";
-    environmentOverrides["Jwt__ExpirationMinutes"] = "60";
-    environmentOverrides["Session__PersistentSessionLifetimeDays"] = "14";
-    environmentOverrides["Session__BrowserSessionLifetimeDays"] = "1";
+    environmentOverrides[$"{DatabaseOptions.SectionName}__ApplyMigrationsOnStartup"] = "false";
+    environmentOverrides["Auth__Jwt__Issuer"] = "ChangeMe.Tests";
+    environmentOverrides["Auth__Jwt__Audience"] = "ChangeMe.Tests";
+    environmentOverrides["Auth__Jwt__SigningKey"] = "Integration-Tests-Signing-Key-Needs-32-Chars";
+    environmentOverrides["Auth__Jwt__ExpirationMinutes"] = "60";
+    environmentOverrides["Auth__Session__PersistentSessionLifetimeDays"] = "14";
+    environmentOverrides["Auth__Session__BrowserSessionLifetimeDays"] = "1";
     environmentOverrides["Email__Host"] = "localhost";
     environmentOverrides["Email__Port"] = "1025";
     environmentOverrides["Email__EnableSsl"] = "false";
     environmentOverrides["Email__FromEmail"] = "tests@example.local";
     environmentOverrides["Email__FromName"] = "Integration Tests";
 
+    ConfigureAuthEnvironmentOverrides(environmentOverrides);
+
     foreach (var pair in environmentOverrides)
     {
       Environment.SetEnvironmentVariable(pair.Key, pair.Value);
     }
+  }
+
+  protected virtual void ConfigureAuthEnvironmentOverrides(Dictionary<string, string?> overrides)
+  {
   }
 
   private void ClearEnvironmentOverrides()

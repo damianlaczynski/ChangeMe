@@ -1,15 +1,22 @@
 import { Routes } from '@angular/router';
+import { AcceptInvitationComponent } from '@features/auth/components/accept-invitation/accept-invitation.component';
 import { ChangePasswordComponent } from '@features/auth/components/change-password/change-password.component';
 import { EditMyAccountComponent } from '@features/auth/components/edit-my-account/edit-my-account.component';
+import { ForgotPasswordComponent } from '@features/auth/components/forgot-password/forgot-password.component';
 import { LoginComponent } from '@features/auth/components/login/login.component';
 import { MyAccountComponent } from '@features/auth/components/my-account/my-account.component';
 import { RegisterComponent } from '@features/auth/components/register/register.component';
+import { RequiredPasswordChangeComponent } from '@features/auth/components/required-password-change/required-password-change.component';
+import { ResetPasswordComponent } from '@features/auth/components/reset-password/reset-password.component';
+import { VerifyEmailComponent } from '@features/auth/components/verify-email/verify-email.component';
 import { authGuard } from '@features/auth/guards/auth.guard';
 import { guestGuard } from '@features/auth/guards/guest.guard';
+import { passwordChangeRequiredGuard } from '@features/auth/guards/password-change-required.guard';
 import {
   permissionGuard,
   permissionsGuard
 } from '@features/auth/guards/permission.guard';
+import { registerGuard } from '@features/auth/guards/register.guard';
 import { CreateIssueComponent } from '@features/issues/components/create-issue/create-issue.component';
 import { EditIssueComponent } from '@features/issues/components/edit-issue/edit-issue.component';
 import { IssueDetailsComponent } from '@features/issues/components/issue-details/issue-details.component';
@@ -38,7 +45,32 @@ export const routes: Routes = [
   {
     path: 'register',
     component: RegisterComponent,
+    canActivate: [registerGuard]
+  },
+  {
+    path: 'verify-email',
+    component: VerifyEmailComponent,
     canActivate: [guestGuard]
+  },
+  {
+    path: 'accept-invitation',
+    component: AcceptInvitationComponent,
+    canActivate: [guestGuard]
+  },
+  {
+    path: 'forgot-password',
+    component: ForgotPasswordComponent,
+    canActivate: [guestGuard]
+  },
+  {
+    path: 'reset-password',
+    component: ResetPasswordComponent,
+    canActivate: [guestGuard]
+  },
+  {
+    path: 'required-password-change',
+    component: RequiredPasswordChangeComponent,
+    canActivate: [passwordChangeRequiredGuard]
   },
   {
     path: 'issues',

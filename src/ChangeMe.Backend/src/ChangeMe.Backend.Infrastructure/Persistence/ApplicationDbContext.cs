@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using ChangeMe.Backend.Domain.Aggregates.Auth;
 using ChangeMe.Backend.Domain.Aggregates.Issue;
 using ChangeMe.Backend.Domain.Aggregates.Issue.Entities;
 using ChangeMe.Backend.Domain.Aggregates.Notifications;
@@ -23,6 +24,7 @@ public class ApplicationDbContext(
   public DbSet<User> Users => Set<User>();
   public DbSet<Role> Roles => Set<Role>();
   public DbSet<UserSession> UserSessions => Set<UserSession>();
+  public DbSet<UserAuthToken> UserAuthTokens => Set<UserAuthToken>();
 
   protected override void OnModelCreating(ModelBuilder modelBuilder)
   {

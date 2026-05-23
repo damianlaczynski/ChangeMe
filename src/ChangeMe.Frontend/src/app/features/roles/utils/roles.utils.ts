@@ -1,4 +1,3 @@
-import { UserStatus } from '@features/users/models/user.model';
 import { groupEffectivePermissions } from '@features/users/utils/users.utils';
 
 export const RoleConstraints = {
@@ -30,9 +29,7 @@ export function formatDescription(description: string | null | undefined): strin
   return description?.trim() ? description : RoleMessages.emptyDescription;
 }
 
-export function getUserStatusSeverity(status: UserStatus): 'success' | 'danger' {
-  return status === 'Active' ? 'success' : 'danger';
-}
+export { groupEffectivePermissions };
 
 export function getDeleteRoleConfirmMessage(roleName: string): string {
   return `Delete role "${roleName}"? Users will lose permissions granted only through this role.`;
@@ -44,5 +41,3 @@ export function getRemoveUserFromRoleConfirmMessage(
 ): string {
   return `Remove "${fullName}" from role "${roleName}"? The user will lose permissions granted only through this role.`;
 }
-
-export { groupEffectivePermissions };

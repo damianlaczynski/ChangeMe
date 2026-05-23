@@ -77,7 +77,9 @@
       </div>
       <div class="flex flex-col gap-1">
         <dt class="text-muted-color text-sm">Assigned users</dt>
-        <dd class="m-0 font-medium">{{ RoleMessages.usersCount(current.userCount) }}</dd>
+        <dd class="m-0 font-medium">
+          {{ RoleMessages.usersCount(current.userCount) }}
+        </dd>
       </div>
     </dl>
 
@@ -127,8 +129,8 @@
             <td>{{ user.email }}</td>
             <td>
               <p-tag
-                [value]="user.status"
-                [severity]="getUserStatusSeverity(user.status)"
+                [value]="getAccountBadgeLabel(user.deactivated)"
+                [severity]="getAccountBadgeSeverity(user.deactivated)"
               />
             </td>
             @if (canManageRoles()) {

@@ -16,6 +16,7 @@ export interface AuthResponse {
   refreshTokenExpiresAtUtc: string;
   permissions: string[];
   isPersistent: boolean;
+  passwordChangeRequired: boolean;
 }
 
 export interface LoginRequest {
@@ -29,6 +30,15 @@ export interface RegisterRequest {
   lastName: string;
   email: string;
   password: string;
+}
+
+export interface RegisterResponse {
+  requiresEmailVerification: boolean;
+  authSession: AuthResponse | null;
+}
+
+export interface EmailVerificationAck {
+  message: string;
 }
 
 export interface RefreshSessionRequest {
@@ -50,7 +60,6 @@ export interface MyAccountDto {
   firstName: string;
   lastName: string;
   email: string;
-  status: string;
   memberSince: string;
   roles: UserRoleSummaryDto[];
   effectivePermissions: EffectivePermissionDto[];
@@ -64,6 +73,27 @@ export interface UpdateMyAccountRequest {
 export interface ChangePasswordRequest {
   currentPassword: string;
   newPassword: string;
+}
+
+export interface RequiredChangePasswordRequest {
+  newPassword: string;
+}
+
+export interface PasswordPolicySettings {
+  minimumLength: number;
+  maximumLength: number;
+  requireUppercase: boolean;
+  requireLowercase: boolean;
+  requireDigit: boolean;
+  requireSpecialCharacter: boolean;
+}
+
+export interface AuthSettings {
+  passwordPolicy: PasswordPolicySettings;
+  publicRegistrationEnabled: boolean;
+  emailVerificationEnabled: boolean;
+  passwordExpirationEnabled: boolean;
+  maximumPasswordAgeDays: number;
 }
 
 export type UserSessionSearchParameters = PaginationParameters;

@@ -17,7 +17,11 @@ export class AuthStorageService {
     }
 
     try {
-      return JSON.parse(rawValue) as AuthResponse;
+      const parsed = JSON.parse(rawValue) as AuthResponse;
+      return {
+        ...parsed,
+        passwordChangeRequired: parsed.passwordChangeRequired === true
+      };
     } catch {
       this.clearSession();
       return null;

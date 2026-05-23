@@ -7,7 +7,8 @@ namespace ChangeMe.Backend.UseCases.Users;
 public class GetUsersQuery : PaginationQuery<UserListItemDto>
 {
   public string? SearchText { get; set; }
-  public List<UserStatus>? Statuses { get; set; }
+  public List<bool>? Deactivated { get; set; }
+  public List<bool>? EmailVerified { get; set; }
 }
 
 public class GetUsersHandler(ApplicationDbContext context)
@@ -35,15 +36,22 @@ public class GetUsersHandler(ApplicationDbContext context)
 #endif
     }
 
-    if (query.Statuses?.Count > 0)
-      usersQuery = usersQuery.Where(u => query.Statuses.Contains(u.Status));
+    if (query.Deactivated?.Count > 0)
+      usersQuery = usersQuery.Where(u => query.Deactivated.Contains(u.Deactivated));
+
+    if (query.EmailVerified?.Count > 0)
+      usersQuery = usersQuery.Where(u => query.EmailVerified.Contains(u.EmailVerified));
 
     var projectedUsers = usersQuery.Select(u => new UserListItemDto
     {
       Id = u.Id,
-      FullName = u.FirstName + " " + u.LastName,
+      FullName = u.FirstName != "" && u.LastName != ""
+        ? u.FirstName + " " + u.LastName
+        : "Pending profile",
       Email = u.Email,
-      Status = u.Status,
+      Deactivated = u.Deactivated,
+      HasPasswordSet = u.HasPasswordSet,
+      EmailVerified = u.EmailVerified,
       RoleNames = u.Roles
         .Select(ur => ur.Role.Name)
         .OrderBy(name => name)

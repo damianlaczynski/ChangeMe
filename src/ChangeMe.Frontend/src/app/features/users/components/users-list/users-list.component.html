@@ -1,4 +1,8 @@
-<p-card class="mb-4" header="Users" subheader="Browse, search and manage user accounts.">
+<p-card
+  class="mb-4"
+  header="Users"
+  subheader="Browse, search and manage user accounts."
+>
   <form class="p-fluid" [formGroup]="filtersForm" (ngSubmit)="applyFilters()">
     <div class="flex flex-col gap-1.5 mb-4">
       <div class="flex flex-wrap items-center gap-2">
@@ -30,17 +34,31 @@
     >
       <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         <div class="flex flex-col gap-1.5">
-          <label for="statuses">Status</label>
+          <label for="deactivated">Account</label>
           <p-multiselect
-            inputId="statuses"
-            [formControl]="filtersForm.controls.statuses"
-            [options]="userStatuses"
+            inputId="deactivated"
+            [formControl]="filtersForm.controls.deactivated"
+            [options]="accountFilters"
             optionLabel="label"
             optionValue="value"
-            placeholder="Any status"
+            placeholder="Any account"
             display="chip"
           />
         </div>
+        @if (emailVerificationEnabled()) {
+          <div class="flex flex-col gap-1.5">
+            <label for="emailVerified">Email verified</label>
+            <p-multiselect
+              inputId="emailVerified"
+              [formControl]="filtersForm.controls.emailVerified"
+              [options]="emailVerifiedFilters"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Any verification status"
+              display="chip"
+            />
+          </div>
+        }
       </div>
 
       <div class="mt-4 flex flex-wrap items-center justify-end gap-2">
@@ -87,7 +105,11 @@
           </div>
         </th>
         <th>Email</th>
-        <th>Status</th>
+        <th>Account</th>
+        <th>Account state</th>
+        @if (emailVerificationEnabled()) {
+          <th>Email verified</th>
+        }
         <th>Roles</th>
         <th pSortableColumn="LastSignIn">
           <div class="flex items-center gap-2">
@@ -117,10 +139,26 @@
         <td>{{ user.email }}</td>
         <td>
           <p-tag
-            [value]="user.status"
-            [severity]="getUserStatusSeverity(user.status)"
+            [value]="getAccountBadgeLabel(user.deactivated)"
+            [severity]="getAccountBadgeSeverity(user.deactivated)"
           />
         </td>
+        <td>
+          @if (
+            getAccountStateLabel(user, emailVerificationEnabled());
+            as accountState
+          ) {
+            <p-tag [value]="accountState" severity="secondary" />
+          }
+        </td>
+        @if (emailVerificationEnabled()) {
+          <td>
+            <p-tag
+              [value]="getEmailVerifiedBadgeLabel(user.emailVerified)"
+              [severity]="getEmailVerifiedBadgeSeverity(user.emailVerified)"
+            />
+          </td>
+        }
         <td>
           <div class="flex flex-wrap gap-1">
             @for (roleName of user.roleNames; track roleName) {
@@ -153,7 +191,7 @@
     </ng-template>
     <ng-template #emptymessage>
       <tr>
-        <td colspan="7">
+        <td [attr.colspan]="tableColumnCount()">
           <div class="flex flex-col items-center gap-2 py-4">
             <p class="text-muted-color m-0 text-center">No users found</p>
             <div class="flex flex-wrap items-center justify-center gap-2">

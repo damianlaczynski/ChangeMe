@@ -1,7 +1,10 @@
 import { Component, computed, input } from '@angular/core';
-import { UserMessages, groupEffectivePermissions } from '@features/users/utils/users.utils';
+import {
+  UserMessages,
+  formatFromRoles,
+  groupEffectivePermissions
+} from '@features/users/utils/users.utils';
 import { Panel } from 'primeng/panel';
-import { Tag } from 'primeng/tag';
 export interface PermissionListItem {
   code: string;
   label: string;
@@ -12,7 +15,7 @@ export interface PermissionListItem {
 
 @Component({
   selector: 'app-effective-permissions',
-  imports: [Panel, Tag],
+  imports: [Panel],
   templateUrl: './effective-permissions.component.html',
   host: { class: 'block' }
 })
@@ -24,6 +27,7 @@ export class EffectivePermissionsComponent {
   readonly showFromRoles = input(true);
 
   readonly UserMessages = UserMessages;
+  readonly formatFromRoles = formatFromRoles;
 
   readonly groupedPermissions = computed(() =>
     groupEffectivePermissions(this.permissions())

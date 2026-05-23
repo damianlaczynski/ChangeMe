@@ -26,7 +26,11 @@
       />
     </div>
   } @else {
-    <form class="p-fluid flex flex-col gap-4" [formGroup]="form" (ngSubmit)="onSubmit()">
+    <form
+      class="p-fluid flex flex-col gap-4"
+      [formGroup]="form"
+      (ngSubmit)="onSubmit()"
+    >
       <p-panel header="Profile" [toggleable]="true">
         <div class="grid gap-4 sm:grid-cols-2">
           <div class="flex flex-col gap-1.5">
@@ -88,15 +92,13 @@
 
       @if (showStatusField()) {
         <p-panel header="Account status" [toggleable]="true">
-          <div class="flex flex-col gap-1.5">
-            <label for="status">Status</label>
-            <p-select
-              inputId="status"
-              [formControl]="form.controls.status"
-              [options]="userStatuses"
-              optionLabel="label"
-              optionValue="value"
+          <div class="flex items-center gap-2">
+            <p-checkbox
+              inputId="deactivated"
+              [formControl]="form.controls.deactivated"
+              [binary]="true"
             />
+            <label for="deactivated">Deactivated</label>
           </div>
         </p-panel>
       }

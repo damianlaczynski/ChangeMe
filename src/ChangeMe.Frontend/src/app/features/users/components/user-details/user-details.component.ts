@@ -1,5 +1,13 @@
 import { DatePipe } from '@angular/common';
-import { Component, computed, DestroyRef, effect, inject, input, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  DestroyRef,
+  effect,
+  inject,
+  input,
+  signal
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { ToastService } from '@core/toast/services/toast.service';
@@ -9,9 +17,11 @@ import { EffectivePermissionsComponent } from '@features/users/components/effect
 import { AdminUserSessionDto, UserDetailsDto } from '@features/users/models/user.model';
 import { UsersService } from '@features/users/services/users.service';
 import {
+  getAccountBadgeLabel,
+  getAccountBadgeSeverity,
+  getAccountStateLabel,
   getActivateConfirmMessage,
   getDeactivateConfirmMessage,
-  getUserStatusSeverity,
   UserMessages
 } from '@features/users/utils/users.utils';
 import { PermissionCodes } from '@shared/authorization/permission-codes';
@@ -56,6 +66,15 @@ export class UserDetailsComponent {
 
   readonly user = signal<UserDetailsDto | null>(null);
   readonly pageTitle = computed(() => this.user()?.fullName ?? 'User details');
+  readonly canResendInvitation = computed(() => {
+    const profile = this.user();
+    return (
+      !!profile &&
+      this.canManageUsers() &&
+      !profile.hasPasswordSet &&
+      !profile.deactivated
+    );
+  });
   readonly sessions = signal<AdminUserSessionDto[]>([]);
   readonly sessionsPagination = signal<PaginationResult<AdminUserSessionDto> | null>(
     null
@@ -71,11 +90,15 @@ export class UserDetailsComponent {
   readonly isLoadingSessions = signal(false);
   readonly hasLoadedSessions = signal(false);
   readonly pendingRevokeSessionIds = signal<string[]>([]);
+  readonly passwordExpirationEnabled = signal(false);
+  readonly emailVerificationEnabled = signal(false);
 
   readonly UserMessages = UserMessages;
   readonly formatSessionType = formatSessionType;
   readonly formatIpAddress = formatIpAddress;
-  readonly getUserStatusSeverity = getUserStatusSeverity;
+  readonly getAccountBadgeLabel = getAccountBadgeLabel;
+  readonly getAccountBadgeSeverity = getAccountBadgeSeverity;
+  readonly getAccountStateLabel = getAccountStateLabel;
 
   readonly canManageUsers = () =>
     this.authService.hasPermission(PermissionCodes.usersManage);
@@ -87,6 +110,16 @@ export class UserDetailsComponent {
     this.authService.hasPermission(PermissionCodes.sessionsManageAny);
 
   constructor() {
+    this.authService
+      .getAuthSettings()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (settings) => {
+          this.passwordExpirationEnabled.set(settings.passwordExpirationEnabled);
+          this.emailVerificationEnabled.set(settings.emailVerificationEnabled);
+        }
+      });
+
     effect(() => {
       this.id();
       this.loadUser();
@@ -122,6 +155,54 @@ export class UserDetailsComponent {
       acceptButtonProps: { label: 'Activate', severity: 'success' },
       rejectButtonProps: { label: 'Cancel', severity: 'secondary', outlined: true },
       accept: () => this.activateUser()
+    });
+  }
+
+  confirmSendPasswordReset(): void {
+    const profile = this.user();
+    if (!profile) {
+      return;
+    }
+
+    this.confirmationService.confirm({
+      header: UserMessages.sendPasswordResetTitle,
+      message: UserMessages.sendPasswordResetMessage(profile.email),
+      icon: 'pi pi-exclamation-triangle',
+      acceptButtonProps: { label: 'Send', severity: 'warn' },
+      rejectButtonProps: { label: 'Cancel', severity: 'secondary', outlined: true },
+      accept: () => this.sendPasswordReset()
+    });
+  }
+
+  confirmConfirmEmail(): void {
+    const profile = this.user();
+    if (!profile) {
+      return;
+    }
+
+    this.confirmationService.confirm({
+      header: UserMessages.confirmEmailTitle,
+      message: UserMessages.confirmEmailMessage(profile.fullName),
+      icon: 'pi pi-exclamation-triangle',
+      acceptButtonProps: { label: 'Confirm', severity: 'warn' },
+      rejectButtonProps: { label: 'Cancel', severity: 'secondary', outlined: true },
+      accept: () => this.confirmUserEmail()
+    });
+  }
+
+  confirmResendInvitation(): void {
+    const profile = this.user();
+    if (!profile) {
+      return;
+    }
+
+    this.confirmationService.confirm({
+      header: UserMessages.resendInvitationTitle,
+      message: UserMessages.resendInvitationMessage(profile.email),
+      icon: 'pi pi-exclamation-triangle',
+      acceptButtonProps: { label: 'Resend', severity: 'warn' },
+      rejectButtonProps: { label: 'Cancel', severity: 'secondary', outlined: true },
+      accept: () => this.resendInvitation()
     });
   }
 
@@ -168,7 +249,7 @@ export class UserDetailsComponent {
           this.user.set(user);
           this.isLoading.set(false);
 
-          if (this.canViewSessions() && user.status === 'Active') {
+          if (this.canViewSessions() && !user.deactivated) {
             this.loadSessions(userId);
           } else {
             this.sessions.set([]);
@@ -207,6 +288,42 @@ export class UserDetailsComponent {
           this.errorMessage.set(error.message);
           this.isLoadingSessions.set(false);
         }
+      });
+  }
+
+  private sendPasswordReset(): void {
+    this.usersService
+      .sendPasswordReset(this.id())
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => this.toastService.success(UserMessages.passwordResetSent),
+        error: (error: Error) => this.errorMessage.set(error.message)
+      });
+  }
+
+  private confirmUserEmail(): void {
+    this.usersService
+      .confirmUserEmail(this.id())
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (user) => {
+          this.user.set(user);
+          this.toastService.success(UserMessages.emailMarkedAsVerified);
+        },
+        error: (error: Error) => this.errorMessage.set(error.message)
+      });
+  }
+
+  private resendInvitation(): void {
+    this.usersService
+      .resendInvitation(this.id())
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (user) => {
+          this.user.set(user);
+          this.toastService.success(UserMessages.invitationResent);
+        },
+        error: (error: Error) => this.errorMessage.set(error.message)
       });
   }
 

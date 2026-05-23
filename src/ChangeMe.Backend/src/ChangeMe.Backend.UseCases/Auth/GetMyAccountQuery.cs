@@ -40,7 +40,6 @@ public class GetMyAccountHandler(
       user.FirstName,
       user.LastName,
       user.Email,
-      user.Status.ToString(),
       user.CreatedAt,
       roles,
       effectivePermissions));

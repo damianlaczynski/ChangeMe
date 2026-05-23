@@ -1,0 +1,62 @@
+<app-auth-page
+  title="Verify email"
+  subtitle="Confirm your email address to sign in."
+  footerPrompt="Already verified?"
+  footerLinkLabel="Sign in"
+  footerRoute="/login"
+>
+  <div class="mb-4">
+    <app-back-button label="Back to sign in" [route]="['/login']" />
+  </div>
+
+  @if (isVerifyingToken()) {
+    <p class="text-muted-color m-0 text-sm">Verifying your email...</p>
+  } @else {
+    @if (infoMessage()) {
+      <p-message class="mb-4 block" severity="info">{{ infoMessage() }}</p-message>
+    }
+
+    <form
+      class="p-fluid flex flex-col gap-4"
+      [formGroup]="form"
+      (ngSubmit)="onResend()"
+    >
+      <div class="flex flex-col gap-1.5">
+        <label class="text-color text-sm font-medium" for="email">Email</label>
+        <input
+          id="email"
+          type="email"
+          pInputText
+          autocomplete="email"
+          [formControl]="form.controls.email"
+          [readonly]="emailReadOnly()"
+          [invalid]="form.controls.email.touched && form.controls.email.errors"
+        />
+        @if (form.controls.email.touched && form.controls.email.errors?.['required']) {
+          <p-message severity="error" variant="simple">Email is required.</p-message>
+        }
+        @if (form.controls.email.touched && form.controls.email.errors?.['email']) {
+          <p-message severity="error" variant="simple">
+            Enter a valid email address.
+          </p-message>
+        }
+      </div>
+
+      @if (successMessage()) {
+        <p-message severity="success">{{ successMessage() }}</p-message>
+      }
+
+      @if (errorMessage()) {
+        <p-message severity="error">{{ errorMessage() }}</p-message>
+      }
+
+      <p-button
+        type="submit"
+        label="Resend verification email"
+        icon="pi pi-envelope"
+        [loading]="isSubmitting()"
+        styleClass="w-full"
+      />
+    </form>
+  }
+</app-auth-page>

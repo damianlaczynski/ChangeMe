@@ -1,12 +1,12 @@
 import { PaginationParameters } from '@shared/data/models/pagination-parameters.model';
 
-export type UserStatus = 'Active' | 'Inactive';
-
 export interface UserListItemDto {
   id: string;
   fullName: string;
   email: string;
-  status: UserStatus;
+  deactivated: boolean;
+  hasPasswordSet: boolean;
+  emailVerified: boolean;
   roleNames: string[];
   lastSignInAt: string | null;
   createdAt: string;
@@ -32,7 +32,14 @@ export interface UserDetailsDto {
   lastName: string;
   fullName: string;
   email: string;
-  status: UserStatus;
+  deactivated: boolean;
+  deactivatedAt: string | null;
+  hasPasswordSet: boolean;
+  emailVerified: boolean;
+  emailVerifiedAt: string | null;
+  passwordLastChangedAt: string | null;
+  passwordExpiresAtUtc: string | null;
+  invitationSentAt: string | null;
   memberSince: string;
   lastSignInAt: string | null;
   roles: UserRoleSummaryDto[];
@@ -58,9 +65,7 @@ export interface CreateUserRequest {
   firstName: string;
   lastName: string;
   email: string;
-  password: string;
   roleIds: string[];
-  status: UserStatus;
 }
 
 export interface UpdateUserRequest {
@@ -69,12 +74,13 @@ export interface UpdateUserRequest {
   lastName: string;
   email: string;
   roleIds?: string[];
-  status?: UserStatus;
+  deactivated?: boolean;
 }
 
 export interface UserSearchParameters extends PaginationParameters {
   searchText?: string;
-  statuses?: UserStatus[];
+  deactivated?: boolean[];
+  emailVerified?: boolean[];
 }
 
 export interface PreviewEffectivePermissionsRequest {

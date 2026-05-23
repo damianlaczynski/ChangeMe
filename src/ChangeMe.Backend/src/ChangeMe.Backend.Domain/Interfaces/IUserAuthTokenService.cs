@@ -1,0 +1,20 @@
+using ChangeMe.Backend.Domain.Aggregates.Auth;
+
+namespace ChangeMe.Backend.Domain.Interfaces;
+
+public interface IUserAuthTokenService
+{
+  Task<Result<string>> IssueTokenAsync(
+    Guid userId,
+    UserAuthTokenType type,
+    CancellationToken cancellationToken = default);
+
+  Task<Result<Guid>> ValidateTokenAsync(
+    string plainToken,
+    UserAuthTokenType type,
+    CancellationToken cancellationToken = default);
+
+  Task MarkTokenUsedAsync(
+    string plainToken,
+    CancellationToken cancellationToken = default);
+}

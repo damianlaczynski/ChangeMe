@@ -1,5 +1,3 @@
-import { UserStatus } from '../models/user.model';
-
 export const UserConstraints = {
   NAME_MAX_LENGTH: 100,
   EMAIL_MAX_LENGTH: 320,
@@ -9,7 +7,19 @@ export const UserConstraints = {
 
 export const UserMessages = {
   duplicateEmail: 'A user with this email already exists.',
-  userCreated: 'User created.',
+  userCreated: 'User created. An invitation email has been sent.',
+  invitationResent: 'Invitation resent.',
+  passwordResetSent: 'Password reset email sent.',
+  emailMarkedAsVerified: 'Email marked as verified.',
+  confirmEmailTitle: 'Confirm email',
+  confirmEmailMessage: (fullName: string) =>
+    `Mark email as verified for "${fullName}"?`,
+  sendPasswordResetTitle: 'Send password reset?',
+  sendPasswordResetMessage: (email: string) =>
+    `Send a password reset link to "${email}"?`,
+  resendInvitationTitle: 'Resend invitation?',
+  resendInvitationMessage: (email: string) =>
+    `Resend invitation to "${email}"? A new invitation link will be sent. Previous unused links will stop working.`,
   userSaved: 'User saved.',
   userDeactivated: 'User deactivated.',
   userActivated: 'User activated.',
@@ -26,13 +36,53 @@ export const UserMessages = {
     'Revoke all active sessions for this user? They will be signed out on every device.'
 };
 
-export const userStatuses: { label: string; value: UserStatus }[] = [
-  { label: 'Active', value: 'Active' },
-  { label: 'Inactive', value: 'Inactive' }
+export const accountFilters: { label: string; value: boolean }[] = [
+  { label: 'Active', value: false },
+  { label: 'Deactivated', value: true }
 ];
 
-export function getUserStatusSeverity(status: UserStatus): 'success' | 'danger' {
-  return status === 'Active' ? 'success' : 'danger';
+export const emailVerifiedFilters: { label: string; value: boolean }[] = [
+  { label: 'Verified', value: true },
+  { label: 'Unverified', value: false }
+];
+
+export function getAccountBadgeLabel(deactivated: boolean): string {
+  return deactivated ? 'Deactivated' : 'Active';
+}
+
+export function getAccountBadgeSeverity(deactivated: boolean): 'success' | 'danger' {
+  return deactivated ? 'danger' : 'success';
+}
+
+export function getEmailVerifiedBadgeLabel(verified: boolean): string {
+  return verified ? 'Verified' : 'Unverified';
+}
+
+export function getEmailVerifiedBadgeSeverity(verified: boolean): 'success' | 'warn' {
+  return verified ? 'success' : 'warn';
+}
+
+export function getAccountStateLabel(
+  user: {
+    deactivated: boolean;
+    hasPasswordSet: boolean;
+    emailVerified: boolean;
+  },
+  emailVerificationEnabled = false
+): string | null {
+  if (user.deactivated) {
+    return null;
+  }
+
+  if (!user.hasPasswordSet) {
+    return 'Awaiting invitation';
+  }
+
+  if (emailVerificationEnabled && !user.emailVerified) {
+    return 'Awaiting email verification';
+  }
+
+  return 'Complete';
 }
 
 export function formatFromRoles(roleNames: string[]): string {
