@@ -37,6 +37,7 @@ public static class AuthSessionUtils
     string refreshToken,
     bool passwordChangeRequired,
     DateTime? passwordExpiresAtUtc,
+    bool twoFactorSetupRequired,
     CancellationToken cancellationToken)
   {
     var permissions = await PermissionResolver.GetEffectivePermissionsAsync(context, user.Id, cancellationToken);
@@ -54,7 +55,8 @@ public static class AuthSessionUtils
       session.RefreshTokenExpiresAtUtc,
       permissions,
       passwordChangeRequired,
-      passwordExpiresAtUtc));
+      passwordExpiresAtUtc,
+      twoFactorSetupRequired));
   }
 
   public static string? GetClientIpAddress(HttpContext? httpContext)

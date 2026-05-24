@@ -17,4 +17,9 @@ public interface IUserAuthTokenService
   Task MarkTokenUsedAsync(
     string plainToken,
     CancellationToken cancellationToken = default);
+
+  Task InvalidateUnusedTokensAsync(
+    Guid userId,
+    UserAuthTokenType type,
+    CancellationToken cancellationToken = default);
 }

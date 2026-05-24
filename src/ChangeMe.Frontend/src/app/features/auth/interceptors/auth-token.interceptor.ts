@@ -5,11 +5,15 @@ import { throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { AuthService } from '../services/auth.service';
 import { isPasswordExpiredApiError } from '../utils/password-expiration.utils';
+import { isTwoFactorSetupRequiredApiError } from '../utils/two-factor.utils';
 
 const AUTH_ENDPOINTS_WITHOUT_REFRESH = [
   '/auth/login',
   '/auth/register',
-  '/auth/refresh'
+  '/auth/refresh',
+  '/auth/external/complete',
+  '/auth/external/link',
+  '/auth/two-factor/verify'
 ] as const;
 
 function shouldAttemptTokenRefresh(requestUrl: string): boolean {
@@ -50,6 +54,11 @@ export const authTokenInterceptor: HttpInterceptorFn = (req, next) => {
         const apiMessage = getApiErrorMessage(error);
         if (apiMessage && isPasswordExpiredApiError(new Error(apiMessage))) {
           authService.markPasswordChangeRequired();
+        } else if (
+          apiMessage &&
+          isTwoFactorSetupRequiredApiError(new Error(apiMessage))
+        ) {
+          authService.markTwoFactorSetupRequired();
         }
       }
 

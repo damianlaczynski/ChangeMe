@@ -14,6 +14,16 @@ public class GetAuthSettingsHandler(IOptions<AuthOptions> options)
     var auth = options.Value;
     var policy = auth.PasswordPolicy;
 
+    var twoFactor = auth.TwoFactor;
+    var configuredProviders = auth.ExternalProviders
+      .Where(x => x.IsConfigured)
+      .Select(x => new ExternalProviderSettingsDto
+      {
+        ProviderKey = x.ProviderKey.Trim(),
+        DisplayName = x.DisplayName.Trim()
+      })
+      .ToList();
+
     var dto = new AuthSettingsDto
     {
       PasswordPolicy = new PasswordPolicySettingsDto
@@ -28,7 +38,21 @@ public class GetAuthSettingsHandler(IOptions<AuthOptions> options)
       PublicRegistrationEnabled = auth.PublicRegistrationEnabled,
       EmailVerificationEnabled = auth.EmailVerificationEnabled,
       PasswordExpirationEnabled = auth.PasswordExpirationEnabled,
-      MaximumPasswordAgeDays = auth.MaximumPasswordAgeDays
+      MaximumPasswordAgeDays = auth.MaximumPasswordAgeDays,
+      TwoFactorAuthenticationEnabled = auth.TwoFactorAuthenticationEnabled,
+      TwoFactorAuthenticationRequired = auth.TwoFactorAuthenticationRequired,
+      TrustIdentityProviderMfa = auth.TrustIdentityProviderMfa
+        && auth.TwoFactorAuthenticationEnabled
+        && auth.ExternalProvidersEnabled,
+      ExternalProvidersEnabled = auth.ExternalProvidersEnabled && configuredProviders.Count > 0,
+      TwoFactor = new TwoFactorSettingsDto
+      {
+        VerificationCodeLength = twoFactor.VerificationCodeLength,
+        RecoveryCodeCount = twoFactor.RecoveryCodeCount,
+        TotpTimeStepSeconds = twoFactor.TotpTimeStepSeconds,
+        StepUpExternalSignInValidityMinutes = twoFactor.StepUpExternalSignInValidityMinutes
+      },
+      ExternalProviders = configuredProviders
     };
 
     return Task.FromResult(Result.Success(dto));

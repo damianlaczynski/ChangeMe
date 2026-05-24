@@ -34,7 +34,6 @@ public class GetMySessionsHandler(
         x.Id,
         x.DeviceBrowserLabel,
         x.IpAddress,
-        x.IsPersistent,
         x.SignedInAt,
         x.LastActivityAt,
         currentSessionId.HasValue && x.Id == currentSessionId.Value))

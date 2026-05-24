@@ -66,15 +66,6 @@
       }
     </div>
 
-    <div class="flex items-center gap-2">
-      <p-checkbox
-        inputId="rememberMe"
-        [formControl]="form.controls.rememberMe"
-        [binary]="true"
-      />
-      <label class="text-color text-sm" for="rememberMe">Remember me</label>
-    </div>
-
     @if (infoMessage()) {
       <p-message severity="info">{{ infoMessage() }}</p-message>
     }
@@ -107,5 +98,26 @@
       [loading]="isSubmitting()"
       styleClass="w-full"
     />
+
+    @if (externalProvidersEnabled() && externalProviders().length > 0) {
+      <div class="flex items-center gap-3">
+        <span class="bg-surface-200 h-px flex-1 dark:bg-surface-700"></span>
+        <span class="text-muted-color text-xs font-medium uppercase">or</span>
+        <span class="bg-surface-200 h-px flex-1 dark:bg-surface-700"></span>
+      </div>
+
+      @for (provider of externalProviders(); track provider.providerKey) {
+        <p-button
+          type="button"
+          [label]="'Continue with ' + provider.displayName"
+          icon="pi pi-external-link"
+          severity="secondary"
+          styleClass="w-full"
+          [loading]="externalProviderLoadingKey() === provider.providerKey"
+          [disabled]="externalProviderLoadingKey() !== null"
+          (onClick)="beginExternalSignIn(provider)"
+        />
+      }
+    }
   </form>
 </app-auth-page>

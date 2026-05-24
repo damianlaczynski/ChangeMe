@@ -73,6 +73,12 @@ public sealed class UserAuthTokenService(
     await context.SaveChangesAsync(cancellationToken);
   }
 
+  public Task InvalidateUnusedTokensAsync(
+    Guid userId,
+    UserAuthTokenType type,
+    CancellationToken cancellationToken = default) =>
+    InvalidateUnusedTokensAsync(userId, type, timeProvider.GetUtcNow().UtcDateTime, cancellationToken);
+
   private async Task InvalidateUnusedTokensAsync(
     Guid userId,
     UserAuthTokenType type,

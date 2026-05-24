@@ -31,14 +31,25 @@
         size="small"
         [routerLink]="['/account/edit']"
       />
-      <p-button
-        label="Change password"
-        icon="pi pi-lock"
-        severity="secondary"
-        [outlined]="true"
-        size="small"
-        [routerLink]="['/account/change-password']"
-      />
+      @if (profile.hasPasswordSet) {
+        <p-button
+          label="Change password"
+          icon="pi pi-lock"
+          severity="secondary"
+          [outlined]="true"
+          size="small"
+          [routerLink]="['/account/change-password']"
+        />
+      } @else if (externalProvidersEnabled()) {
+        <p-button
+          label="Set password"
+          icon="pi pi-lock"
+          severity="secondary"
+          [outlined]="true"
+          size="small"
+          [routerLink]="['/account/set-password']"
+        />
+      }
       @if (canManageSessions()) {
         <p-button
           label="Sign out everywhere"
@@ -72,6 +83,23 @@
         <dd class="m-0">{{ profile.memberSince | date: 'dd.MM.yyyy HH:mm' }}</dd>
       </div>
     </dl>
+
+    @if (externalProvidersEnabled()) {
+      <app-my-account-external-methods
+        [account]="profile"
+        [stepUpValidityMinutes]="stepUpExternalSignInValidityMinutes()"
+        (accountChanged)="reload()"
+      />
+    }
+
+    @if (twoFactorAuthenticationEnabled()) {
+      <app-my-account-two-factor
+        [account]="profile"
+        [twoFactorRequired]="twoFactorAuthenticationRequired()"
+        [stepUpValidityMinutes]="stepUpExternalSignInValidityMinutes()"
+        (accountChanged)="reload()"
+      />
+    }
 
     <p-panel header="Roles" [toggleable]="true" class="mb-4">
       @if (profile.roles.length === 0) {

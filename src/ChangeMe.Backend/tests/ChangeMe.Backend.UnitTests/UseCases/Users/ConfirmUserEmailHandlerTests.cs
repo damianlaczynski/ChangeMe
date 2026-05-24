@@ -66,7 +66,10 @@ public sealed class ConfirmUserEmailHandlerTests
     {
       if (request is GetUserByIdQuery getUserQuery)
       {
-        var handler = new GetUserByIdHandler(context, new PasswordExpirationEvaluator(TestAuthOptions.Create()));
+        var handler = new GetUserByIdHandler(
+          context,
+          new PasswordExpirationEvaluator(TestAuthOptions.Create()),
+          TestAuthOptions.Create());
         var result = await handler.Handle(getUserQuery, cancellationToken);
         return (TResponse)(object)result;
       }

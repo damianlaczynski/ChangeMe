@@ -29,6 +29,26 @@ public sealed class ResendInvitationHandlerTests
     Assert.Contains(UsersUtils.CannotResendInvitationToDeactivatedMessage, result.Errors);
   }
 
+  [Fact]
+  public async Task Handle_WhenAccountWasNotInvited_ReturnsError()
+  {
+    await using var context = UseCasesTestDb.Create(nameof(Handle_WhenAccountWasNotInvited_ReturnsError));
+
+    var user = User.CreateInvited("google@example.com").Value;
+    await context.Users.AddAsync(user);
+    await context.SaveChangesAsync();
+
+    var handler = new ResendInvitationHandler(
+      new UnusedMediator(),
+      context,
+      null!);
+
+    var result = await handler.Handle(new ResendInvitationCommand(user.Id), CancellationToken.None);
+
+    Assert.False(result.IsSuccess);
+    Assert.Contains(UsersUtils.AccountWasNotInvitedMessage, result.Errors);
+  }
+
   private sealed class UnusedMediator : IMediator, IPublisher
   {
     public Task<TResponse> Send<TResponse>(

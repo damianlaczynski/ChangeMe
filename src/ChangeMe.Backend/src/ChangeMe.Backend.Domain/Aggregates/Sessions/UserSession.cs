@@ -9,7 +9,6 @@ public class UserSession : Entity, IAggregateRoot
   public DateTime LastActivityAt { get; private set; }
   public string DeviceBrowserLabel { get; private set; } = string.Empty;
   public string? IpAddress { get; private set; }
-  public bool IsPersistent { get; private set; }
   public string RefreshTokenHash { get; private set; } = string.Empty;
   public DateTime RefreshTokenExpiresAtUtc { get; private set; }
   public DateTime? RevokedAt { get; private set; }
@@ -18,7 +17,6 @@ public class UserSession : Entity, IAggregateRoot
 
   public static Result<UserSession> Create(
     Guid userId,
-    bool isPersistent,
     string deviceBrowserLabel,
     string? ipAddress,
     string refreshTokenHash,
@@ -51,7 +49,6 @@ public class UserSession : Entity, IAggregateRoot
       LastActivityAt = signedInAtUtc,
       DeviceBrowserLabel = deviceBrowserLabel.Trim(),
       IpAddress = string.IsNullOrWhiteSpace(ipAddress) ? null : ipAddress.Trim(),
-      IsPersistent = isPersistent,
       RefreshTokenHash = refreshTokenHash,
       RefreshTokenExpiresAtUtc = refreshTokenExpiresAtUtc,
       CreatedBy = userId,
@@ -59,16 +56,8 @@ public class UserSession : Entity, IAggregateRoot
     });
   }
 
-  public bool IsActive(DateTime utcNow, int persistentSessionLifetimeDays)
-  {
-    if (IsRevoked)
-      return false;
-
-    if (IsPersistent)
-      return SignedInAt.AddDays(persistentSessionLifetimeDays) > utcNow;
-
-    return RefreshTokenExpiresAtUtc > utcNow;
-  }
+  public bool IsActive(DateTime utcNow, int sessionLifetimeDays) =>
+    !IsRevoked && SignedInAt.AddDays(sessionLifetimeDays) > utcNow;
 
   public void TouchActivity(DateTime utcNow) => LastActivityAt = utcNow;
 

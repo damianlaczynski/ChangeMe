@@ -24,6 +24,11 @@ public class ApplicationDbContext(
   public DbSet<Role> Roles => Set<Role>();
   public DbSet<UserSession> UserSessions => Set<UserSession>();
   public DbSet<UserAuthToken> UserAuthTokens => Set<UserAuthToken>();
+  public DbSet<ExternalLogin> ExternalLogins => Set<ExternalLogin>();
+  public DbSet<UserRecoveryCode> UserRecoveryCodes => Set<UserRecoveryCode>();
+  public DbSet<SignInChallenge> SignInChallenges => Set<SignInChallenge>();
+  public DbSet<TwoFactorEnrollmentPending> TwoFactorEnrollmentPending => Set<TwoFactorEnrollmentPending>();
+  public DbSet<ExternalAuthPending> ExternalAuthPending => Set<ExternalAuthPending>();
 
   protected override void OnModelCreating(ModelBuilder modelBuilder)
   {

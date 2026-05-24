@@ -4,11 +4,9 @@ namespace ChangeMe.Backend.Infrastructure.Auth;
 
 public interface ISessionLifetimeService
 {
-  int PersistentSessionLifetimeDays { get; }
-
-  int BrowserSessionLifetimeDays { get; }
+  int SessionLifetimeDays { get; }
 
   bool IsActive(UserSession session, DateTime utcNow);
 
-  DateTime GetRefreshTokenExpiresAtUtc(bool isPersistent, DateTime signedInAtUtc);
+  DateTime GetRefreshTokenExpiresAtUtc(DateTime signedInAtUtc);
 }

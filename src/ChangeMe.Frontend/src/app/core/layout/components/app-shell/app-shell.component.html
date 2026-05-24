@@ -113,6 +113,7 @@
       </header>
 
       <app-password-expiration-banner />
+      <app-two-factor-setup-banner />
 
       <main class="mx-auto w-full max-w-6xl flex-1 p-4 md:p-6">
         <router-outlet />
@@ -121,6 +122,7 @@
   </div>
 
   <app-required-password-change-dialog />
+  <app-two-factor-setup-dialog />
 } @else if (isAuthenticated()) {
   <div class="flex min-h-screen w-full flex-col bg-surface-50 dark:bg-surface-950">
     <header

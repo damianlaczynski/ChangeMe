@@ -1,6 +1,8 @@
-﻿using ChangeMe.Backend.UseCases.Users.Dtos;
-
+﻿using ChangeMe.Backend.Infrastructure.Auth;
+using ChangeMe.Backend.UseCases.Auth.Utils;
+using ChangeMe.Backend.UseCases.Users.Dtos;
 using ChangeMe.Backend.UseCases.Users.Utils;
+using Microsoft.Extensions.Options;
 
 namespace ChangeMe.Backend.UseCases.Users;
 
@@ -8,7 +10,8 @@ public sealed record GetUserByIdQuery(Guid Id) : IQuery<UserDetailsDto>;
 
 public class GetUserByIdHandler(
   ApplicationDbContext context,
-  IPasswordExpirationEvaluator passwordExpirationEvaluator) : IQueryHandler<GetUserByIdQuery, UserDetailsDto>
+  IPasswordExpirationEvaluator passwordExpirationEvaluator,
+  IOptions<AuthOptions> authOptions) : IQueryHandler<GetUserByIdQuery, UserDetailsDto>
 {
   public async Task<Result<UserDetailsDto>> Handle(GetUserByIdQuery query, CancellationToken cancellationToken)
   {
@@ -16,6 +19,7 @@ public class GetUserByIdHandler(
       .AsNoTracking()
       .Include(x => x.Roles)
       .ThenInclude(x => x.Role)
+      .Include(x => x.ExternalLogins)
       .FirstOrDefaultAsync(x => x.Id == query.Id, cancellationToken);
     if (user is null)
       return Result<UserDetailsDto>.NotFound();
@@ -33,7 +37,23 @@ public class GetUserByIdHandler(
 
     var lastSignInAt = await UsersUtils.GetLastSignInAtAsync(context, user.Id, cancellationToken);
 
+    var auth = authOptions.Value;
+    var externalLogins = auth.ExternalProvidersEnabled
+      ? user.ExternalLogins
+        .OrderBy(x => x.ProviderKey)
+        .Select(login => new UserExternalLoginDto(
+          login.ProviderKey,
+          ExternalAuthUtils.ResolveProviderDisplayName(auth, login.ProviderKey),
+          login.LinkedAtUtc))
+        .ToList()
+      : [];
+
     return Result.Success(
-      user.ToDetailsDto(lastSignInAt, roles, effectivePermissions, passwordExpirationEvaluator));
+      user.ToDetailsDto(
+        lastSignInAt,
+        roles,
+        effectivePermissions,
+        externalLogins,
+        passwordExpirationEvaluator));
   }
 }

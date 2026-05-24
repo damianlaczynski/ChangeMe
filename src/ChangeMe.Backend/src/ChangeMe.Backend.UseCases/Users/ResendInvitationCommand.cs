@@ -25,6 +25,9 @@ public class ResendInvitationHandler(
     if (user.Deactivated)
       return Result<UserDetailsDto>.Error(UsersUtils.CannotResendInvitationToDeactivatedMessage);
 
+    if (user.InvitationSentAt is null)
+      return Result<UserDetailsDto>.Error(UsersUtils.AccountWasNotInvitedMessage);
+
     var invitationResult = await invitationService.SendInvitationAsync(user, cancellationToken);
     if (!invitationResult.IsSuccess)
       return invitationResult.Map();

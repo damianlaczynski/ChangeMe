@@ -9,6 +9,7 @@ public sealed record UserListItemDto
   public bool Deactivated { get; init; }
   public bool HasPasswordSet { get; init; }
   public bool EmailVerified { get; init; }
+  public DateTime? InvitationSentAt { get; init; }
   public IReadOnlyList<string> RoleNames { get; init; } = [];
   public DateTime? LastSignInAt { get; init; }
   public DateTime CreatedAt { get; init; }
@@ -36,12 +37,20 @@ public sealed record UserDetailsDto
   public DateTime? EmailVerifiedAt { get; init; }
   public DateTime? PasswordLastChangedAt { get; init; }
   public DateTime? PasswordExpiresAtUtc { get; init; }
+  public bool TwoFactorEnabled { get; init; }
+  public DateTime? TwoFactorEnabledAt { get; init; }
   public DateTime? InvitationSentAt { get; init; }
   public DateTime MemberSince { get; init; }
   public DateTime? LastSignInAt { get; init; }
   public IReadOnlyList<UserRoleSummaryDto> Roles { get; init; } = [];
   public IReadOnlyList<EffectivePermissionDto> EffectivePermissions { get; init; } = [];
+  public IReadOnlyList<UserExternalLoginDto> ExternalLogins { get; init; } = [];
 }
+
+public sealed record UserExternalLoginDto(
+  string ProviderKey,
+  string DisplayName,
+  DateTime LinkedAtUtc);
 
 public sealed record RoleAssignmentOptionDto(Guid Id, string Name, bool IsSystem);
 
@@ -49,6 +58,5 @@ public sealed record AdminUserSessionDto(
   Guid Id,
   string DeviceBrowserLabel,
   string? IpAddress,
-  bool IsPersistent,
   DateTime SignedInAt,
   DateTime LastActivityAt);

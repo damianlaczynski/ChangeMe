@@ -307,7 +307,15 @@ public sealed class RolesEndpointTests(BackendWebApplicationFactory factory)
     Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
     var body = await response.Content.ReadAsStringAsync(cancellationToken);
-    Assert.Contains("Role Assignee", body, StringComparison.Ordinal);
+    using var document = System.Text.Json.JsonDocument.Parse(body);
+    var assignedUser = document.RootElement
+      .GetProperty("value")
+      .GetProperty("items")
+      .EnumerateArray()
+      .First(item => item.GetProperty("id").GetGuid() == userId);
+
+    Assert.Equal("Role", assignedUser.GetProperty("firstName").GetString());
+    Assert.Equal("Assignee", assignedUser.GetProperty("lastName").GetString());
   }
 
   [Fact]

@@ -131,4 +131,52 @@ public sealed class UserTests
 
     Assert.Equal(expected, result);
   }
+
+  [Fact]
+  public void CompleteInvitationViaExternalSignIn_WhenInvitationPending_ShouldClearInvitationAndFillProfile()
+  {
+    var user = User.CreateInvited("invite@example.com").Value;
+    user.RecordInvitationSent();
+
+    var result = user.CompleteInvitationViaExternalSignIn("Oidc", "User");
+
+    Assert.True(result.IsSuccess);
+    Assert.Null(user.InvitationSentAt);
+    Assert.True(user.EmailVerified);
+    Assert.Equal("Oidc", user.FirstName);
+    Assert.Equal("User", user.LastName);
+  }
+
+  [Fact]
+  public void CompleteInvitationViaExternalSignIn_WhenProfileAlreadyComplete_ShouldKeepExistingNames()
+  {
+    var user = User.CreateInvited("invite@example.com", "Admin", "Created").Value;
+    user.RecordInvitationSent();
+
+    var result = user.CompleteInvitationViaExternalSignIn("Oidc", "User");
+
+    Assert.True(result.IsSuccess);
+    Assert.Equal("Admin", user.FirstName);
+    Assert.Equal("Created", user.LastName);
+  }
+
+  [Fact]
+  public void CompleteInvitationViaExternalSignIn_WhenPasswordAlreadySet_ShouldFail()
+  {
+    var user = User.CreateWithPassword("John", "Doe", "john@example.com", "hash").Value;
+
+    var result = user.CompleteInvitationViaExternalSignIn("Oidc", "User");
+
+    Assert.False(result.IsSuccess);
+  }
+
+  [Fact]
+  public void CompleteInvitationViaExternalSignIn_WhenNoInvitationPending_ShouldFail()
+  {
+    var user = User.CreateInvited("invite@example.com").Value;
+
+    var result = user.CompleteInvitationViaExternalSignIn("Oidc", "User");
+
+    Assert.False(result.IsSuccess);
+  }
 }

@@ -26,9 +26,6 @@ public class UserSessionConfiguration : BaseEntityTypeConfiguration<UserSession>
     builder.Property(x => x.IpAddress)
       .HasMaxLength(SessionConstraints.IP_ADDRESS_MAX_LENGTH);
 
-    builder.Property(x => x.IsPersistent)
-      .IsRequired();
-
     builder.Property(x => x.RefreshTokenHash)
       .IsRequired()
       .HasMaxLength(128);

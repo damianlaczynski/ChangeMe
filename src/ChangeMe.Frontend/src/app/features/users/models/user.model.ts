@@ -8,6 +8,7 @@ export interface UserListItemDto {
   deactivated: boolean;
   hasPasswordSet: boolean;
   emailVerified: boolean;
+  invitationSentAt: string | null;
   roleNames: string[];
   lastSignInAt: string | null;
   createdAt: string;
@@ -39,11 +40,20 @@ export interface UserDetailsDto {
   emailVerifiedAt: string | null;
   passwordLastChangedAt: string | null;
   passwordExpiresAtUtc: string | null;
+  twoFactorEnabled: boolean;
+  twoFactorEnabledAt: string | null;
   invitationSentAt: string | null;
   memberSince: string;
   lastSignInAt: string | null;
   roles: UserRoleSummaryDto[];
   effectivePermissions: EffectivePermissionDto[];
+  externalLogins: UserExternalLoginDto[];
+}
+
+export interface UserExternalLoginDto {
+  providerKey: string;
+  displayName: string;
+  linkedAtUtc: string;
 }
 
 export interface RoleAssignmentOptionDto {
@@ -56,7 +66,6 @@ export interface AdminUserSessionDto {
   id: string;
   deviceBrowserLabel: string;
   ipAddress: string | null;
-  isPersistent: boolean;
   signedInAt: string;
   lastActivityAt: string;
 }

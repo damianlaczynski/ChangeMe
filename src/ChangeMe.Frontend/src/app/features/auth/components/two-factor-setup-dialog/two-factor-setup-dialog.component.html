@@ -1,0 +1,122 @@
+<p-dialog
+  [header]="title"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [visible]="dialogServiceRef.visible()"
+  (visibleChange)="onVisibleChange($event)"
+  styleClass="w-full max-w-lg"
+>
+  @if (recoveryCodes().length > 0) {
+    <div class="flex flex-col gap-4">
+      <p class="text-muted-color m-0 text-sm">
+        Save these recovery codes in a secure place. Each code can be used only once.
+      </p>
+      <ul
+        class="text-color m-0 list-none rounded-lg border border-surface-200 bg-surface-0 p-4 font-mono text-sm dark:border-surface-700 dark:bg-surface-900"
+      >
+        @for (code of recoveryCodes(); track code) {
+          <li class="py-1">{{ code }}</li>
+        }
+      </ul>
+      <div class="flex items-center gap-2">
+        <p-checkbox
+          inputId="dialogRecoveryCodesSaved"
+          [formControl]="recoveryCodesSaved"
+          [binary]="true"
+        />
+        <label class="text-color text-sm" for="dialogRecoveryCodesSaved">
+          I have saved my recovery codes
+        </label>
+      </div>
+      @if (recoveryCodesSaved.touched && recoveryCodesSaved.errors?.['required']) {
+        <p-message severity="error" variant="simple">
+          Confirm that you have saved your recovery codes.
+        </p-message>
+      }
+      <p-button label="Done" icon="pi pi-check" (onClick)="finishSetup()" />
+    </div>
+  } @else if (!setupPreview()) {
+    @if (isBeginning() && !requiresPassword()) {
+      <div class="flex flex-col items-center gap-2 py-6">
+        <p-progressSpinner ariaLabel="Preparing two-factor setup" />
+        <p class="text-muted-color m-0 text-sm">Preparing authenticator...</p>
+      </div>
+    } @else {
+      <form class="p-fluid flex flex-col gap-4" [formGroup]="setupForm">
+        @if (requiresPassword()) {
+          <div class="flex flex-col gap-1.5">
+            <label class="text-color text-sm font-medium" for="dialogCurrentPassword">
+              Current password
+            </label>
+            <p-password
+              inputId="dialogCurrentPassword"
+              autocomplete="current-password"
+              [formControl]="setupForm.controls.currentPassword"
+              [feedback]="false"
+              [toggleMask]="true"
+              fluid
+            />
+          </div>
+        }
+
+        @if (errorMessage()) {
+          <p-message severity="error">{{ errorMessage() }}</p-message>
+        }
+
+        @if (requiresPassword() || errorMessage()) {
+          <p-button
+            label="Start setup"
+            icon="pi pi-shield"
+            [loading]="isBeginning()"
+            (onClick)="beginSetup()"
+          />
+        }
+      </form>
+    }
+  } @else {
+    <form
+      class="p-fluid flex flex-col gap-4"
+      [formGroup]="setupForm"
+      (ngSubmit)="confirmSetup()"
+    >
+      <app-two-factor-setup-qr
+        [provisioningUri]="setupPreview()!.provisioningUri"
+        [sharedSecret]="setupPreview()!.sharedSecret"
+        [issuerName]="setupPreview()!.issuerName"
+      />
+
+      <div class="flex flex-col gap-1.5">
+        <label class="text-color text-sm font-medium" for="dialogVerificationCode">
+          Verification code
+        </label>
+        <input
+          id="dialogVerificationCode"
+          type="text"
+          pInputText
+          autocomplete="one-time-code"
+          [formControl]="setupForm.controls.verificationCode"
+        />
+        @if (
+          setupForm.controls.verificationCode.touched &&
+          setupForm.controls.verificationCode.errors?.['required']
+        ) {
+          <p-message severity="error" variant="simple">
+            Verification code is required.
+          </p-message>
+        }
+      </div>
+
+      @if (errorMessage()) {
+        <p-message severity="error">{{ errorMessage() }}</p-message>
+      }
+
+      <p-button
+        type="submit"
+        label="Confirm setup"
+        icon="pi pi-check"
+        [loading]="isConfirming()"
+      />
+    </form>
+  }
+</p-dialog>

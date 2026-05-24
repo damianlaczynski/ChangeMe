@@ -2,13 +2,13 @@
 
 namespace ChangeMe.Backend.Infrastructure.Persistence.Config.Users;
 
-public class UserAuthTokenConfiguration : BaseEntityTypeConfiguration<UserAuthToken>
+public class UserAuthTokenConfiguration : IEntityTypeConfiguration<UserAuthToken>
 {
-  protected override string TableName => "user_auth_tokens";
-
-  public override void Configure(EntityTypeBuilder<UserAuthToken> builder)
+  public void Configure(EntityTypeBuilder<UserAuthToken> builder)
   {
-    base.Configure(builder);
+    builder.ToTable("user_auth_tokens");
+
+    builder.HasKey(x => x.Id);
 
     builder.Property(x => x.UserId)
       .IsRequired();

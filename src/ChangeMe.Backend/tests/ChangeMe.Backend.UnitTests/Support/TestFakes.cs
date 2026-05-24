@@ -47,6 +47,38 @@ internal sealed class FakeAuthEmailService : IAuthEmailService
     string plainToken,
     CancellationToken cancellationToken = default) =>
     Task.FromResult(Result.Success());
+
+  public Task<Result> SendTwoFactorEnabledAsync(
+    User user,
+    CancellationToken cancellationToken = default) =>
+    Task.FromResult(Result.Success());
+
+  public Task<Result> SendTwoFactorDisabledAsync(
+    User user,
+    CancellationToken cancellationToken = default) =>
+    Task.FromResult(Result.Success());
+
+  public Task<Result> SendTwoFactorResetByAdminAsync(
+    User user,
+    CancellationToken cancellationToken = default) =>
+    Task.FromResult(Result.Success());
+
+  public Task<Result> SendRecoveryCodeUsedAsync(
+    User user,
+    CancellationToken cancellationToken = default) =>
+    Task.FromResult(Result.Success());
+
+  public Task<Result> SendExternalAccountLinkedAsync(
+    User user,
+    string providerDisplayName,
+    CancellationToken cancellationToken = default) =>
+    Task.FromResult(Result.Success());
+
+  public Task<Result> SendExternalAccountUnlinkedAsync(
+    User user,
+    string providerDisplayName,
+    CancellationToken cancellationToken = default) =>
+    Task.FromResult(Result.Success());
 }
 
 internal static class TestAuthOptions
@@ -67,12 +99,8 @@ internal static class TestAuthOptions
         Issuer = "ChangeMe.Tests",
         Audience = "ChangeMe.Tests",
         SigningKey = "Integration-Tests-Signing-Key-Needs-32-Chars",
-        ExpirationMinutes = 60
-      },
-      Session = new AuthSessionOptions
-      {
-        BrowserSessionLifetimeDays = 1,
-        PersistentSessionLifetimeDays = 14
+        ExpirationMinutes = 60,
+        SessionLifetimeDays = 14
       }
     });
 }

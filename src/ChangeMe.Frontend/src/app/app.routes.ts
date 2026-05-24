@@ -2,14 +2,20 @@ import { Routes } from '@angular/router';
 import { AcceptInvitationComponent } from '@features/auth/components/accept-invitation/accept-invitation.component';
 import { ChangePasswordComponent } from '@features/auth/components/change-password/change-password.component';
 import { EditMyAccountComponent } from '@features/auth/components/edit-my-account/edit-my-account.component';
+import { ExternalSignInCallbackComponent } from '@features/auth/components/external-sign-in-callback/external-sign-in-callback.component';
 import { ForgotPasswordComponent } from '@features/auth/components/forgot-password/forgot-password.component';
+import { LinkExternalAccountComponent } from '@features/auth/components/link-external-account/link-external-account.component';
 import { LoginComponent } from '@features/auth/components/login/login.component';
 import { MyAccountComponent } from '@features/auth/components/my-account/my-account.component';
 import { RegisterComponent } from '@features/auth/components/register/register.component';
 import { RequiredPasswordChangeComponent } from '@features/auth/components/required-password-change/required-password-change.component';
+import { RequiredTwoFactorSetupComponent } from '@features/auth/components/required-two-factor-setup/required-two-factor-setup.component';
 import { ResetPasswordComponent } from '@features/auth/components/reset-password/reset-password.component';
+import { SetPasswordComponent } from '@features/auth/components/set-password/set-password.component';
+import { TwoFactorVerificationComponent } from '@features/auth/components/two-factor-verification/two-factor-verification.component';
 import { VerifyEmailComponent } from '@features/auth/components/verify-email/verify-email.component';
 import { authGuard } from '@features/auth/guards/auth.guard';
+import { externalSignInCallbackGuard } from '@features/auth/guards/external-sign-in-callback.guard';
 import { guestGuard } from '@features/auth/guards/guest.guard';
 import { passwordChangeRequiredGuard } from '@features/auth/guards/password-change-required.guard';
 import {
@@ -17,6 +23,10 @@ import {
   permissionsGuard
 } from '@features/auth/guards/permission.guard';
 import { registerGuard } from '@features/auth/guards/register.guard';
+import {
+  twoFactorChallengeGuard,
+  twoFactorSetupRequiredGuard
+} from '@features/auth/guards/two-factor.guard';
 import { CreateIssueComponent } from '@features/issues/components/create-issue/create-issue.component';
 import { EditIssueComponent } from '@features/issues/components/edit-issue/edit-issue.component';
 import { IssueDetailsComponent } from '@features/issues/components/issue-details/issue-details.component';
@@ -40,6 +50,16 @@ export const routes: Routes = [
   {
     path: 'login',
     component: LoginComponent,
+    canActivate: [guestGuard]
+  },
+  {
+    path: 'external-sign-in/callback',
+    component: ExternalSignInCallbackComponent,
+    canActivate: [externalSignInCallbackGuard]
+  },
+  {
+    path: 'link-external-account',
+    component: LinkExternalAccountComponent,
     canActivate: [guestGuard]
   },
   {
@@ -68,9 +88,19 @@ export const routes: Routes = [
     canActivate: [guestGuard]
   },
   {
+    path: 'two-factor-verification',
+    component: TwoFactorVerificationComponent,
+    canActivate: [twoFactorChallengeGuard]
+  },
+  {
     path: 'required-password-change',
     component: RequiredPasswordChangeComponent,
     canActivate: [passwordChangeRequiredGuard]
+  },
+  {
+    path: 'required-two-factor-setup',
+    component: RequiredTwoFactorSetupComponent,
+    canActivate: [twoFactorSetupRequiredGuard]
   },
   {
     path: 'issues',
@@ -105,6 +135,11 @@ export const routes: Routes = [
   {
     path: 'account/change-password',
     component: ChangePasswordComponent,
+    canActivate: [authGuard]
+  },
+  {
+    path: 'account/set-password',
+    component: SetPasswordComponent,
     canActivate: [authGuard]
   },
   {

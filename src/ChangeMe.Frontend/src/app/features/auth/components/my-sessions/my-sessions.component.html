@@ -26,7 +26,6 @@
       <ng-template pTemplate="header">
         <tr>
           <th>Device / browser</th>
-          <th>Session type</th>
           <th>Signed in at</th>
           <th>Last activity</th>
           <th>Current</th>
@@ -43,7 +42,6 @@
               {{ formatIpAddress(session.ipAddress) }}
             </div>
           </td>
-          <td>{{ formatSessionType(session.isPersistent) }}</td>
           <td>{{ session.signedInAt | date: 'dd.MM.yyyy HH:mm' }}</td>
           <td>{{ session.lastActivityAt | date: 'dd.MM.yyyy HH:mm' }}</td>
           <td>

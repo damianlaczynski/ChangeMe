@@ -20,6 +20,9 @@ public static class UsersUtils
     "Password reset cannot be sent while the invitation is pending. Resend the invitation instead.";
   public const string CannotResendInvitationToDeactivatedMessage =
     "Invitation cannot be resent to a deactivated account.";
+
+  public const string AccountWasNotInvitedMessage =
+    "This account was not created through an invitation.";
   public const string EmailAlreadyVerifiedMessage = "This email is already verified.";
   public const string EmailMarkedAsVerifiedMessage = "Email marked as verified.";
 
@@ -110,7 +113,6 @@ public static class UsersUtils
         x.Id,
         x.DeviceBrowserLabel,
         x.IpAddress,
-        x.IsPersistent,
         x.SignedInAt,
         x.LastActivityAt))
       .ToList();

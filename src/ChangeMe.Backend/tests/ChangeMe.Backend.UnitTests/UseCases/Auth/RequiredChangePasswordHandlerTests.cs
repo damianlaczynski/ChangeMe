@@ -85,11 +85,10 @@ public sealed class RequiredChangePasswordHandlerTests
     var signedInAt = DateTime.UtcNow;
     return UserSession.Create(
       userId,
-      false,
       "Test Browser",
       "127.0.0.1",
       RefreshTokenGenerator.HashToken(RefreshTokenGenerator.CreateToken()),
-      signedInAt.AddDays(1),
+      signedInAt.AddDays(14),
       signedInAt).Value;
   }
 }

@@ -55,6 +55,12 @@
           </div>
         </div>
 
+        @if (showExternalLoginEmailWarning()) {
+          <p-message severity="warn" class="mt-4">
+            {{ UserMessages.externalLoginEmailWarning }}
+          </p-message>
+        }
+
         <div class="mt-4 flex flex-col gap-1.5">
           <label for="email">Email</label>
           <input

@@ -31,7 +31,7 @@ import { Message } from 'primeng/message';
 import { MultiSelect } from 'primeng/multiselect';
 import { Panel } from 'primeng/panel';
 import { ProgressSpinner } from 'primeng/progressspinner';
-import { catchError, debounceTime, of, startWith, switchMap } from 'rxjs';
+import { catchError, debounceTime, forkJoin, of, startWith, switchMap } from 'rxjs';
 
 @Component({
   selector: 'app-edit-user',
@@ -52,6 +52,8 @@ import { catchError, debounceTime, of, startWith, switchMap } from 'rxjs';
   templateUrl: './edit-user.component.html'
 })
 export class EditUserComponent {
+  readonly UserMessages = UserMessages;
+
   readonly id = input.required<string>();
 
   private readonly usersService = inject(UsersService);
@@ -78,6 +80,8 @@ export class EditUserComponent {
     PermissionCodes.usersDeactivate
   );
   readonly showRolesField = signal(false);
+  readonly showExternalLoginEmailWarning = signal(false);
+  readonly externalProvidersEnabled = signal(false);
   readonly showStatusField = signal(false);
 
   readonly form = new FormGroup({
@@ -152,11 +156,17 @@ export class EditUserComponent {
     this.isLoading.set(true);
     this.loadError.set(null);
 
-    this.usersService
-      .getUserById(userId)
+    forkJoin({
+      settings: this.authService.getAuthSettings(),
+      user: this.usersService.getUserById(userId)
+    })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (user) => {
+        next: ({ settings, user }) => {
+          this.externalProvidersEnabled.set(settings.externalProvidersEnabled);
+          this.showExternalLoginEmailWarning.set(
+            settings.externalProvidersEnabled && user.externalLogins.length > 0
+          );
           this.form.patchValue({
             firstName: user.firstName,
             lastName: user.lastName,

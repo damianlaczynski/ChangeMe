@@ -18,5 +18,9 @@ export const authGuard: CanActivateFn = (_route, state) => {
     return router.createUrlTree(['/required-password-change']);
   }
 
+  if (authService.requiresTwoFactorSetupScreen()) {
+    return router.createUrlTree(['/required-two-factor-setup']);
+  }
+
   return true;
 };

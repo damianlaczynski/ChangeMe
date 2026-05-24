@@ -36,6 +36,16 @@
           (onClick)="confirmConfirmEmail()"
         />
       }
+      @if (canResetTwoFactor()) {
+        <p-button
+          label="Reset two-factor"
+          icon="pi pi-shield"
+          severity="danger"
+          [outlined]="true"
+          size="small"
+          (onClick)="confirmResetTwoFactor()"
+        />
+      }
       @if (canManageUsers() && !profile.deactivated && profile.hasPasswordSet) {
         <p-button
           label="Send password reset"
@@ -185,6 +195,25 @@
           <dd class="m-0">{{ profile.deactivatedAt | date: 'dd.MM.yyyy HH:mm' }}</dd>
         </div>
       }
+      @if (twoFactorAuthenticationEnabled()) {
+        <div class="flex flex-col gap-1">
+          <dt class="text-muted-color text-sm">Two-factor authentication</dt>
+          <dd class="m-0">
+            <p-tag
+              [value]="profile.twoFactorEnabled ? 'Enabled' : 'Disabled'"
+              [severity]="profile.twoFactorEnabled ? 'success' : 'secondary'"
+            />
+          </dd>
+        </div>
+        @if (profile.twoFactorEnabled && profile.twoFactorEnabledAt) {
+          <div class="flex flex-col gap-1">
+            <dt class="text-muted-color text-sm">Two-factor enabled at</dt>
+            <dd class="m-0">
+              {{ profile.twoFactorEnabledAt | date: 'dd.MM.yyyy HH:mm' }}
+            </dd>
+          </div>
+        }
+      }
       @if (passwordExpirationEnabled()) {
         <div class="flex flex-col gap-1">
           <dt class="text-muted-color text-sm">Password expires at</dt>
@@ -202,6 +231,36 @@
         </div>
       }
     </dl>
+
+    @if (externalProvidersEnabled() && profile.externalLogins.length > 0) {
+      <p-panel header="External sign-in methods" [toggleable]="true" class="mb-4">
+        <div class="flex flex-col gap-3">
+          @for (login of profile.externalLogins; track login.providerKey) {
+            <div
+              class="border-surface-200 flex flex-wrap items-center justify-between gap-3 rounded-lg border p-3 dark:border-surface-700"
+            >
+              <div class="flex flex-col gap-1">
+                <span class="text-color font-medium">{{ login.displayName }}</span>
+                <span class="text-muted-color text-sm">
+                  Linked {{ login.linkedAtUtc | date: 'dd.MM.yyyy HH:mm' }}
+                </span>
+              </div>
+              @if (canManageUsers()) {
+                <p-button
+                  label="Unlink"
+                  severity="danger"
+                  [outlined]="true"
+                  size="small"
+                  (onClick)="
+                    confirmUnlinkExternal(login.providerKey, login.displayName)
+                  "
+                />
+              }
+            </div>
+          }
+        </div>
+      </p-panel>
+    }
 
     <p-panel header="Roles" [toggleable]="true" class="mb-4">
       @if (profile.roles.length === 0) {
@@ -226,7 +285,7 @@
       [roleIdsSelected]="true"
     />
 
-    @if (!profile.hasPasswordSet) {
+    @if (isInvitationPending(profile)) {
       <p-panel header="Invitation" [toggleable]="true" class="mb-4">
         <dl class="grid gap-4 sm:grid-cols-2">
           <div class="flex flex-col gap-1">
@@ -277,7 +336,6 @@
           <ng-template #header>
             <tr>
               <th>Device / browser</th>
-              <th>Session type</th>
               <th>Signed in at</th>
               <th>Last activity</th>
               @if (canManageSessions()) {
@@ -293,7 +351,6 @@
                   {{ formatIpAddress(session.ipAddress) }}
                 </div>
               </td>
-              <td>{{ formatSessionType(session.isPersistent) }}</td>
               <td>{{ session.signedInAt | date: 'dd.MM.yyyy HH:mm' }}</td>
               <td>{{ session.lastActivityAt | date: 'dd.MM.yyyy HH:mm' }}</td>
               @if (canManageSessions()) {

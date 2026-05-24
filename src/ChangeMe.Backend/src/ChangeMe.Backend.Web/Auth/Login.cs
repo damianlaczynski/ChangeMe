@@ -3,7 +3,7 @@ using ChangeMe.Backend.UseCases.Auth.Dtos;
 
 namespace ChangeMe.Backend.Web.Auth;
 
-public class Login(IMediator mediator) : BaseEndpoint<LoginUserCommand, AuthResponseDto>(mediator)
+public class Login(IMediator mediator) : BaseEndpoint<LoginUserCommand, LoginResponseDto>(mediator)
 {
   protected override void ConfigureEndpoint()
   {

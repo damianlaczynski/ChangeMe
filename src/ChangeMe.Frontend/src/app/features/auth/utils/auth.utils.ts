@@ -4,7 +4,10 @@ export const AuthConstraints = {
   PASSWORD_MIN_LENGTH: 8,
   PASSWORD_MAX_LENGTH: 128,
   RENEWAL_LEAD_TIME_MS: 60_000,
-  MIN_RENEWAL_SCHEDULE_MS: 5_000
+  MIN_RENEWAL_SCHEDULE_MS: 5_000,
+  TWO_FACTOR_VERIFICATION_CODE_LENGTH: 6,
+  TWO_FACTOR_RECOVERY_CODE_COUNT: 10,
+  TWO_FACTOR_TOTP_TIME_STEP_SECONDS: 30
 };
 
 export const AuthMessages = {
@@ -46,16 +49,67 @@ export const AuthMessages = {
     'If an unverified account exists for this email, a verification link has been sent.',
   invalidEmailVerificationLink: 'This verification link is invalid or has expired.',
   emailVerifiedLogin: 'Email verified. You can sign in now.',
+  twoFactorVerificationTitle: 'Two-factor verification',
+  twoFactorVerificationSubtitle:
+    'Enter the verification code from your authenticator app or use a recovery code.',
+  twoFactorUseRecoveryCodeHint:
+    'You can enter a recovery code instead of a verification code.',
+  invalidVerificationCode: 'Invalid verification code.',
+  signInTimedOut: 'Sign-in timed out. Try again.',
+  tooManyAttempts: 'Too many attempts. Sign in again.',
+  twoFactorSetupRequiredTitle: 'Set up two-factor authentication',
+  twoFactorSetupRequiredSubtitle:
+    'Two-factor authentication is required for your account before you can continue.',
+  twoFactorEnabled: 'Two-factor authentication enabled.',
+  twoFactorDisabled: 'Two-factor authentication disabled.',
+  twoFactorSetupRequiredSummary: 'Two-factor authentication required',
+  twoFactorSetupRequiredDetail:
+    'Set up two-factor authentication to continue saving your work to the server.',
+  twoFactorSetupRequiredAction: 'Set up now',
+  twoFactorRequiredWarning: 'Two-factor authentication is required for your account.',
+  twoFactorScanQrHint:
+    'Scan this QR code with your authenticator app, then enter the verification code below.',
+  twoFactorQrUnavailable:
+    'Unable to generate a QR code. Use the manual entry key instead.',
+  twoFactorShowManualKey: 'Enter key manually instead',
+  twoFactorHideManualKey: 'Hide manual entry key',
+  twoFactorManualKeyLabel: 'Manual entry key',
+  twoFactorIssuerLabel: 'Issuer',
+  recoveryCodesRegenerated: 'Recovery codes regenerated.',
   profileUpdated: 'Profile updated.',
   noActiveSessions: 'No active sessions.',
-  permissionDenied: 'You do not have permission to perform this action.'
+  permissionDenied: 'You do not have permission to perform this action.',
+  externalSignInFailed: 'External sign-in failed. Try again or use email and password.',
+  signInNotAllowed: 'Sign-in with this account is not allowed.',
+  noAccountExists: 'No account exists for this email. Contact an administrator.',
+  externalAccountAlreadyLinked:
+    'This external account is already linked to another user.',
+  externalSignInUnavailable:
+    'External sign-in is unavailable. Contact an administrator or set a password when sign-in is available.',
+  linkExternalAccountTitle: 'Link external account',
+  linkExternalAccountSubtitle:
+    'An account with this email already exists. Enter your password to link sign-in.',
+  externalSignInCallbackLoading: 'Completing sign-in...',
+  externalSignInMethodsTitle: 'External sign-in methods',
+  externalAccountLinked: 'External sign-in method linked.',
+  externalAccountUnlinked: 'External sign-in method removed.',
+  unlinkExternalProviderTitle: 'Remove external sign-in?',
+  unlinkExternalProviderMessage: (displayName: string) =>
+    `Remove ${displayName} sign-in from your account?`,
+  setPasswordTitle: 'Set password',
+  setPasswordSubtitle:
+    'Create a password so you can also sign in with email and use forgot password.',
+  passwordSet: 'Password set.',
+  externalStepUpRequired:
+    'Complete sign-in with a linked external provider to continue.',
+  externalProviderEmailMismatch:
+    'The external account email does not match your account email.',
+  cannotRemoveOnlySignInMethod:
+    'Set a password before removing your only sign-in method.',
+  verifyWithProvider: 'Verify with provider'
 };
 
 export { PermissionCodes } from '@shared/authorization/permission-codes';
-
-export function formatSessionType(isPersistent: boolean): string {
-  return isPersistent ? 'Persistent' : 'Browser';
-}
 
 export function formatIpAddress(ipAddress: string | null | undefined): string {
   return ipAddress?.trim() ? ipAddress : 'Unknown';

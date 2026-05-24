@@ -86,6 +86,20 @@ export class UsersService {
     );
   }
 
+  resetTwoFactor(id: string): Observable<UserDetailsDto> {
+    return this.apiService.post<UserDetailsDto>(
+      `${this.baseEndpoint}/${id}/reset-two-factor`,
+      {}
+    );
+  }
+
+  unlinkExternalLogin(userId: string, providerKey: string): Observable<UserDetailsDto> {
+    return this.apiService.post<UserDetailsDto>(
+      `${this.baseEndpoint}/${userId}/external-logins/${encodeURIComponent(providerKey)}/unlink`,
+      {}
+    );
+  }
+
   confirmUserEmail(id: string): Observable<UserDetailsDto> {
     return this.apiService.post<UserDetailsDto>(
       `${this.baseEndpoint}/${id}/confirm-email`,

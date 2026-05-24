@@ -7,8 +7,7 @@ import { AuthService } from '@features/auth/services/auth.service';
 import {
   AuthMessages,
   PermissionCodes,
-  formatIpAddress,
-  formatSessionType
+  formatIpAddress
 } from '@features/auth/utils/auth.utils';
 import { PaginationResult } from '@shared/data/models/pagination-result.model';
 import { ConfirmationService } from 'primeng/api';
@@ -44,7 +43,6 @@ export class MySessionsComponent {
   readonly pendingRevokeIds = signal<string[]>([]);
   readonly isSigningOutEverywhere = signal(false);
   readonly authMessages = AuthMessages;
-  readonly formatSessionType = formatSessionType;
   readonly formatIpAddress = formatIpAddress;
 
   readonly canManageSessions = this.authService.hasPermission(

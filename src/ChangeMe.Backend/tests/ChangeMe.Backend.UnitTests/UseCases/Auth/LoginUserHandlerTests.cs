@@ -33,11 +33,12 @@ public sealed class LoginUserHandlerTests
       new JwtTokenGenerator(authOptions),
       new SessionLifetimeService(authOptions),
       new PasswordExpirationEvaluator(authOptions),
+      new TwoFactorPolicyEvaluator(authOptions),
       authOptions,
       new HttpContextAccessor { HttpContext = new DefaultHttpContext() });
 
     var result = await handler.Handle(
-      new LoginUserCommand("unverified@example.com", "StrongPass123!", false),
+      new LoginUserCommand("unverified@example.com", "StrongPass123!"),
       CancellationToken.None);
 
     Assert.Equal(ResultStatus.Unauthorized, result.Status);

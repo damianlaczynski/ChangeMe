@@ -32,6 +32,7 @@ app.UseCors(CorsConfig.CorsPolicyName);
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseMiddleware<PasswordChangeRequiredMiddleware>();
+app.UseMiddleware<TwoFactorSetupRequiredMiddleware>();
 
 app.UseFastEndpointsWithSwagger();
 app.UseHangfireDashboard();

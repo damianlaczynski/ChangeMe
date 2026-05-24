@@ -8,6 +8,8 @@ export const UserConstraints = {
 };
 
 export const UserMessages = {
+  externalLoginEmailWarning:
+    'This user has external sign-in linked. Changing email does not remove external logins; the user signs in by provider identity, not email match.',
   duplicateEmail: 'A user with this email already exists.',
   userCreated: 'User created. An invitation email has been sent.',
   invitationResent: 'Invitation resent.',
@@ -19,6 +21,10 @@ export const UserMessages = {
   sendPasswordResetTitle: 'Send password reset?',
   sendPasswordResetMessage: (email: string) =>
     `Send a password reset link to ${highlightDialogValue(email)}?`,
+  resetTwoFactorTitle: 'Reset two-factor authentication?',
+  resetTwoFactorMessage: (userReference: string) =>
+    `Reset two-factor authentication for ${highlightDialogValue(userReference)}? They will be signed out on every device and must set up two-factor again if required.`,
+  twoFactorReset: 'Two-factor authentication reset.',
   resendInvitationTitle: 'Resend invitation?',
   resendInvitationMessage: (email: string) =>
     `Resend invitation to ${highlightDialogValue(email)}? A new invitation link will be sent. Previous unused links will stop working.`,
@@ -64,11 +70,19 @@ export function getEmailVerifiedBadgeSeverity(verified: boolean): 'success' | 'w
   return verified ? 'success' : 'warn';
 }
 
+export function isInvitationPending(user: {
+  hasPasswordSet: boolean;
+  invitationSentAt?: string | null;
+}): boolean {
+  return !user.hasPasswordSet && user.invitationSentAt != null;
+}
+
 export function getAccountStateLabel(
   user: {
     deactivated: boolean;
     hasPasswordSet: boolean;
     emailVerified: boolean;
+    invitationSentAt?: string | null;
   },
   emailVerificationEnabled = false
 ): string | null {
@@ -76,7 +90,7 @@ export function getAccountStateLabel(
     return null;
   }
 
-  if (!user.hasPasswordSet) {
+  if (isInvitationPending(user)) {
     return 'Awaiting invitation';
   }
 

@@ -368,7 +368,7 @@ On first startup, the system ensures these roles exist:
 ### States and business rules
 
 - Initial administrator **Password** values must not appear in user-visible logs or messages.
-- Production deployments must use a strong, unique password for the initial administrator; password expiration (REQ-AUTH-009) applies under the same rules as for other accounts when enabled.
+- Production deployments must use a strong, unique password for the initial administrator; password expiration (REQ-AUTH-009) and two-factor authentication (REQ-AUTH-013) apply under the same rules as for other accounts when enabled.
 - The initial administrator account is created with **Email verified** true so sign-in is possible when email verification is enabled (REQ-AUTH-011).
 
 ### Out of scope

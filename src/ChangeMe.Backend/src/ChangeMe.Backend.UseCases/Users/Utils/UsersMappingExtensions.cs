@@ -10,6 +10,7 @@ public static class UsersMappingExtensions
     DateTime? lastSignInAt,
     IReadOnlyList<UserRoleSummaryDto> roles,
     IReadOnlyList<EffectivePermissionDto> effectivePermissions,
+    IReadOnlyList<UserExternalLoginDto> externalLogins,
     IPasswordExpirationEvaluator? passwordExpirationEvaluator = null) =>
     new()
     {
@@ -24,10 +25,13 @@ public static class UsersMappingExtensions
       EmailVerifiedAt = user.EmailVerifiedAt,
       PasswordLastChangedAt = user.PasswordLastChangedAt,
       PasswordExpiresAtUtc = passwordExpirationEvaluator?.GetPasswordExpiresAtUtc(user),
+      TwoFactorEnabled = user.TwoFactorEnabled,
+      TwoFactorEnabledAt = user.TwoFactorEnabledAt,
       InvitationSentAt = user.InvitationSentAt,
       MemberSince = user.CreatedAt,
       LastSignInAt = lastSignInAt,
       Roles = roles,
-      EffectivePermissions = effectivePermissions
+      EffectivePermissions = effectivePermissions,
+      ExternalLogins = externalLogins
     };
 }

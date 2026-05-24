@@ -1,5 +1,4 @@
 ﻿using ChangeMe.Backend.Domain.Aggregates.Roles;
-using ChangeMe.Backend.Domain.Aggregates.Sessions;
 using ChangeMe.Backend.Domain.Aggregates.Users;
 using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UseCases.Auth.Dtos;
@@ -72,7 +71,12 @@ public class RegisterUserHandler(
         $"/users/{user.Id}");
     }
 
-    var sessionResult = await CreateBrowserSessionAsync(user, cancellationToken);
+    var sessionResult = await AuthSessionFactory.CreateSessionAsync(
+      context,
+      sessionLifetime,
+      httpContextAccessor,
+      user,
+      cancellationToken);
     if (!sessionResult.IsSuccess)
       return Result<RegisterUserResponseDto>.Invalid(sessionResult.ValidationErrors);
 
@@ -86,6 +90,7 @@ public class RegisterUserHandler(
       sessionResult.Value.RefreshToken,
       passwordChangeRequired: false,
       passwordExpirationEvaluator.GetPasswordExpiresAtUtc(user),
+      twoFactorSetupRequired: false,
       cancellationToken);
 
     if (!authResponse.IsSuccess)
@@ -98,34 +103,5 @@ public class RegisterUserHandler(
         AuthSession = authResponse.Value
       },
       $"/users/{user.Id}");
-  }
-
-  private async Task<Result<(UserSession Session, string RefreshToken)>> CreateBrowserSessionAsync(
-    User user,
-    CancellationToken cancellationToken)
-  {
-    const bool rememberMe = false;
-    var signedInAt = DateTime.UtcNow;
-    var refreshToken = RefreshTokenGenerator.CreateToken();
-    var refreshTokenHash = RefreshTokenGenerator.HashToken(refreshToken);
-    var refreshTokenExpiresAtUtc = sessionLifetime.GetRefreshTokenExpiresAtUtc(rememberMe, signedInAt);
-    var httpContext = httpContextAccessor.HttpContext;
-    var deviceLabel = ClientInfoParser.ParseDeviceBrowserLabel(httpContext?.Request.Headers.UserAgent);
-    var ipAddress = AuthSessionUtils.GetClientIpAddress(httpContext);
-
-    var sessionResult = UserSession.Create(
-      user.Id,
-      rememberMe,
-      deviceLabel,
-      ipAddress,
-      refreshTokenHash,
-      refreshTokenExpiresAtUtc,
-      signedInAt);
-
-    if (!sessionResult.IsSuccess)
-      return sessionResult.Map();
-
-    await context.UserSessions.AddAsync(sessionResult.Value, cancellationToken);
-    return Result.Success((sessionResult.Value, refreshToken));
   }
 }

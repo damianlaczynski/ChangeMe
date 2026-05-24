@@ -91,13 +91,15 @@ public class BackendWebApplicationFactory : WebApplicationFactory<Program>, IAsy
     environmentOverrides["Auth__Jwt__Audience"] = "ChangeMe.Tests";
     environmentOverrides["Auth__Jwt__SigningKey"] = "Integration-Tests-Signing-Key-Needs-32-Chars";
     environmentOverrides["Auth__Jwt__ExpirationMinutes"] = "60";
-    environmentOverrides["Auth__Session__PersistentSessionLifetimeDays"] = "14";
-    environmentOverrides["Auth__Session__BrowserSessionLifetimeDays"] = "1";
+    environmentOverrides["Auth__Jwt__SessionLifetimeDays"] = "14";
     environmentOverrides["Email__Host"] = "localhost";
     environmentOverrides["Email__Port"] = "1025";
     environmentOverrides["Email__EnableSsl"] = "false";
     environmentOverrides["Email__FromEmail"] = "tests@example.local";
     environmentOverrides["Email__FromName"] = "Integration Tests";
+    environmentOverrides["Auth__EmailVerificationEnabled"] = "false";
+    environmentOverrides["Auth__PasswordExpirationEnabled"] = "false";
+    environmentOverrides["Auth__PasswordPolicy__RequireSpecialCharacter"] = "false";
 
     ConfigureAuthEnvironmentOverrides(environmentOverrides);
 

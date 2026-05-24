@@ -6,10 +6,14 @@ namespace ChangeMe.Backend.Domain.Aggregates.Users;
 public class User : Entity, IAggregateRoot
 {
   private readonly List<UserRole> roles = [];
+  private readonly List<ExternalLogin> externalLogins = [];
+  private readonly List<UserRecoveryCode> recoveryCodes = [];
 
   private User() { }
 
   public IReadOnlyCollection<UserRole> Roles => roles;
+  public IReadOnlyCollection<ExternalLogin> ExternalLogins => externalLogins;
+  public IReadOnlyCollection<UserRecoveryCode> RecoveryCodes => recoveryCodes;
 
   public string FirstName { get; private set; } = string.Empty;
   public string LastName { get; private set; } = string.Empty;
@@ -23,6 +27,9 @@ public class User : Entity, IAggregateRoot
   public DateTime? EmailVerifiedAt { get; private set; }
   public DateTime? PasswordLastChangedAt { get; private set; }
   public DateTime? InvitationSentAt { get; private set; }
+  public bool TwoFactorEnabled { get; private set; }
+  public DateTime? TwoFactorEnabledAt { get; private set; }
+  public string TwoFactorSecretCiphertext { get; private set; } = string.Empty;
 
   public bool IsActive => !Deactivated;
   public bool HasCompleteProfile =>
@@ -170,6 +177,79 @@ public class User : Entity, IAggregateRoot
   public void RecordInvitationSent()
   {
     InvitationSentAt = DateTime.UtcNow;
+  }
+
+  public Result CompleteInvitationViaExternalSignIn(string? firstName, string? lastName)
+  {
+    if (HasPasswordSet)
+      return Result.Error("Invitation was already accepted.");
+
+    if (InvitationSentAt is null)
+      return Result.Error("No invitation is pending.");
+
+    if (!HasCompleteProfile
+        && !string.IsNullOrWhiteSpace(firstName)
+        && !string.IsNullOrWhiteSpace(lastName))
+    {
+      var profileResult = UpdateProfile(firstName, lastName);
+      if (!profileResult.IsSuccess)
+        return profileResult;
+    }
+
+    InvitationSentAt = null;
+    MarkEmailVerified();
+    return Result.Success();
+  }
+
+  public Result EnableTwoFactor(string encryptedSecret, DateTime utcNow)
+  {
+    if (string.IsNullOrWhiteSpace(encryptedSecret))
+      return Result.Invalid(new ValidationError(nameof(TwoFactorSecretCiphertext), "cannot be null or empty"));
+
+    if (encryptedSecret.Length > TwoFactorConstraints.ENCRYPTED_SECRET_MAX_LENGTH)
+      return Result.Invalid(new ValidationError(
+        nameof(TwoFactorSecretCiphertext),
+        $"cannot be longer than {TwoFactorConstraints.ENCRYPTED_SECRET_MAX_LENGTH} characters"));
+
+    TwoFactorEnabled = true;
+    TwoFactorEnabledAt = utcNow;
+    TwoFactorSecretCiphertext = encryptedSecret.Trim();
+    return Result.Success();
+  }
+
+  public void DisableTwoFactor()
+  {
+    TwoFactorEnabled = false;
+    TwoFactorEnabledAt = null;
+    TwoFactorSecretCiphertext = string.Empty;
+    recoveryCodes.Clear();
+  }
+
+  public Result AddExternalLogin(ExternalLogin externalLogin)
+  {
+    if (externalLogins.Any(x =>
+          x.ProviderKey.Equals(externalLogin.ProviderKey, StringComparison.OrdinalIgnoreCase)))
+      return Result.Error("This provider is already linked to the account.");
+
+    externalLogins.Add(externalLogin);
+    return Result.Success();
+  }
+
+  public Result RemoveExternalLogin(string providerKey)
+  {
+    var login = externalLogins.FirstOrDefault(x =>
+      x.ProviderKey.Equals(providerKey, StringComparison.OrdinalIgnoreCase));
+    if (login is null)
+      return Result.NotFound();
+
+    externalLogins.Remove(login);
+    return Result.Success();
+  }
+
+  public void ReplaceRecoveryCodes(IEnumerable<UserRecoveryCode> codes)
+  {
+    recoveryCodes.Clear();
+    recoveryCodes.AddRange(codes);
   }
 
   public Result ReplaceRoles(IEnumerable<Guid> roleIds)

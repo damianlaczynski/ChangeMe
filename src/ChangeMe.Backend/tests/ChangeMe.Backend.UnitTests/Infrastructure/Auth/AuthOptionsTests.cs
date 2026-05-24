@@ -53,4 +53,57 @@ public sealed class AuthOptionsTests
     Assert.False(result.Value.PasswordPolicy.RequireUppercase);
     Assert.True(result.Value.PasswordPolicy.RequireSpecialCharacter);
   }
+
+  [Fact]
+  public void TwoFactorOptions_WhenCreated_ShouldUseRequirementDefaults()
+  {
+    var twoFactor = new TwoFactorOptions();
+
+    Assert.Equal(30, twoFactor.TotpTimeStepSeconds);
+    Assert.Equal(1, twoFactor.TotpValidationWindowSteps);
+    Assert.Equal(6, twoFactor.VerificationCodeLength);
+    Assert.Equal(10, twoFactor.RecoveryCodeCount);
+    Assert.Equal(5, twoFactor.MaxFailedVerificationAttempts);
+  }
+
+  [Fact]
+  public async Task GetAuthSettingsHandler_ShouldMapTwoFactorAndExternalProviderSettings()
+  {
+    var options = Options.Create(new AuthOptions
+    {
+      TwoFactorAuthenticationEnabled = true,
+      TwoFactorAuthenticationRequired = true,
+      TrustIdentityProviderMfa = true,
+      ExternalProvidersEnabled = true,
+      TwoFactor = new TwoFactorOptions
+      {
+        VerificationCodeLength = 6,
+        RecoveryCodeCount = 10,
+        TotpTimeStepSeconds = 30
+      },
+      ExternalProviders =
+      [
+        new ExternalProviderOptions
+        {
+          ProviderKey = "google",
+          DisplayName = "Google",
+          Authority = "https://accounts.google.com",
+          ClientId = "client-id",
+          ClientSecret = "secret"
+        }
+      ]
+    });
+
+    var handler = new GetAuthSettingsHandler(options);
+    var result = await handler.Handle(new GetAuthSettingsQuery(), CancellationToken.None);
+
+    Assert.True(result.IsSuccess);
+    Assert.True(result.Value.TwoFactorAuthenticationEnabled);
+    Assert.True(result.Value.TwoFactorAuthenticationRequired);
+    Assert.True(result.Value.TrustIdentityProviderMfa);
+    Assert.True(result.Value.ExternalProvidersEnabled);
+    Assert.Equal(6, result.Value.TwoFactor.VerificationCodeLength);
+    Assert.Single(result.Value.ExternalProviders);
+    Assert.Equal("google", result.Value.ExternalProviders[0].ProviderKey);
+  }
 }
