@@ -49,7 +49,7 @@ public class GetUsersHandler(ApplicationDbContext context)
       Deactivated = u.Deactivated,
       HasPasswordSet = u.HasPasswordSet,
       EmailVerified = u.EmailVerified,
-      InvitationSentAt = u.InvitationSentAt,
+      InvitationPending = u.AccountInvitations.Any(i => i.AcceptedAtUtc == null && i.RevokedAtUtc == null),
       RoleNames = u.Roles
         .Select(ur => ur.Role.Name)
         .OrderBy(name => name)

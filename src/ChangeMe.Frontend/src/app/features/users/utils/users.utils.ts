@@ -70,19 +70,11 @@ export function getEmailVerifiedBadgeSeverity(verified: boolean): 'success' | 'w
   return verified ? 'success' : 'warn';
 }
 
-export function isInvitationPending(user: {
-  hasPasswordSet: boolean;
-  invitationSentAt?: string | null;
-}): boolean {
-  return !user.hasPasswordSet && user.invitationSentAt != null;
-}
-
 export function getAccountStateLabel(
   user: {
     deactivated: boolean;
-    hasPasswordSet: boolean;
     emailVerified: boolean;
-    invitationSentAt?: string | null;
+    invitationPending?: boolean;
   },
   emailVerificationEnabled = false
 ): string | null {
@@ -90,7 +82,7 @@ export function getAccountStateLabel(
     return null;
   }
 
-  if (isInvitationPending(user)) {
+  if (user.invitationPending) {
     return 'Awaiting invitation';
   }
 

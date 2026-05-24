@@ -36,8 +36,9 @@ public sealed class ExternalAuthUtilsTests
   [Fact]
   public void IsInvitationPending_WhenInvitationWasSent_ShouldReturnTrue()
   {
+    var utcNow = DateTime.UtcNow;
     var user = User.CreateInvited("invited@example.com").Value;
-    user.RecordInvitationSent();
+    user.RecordInvitationIssued(utcNow);
 
     Assert.True(ExternalAuthUtils.IsInvitationPending(user));
     Assert.False(ExternalAuthUtils.IsExternalOnlyAccount(user));

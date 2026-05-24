@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.Domain.Aggregates.Users;
+using ChangeMe.Backend.Domain.Aggregates.Users;
 using ChangeMe.Backend.UnitTests.Support;
 using ChangeMe.Backend.UseCases.Users;
 using ChangeMe.Backend.UseCases.Users.Utils;
@@ -46,7 +46,7 @@ public sealed class ResendInvitationHandlerTests
     var result = await handler.Handle(new ResendInvitationCommand(user.Id), CancellationToken.None);
 
     Assert.False(result.IsSuccess);
-    Assert.Contains(UsersUtils.AccountWasNotInvitedMessage, result.Errors);
+    Assert.Contains(UsersUtils.NoPendingInvitationMessage, result.Errors);
   }
 
   private sealed class UnusedMediator : IMediator, IPublisher

@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using System.Net.Http.Json;
 using ChangeMe.Backend.IntegrationTests.Fixtures;
 using ChangeMe.Backend.IntegrationTests.Support;
@@ -56,9 +56,12 @@ public sealed class UsersEndpointTests(BackendWebApplicationFactory factory)
 
     await using var scope = factory.Services.CreateAsyncScope();
     var dbContext = scope.ServiceProvider.GetRequiredService<ChangeMe.Backend.Infrastructure.Persistence.ApplicationDbContext>();
-    var createdUser = await dbContext.Users.SingleAsync(x => x.Email == email, cancellationToken);
+    var createdUser = await dbContext.Users
+      .Include(x => x.AccountInvitations)
+      .SingleAsync(x => x.Email == email, cancellationToken);
     Assert.False(createdUser.HasPasswordSet);
-    Assert.NotNull(createdUser.InvitationSentAt);
+    Assert.True(createdUser.HasPendingInvitation);
+    Assert.Single(createdUser.AccountInvitations);
 
     var fakeEmail = scope.ServiceProvider.GetRequiredService<ChangeMe.Backend.Domain.Common.IEmailService>()
       as ChangeMe.Backend.IntegrationTests.Support.Fakes.FakeEmailService;

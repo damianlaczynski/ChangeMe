@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.UseCases.Auth.Utils;
+using ChangeMe.Backend.UseCases.Auth.Utils;
 
 namespace ChangeMe.Backend.UseCases.Auth;
 
@@ -24,7 +24,9 @@ public class AcceptInvitationHandler(
     if (!validateResult.IsSuccess)
       return Result<bool>.NotFound(AuthSessionUtils.InvalidInvitationTokenMessage);
 
-    var user = await context.Users.FirstOrDefaultAsync(x => x.Id == validateResult.Value, cancellationToken);
+    var user = await context.Users
+      .Include(x => x.AccountInvitations)
+      .FirstOrDefaultAsync(x => x.Id == validateResult.Value, cancellationToken);
     if (user is null)
       return Result<bool>.NotFound(AuthSessionUtils.InvalidInvitationTokenMessage);
 
@@ -41,6 +43,10 @@ public class AcceptInvitationHandler(
       return Result<bool>.Invalid(passwordResult.ValidationErrors);
 
     user.MarkEmailVerified();
+
+    var acceptInvitationResult = user.AcceptPendingInvitation(DateTime.UtcNow);
+    if (!acceptInvitationResult.IsSuccess)
+      return Result<bool>.Conflict(acceptInvitationResult.Errors.First());
 
     await tokenService.MarkTokenUsedAsync(command.Token, cancellationToken);
     await context.SaveChangesAsync(cancellationToken);

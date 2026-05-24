@@ -35,11 +35,10 @@ public static class ExternalAuthUtils
   public const string ExternalProviderEmailMismatchMessage =
     "The external account email does not match your account email.";
 
-  public static bool IsInvitationPending(User user) =>
-    !user.HasPasswordSet && user.InvitationSentAt is not null;
+  public static bool IsInvitationPending(User user) => user.HasPendingInvitation;
 
   public static bool IsExternalOnlyAccount(User user) =>
-    !user.HasPasswordSet && user.InvitationSentAt is null && user.ExternalLogins.Count > 0;
+    !user.HasPasswordSet && !user.HasPendingInvitation && user.ExternalLogins.Count > 0;
 
   public static bool IsExternalStepUpFresh(User user, AuthOptions auth, DateTime utcNow)
   {

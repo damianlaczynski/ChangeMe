@@ -20,6 +20,7 @@ public class GetUserByIdHandler(
       .Include(x => x.Roles)
       .ThenInclude(x => x.Role)
       .Include(x => x.ExternalLogins)
+      .Include(x => x.AccountInvitations)
       .FirstOrDefaultAsync(x => x.Id == query.Id, cancellationToken);
     if (user is null)
       return Result<UserDetailsDto>.NotFound();
@@ -54,6 +55,7 @@ public class GetUserByIdHandler(
         roles,
         effectivePermissions,
         externalLogins,
+        auth.InvitationLinkLifetimeHours,
         passwordExpirationEvaluator));
   }
 }

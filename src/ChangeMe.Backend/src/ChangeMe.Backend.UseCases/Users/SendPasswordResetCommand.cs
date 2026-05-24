@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.Infrastructure.Auth;
+using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UseCases.Users.Dtos;
 using ChangeMe.Backend.UseCases.Users.Utils;
 
@@ -15,14 +15,16 @@ public class SendPasswordResetHandler(
     SendPasswordResetCommand command,
     CancellationToken cancellationToken)
   {
-    var user = await context.Users.FirstOrDefaultAsync(x => x.Id == command.Id, cancellationToken);
+    var user = await context.Users
+      .Include(x => x.AccountInvitations)
+      .FirstOrDefaultAsync(x => x.Id == command.Id, cancellationToken);
     if (user is null)
       return Result<UserDetailsDto>.NotFound();
 
     if (!user.IsActive)
       return Result<UserDetailsDto>.Error(UsersUtils.CannotSendPasswordResetToDeactivatedMessage);
 
-    if (!user.HasPasswordSet)
+    if (user.HasPendingInvitation)
       return Result<UserDetailsDto>.Error(UsersUtils.CannotSendPasswordResetToInvitePendingMessage);
 
     var resetResult = await passwordResetService.SendPasswordResetAsync(user, cancellationToken);

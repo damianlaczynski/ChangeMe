@@ -26,7 +26,6 @@ import {
   getAccountStateLabel,
   getActivateConfirmMessage,
   getDeactivateConfirmMessage,
-  isInvitationPending,
   UserMessages
 } from '@features/users/utils/users.utils';
 import { PermissionCodes } from '@shared/authorization/permission-codes';
@@ -82,7 +81,7 @@ export class UserDetailsComponent {
     return (
       !!profile &&
       this.canManageUsers() &&
-      isInvitationPending(profile) &&
+      !!profile.pendingInvitation &&
       !profile.deactivated
     );
   });
@@ -111,8 +110,6 @@ export class UserDetailsComponent {
   readonly getAccountBadgeLabel = getAccountBadgeLabel;
   readonly getAccountBadgeSeverity = getAccountBadgeSeverity;
   readonly getAccountStateLabel = getAccountStateLabel;
-  readonly isInvitationPending = isInvitationPending;
-
   readonly canManageUsers = () =>
     this.authService.hasPermission(PermissionCodes.usersManage);
   readonly canDeactivateUsers = () =>

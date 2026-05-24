@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.Domain.Aggregates.Sessions;
+using ChangeMe.Backend.Domain.Aggregates.Sessions;
 using ChangeMe.Backend.Domain.Authorization;
 using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UseCases.Users.Dtos;
@@ -21,8 +21,8 @@ public static class UsersUtils
   public const string CannotResendInvitationToDeactivatedMessage =
     "Invitation cannot be resent to a deactivated account.";
 
-  public const string AccountWasNotInvitedMessage =
-    "This account was not created through an invitation.";
+  public const string NoPendingInvitationMessage =
+    "This account has no pending invitation.";
   public const string EmailAlreadyVerifiedMessage = "This email is already verified.";
   public const string EmailMarkedAsVerifiedMessage = "Email marked as verified.";
 

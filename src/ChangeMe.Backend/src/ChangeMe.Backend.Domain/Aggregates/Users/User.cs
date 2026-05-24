@@ -8,12 +8,14 @@ public class User : Entity, IAggregateRoot
   private readonly List<UserRole> roles = [];
   private readonly List<ExternalLogin> externalLogins = [];
   private readonly List<UserRecoveryCode> recoveryCodes = [];
+  private readonly List<AccountInvitation> accountInvitations = [];
 
   private User() { }
 
   public IReadOnlyCollection<UserRole> Roles => roles;
   public IReadOnlyCollection<ExternalLogin> ExternalLogins => externalLogins;
   public IReadOnlyCollection<UserRecoveryCode> RecoveryCodes => recoveryCodes;
+  public IReadOnlyCollection<AccountInvitation> AccountInvitations => accountInvitations;
 
   public string FirstName { get; private set; } = string.Empty;
   public string LastName { get; private set; } = string.Empty;
@@ -26,7 +28,6 @@ public class User : Entity, IAggregateRoot
   public bool EmailVerified { get; private set; }
   public DateTime? EmailVerifiedAt { get; private set; }
   public DateTime? PasswordLastChangedAt { get; private set; }
-  public DateTime? InvitationSentAt { get; private set; }
   public bool TwoFactorEnabled { get; private set; }
   public DateTime? TwoFactorEnabledAt { get; private set; }
   public string TwoFactorSecretCiphertext { get; private set; } = string.Empty;
@@ -174,18 +175,46 @@ public class User : Entity, IAggregateRoot
     EmailVerifiedAt = DateTime.UtcNow;
   }
 
-  public void RecordInvitationSent()
+  public bool HasPendingInvitation => GetActivePendingInvitation() is not null;
+
+  public Result<AccountInvitation> RecordInvitationIssued(DateTime sentAtUtc)
   {
-    InvitationSentAt = DateTime.UtcNow;
+    foreach (var invitation in accountInvitations.Where(x => x.IsPending))
+      invitation.Revoke(sentAtUtc);
+
+    var createResult = AccountInvitation.Create(Id, sentAtUtc);
+    if (!createResult.IsSuccess)
+      return createResult.Map();
+
+    accountInvitations.Add(createResult.Value);
+    return createResult;
   }
 
-  public Result CompleteInvitationViaExternalSignIn(string? firstName, string? lastName)
+  public Result AcceptPendingInvitation(DateTime acceptedAtUtc)
+  {
+    var pending = GetActivePendingInvitation();
+    if (pending is null)
+      return Result.Error("No invitation is pending.");
+
+    pending.Accept(acceptedAtUtc);
+    return Result.Success();
+  }
+
+  public PendingInvitationSummary? GetPendingInvitationSummary()
+  {
+    var pending = GetActivePendingInvitation();
+    if (pending is null)
+      return null;
+
+    return new PendingInvitationSummary(
+      pending.SentAtUtc,
+      accountInvitations.Count);
+  }
+
+  public Result CompleteInvitationViaExternalSignIn(string? firstName, string? lastName, DateTime acceptedAtUtc)
   {
     if (HasPasswordSet)
       return Result.Error("Invitation was already accepted.");
-
-    if (InvitationSentAt is null)
-      return Result.Error("No invitation is pending.");
 
     if (!HasCompleteProfile
         && !string.IsNullOrWhiteSpace(firstName)
@@ -196,10 +225,19 @@ public class User : Entity, IAggregateRoot
         return profileResult;
     }
 
-    InvitationSentAt = null;
+    var acceptResult = AcceptPendingInvitation(acceptedAtUtc);
+    if (!acceptResult.IsSuccess)
+      return acceptResult;
+
     MarkEmailVerified();
     return Result.Success();
   }
+
+  private AccountInvitation? GetActivePendingInvitation() =>
+    accountInvitations
+      .Where(x => x.IsPending)
+      .OrderByDescending(x => x.SentAtUtc)
+      .FirstOrDefault();
 
   public Result EnableTwoFactor(string encryptedSecret, DateTime utcNow)
   {
@@ -358,6 +396,10 @@ public class User : Entity, IAggregateRoot
       validationErrors.Add(new ValidationError(propertyName, $"cannot be longer than {UserConstraints.NAME_MAX_LENGTH} characters"));
   }
 }
+
+public sealed record PendingInvitationSummary(
+  DateTime LastSentAtUtc,
+  int SentCount);
 
 public static class UserConstraints
 {

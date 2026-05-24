@@ -9,7 +9,7 @@ public sealed record UserListItemDto
   public bool Deactivated { get; init; }
   public bool HasPasswordSet { get; init; }
   public bool EmailVerified { get; init; }
-  public DateTime? InvitationSentAt { get; init; }
+  public bool InvitationPending { get; init; }
   public IReadOnlyList<string> RoleNames { get; init; } = [];
   public DateTime? LastSignInAt { get; init; }
   public DateTime CreatedAt { get; init; }
@@ -39,7 +39,7 @@ public sealed record UserDetailsDto
   public DateTime? PasswordExpiresAtUtc { get; init; }
   public bool TwoFactorEnabled { get; init; }
   public DateTime? TwoFactorEnabledAt { get; init; }
-  public DateTime? InvitationSentAt { get; init; }
+  public UserInvitationInfoDto? PendingInvitation { get; init; }
   public DateTime MemberSince { get; init; }
   public DateTime? LastSignInAt { get; init; }
   public IReadOnlyList<UserRoleSummaryDto> Roles { get; init; } = [];

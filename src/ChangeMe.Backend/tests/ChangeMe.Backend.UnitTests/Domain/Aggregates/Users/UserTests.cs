@@ -135,13 +135,14 @@ public sealed class UserTests
   [Fact]
   public void CompleteInvitationViaExternalSignIn_WhenInvitationPending_ShouldClearInvitationAndFillProfile()
   {
+    var utcNow = DateTime.UtcNow;
     var user = User.CreateInvited("invite@example.com").Value;
-    user.RecordInvitationSent();
+    user.RecordInvitationIssued(utcNow);
 
-    var result = user.CompleteInvitationViaExternalSignIn("Oidc", "User");
+    var result = user.CompleteInvitationViaExternalSignIn("Oidc", "User", utcNow);
 
     Assert.True(result.IsSuccess);
-    Assert.Null(user.InvitationSentAt);
+    Assert.False(user.HasPendingInvitation);
     Assert.True(user.EmailVerified);
     Assert.Equal("Oidc", user.FirstName);
     Assert.Equal("User", user.LastName);
@@ -150,10 +151,11 @@ public sealed class UserTests
   [Fact]
   public void CompleteInvitationViaExternalSignIn_WhenProfileAlreadyComplete_ShouldKeepExistingNames()
   {
+    var utcNow = DateTime.UtcNow;
     var user = User.CreateInvited("invite@example.com", "Admin", "Created").Value;
-    user.RecordInvitationSent();
+    user.RecordInvitationIssued(utcNow);
 
-    var result = user.CompleteInvitationViaExternalSignIn("Oidc", "User");
+    var result = user.CompleteInvitationViaExternalSignIn("Oidc", "User", utcNow);
 
     Assert.True(result.IsSuccess);
     Assert.Equal("Admin", user.FirstName);
@@ -165,7 +167,7 @@ public sealed class UserTests
   {
     var user = User.CreateWithPassword("John", "Doe", "john@example.com", "hash").Value;
 
-    var result = user.CompleteInvitationViaExternalSignIn("Oidc", "User");
+    var result = user.CompleteInvitationViaExternalSignIn("Oidc", "User", DateTime.UtcNow);
 
     Assert.False(result.IsSuccess);
   }
@@ -175,8 +177,40 @@ public sealed class UserTests
   {
     var user = User.CreateInvited("invite@example.com").Value;
 
-    var result = user.CompleteInvitationViaExternalSignIn("Oidc", "User");
+    var result = user.CompleteInvitationViaExternalSignIn("Oidc", "User", DateTime.UtcNow);
 
     Assert.False(result.IsSuccess);
+  }
+
+  [Fact]
+  public void RecordInvitationIssued_WhenResent_ShouldRevokePreviousAndIncrementCount()
+  {
+    var utcNow = DateTime.UtcNow;
+    var user = User.CreateInvited("invite@example.com").Value;
+
+    user.RecordInvitationIssued(utcNow);
+    user.RecordInvitationIssued(utcNow.AddMinutes(5));
+
+    var summary = user.GetPendingInvitationSummary();
+
+    Assert.NotNull(summary);
+    Assert.Equal(2, summary.SentCount);
+    Assert.Equal(utcNow.AddMinutes(5), summary.LastSentAtUtc);
+    Assert.Equal(1, user.AccountInvitations.Count(x => x.IsPending));
+    Assert.Equal(1, user.AccountInvitations.Count(x => !x.IsPending));
+  }
+
+  [Fact]
+  public void AcceptPendingInvitation_WhenPendingExists_ShouldMarkAccepted()
+  {
+    var utcNow = DateTime.UtcNow;
+    var user = User.CreateInvited("invite@example.com").Value;
+    user.RecordInvitationIssued(utcNow);
+
+    var result = user.AcceptPendingInvitation(utcNow);
+
+    Assert.True(result.IsSuccess);
+    Assert.Null(user.GetPendingInvitationSummary());
+    Assert.All(user.AccountInvitations, invitation => Assert.False(invitation.IsPending));
   }
 }

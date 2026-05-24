@@ -1,61 +1,58 @@
 # Requirements - Users
 
-This document covers seven REQs for the **Users** area:
-my account profile, user list, admin invite flow, user details with session administration, account deactivation, admin email confirmation, and resend invitation.
+This document covers six REQs for the **Users** area:
+my account profile, user list, admin edit user, user details with session administration, account deactivation, and admin email confirmation.
 
-Role assignment is performed on **Create user** and **Edit user** (REQ-USR-003). Removing a user from a role is available on **Role details** (REQ-ROL-005).
+**Account invitations** (invite, resend, cancel, pending-invitation UI, user **Status**): `docs/req/invitations-requirements.md`.
+
+Role assignment is performed on **Invite user** (REQ-INV-001) and **Edit user** (REQ-USR-003). Removing a user from a role is available on **Role details** (REQ-ROL-005).
 
 ## Business terms (account and sign-in)
 
 The following terms are used across Users and Auth requirements. They describe observable account state, not implementation details.
 
-| Term                               | Meaning                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Account enabled**                | The user is not deactivated by an administrator and may sign in when other rules allow.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| **Account deactivated**            | An administrator disabled the account; the user cannot sign in and has no effective permissions until reactivated.                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| **Awaiting invitation acceptance** | An administrator created the user and sent an **account invitation** email; the user has **not yet** completed onboarding. Until acceptance completes, the user cannot sign in with email and password. When **external identity providers** are enabled, the user **may** complete the invitation by signing in with a provider whose **verified email** matches the invited address (see REQ-AUTH-010 and REQ-AUTH-014) — this creates an **external-only** account without a local password. The invitation link in email remains an alternative that sets a local password. |
-| **Local password**                 | A password stored in ChangeMe for email/password sign-in. A user **with a local password** has completed invitation acceptance with a password, self-registration, or **Set password** on **My account**.                                                                                                                                                                                                                                                                                                                                                                       |
-| **External-only account**          | The user can sign in through one or more linked external providers but **has no local password yet** and is **not** awaiting invitation acceptance (for example after invitation acceptance via OIDC, self-service registration via an IdP, or when no administrator invitation was sent).                                                                                                                                                                                                                                                                                      |
-| **Email verified**                 | When email verification is enabled in deployment settings, the user proved control of the mailbox (verification link, invitation acceptance, or administrator confirmation). When verification is disabled, every account is treated as verified for sign-in purposes.                                                                                                                                                                                                                                                                                                          |
-| **Two-factor enrolled**            | The user completed authenticator setup; password sign-in requires a verification code unless external **Trust identity provider MFA** applies on that sign-in.                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| Term                               | Meaning                                                                                                                                                                                                                                                                                    |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Account enabled**                | The user is not deactivated by an administrator and may sign in when other rules allow.                                                                                                                                                                                                    |
+| **Account deactivated**            | An administrator disabled the account; the user cannot sign in and has no effective permissions until reactivated.                                                                                                                                                                         |
+| **Account invitation**             | See `docs/req/invitations-requirements.md` (**Business terms**).                                                                                                                                                                                                                           |
+| **Awaiting invitation acceptance** | See `docs/req/invitations-requirements.md` (**Business terms**). Sign-in and acceptance: REQ-AUTH-010, REQ-AUTH-014.                                                                                                                                                                       |
+| **Local password**                 | A password stored in ChangeMe for email/password sign-in. A user **with a local password** has completed invitation acceptance with a password, self-registration, or **Set password** on **My account**.                                                                                  |
+| **External-only account**          | The user can sign in through one or more linked external providers but **has no local password yet** and is **not** awaiting invitation acceptance (for example after invitation acceptance via OIDC, self-service registration via an IdP, or when no administrator invitation was sent). |
+| **Email verified**                 | When email verification is enabled in deployment settings, the user proved control of the mailbox (verification link, invitation acceptance, or administrator confirmation). When verification is disabled, every account is treated as verified for sign-in purposes.                     |
+| **Two-factor enrolled**            | The user completed authenticator setup; password sign-in requires a verification code unless external **Trust identity provider MFA** applies on that sign-in.                                                                                                                             |
 
-Cross-reference: invitation acceptance flow — REQ-AUTH-010; external sign-in — REQ-AUTH-014; email verification — REQ-AUTH-011.
+Cross-reference: invitations — `docs/req/invitations-requirements.md`; invitation acceptance — REQ-AUTH-010; external sign-in — REQ-AUTH-014; email verification — REQ-AUTH-011.
 
 ## Account model (all Users REQs)
 
 Administrative enablement is separate from onboarding and how the user signs in.
 
-| Concept                      | Shown in UI / admin                              | Meaning                                                                                                                                                            |
-| ---------------------------- | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Deactivated**              | **Account** badge                                | Whether an administrator disabled the account.                                                                                                                     |
-| **Deactivated at**           | **User details**                                 | When the account was last deactivated, if applicable.                                                                                                              |
-| **Local password**           | Implied by **Change password**, invitation state | Whether the user has completed setting a ChangeMe password. Users **without** a local password are either **awaiting invitation acceptance** or **external-only**. |
-| **Email verified**           | **Email verified** badge, filters                | Whether the mailbox is considered confirmed when email verification is enabled (REQ-AUTH-011).                                                                     |
-| **Email verified at**        | **User details**                                 | When verification last succeeded.                                                                                                                                  |
-| **Password last changed at** | **User details**, password expiration            | When the local password was last set or changed (REQ-AUTH-009).                                                                                                    |
-| **Invitation sent at**       | **Invitation** section                           | When an invitation email was last sent (**Create user** or **Resend invitation**). Present only for users **awaiting invitation acceptance**.                      |
-| **Two-factor enabled**       | **My account**, **User details**                 | Whether the user enrolled in app TOTP when two-factor is enabled in deployment settings (REQ-AUTH-013).                                                            |
-| **Two-factor enabled at**    | **User details**                                 | When two-factor enrollment last completed.                                                                                                                         |
-| **External login**           | **External sign-in methods**                     | A linked external provider identity (provider name, linked date).                                                                                                  |
+| Concept                      | Shown in UI / admin                                          | Meaning                                                                                                                                                            |
+| ---------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Deactivated**              | **Status** **`Deactivated`**                                 | Whether an administrator disabled the account.                                                                                                                     |
+| **Deactivated at**           | **User details**                                             | When the account was last deactivated, if applicable.                                                                                                              |
+| **Local password**           | Implied by **Change password**, invitation state             | Whether the user has completed setting a ChangeMe password. Users **without** a local password are either **awaiting invitation acceptance** or **external-only**. |
+| **Email verified**           | **Email verified** badge, filters                            | Whether the mailbox is considered confirmed when email verification is enabled (REQ-AUTH-011).                                                                     |
+| **Email verified at**        | **User details**                                             | When verification last succeeded.                                                                                                                                  |
+| **Password last changed at** | **User details**, password expiration                        | When the local password was last set or changed (REQ-AUTH-009).                                                                                                    |
+| **Pending invitation**       | **Invitation** panel (REQ-INV-002); API: `pendingInvitation` | Summary while **awaiting invitation acceptance**; hidden after acceptance or cancel. Closed rows: REQ-INV-006.                                                     |
+| **Two-factor enabled**       | **My account**, **User details**                             | Whether the user enrolled in app TOTP when two-factor is enabled in deployment settings (REQ-AUTH-013).                                                            |
+| **Two-factor enabled at**    | **User details**                                             | When two-factor enrollment last completed.                                                                                                                         |
+| **External login**           | **External sign-in methods**                                 | A linked external provider identity (provider name, linked date).                                                                                                  |
 
 **Email verified** when email verification is enabled (REQ-AUTH-011):
 
 - **Self-registration:** not verified until the user completes **Verify email**; verification time recorded on success.
-- **Administrator create user (invitation):** verified when **Create user** succeeds — the invitation is sent to that email address, which is treated as confirmed.
+- **Administrator invite user:** verified when **Invite user** succeeds (REQ-INV-001) — the invitation is sent to that email address, which is treated as confirmed.
 - **Initial administrator:** verified at creation (REQ-ROL-006).
 - **Accept invitation:** remains verified if already set at invite; otherwise verified on success (mailbox proof via the invitation link).
 
 When email verification is **disabled** in deployment settings, every account is treated as verified for sign-in.
 
-**Account** badge (UI only): **`Active`** for enabled accounts; **`Deactivated`** when the account is deactivated.
+**Status** (UI only, read-only): **`Invited`**, **`Invitation canceled`**, **`Active`**, or **`Deactivated`** on **Users list** and **User details**. Rules: REQ-INV-005. On the list, **Account** column becomes **Status**; **Account state** column is dropped.
 
-**Account state** (UI only, read-only): **`Complete`**, **`Awaiting invitation`**, or **`Awaiting email verification`** — shown for enabled accounts only; hidden when the account is deactivated.
-
-- **`Awaiting invitation`** — the user is **awaiting invitation acceptance** (invitation was sent, local password not yet set).
-- **`Awaiting email verification`** — email verification is enabled and the mailbox is not yet verified (self-registration path).
-- **`Complete`** — neither of the above applies (including **external-only** users who are not awaiting an administrator invitation).
-
-On admin invite, **First name** and **Last name** are **optional** on **Create user** and **Edit user** (REQ-USR-003). On **Accept invitation** (REQ-AUTH-010), fields are pre-filled from values already stored (including admin-set names) and the user may edit them before submit.
+On admin invite, **First name** and **Last name** are **optional** on **Invite user** (REQ-INV-001) and **Edit user** (REQ-USR-003). On **Accept invitation** (REQ-AUTH-010), fields are pre-filled from values already stored (including admin-set names) and the user may edit them before submit.
 
 **Password expires at (admin UI only):** Not stored. When password expiration is **enabled** (REQ-AUTH-009), **User details** shows **Password expires at** as **Password last changed at** plus **Maximum password age (days)**. Omitted when expiration is disabled; shown as **`—`** for users without a local password. Not shown on **My account** (REQ-USR-001).
 
@@ -147,21 +144,20 @@ An authorized administrator must be able to browse users, search and filter them
 
 - Screen: **Users list**
 - Sidebar entry **Users** is visible only with permission **Users.View**.
-- **Add user** button opens **Create user**; visible only with permission **Users.Manage**.
+- **Invite user** button opens **Invite user** (REQ-INV-001); visible only with permission **Users.Manage**.
 
 ### Users table
 
-| Column             | Description                                                                                                                        |
-| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
-| **Name**           | **First name** and **Last name** when set; **`—`** when both empty; link to **User details**.                                      |
-| **Email**          | User email address.                                                                                                                |
-| **Account**        | Badge **`Active`** or **`Deactivated`**.                                                                                           |
-| **Account state**  | **`Complete`**, **`Awaiting invitation`**, or **`Awaiting email verification`** for enabled accounts; omitted when deactivated.    |
-| **Email verified** | Badge **`Verified`** or **`Unverified`** when email verification is enabled (REQ-AUTH-011); omitted when verification is disabled. |
-| **Roles**          | One status badge per assigned role showing the role name.                                                                          |
-| **Last sign-in**   | Most recent session **signed in at** across all sessions; **`Never`** when the user has no sessions.                               |
-| **Created at**     | Account creation date and time.                                                                                                    |
-| **Actions**        | Overflow menu (see below).                                                                                                         |
+| Column             | Description                                                                                                                                         |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Name**           | **First name** and **Last name** when set; **`—`** when both empty; link to **User details**.                                                       |
+| **Email**          | User email address.                                                                                                                                 |
+| **Status**         | **`Invited`**, **`Invitation canceled`**, **`Active`**, or **`Deactivated`** (REQ-INV-005). Replaces **Account**; **Account state** column removed. |
+| **Email verified** | Badge **`Verified`** or **`Unverified`** when email verification is enabled (REQ-AUTH-011); omitted when verification is disabled.                  |
+| **Roles**          | One status badge per assigned role showing the role name.                                                                                           |
+| **Last sign-in**   | Most recent session **signed in at** across all sessions; **`Never`** when the user has no sessions.                                                |
+| **Created at**     | Account creation date and time.                                                                                                                     |
+| **Actions**        | Overflow menu (see below).                                                                                                                          |
 
 ### Sorting
 
@@ -171,9 +167,9 @@ An authorized administrator must be able to browse users, search and filter them
 ### Search and filters
 
 - Toggleable **Filters** panel (collapsed by default).
-- **Account** multi-select: **`Active`** (**Deactivated** false), **`Deactivated`** (**Deactivated** true). Empty selection means no restriction.
+- **Status** multi-select: **`Invited`**, **`Invitation canceled`**, **`Active`**, **`Deactivated`** (REQ-INV-005). Empty selection means no restriction. Replaces the former **Account** filter.
 - **Email verified** multi-select: **`Verified`**, **`Unverified`**. Shown only when email verification is enabled (REQ-AUTH-011). Empty selection means no restriction.
-- Default filter state: **no account restriction**; **no email verified restriction** when that filter is shown.
+- Default filter state: **no status restriction**; **no email verified restriction** when that filter is shown.
 - Filters combine with search text using **AND** logic.
 - **Apply filters** submits filters with the current search text.
 - **Clear filters** resets the filter form and removes all filter constraints from the active query.
@@ -203,37 +199,22 @@ An authorized administrator must be able to browse users, search and filter them
 ### Permissions and visibility
 
 - **Users.View**: required for **Users list** and **Open details**.
-- **Users.Manage**: required for **Add user** and **Edit**.
+- **Users.Manage**: required for **Invite user** and **Edit**.
 - **Users.Deactivate**: required for **Deactivate** and **Activate**.
 
 ---
 
-# REQ-USR-003: Create and Edit User (Admin)
+# REQ-USR-003: Edit User (Admin)
 
 ## Goal
 
-An authorized administrator must be able to invite users by email and role assignment, optionally set profile name at invite or edit time, and manage role assignments.
+An authorized administrator must be able to update an existing user's profile, role assignments, and deactivation state.
+
+**Invite user** (new account + first invitation): REQ-INV-001.
 
 ## Features
 
-### Create user screen
-
-- Screen: **Create user**
-- Requires permission **Users.Manage**.
-
-| Field          | Behavior                                                   |
-| -------------- | ---------------------------------------------------------- |
-| **First name** | **Optional**; max **100** characters.                      |
-| **Last name**  | **Optional**; max **100** characters.                      |
-| **Email**      | **Required**; valid email; unique; max **320** characters. |
-| **Roles**      | Multi-select; assignment rules per REQ-ROL-005.            |
-
-- When **First name** and **Last name** are omitted, the invited user supplies them on **Accept invitation** (REQ-AUTH-010). When provided, they are stored and pre-filled on **Accept invitation** for the user to confirm or edit.
-- New users are created with **Deactivated** **false**; **Deactivated** is **not shown** on **Create user** (use **Deactivate** / **Activate** or **Edit user** to change later).
-
-- **Roles** field is visible and editable only with permission **Roles.Manage**. Creating a user requires **Roles.Manage** so every new user receives role assignment.
-
-### Permissions preview (create and edit)
+### Permissions preview (edit)
 
 - Below the **Roles** field, a read-only section **Permissions** shows the union of permissions from the currently selected roles (REQ-ROL-001).
 - Each permission row shows:
@@ -258,9 +239,9 @@ An authorized administrator must be able to invite users by email and role assig
 | **Last name**   | **Required** once the user **has a local password**; **optional** while **awaiting invitation acceptance**; max **100** characters. |
 | **Email**       | **Required**; valid email; unique; max **320** characters.                                                                          |
 | **Roles**       | Same rules as create (REQ-ROL-005); visible and editable only with **Roles.Manage**.                                                |
-| **Deactivated** | Checkbox; editable only with **Users.Deactivate**; label **`Deactivated`**. When checked, the account badge is **`Deactivated`**.   |
+| **Deactivated** | Checkbox; editable only with **Users.Deactivate**; label **`Deactivated`**. When checked, **Status** becomes **`Deactivated`**.     |
 
-- **Password** fields are **not shown** on create or edit.
+- **Password** fields are **not shown** on **Edit user**.
 - When **External providers enabled** is **true** and the edited user has at least one **External login**, show persistent notice: **`This user has external sign-in linked. Changing email does not remove external logins.`** (REQ-AUTH-014).
 - **Edit user** is the screen for managing a user's role assignments; there is no separate role-assignment screen in **Users** administration.
 
@@ -272,25 +253,18 @@ An authorized administrator must be able to invite users by email and role assig
 
 ### Form actions
 
-- **Back** button and **Cancel** button navigate to **Users list** when creating, or to **User details** when editing, without saving.
-- **Create user** button: on success show message **`User created. An invitation email has been sent.`** and open **User details** for the new user.
+- **Back** button and **Cancel** button navigate to **User details** without saving.
 - **Save changes** button: on success show message **`User saved.`** and open **User details** for the edited user.
 
 ### Business rules
 
-- When **Public registration enabled** is **true** (REQ-AUTH-012), self-registration (REQ-AUTH-001) remains available; registered users receive the **User** role automatically (REQ-ROL-006). When disabled, new accounts are created only through admin **Create user**.
-- Admin-created users receive exactly the roles selected in the form; no implicit **Administrator** assignment.
-- Admin-created users remain **awaiting invitation acceptance** until they either complete **Accept invitation** (local password) or complete **external sign-in** with a matching verified email when external providers are enabled (REQ-AUTH-014).
-- On **Create user** success, **Email verified** is **true** and **Email verified at** is set — the invitation is sent to that email address (REQ-AUTH-011).
-- On **Create user** success, **Invitation sent at** is set to the current date and time.
-- The system sends an **Account invitation** email when **Create user** succeeds (REQ-AUTH-007).
 - An administrator **cannot** remove their own **Administrator** role assignment; save is rejected with message **`You cannot remove your own administrator access.`**
 - On **Edit user**, when the administrator edits **their own** account, the **Roles** field is **not shown**; **Permissions** preview is **not shown**.
 - An administrator **cannot** set their own **Deactivated** to **true**; save is rejected with message **`You cannot deactivate your own account.`**
 
 ### Permissions and visibility
 
-- **Users.Manage**: required to open create and edit screens and save profile fields.
+- **Users.Manage**: required to open **Edit user** and save profile fields.
 - **Roles.Manage**: required to view and edit the **Roles** field.
 - **Users.Deactivate**: required to view and edit the **Deactivated** field on **Edit user**.
 
@@ -318,8 +292,7 @@ Displays read-only:
 | **First name**                | Read-only; **`—`** when empty.                                                                                                                                                                                                                                                                  |
 | **Last name**                 | Read-only; **`—`** when empty.                                                                                                                                                                                                                                                                  |
 | **Email**                     | Email address.                                                                                                                                                                                                                                                                                  |
-| **Account**                   | Badge **`Active`** or **`Deactivated`**.                                                                                                                                                                                                                                                        |
-| **Account state**             | **`Complete`**, **`Awaiting invitation`**, or **`Awaiting email verification`** for enabled accounts; **`—`** when deactivated.                                                                                                                                                                 |
+| **Status**                    | **`Invited`**, **`Invitation canceled`**, **`Active`**, or **`Deactivated`** (REQ-INV-005).                                                                                                                                                                                                     |
 | **Email verified**            | Badge **`Verified`** or **`Unverified`** when email verification is enabled (REQ-AUTH-011); omitted when verification is disabled.                                                                                                                                                              |
 | **Email verified at**         | Date and time when **Email verified** is true; omitted when verification is disabled or **Email verified** is false.                                                                                                                                                                            |
 | **Member since**              | Account creation date and time.                                                                                                                                                                                                                                                                 |
@@ -330,23 +303,11 @@ Displays read-only:
 | **Two-factor enabled at**     | Date and time when **Two-factor enabled** is **true**; omitted when two-factor is disabled or deployment setting is off.                                                                                                                                                                        |
 | **Deactivated at**            | Date and time when **Deactivated** is **true**; omitted when **Deactivated** is **false**.                                                                                                                                                                                                      |
 
-### Invitation section
+### Invitation panel
 
-- Collapsible section **Invitation**; shown only while the user is **awaiting invitation acceptance**.
-- Section title: **`Invitation`**
-- Displays read-only:
-  - **Invitation status:** **`Pending`** — user has not yet accepted the invitation.
-  - **Invitation sent at:** **Invitation sent at** date and time (last invitation email from **Create user** or **Resend invitation**).
-  - **Email verified:** **`Yes`** when email verification is enabled — the invitation was sent to this email address.
-  - **Profile name:** **First name** and **Last name** when set (admin and/or user); **`Not set`** when both are empty; user confirms or updates on **Accept invitation** (REQ-AUTH-010).
-- **Resend invitation** action (REQ-USR-008) is available in this section and in the screen header.
-- Empty state when the user **has a local password**: section is **not shown** (not an empty panel).
-
-### External sign-in methods section
-
-- Collapsible section **External sign-in methods**; shown only when **External providers enabled** is **true** (REQ-AUTH-014).
-- Lists linked **Provider** (display name) and **Linked at** per row; **Unlink** per row when the administrator has **Users.Manage** (REQ-AUTH-014).
-- Empty state: **`No external sign-in methods linked.`**
+- Pending invitation presentation, **Resend invitation**, and **Cancel invitation**: REQ-INV-002, REQ-INV-003, REQ-INV-004.
+- When `pendingInvitation` is present, the **Invitation** panel is the **first** block on the page (above profile summary).
+- Invitation actions are **not** duplicated in the page header.
 
 ### External sign-in methods section
 
@@ -378,7 +339,7 @@ Displays read-only:
 | Action                  | Permission required    | Behavior                                                                                                                                                                                                                                                                                  |
 | ----------------------- | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Edit**                | **Users.Manage**       | Opens **Edit user** (profile, deactivation, and role assignments when permitted).                                                                                                                                                                                                         |
-| **Resend invitation**   | **Users.Manage**       | Shown while the user is **awaiting invitation acceptance**; behavior per REQ-USR-008.                                                                                                                                                                                                     |
+| **Send invitation**     | **Users.Manage**       | Shown when the user **no** pending invitation oraz does not exist (for example after **Cancel invitation**); same behavior as **Resend invitation** (REQ-INV-003).                                                                                                                        |
 | **Deactivate**          | **Users.Deactivate**   | Shown when **Deactivated** is **false**; confirmation and behavior per REQ-USR-005.                                                                                                                                                                                                       |
 | **Activate**            | **Users.Deactivate**   | Shown when **Deactivated** is **true**; confirmation and behavior per REQ-USR-005.                                                                                                                                                                                                        |
 | **Revoke all sessions** | **Sessions.ManageAny** | Opens confirmation: **`Revoke all active sessions for this user? They will be signed out on every device.`**                                                                                                                                                                              |
@@ -408,7 +369,7 @@ Displays read-only:
 
 ### States and business rules
 
-- Users with **Deactivated** true display **Account** badge **`Deactivated`**; the active sessions table shows empty state **`No active sessions.`**
+- Users with **Deactivated** true display **Status** **`Deactivated`**; the active sessions table shows empty state **`No active sessions.`**
 - Revoking a session signs out that device on next activity; the list refreshes on the current page.
 
 ### Permissions and visibility
@@ -488,7 +449,7 @@ An authorized administrator must be able to send a password reset link to a user
 ### Business rules
 
 - Users with **Deactivated** true cannot receive a reset link; the action is not shown.
-- Users **awaiting invitation acceptance** cannot receive a password reset link; use **Resend invitation** (REQ-USR-008) instead.
+- Users **awaiting invitation acceptance** cannot receive a password reset link; use **Resend invitation** (REQ-INV-003) instead.
 
 ### Permissions and visibility
 
@@ -509,7 +470,7 @@ When email verification is enabled, an authorized administrator must be able to 
 - **Confirm email** header action on **User details** (REQ-USR-004).
 - Requires permission **Users.Manage**.
 - Shown only when email verification is enabled (REQ-AUTH-011) and the user's **Email verified** is false (typically self-registered accounts).
-- **Not shown** when the user was created via **Create user** and is already verified from the invitation email (REQ-USR-003).
+- **Not shown** when the user was invited via **Invite user** and is already verified from the invitation email (REQ-INV-001).
 - Shown for users with an email address on record regardless of **Deactivated**.
 - Confirmation dialog: **`Mark email as verified for "{full name}"?`**
 - On confirm:
@@ -528,38 +489,3 @@ When email verification is enabled, an authorized administrator must be able to 
 ### Permissions and visibility
 
 - **Users.Manage**: required for **Confirm email**.
-
----
-
-# REQ-USR-008: Resend Invitation
-
-## Goal
-
-An authorized administrator must be able to send a new invitation link to a user who has not yet accepted a previous invitation.
-
-## Features
-
-### Resend invitation action
-
-- **Resend invitation** header action on **User details** (REQ-USR-004) and in the **Invitation** section.
-- Requires permission **Users.Manage**.
-- Shown only while the user is **awaiting invitation acceptance**.
-- Shown only when **Deactivated** is **false**.
-- Confirmation dialog: **`Resend invitation to "{email}"? A new invitation link will be sent. Previous unused links will stop working.`**
-- On confirm:
-  - the system issues a new invitation token and sends **Account invitation** email (REQ-AUTH-007);
-  - previous unused invitation tokens for that user are invalidated;
-  - **Invitation sent at** is updated to the current date and time (displayed in the **Invitation** section);
-  - show message **`Invitation resent.`**;
-  - refresh the current screen in place.
-
-### Business rules
-
-- **Resend invitation** does not change assigned roles or **Email verified** (remains **true** when verification is enabled).
-- The action can be repeated; each send invalidates earlier unused invitation links.
-- Users who **have a local password** do not show this action.
-- Users with **Deactivated** true do not show this action.
-
-### Permissions and visibility
-
-- **Users.Manage**: required for **Resend invitation**.

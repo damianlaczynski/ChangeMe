@@ -22,7 +22,8 @@ public class CompleteExternalSignInHandler(
   IHttpContextAccessor httpContextAccessor,
   IAuthEmailService authEmailService,
   IUserAuthTokenService userAuthTokenService,
-  IOptions<AuthOptions> authOptions) : ICommandHandler<CompleteExternalSignInCommand, ExternalSignInResponseDto>
+  IOptions<AuthOptions> authOptions,
+  TimeProvider timeProvider) : ICommandHandler<CompleteExternalSignInCommand, ExternalSignInResponseDto>
 {
   public async Task<Result<ExternalSignInResponseDto>> Handle(
     CompleteExternalSignInCommand command,
@@ -118,6 +119,7 @@ public class CompleteExternalSignInHandler(
       var normalizedEmail = User.NormalizeEmail(assertion.Email);
       var matchedUser = await context.Users
         .Include(x => x.ExternalLogins)
+        .Include(x => x.AccountInvitations)
         .FirstOrDefaultAsync(x => x.NormalizedEmail == normalizedEmail, cancellationToken);
 
       if (matchedUser is not null)
@@ -195,7 +197,8 @@ public class CompleteExternalSignInHandler(
 
       var invitationResult = matchedUser.CompleteInvitationViaExternalSignIn(
         assertion.FirstName,
-        assertion.LastName);
+        assertion.LastName,
+        timeProvider.GetUtcNow().UtcDateTime);
       if (!invitationResult.IsSuccess)
         return invitationResult.Map();
 

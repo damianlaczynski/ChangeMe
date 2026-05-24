@@ -285,21 +285,23 @@
       [roleIdsSelected]="true"
     />
 
-    @if (isInvitationPending(profile)) {
+    @if (profile.pendingInvitation; as invitation) {
       <p-panel header="Invitation" [toggleable]="true" class="mb-4">
         <dl class="grid gap-4 sm:grid-cols-2">
           <div class="flex flex-col gap-1">
-            <dt class="text-muted-color text-sm">Invitation status</dt>
-            <dd class="m-0 font-medium">Pending</dd>
+            <dt class="text-muted-color text-sm">Last sent at</dt>
+            <dd class="m-0">
+              {{ invitation.lastSentAtUtc | date: 'dd.MM.yyyy HH:mm' }}
+            </dd>
           </div>
           <div class="flex flex-col gap-1">
-            <dt class="text-muted-color text-sm">Invitation sent at</dt>
+            <dt class="text-muted-color text-sm">Invitations sent</dt>
+            <dd class="m-0 font-medium">{{ invitation.sentCount }}</dd>
+          </div>
+          <div class="flex flex-col gap-1">
+            <dt class="text-muted-color text-sm">Expires at</dt>
             <dd class="m-0">
-              @if (profile.invitationSentAt) {
-                {{ profile.invitationSentAt | date: 'dd.MM.yyyy HH:mm' }}
-              } @else {
-                —
-              }
+              {{ invitation.expiresAtUtc | date: 'dd.MM.yyyy HH:mm' }}
             </dd>
           </div>
           @if (emailVerificationEnabled()) {

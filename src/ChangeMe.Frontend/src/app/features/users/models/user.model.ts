@@ -8,7 +8,7 @@ export interface UserListItemDto {
   deactivated: boolean;
   hasPasswordSet: boolean;
   emailVerified: boolean;
-  invitationSentAt: string | null;
+  invitationPending: boolean;
   roleNames: string[];
   lastSignInAt: string | null;
   createdAt: string;
@@ -42,12 +42,18 @@ export interface UserDetailsDto {
   passwordExpiresAtUtc: string | null;
   twoFactorEnabled: boolean;
   twoFactorEnabledAt: string | null;
-  invitationSentAt: string | null;
+  pendingInvitation: UserInvitationInfoDto | null;
   memberSince: string;
   lastSignInAt: string | null;
   roles: UserRoleSummaryDto[];
   effectivePermissions: EffectivePermissionDto[];
   externalLogins: UserExternalLoginDto[];
+}
+
+export interface UserInvitationInfoDto {
+  lastSentAtUtc: string;
+  sentCount: number;
+  expiresAtUtc: string;
 }
 
 export interface UserExternalLoginDto {
