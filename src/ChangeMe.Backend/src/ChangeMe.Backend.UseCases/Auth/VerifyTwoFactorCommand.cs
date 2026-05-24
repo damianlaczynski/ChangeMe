@@ -1,4 +1,6 @@
+using ChangeMe.Backend.Domain.Aggregates.Sessions;
 using ChangeMe.Backend.Domain.Aggregates.Users;
+using ChangeMe.Backend.Domain.Aggregates.Users.Interfaces;
 using ChangeMe.Backend.Domain.Aggregates.Users.Entities;
 using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UseCases.Auth.Dtos;
@@ -18,6 +20,7 @@ public class VerifyTwoFactorHandler(
   ISessionLifetimeService sessionLifetime,
   IPasswordExpirationEvaluator passwordExpirationEvaluator,
   ITwoFactorPolicyEvaluator twoFactorPolicyEvaluator,
+  IPasskeyPolicyEvaluator passkeyPolicyEvaluator,
   ITotpService totpService,
   ITwoFactorSecretProtector secretProtector,
   IRecoveryCodeHasher recoveryCodeHasher,
@@ -77,12 +80,17 @@ public class VerifyTwoFactorHandler(
       .Where(x => x.Id == challenge.Id)
       .ExecuteDeleteAsync(cancellationToken);
 
+    var pendingSignInMethod = string.IsNullOrWhiteSpace(challenge.PendingSignInMethod)
+      ? SignInMethods.Password
+      : challenge.PendingSignInMethod!;
+
     var sessionResult = await AuthSessionFactory.CreateSessionAsync(
       context,
       sessionLifetime,
       httpContextAccessor,
       user,
-      cancellationToken);
+      cancellationToken,
+      pendingSignInMethod);
     if (!sessionResult.IsSuccess)
       return Result<AuthResponseDto>.Invalid(sessionResult.ValidationErrors);
 
@@ -92,6 +100,10 @@ public class VerifyTwoFactorHandler(
     var passwordExpiresAtUtc = passwordExpirationEvaluator.GetPasswordExpiresAtUtc(user);
     var twoFactorSetupRequired = !passwordChangeRequired
       && twoFactorPolicyEvaluator.IsTwoFactorSetupRequired(user);
+    var passkeyCount = await context.PasskeyCredentials.CountAsync(x => x.UserId == user.Id, cancellationToken);
+    var passkeySetupRequired = !passwordChangeRequired
+      && !twoFactorSetupRequired
+      && passkeyPolicyEvaluator.IsPasskeySetupRequired(user, passkeyCount);
 
     return await AuthSessionUtils.CreateAuthResponseAsync(
       context,
@@ -102,6 +114,7 @@ public class VerifyTwoFactorHandler(
       passwordChangeRequired,
       passwordExpiresAtUtc,
       twoFactorSetupRequired,
-      cancellationToken);
+      cancellationToken,
+      passkeySetupRequired);
   }
 }

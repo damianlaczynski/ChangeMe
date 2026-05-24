@@ -151,6 +151,18 @@ export class RegisterComponent {
           return;
         }
 
+        if (this.authService.twoFactorSetupRequired()) {
+          this.authService.enableTwoFactorSetupScreen();
+          void this.router.navigateByUrl('/required-two-factor-setup');
+          return;
+        }
+
+        if (this.authService.passkeySetupRequired()) {
+          this.authService.enablePasskeySetupScreen();
+          void this.router.navigateByUrl('/required-passkey-setup');
+          return;
+        }
+
         void this.router.navigateByUrl('/issues');
       },
       error: (error) => {

@@ -38,7 +38,8 @@ public static class AuthSessionUtils
     bool passwordChangeRequired,
     DateTime? passwordExpiresAtUtc,
     bool twoFactorSetupRequired,
-    CancellationToken cancellationToken)
+    CancellationToken cancellationToken,
+    bool passkeySetupRequired = false)
   {
     var permissions = await PermissionResolver.GetEffectivePermissionsAsync(context, user.Id, cancellationToken);
     var accessToken = jwtTokenGenerator.GenerateToken(user, session.Id, permissions);
@@ -56,7 +57,8 @@ public static class AuthSessionUtils
       permissions,
       passwordChangeRequired,
       passwordExpiresAtUtc,
-      twoFactorSetupRequired));
+      twoFactorSetupRequired,
+      passkeySetupRequired));
   }
 
   public static string? GetClientIpAddress(HttpContext? httpContext)

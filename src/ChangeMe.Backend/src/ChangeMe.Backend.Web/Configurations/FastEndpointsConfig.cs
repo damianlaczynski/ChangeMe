@@ -1,4 +1,5 @@
 ﻿using System.Text.Json.Serialization;
+using ChangeMe.Backend.Infrastructure.Auth.Json;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using NSwag;
 
@@ -10,6 +11,8 @@ public static class FastEndpointsConfig
   {
     services.ConfigureHttpJsonOptions(options =>
     {
+      options.SerializerOptions.PropertyNameCaseInsensitive = true;
+      options.SerializerOptions.Converters.Add(new PublicKeyCredentialTypeJsonConverter());
       options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
     });
 
@@ -36,6 +39,8 @@ public static class FastEndpointsConfig
     app.UseFastEndpoints(config =>
     {
       config.Endpoints.RoutePrefix = "api";
+      config.Serializer.Options.PropertyNameCaseInsensitive = true;
+      config.Serializer.Options.Converters.Add(new PublicKeyCredentialTypeJsonConverter());
       config.Serializer.Options.Converters.Add(new JsonStringEnumConverter());
     }).UseSwaggerGen();
     return app;

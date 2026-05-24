@@ -1,4 +1,5 @@
-﻿using ChangeMe.Backend.Domain.Aggregates.Roles;
+﻿using ChangeMe.Backend.Domain.Aggregates.Sessions;
+using ChangeMe.Backend.Domain.Aggregates.Roles;
 using ChangeMe.Backend.Domain.Aggregates.Users;
 using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UseCases.Auth.Dtos;
@@ -76,7 +77,8 @@ public class RegisterUserHandler(
       sessionLifetime,
       httpContextAccessor,
       user,
-      cancellationToken);
+      cancellationToken,
+      SignInMethods.Registration);
     if (!sessionResult.IsSuccess)
       return Result<RegisterUserResponseDto>.Invalid(sessionResult.ValidationErrors);
 

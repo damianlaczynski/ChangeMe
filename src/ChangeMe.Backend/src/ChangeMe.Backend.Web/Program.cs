@@ -33,6 +33,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.UseMiddleware<PasswordChangeRequiredMiddleware>();
 app.UseMiddleware<TwoFactorSetupRequiredMiddleware>();
+app.UseMiddleware<PasskeySetupRequiredMiddleware>();
 
 app.UseFastEndpointsWithSwagger();
 app.UseHangfireDashboard();

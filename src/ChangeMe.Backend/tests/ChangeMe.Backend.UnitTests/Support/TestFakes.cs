@@ -79,6 +79,23 @@ internal sealed class FakeAuthEmailService : IAuthEmailService
     string providerDisplayName,
     CancellationToken cancellationToken = default) =>
     Task.FromResult(Result.Success());
+
+  public Task<Result> SendPasskeyAddedAsync(
+    User user,
+    string passkeyName,
+    CancellationToken cancellationToken = default) =>
+    Task.FromResult(Result.Success());
+
+  public Task<Result> SendPasskeyRemovedAsync(
+    User user,
+    string passkeyName,
+    CancellationToken cancellationToken = default) =>
+    Task.FromResult(Result.Success());
+
+  public Task<Result> SendPasskeysResetByAdminAsync(
+    User user,
+    CancellationToken cancellationToken = default) =>
+    Task.FromResult(Result.Success());
 }
 
 internal static class TestAuthOptions

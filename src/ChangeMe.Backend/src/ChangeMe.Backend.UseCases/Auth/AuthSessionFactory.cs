@@ -1,5 +1,6 @@
 using ChangeMe.Backend.Domain.Aggregates.Sessions;
 using ChangeMe.Backend.Domain.Aggregates.Users;
+using SignInMethodConstants = ChangeMe.Backend.Domain.Aggregates.Sessions.SignInMethods;
 using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UseCases.Auth.Utils;
 using Microsoft.AspNetCore.Http;
@@ -13,7 +14,8 @@ public static class AuthSessionFactory
     ISessionLifetimeService sessionLifetime,
     IHttpContextAccessor httpContextAccessor,
     User user,
-    CancellationToken cancellationToken)
+    CancellationToken cancellationToken,
+    string signInMethod = SignInMethodConstants.Password)
   {
     var signedInAt = DateTime.UtcNow;
     var refreshToken = RefreshTokenGenerator.CreateToken();
@@ -29,7 +31,8 @@ public static class AuthSessionFactory
       ipAddress,
       refreshTokenHash,
       refreshTokenExpiresAtUtc,
-      signedInAt);
+      signedInAt,
+      signInMethod);
 
     if (!sessionResult.IsSuccess)
       return sessionResult.Map();

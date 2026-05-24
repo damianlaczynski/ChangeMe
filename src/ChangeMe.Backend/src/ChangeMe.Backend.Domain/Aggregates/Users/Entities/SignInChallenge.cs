@@ -1,3 +1,5 @@
+using ChangeMe.Backend.Domain.Aggregates.Sessions;
+
 namespace ChangeMe.Backend.Domain.Aggregates.Users.Entities;
 
 public class SignInChallenge
@@ -10,16 +12,27 @@ public class SignInChallenge
   public int FailedAttemptCount { get; private set; }
   public DateTime ExpiresAtUtc { get; private set; }
 
+  /// <summary>
+  /// Sign-in method to apply when the challenge completes (password, passkey, external provider, etc.).
+  /// </summary>
+  public string? PendingSignInMethod { get; private set; }
+
   public bool IsExpired(DateTime utcNow) => utcNow >= ExpiresAtUtc;
 
   public static Result<SignInChallenge> Create(
     Guid userId,
-    DateTime expiresAtUtc)
+    DateTime expiresAtUtc,
+    string pendingSignInMethod)
   {
     var validationErrors = new List<ValidationError>();
 
     if (userId == Guid.Empty)
       validationErrors.Add(new ValidationError(nameof(UserId), "cannot be empty"));
+
+    if (string.IsNullOrWhiteSpace(pendingSignInMethod))
+      validationErrors.Add(new ValidationError(nameof(PendingSignInMethod), "cannot be null or empty"));
+    else if (pendingSignInMethod.Length > SessionConstraints.SIGN_IN_METHOD_MAX_LENGTH)
+      validationErrors.Add(new ValidationError(nameof(PendingSignInMethod), "is too long"));
 
     if (validationErrors.Count > 0)
       return Result.Invalid(validationErrors);
@@ -27,7 +40,8 @@ public class SignInChallenge
     return Result.Success(new SignInChallenge
     {
       UserId = userId,
-      ExpiresAtUtc = expiresAtUtc
+      ExpiresAtUtc = expiresAtUtc,
+      PendingSignInMethod = pendingSignInMethod.Trim()
     });
   }
 

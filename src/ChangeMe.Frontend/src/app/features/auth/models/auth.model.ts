@@ -98,6 +98,48 @@ export interface AuthResponse {
   passwordExpiresAtUtc: string | null;
   twoFactorSetupRequired: boolean;
   twoFactorSetupStrict: boolean;
+  passkeySetupRequired: boolean;
+  passkeySetupStrict: boolean;
+}
+
+export interface PasskeyCeremonyBeginResponse {
+  ceremonyId: string;
+  options: unknown;
+}
+
+export interface PasskeyRegisterCompleteRequest {
+  ceremonyId: string;
+  attestationResponse: unknown;
+  name: string;
+}
+
+export interface PasskeySignInCompleteRequest {
+  ceremonyId: string;
+  assertionResponse: unknown;
+}
+
+export interface PasskeyRenameRequest {
+  name: string;
+}
+
+export interface MyAccountPasskey {
+  id: string;
+  name: string;
+  createdAtUtc: string;
+  lastUsedAtUtc: string | null;
+  authenticatorType: string;
+  backupEligible: boolean;
+  backupState: boolean;
+}
+
+export interface PasskeySettings {
+  passkeysAuthenticationEnabled: boolean;
+  passkeysAuthenticationRequired: boolean;
+  passkeySatisfiesTwoFactor: boolean;
+  discoverablePasskeySignInOnLogin: boolean;
+  relyingPartyId: string;
+  relyingPartyDisplayName: string;
+  maximumPasskeysPerUser: number;
 }
 
 export interface LoginRequest {
@@ -128,6 +170,8 @@ export interface RefreshSessionRequest {
 export interface UserSessionDto {
   id: string;
   deviceBrowserLabel: string;
+  signInMethod: string;
+  signInMethodLabel: string;
   ipAddress: string | null;
   signedInAt: string;
   lastActivityAt: string;
@@ -144,10 +188,12 @@ export interface MyAccountDto {
   twoFactorEnabled: boolean;
   twoFactorEnabledAt: string | null;
   externalStepUpFresh: boolean;
+  passkeyStepUpFresh: boolean;
   roles: UserRoleSummaryDto[];
   effectivePermissions: EffectivePermissionDto[];
   externalLogins: MyAccountExternalLogin[];
   linkableProviders: ExternalProviderSettings[];
+  passkeys: MyAccountPasskey[];
 }
 
 export interface DisableTwoFactorRequest {
@@ -206,6 +252,7 @@ export interface AuthSettings {
   trustIdentityProviderMfa: boolean;
   externalProvidersEnabled: boolean;
   twoFactor: TwoFactorSettings;
+  passkeys?: PasskeySettings;
   externalProviders: ExternalProviderSettings[];
 }
 

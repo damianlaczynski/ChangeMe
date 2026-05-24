@@ -9,6 +9,7 @@ Cross-references:
 - **Accept invitation** (password, OIDC completion): `docs/req/auth-requirements.md` (REQ-AUTH-010).
 - **Invitation email and tokens**: `docs/req/auth-requirements.md` (REQ-AUTH-007).
 - **External sign-in during invite**: `docs/req/auth-requirements.md` (REQ-AUTH-014).
+- **Passkeys after onboarding**: `docs/req/passkeys-requirements.md` (REQ-PKY-002, REQ-PKY-003) — not part of invitation acceptance.
 
 ---
 

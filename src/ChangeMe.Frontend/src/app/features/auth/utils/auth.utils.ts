@@ -106,7 +106,21 @@ export const AuthMessages = {
     'The external account email does not match your account email.',
   cannotRemoveOnlySignInMethod:
     'Set a password before removing your only sign-in method.',
-  verifyWithProvider: 'Verify with provider'
+  verifyWithProvider: 'Verify with provider',
+  passkeySignInFailed: 'Passkey sign-in failed. Try again or use email and password.',
+  passkeyNotSupported: 'Passkeys are not supported in this browser.',
+  passkeyAdded: 'Passkey added.',
+  passkeyRemoved: 'Passkey removed.',
+  passkeyRenamed: 'Passkey renamed.',
+  passkeyStepUpCompleted: 'Identity verified with passkey.',
+  passkeySetupRequiredTitle: 'Set up a passkey',
+  passkeySetupRequiredSubtitle:
+    'A passkey is required for your account before you can continue.',
+  passkeyRequiredWarning: 'A passkey is required for your account.',
+  passkeySetupRequiredSummary: 'Passkey required',
+  passkeySetupRequiredDetail:
+    'Register a passkey to continue saving your work to the server.',
+  passkeyVerifyWithPasskey: 'Verify with passkey'
 };
 
 export { PermissionCodes } from '@shared/authorization/permission-codes';

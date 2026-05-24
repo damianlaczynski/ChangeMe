@@ -47,6 +47,9 @@ export class LoginComponent {
   readonly externalProvidersEnabled = signal(false);
   readonly externalProviders = signal<ExternalProviderSettings[]>([]);
   readonly externalProviderLoadingKey = signal<string | null>(null);
+  readonly passkeysAuthenticationEnabled = signal(false);
+  readonly discoverablePasskeySignInOnLogin = signal(false);
+  readonly isPasskeySigningIn = signal(false);
 
   readonly form = new FormGroup({
     email: new FormControl('', {
@@ -84,8 +87,52 @@ export class LoginComponent {
           this.publicRegistrationEnabled.set(settings.publicRegistrationEnabled);
           this.externalProvidersEnabled.set(settings.externalProvidersEnabled);
           this.externalProviders.set(settings.externalProviders);
+          const passkeys = settings.passkeys;
+          this.passkeysAuthenticationEnabled.set(
+            passkeys?.passkeysAuthenticationEnabled === true
+          );
+          this.discoverablePasskeySignInOnLogin.set(
+            passkeys?.discoverablePasskeySignInOnLogin === true
+          );
         }
       });
+  }
+
+  signInWithPasskey(): void {
+    if (
+      this.isSubmitting() ||
+      this.isPasskeySigningIn() ||
+      !this.passkeysAuthenticationEnabled()
+    ) {
+      return;
+    }
+
+    const emailTrim = this.form.controls.email.value.trim();
+    const discoverable = this.discoverablePasskeySignInOnLogin() && !emailTrim;
+    if (!discoverable && !emailTrim) {
+      this.errorMessage.set('Enter your email to sign in with a passkey.');
+      this.form.controls.email.markAsTouched();
+      return;
+    }
+
+    this.isPasskeySigningIn.set(true);
+    this.errorMessage.set('');
+    this.showEmailVerificationResend.set(false);
+
+    this.authService.signInWithPasskey(discoverable ? undefined : emailTrim).subscribe({
+      next: () => {
+        this.navigateAfterSuccessfulLogin();
+      },
+      error: (error) => {
+        this.errorMessage.set(
+          error instanceof Error ? error.message : AuthMessages.passkeySignInFailed
+        );
+        this.isPasskeySigningIn.set(false);
+      },
+      complete: () => {
+        this.isPasskeySigningIn.set(false);
+      }
+    });
   }
 
   beginExternalSignIn(provider: ExternalProviderSettings): void {
@@ -125,27 +172,7 @@ export class LoginComponent {
 
     this.authService.login(this.form.getRawValue()).subscribe({
       next: () => {
-        if (this.authService.passwordChangeRequired()) {
-          this.authService.enablePasswordChangeScreen();
-          void this.router.navigateByUrl('/required-password-change');
-          return;
-        }
-
-        const challenge = readTwoFactorChallenge();
-        if (challenge) {
-          void this.router.navigateByUrl('/two-factor-verification');
-          return;
-        }
-
-        if (this.authService.twoFactorSetupRequired()) {
-          this.authService.enableTwoFactorSetupScreen();
-          void this.router.navigateByUrl('/required-two-factor-setup');
-          return;
-        }
-
-        const returnUrl =
-          this.route.snapshot.queryParamMap.get('returnUrl') ?? '/issues';
-        void this.router.navigateByUrl(returnUrl);
+        this.navigateAfterSuccessfulLogin();
       },
       error: (error) => {
         const message =
@@ -169,6 +196,35 @@ export class LoginComponent {
         this.isSubmitting.set(false);
       }
     });
+  }
+
+  private navigateAfterSuccessfulLogin(): void {
+    if (this.authService.passwordChangeRequired()) {
+      this.authService.enablePasswordChangeScreen();
+      void this.router.navigateByUrl('/required-password-change');
+      return;
+    }
+
+    const challenge = readTwoFactorChallenge();
+    if (challenge) {
+      void this.router.navigateByUrl('/two-factor-verification');
+      return;
+    }
+
+    if (this.authService.twoFactorSetupRequired()) {
+      this.authService.enableTwoFactorSetupScreen();
+      void this.router.navigateByUrl('/required-two-factor-setup');
+      return;
+    }
+
+    if (this.authService.passkeySetupRequired()) {
+      this.authService.enablePasskeySetupScreen();
+      void this.router.navigateByUrl('/required-passkey-setup');
+      return;
+    }
+
+    const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') ?? '/issues';
+    void this.router.navigateByUrl(returnUrl);
   }
 
   private readLoginQueryMessages(params: { get(name: string): string | null }): {

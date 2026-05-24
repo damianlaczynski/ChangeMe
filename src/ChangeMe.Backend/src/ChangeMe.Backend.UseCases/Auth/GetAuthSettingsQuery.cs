@@ -1,4 +1,5 @@
 ﻿using ChangeMe.Backend.Infrastructure.Auth;
+using ChangeMe.Backend.Infrastructure.Auth.Passkey;
 using ChangeMe.Backend.UseCases.Auth.Dtos;
 using Microsoft.Extensions.Options;
 
@@ -52,7 +53,18 @@ public class GetAuthSettingsHandler(IOptions<AuthOptions> options)
         TotpTimeStepSeconds = twoFactor.TotpTimeStepSeconds,
         StepUpExternalSignInValidityMinutes = twoFactor.StepUpExternalSignInValidityMinutes
       },
-      ExternalProviders = configuredProviders
+      ExternalProviders = configuredProviders,
+      Passkeys = new PasskeySettingsDto
+      {
+        PasskeysAuthenticationEnabled = auth.Passkeys.PasskeysAuthenticationEnabled,
+        PasskeysAuthenticationRequired = auth.Passkeys.PasskeysAuthenticationRequired,
+        PasskeySatisfiesTwoFactor = auth.Passkeys.PasskeySatisfiesTwoFactor
+          && auth.TwoFactorAuthenticationEnabled,
+        DiscoverablePasskeySignInOnLogin = auth.Passkeys.DiscoverablePasskeySignInOnLogin,
+        RelyingPartyId = PasskeyFido2Service.ResolveRpId(auth),
+        RelyingPartyDisplayName = auth.Passkeys.RelyingPartyDisplayName,
+        MaximumPasskeysPerUser = auth.Passkeys.MaximumPasskeysPerUser
+      }
     };
 
     return Task.FromResult(Result.Success(dto));

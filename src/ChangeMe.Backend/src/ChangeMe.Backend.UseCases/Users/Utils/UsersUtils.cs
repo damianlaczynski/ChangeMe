@@ -1,6 +1,7 @@
 using ChangeMe.Backend.Domain.Aggregates.Sessions;
 using ChangeMe.Backend.Domain.Authorization;
 using ChangeMe.Backend.Infrastructure.Auth;
+using ChangeMe.Backend.UseCases.Auth.Utils;
 using ChangeMe.Backend.UseCases.Users.Dtos;
 
 namespace ChangeMe.Backend.UseCases.Users.Utils;
@@ -104,7 +105,8 @@ public static class UsersUtils
   public static IReadOnlyList<AdminUserSessionDto> MapActiveSessions(
     IEnumerable<UserSession> sessions,
     DateTime utcNow,
-    ISessionLifetimeService sessionLifetime)
+    ISessionLifetimeService sessionLifetime,
+    AuthOptions auth)
   {
     return sessions
       .Where(x => sessionLifetime.IsActive(x, utcNow))
@@ -112,6 +114,8 @@ public static class UsersUtils
       .Select(x => new AdminUserSessionDto(
         x.Id,
         x.DeviceBrowserLabel,
+        x.SignInMethod,
+        SignInMethodDisplay.Format(x.SignInMethod, auth),
         x.IpAddress,
         x.SignedInAt,
         x.LastActivityAt))

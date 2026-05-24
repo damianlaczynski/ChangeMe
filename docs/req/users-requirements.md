@@ -5,6 +5,8 @@ my account profile, user list, admin edit user, user details with session admini
 
 **Account invitations** (invite, resend, cancel, pending-invitation UI, user **Status**): `docs/req/invitations-requirements.md`.
 
+**Passkeys (WebAuthn):** `docs/req/passkeys-requirements.md` — **My account** and **User details** sections when implemented (REQ-PKY-003, REQ-PKY-005).
+
 Role assignment is performed on **Invite user** (REQ-INV-001) and **Edit user** (REQ-USR-003). Removing a user from a role is available on **Role details** (REQ-ROL-005).
 
 ## Business terms (account and sign-in)
@@ -21,8 +23,10 @@ The following terms are used across Users and Auth requirements. They describe o
 | **External-only account**          | The user can sign in through one or more linked external providers but **has no local password yet** and is **not** awaiting invitation acceptance (for example after invitation acceptance via OIDC, self-service registration via an IdP, or when no administrator invitation was sent). |
 | **Email verified**                 | When email verification is enabled in deployment settings, the user proved control of the mailbox (verification link, invitation acceptance, or administrator confirmation). When verification is disabled, every account is treated as verified for sign-in purposes.                     |
 | **Two-factor enrolled**            | The user completed authenticator setup; password sign-in requires a verification code unless external **Trust identity provider MFA** applies on that sign-in.                                                                                                                             |
+| **Passkey enrolled**               | The user has at least one **Passkey credential** (REQ-PKY-003). Passkey sign-in is available when **Passkeys authentication enabled** is **true** (REQ-PKY-001).                                                                                                                           |
+| **Passkey-only account**           | The user has at least one passkey, **no local password**, and **no external login**; allowed only when **Allow passkey-only accounts** is **true** (REQ-PKY-001).                                                                                                                          |
 
-Cross-reference: invitations — `docs/req/invitations-requirements.md`; invitation acceptance — REQ-AUTH-010; external sign-in — REQ-AUTH-014; email verification — REQ-AUTH-011.
+Cross-reference: invitations — `docs/req/invitations-requirements.md`; invitation acceptance — REQ-AUTH-010; external sign-in — REQ-AUTH-014; email verification — REQ-AUTH-011; passkeys — `docs/req/passkeys-requirements.md`.
 
 ## Account model (all Users REQs)
 
@@ -40,6 +44,7 @@ Administrative enablement is separate from onboarding and how the user signs in.
 | **Two-factor enabled**       | **My account**, **User details**                             | Whether the user enrolled in app TOTP when two-factor is enabled in deployment settings (REQ-AUTH-013).                                                            |
 | **Two-factor enabled at**    | **User details**                                             | When two-factor enrollment last completed.                                                                                                                         |
 | **External login**           | **External sign-in methods**                                 | A linked external provider identity (provider name, linked date).                                                                                                  |
+| **Passkey credential**       | **Passkeys** (REQ-PKY-003, REQ-PKY-005)                      | A registered WebAuthn credential (name, created at, last used at, authenticator type).                                                                             |
 
 **Email verified** when email verification is enabled (REQ-AUTH-011):
 
@@ -113,6 +118,11 @@ The signed-in user must be able to view their own profile, edit it on a separate
 ### External sign-in methods section
 
 - Collapsible section **External sign-in methods** on the same screen when **External providers enabled** is **true** (REQ-AUTH-014).
+- Not a separate screen or sidebar entry.
+
+### Passkeys section
+
+- Collapsible section **Passkeys** on the same screen when **Passkeys authentication enabled** is **true** (REQ-PKY-003).
 - Not a separate screen or sidebar entry.
 
 ### Set password
@@ -315,6 +325,12 @@ Displays read-only:
 - Lists linked **Provider** (display name) and **Linked at** per row; **Unlink** per row when the administrator has **Users.Manage** (REQ-AUTH-014).
 - Empty state: **`No external sign-in methods linked.`**
 
+### Passkeys section
+
+- Collapsible section **Passkeys**; shown only when **Passkeys authentication enabled** is **true** (REQ-PKY-005).
+- Read-only table: **Name**, **Created at**, **Last used at**, **Authenticator type**, **Backup eligible**, **Backup state**; per-row **Remove** when the administrator has **Users.Manage** (REQ-PKY-005).
+- Empty state: **`No passkeys registered.`**
+
 ### Roles section
 
 - Section title: **`Roles`**
@@ -346,6 +362,7 @@ Displays read-only:
 | **Send password reset** | **Users.Manage**       | Sends password reset email; confirmation: **`Send a password reset link to "{email}"?`**; success message: **`Password reset email sent.`**                                                                                                                                               |
 | **Confirm email**       | **Users.Manage**       | Shown when email verification is enabled and **Email verified** is false (typical for self-registered users); not shown for admin-invited users who are already verified; confirmation: **`Mark email as verified for "{full name}"?`**; success message: **`Email marked as verified.`** |
 | **Reset two-factor**    | **Users.Manage**       | Shown when **Two-factor authentication enabled** is **true** and **Two-factor enabled** is **true**; behavior per REQ-AUTH-013.                                                                                                                                                           |
+| **Reset passkeys**      | **Users.Manage**       | Shown when **Passkeys authentication enabled** is **true** and the user has at least one passkey; behavior per REQ-PKY-005.                                                                                                                                                               |
 | **Unlink external**     | **Users.Manage**       | **Unlink** on rows in **External sign-in methods** when providers are enabled; confirmation **`Remove {Display name} sign-in from this account?`**; success **`External sign-in method removed.`**; **External account unlinked** email (REQ-AUTH-007).                                   |
 
 - Actions the current user lacks permission for are **not shown**.

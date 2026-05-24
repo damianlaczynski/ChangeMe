@@ -34,6 +34,7 @@ public sealed class LoginUserHandlerTests
       new SessionLifetimeService(authOptions),
       new PasswordExpirationEvaluator(authOptions),
       new TwoFactorPolicyEvaluator(authOptions),
+      new PasskeyPolicyEvaluator(authOptions),
       authOptions,
       new HttpContextAccessor { HttpContext = new DefaultHttpContext() });
 

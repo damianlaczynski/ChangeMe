@@ -45,7 +45,17 @@ public sealed record UserDetailsDto
   public IReadOnlyList<UserRoleSummaryDto> Roles { get; init; } = [];
   public IReadOnlyList<EffectivePermissionDto> EffectivePermissions { get; init; } = [];
   public IReadOnlyList<UserExternalLoginDto> ExternalLogins { get; init; } = [];
+  public IReadOnlyList<UserPasskeyDto> Passkeys { get; init; } = [];
 }
+
+public sealed record UserPasskeyDto(
+  Guid Id,
+  string Name,
+  DateTime CreatedAtUtc,
+  DateTime? LastUsedAtUtc,
+  string AuthenticatorType,
+  bool BackupEligible,
+  bool BackupState);
 
 public sealed record UserExternalLoginDto(
   string ProviderKey,
@@ -57,6 +67,8 @@ public sealed record RoleAssignmentOptionDto(Guid Id, string Name, bool IsSystem
 public sealed record AdminUserSessionDto(
   Guid Id,
   string DeviceBrowserLabel,
+  string SignInMethod,
+  string SignInMethodLabel,
   string? IpAddress,
   DateTime SignedInAt,
   DateTime LastActivityAt);

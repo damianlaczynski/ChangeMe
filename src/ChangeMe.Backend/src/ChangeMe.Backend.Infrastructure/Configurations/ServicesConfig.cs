@@ -1,4 +1,6 @@
-﻿using ChangeMe.Backend.Infrastructure.Auth;
+﻿using ChangeMe.Backend.Domain.Aggregates.Users.Interfaces;
+using ChangeMe.Backend.Infrastructure.Auth;
+using ChangeMe.Backend.Infrastructure.Auth.Passkey;
 using ChangeMe.Backend.Infrastructure.Email;
 
 namespace ChangeMe.Backend.Infrastructure.Configurations;
@@ -15,6 +17,8 @@ public static class ServicesConfig
     services.AddSingleton<IPasswordPolicyValidator, PasswordPolicyValidator>();
     services.AddSingleton<IPasswordExpirationEvaluator, PasswordExpirationEvaluator>();
     services.AddSingleton<ITwoFactorPolicyEvaluator, TwoFactorPolicyEvaluator>();
+    services.AddSingleton<IPasskeyPolicyEvaluator, PasskeyPolicyEvaluator>();
+    services.AddScoped<IPasskeyFido2Service, PasskeyFido2Service>();
     services.AddSingleton<ITotpService, TotpService>();
     services.AddSingleton<ITwoFactorSecretProtector, TwoFactorSecretProtector>();
     services.AddSingleton<IRecoveryCodeHasher, RecoveryCodeHasher>();

@@ -1,4 +1,5 @@
-﻿using ChangeMe.Backend.Infrastructure.Auth;
+﻿using ChangeMe.Backend.Domain.Aggregates.Users.Interfaces;
+using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UseCases.Auth.Dtos;
 
 using ChangeMe.Backend.UseCases.Auth.Utils;
@@ -12,7 +13,8 @@ public class RefreshSessionHandler(
   IJwtTokenGenerator jwtTokenGenerator,
   ISessionLifetimeService sessionLifetime,
   IPasswordExpirationEvaluator passwordExpirationEvaluator,
-  ITwoFactorPolicyEvaluator twoFactorPolicyEvaluator) : ICommandHandler<RefreshSessionCommand, AuthResponseDto>
+  ITwoFactorPolicyEvaluator twoFactorPolicyEvaluator,
+  IPasskeyPolicyEvaluator passkeyPolicyEvaluator) : ICommandHandler<RefreshSessionCommand, AuthResponseDto>
 {
   public async Task<Result<AuthResponseDto>> Handle(RefreshSessionCommand command, CancellationToken cancellationToken)
   {
@@ -43,6 +45,10 @@ public class RefreshSessionHandler(
     var passwordExpiresAtUtc = passwordExpirationEvaluator.GetPasswordExpiresAtUtc(user);
     var twoFactorSetupRequired = !passwordChangeRequired
       && twoFactorPolicyEvaluator.IsTwoFactorSetupRequired(user);
+    var passkeyCount = await context.PasskeyCredentials.CountAsync(x => x.UserId == user.Id, cancellationToken);
+    var passkeySetupRequired = !passwordChangeRequired
+      && !twoFactorSetupRequired
+      && passkeyPolicyEvaluator.IsPasskeySetupRequired(user, passkeyCount);
 
     return await AuthSessionUtils.CreateAuthResponseAsync(
       context,
@@ -53,6 +59,7 @@ public class RefreshSessionHandler(
       passwordChangeRequired,
       passwordExpiresAtUtc,
       twoFactorSetupRequired,
-      cancellationToken);
+      cancellationToken,
+      passkeySetupRequired);
   }
 }

@@ -1,4 +1,5 @@
-﻿using ChangeMe.Backend.Infrastructure.Auth;
+﻿using ChangeMe.Backend.Domain.Aggregates.Users.Interfaces;
+using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UseCases.Auth.Utils;
 using ChangeMe.Backend.UseCases.Users.Dtos;
 using ChangeMe.Backend.UseCases.Users.Utils;
@@ -11,7 +12,8 @@ public sealed record GetUserByIdQuery(Guid Id) : IQuery<UserDetailsDto>;
 public class GetUserByIdHandler(
   ApplicationDbContext context,
   IPasswordExpirationEvaluator passwordExpirationEvaluator,
-  IOptions<AuthOptions> authOptions) : IQueryHandler<GetUserByIdQuery, UserDetailsDto>
+  IOptions<AuthOptions> authOptions,
+  IPasskeyPolicyEvaluator passkeyPolicyEvaluator) : IQueryHandler<GetUserByIdQuery, UserDetailsDto>
 {
   public async Task<Result<UserDetailsDto>> Handle(GetUserByIdQuery query, CancellationToken cancellationToken)
   {
@@ -20,6 +22,7 @@ public class GetUserByIdHandler(
       .Include(x => x.Roles)
       .ThenInclude(x => x.Role)
       .Include(x => x.ExternalLogins)
+      .Include(x => x.Passkeys)
       .Include(x => x.AccountInvitations)
       .FirstOrDefaultAsync(x => x.Id == query.Id, cancellationToken);
     if (user is null)
@@ -49,6 +52,20 @@ public class GetUserByIdHandler(
         .ToList()
       : [];
 
+    var passkeys = passkeyPolicyEvaluator.IsPasskeysEnabledForDeployment()
+      ? user.Passkeys
+        .OrderBy(x => x.CreatedAtUtc)
+        .Select(x => new UserPasskeyDto(
+          x.Id,
+          x.Name,
+          x.CreatedAtUtc,
+          x.LastUsedAtUtc,
+          x.AuthenticatorType,
+          x.BackupEligible,
+          x.BackupState))
+        .ToList()
+      : [];
+
     return Result.Success(
       user.ToDetailsDto(
         lastSignInAt,
@@ -56,6 +73,7 @@ public class GetUserByIdHandler(
         effectivePermissions,
         externalLogins,
         auth.InvitationLinkLifetimeHours,
+        passkeys,
         passwordExpirationEvaluator));
   }
 }

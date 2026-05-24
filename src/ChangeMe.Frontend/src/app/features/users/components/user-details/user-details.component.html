@@ -46,6 +46,16 @@
           (onClick)="confirmResetTwoFactor()"
         />
       }
+      @if (canResetPasskeys()) {
+        <p-button
+          label="Reset passkeys"
+          icon="pi pi-key"
+          severity="danger"
+          [outlined]="true"
+          size="small"
+          (onClick)="confirmResetPasskeys()"
+        />
+      }
       @if (canManageUsers() && !profile.deactivated && profile.hasPasswordSet) {
         <p-button
           label="Send password reset"
@@ -262,6 +272,38 @@
       </p-panel>
     }
 
+    @if (passkeysAuthenticationEnabled()) {
+      <p-panel header="Passkeys" [toggleable]="true" class="mb-4">
+        @if ((profile.passkeys ?? []).length === 0) {
+          <p class="text-muted-color m-0 text-sm">No passkeys registered.</p>
+        } @else {
+          <div class="flex flex-col gap-3">
+            @for (pk of profile.passkeys ?? []; track pk.id) {
+              <div
+                class="border-surface-200 flex flex-wrap items-center justify-between gap-3 rounded-lg border p-3 dark:border-surface-700"
+              >
+                <div class="flex flex-col gap-1">
+                  <span class="text-color font-medium">{{ pk.name }}</span>
+                  <span class="text-muted-color text-sm">
+                    Added {{ pk.createdAtUtc | date: 'dd.MM.yyyy HH:mm' }}
+                    @if (pk.lastUsedAtUtc) {
+                      · Last used {{ pk.lastUsedAtUtc | date: 'dd.MM.yyyy HH:mm' }}
+                    }
+                  </span>
+                  <div class="flex flex-wrap gap-2 pt-1">
+                    <p-tag [value]="pk.authenticatorType" severity="secondary" />
+                    @if (pk.backupEligible) {
+                      <p-tag value="Syncable" severity="info" />
+                    }
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </p-panel>
+    }
+
     <p-panel header="Roles" [toggleable]="true" class="mb-4">
       @if (profile.roles.length === 0) {
         <p class="text-muted-color m-0 text-sm">{{ UserMessages.noRolesAssigned }}</p>
@@ -338,6 +380,7 @@
           <ng-template #header>
             <tr>
               <th>Device / browser</th>
+              <th>Sign-in method</th>
               <th>Signed in at</th>
               <th>Last activity</th>
               @if (canManageSessions()) {
@@ -353,6 +396,7 @@
                   {{ formatIpAddress(session.ipAddress) }}
                 </div>
               </td>
+              <td>{{ session.signInMethodLabel }}</td>
               <td>{{ session.signedInAt | date: 'dd.MM.yyyy HH:mm' }}</td>
               <td>{{ session.lastActivityAt | date: 'dd.MM.yyyy HH:mm' }}</td>
               @if (canManageSessions()) {

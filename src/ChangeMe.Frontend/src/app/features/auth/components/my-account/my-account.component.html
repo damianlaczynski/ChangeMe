@@ -101,6 +101,16 @@
       />
     }
 
+    @if (passkeysAuthenticationEnabled()) {
+      <app-my-account-passkeys
+        [account]="profile"
+        [passkeysEnabled]="passkeysAuthenticationEnabled()"
+        [passkeysRequired]="passkeysAuthenticationRequired()"
+        [maximumPasskeys]="maximumPasskeysPerUser()"
+        (accountChanged)="reload()"
+      />
+    }
+
     <p-panel header="Roles" [toggleable]="true" class="mb-4">
       @if (profile.roles.length === 0) {
         <p class="text-muted-color m-0 text-sm">{{ UserMessages.noRolesAssigned }}</p>

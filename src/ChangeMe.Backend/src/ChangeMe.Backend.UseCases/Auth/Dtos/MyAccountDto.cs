@@ -15,4 +15,6 @@ public sealed record MyAccountDto(
   IReadOnlyList<UserRoleSummaryDto> Roles,
   IReadOnlyList<EffectivePermissionDto> EffectivePermissions,
   IReadOnlyList<MyAccountExternalLoginDto> ExternalLogins,
-  IReadOnlyList<ExternalProviderSettingsDto> LinkableProviders);
+  IReadOnlyList<ExternalProviderSettingsDto> LinkableProviders,
+  IReadOnlyList<MyAccountPasskeyDto> Passkeys,
+  bool PasskeyStepUpFresh);

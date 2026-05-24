@@ -2,7 +2,7 @@
 
 > **Audience:** operators, administrators, and developers deploying or supporting **ChangeMe**.
 > **Scope:** deployment settings under `Auth` in backend configuration, how each option affects sign-in and accounts, and how to connect external identity providers (OIDC).
-> **Related:** acceptance-level behaviour is defined in `docs/req/auth-requirements.md` and `docs/req/users-requirements.md`. This guide explains **operations**, not formal requirements.
+> **Related:** acceptance-level behaviour is defined in `docs/req/auth-requirements.md` and `docs/req/users-requirements.md`. **Passkeys (WebAuthn):** `docs/req/passkeys-requirements.md` and `docs/passkeys-operations-guide.md`. This guide explains **operations**, not formal requirements.
 
 ---
 
@@ -194,6 +194,7 @@ Per-provider fields:
 | Enterprise SSO + optional password                | Enable one OIDC provider, domain allowlist, `PublicRegistrationEnabled: false` | Only existing users or admin-created users link/sign in; new emails without account get _No account exists…_.          |
 | High security                                     | `TwoFactorAuthenticationRequired: true`, 2FA enabled                           | All users must set up authenticator after first sign-in (unless IdP MFA trusted on external path).                     |
 | Google/Microsoft + skip app 2FA when IdP used MFA | `TrustIdentityProviderMfa: true` + 2FA enabled                                 | External sign-in with `amr` containing `mfa` skips app TOTP and mandatory setup; password sign-in still uses app TOTP. |
+| Phishing-resistant sign-in                        | `Passkeys:PasskeysAuthenticationEnabled: true` (see passkeys guide)            | Users enroll passkeys on **My account**; optional mandatory passkeys and 2FA substitution per REQ-PKY-001.             |
 | Public SaaS signup                                | `PublicRegistrationEnabled: true`, email verification on                       | Register → verify email → login.                                                                                       |
 | Lock registration, allow Google                   | `PublicRegistrationEnabled: false`, Google OIDC                                | New users only via Google if email not already in directory; matching email triggers link flow.                        |
 
@@ -499,20 +500,20 @@ Local Docker stack uses **MailHog** (see `docs/database-and-docker.md`). Without
 
 ## 9. Troubleshooting
 
-| Symptom                                                 | Likely cause                                            | Action                                                                                         |
-| ------------------------------------------------------- | ------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| No **Continue with …** buttons                          | `ExternalProvidersEnabled` false or provider incomplete | Check settings; call `GET /api/auth/settings`.                                                 |
-| _External sign-in failed_                               | Redirect URI mismatch, wrong secret, clock skew         | Compare IdP redirect URI with §6.2; check client secret and authority URL.                     |
-| _Sign-in with this account is not allowed_              | Email domain not in allowlist                           | Adjust `AllowedEmailDomains` or user’s IdP email.                                              |
-| _External sign-in failed_ (after Microsoft login)       | Wrong `IssuerValidationMode` for `/common` authority    | Set `IssuerValidationMode` to `MicrosoftMultiTenant` when using `/common` or `/organizations`. |
-| _No account exists for this email_                      | Registration disabled and no user row                   | Create user in admin UI or enable public registration.                                         |
-| _No account exists for this email_ (Microsoft)          | Email claim not verified / missing optional claims      | Set `TrustIdpEmailWithoutEmailVerified: true`; add **`email`** optional claim (§6.6 or §6.7).  |
+| Symptom                                                 | Likely cause                                            | Action                                                                                                               |
+| ------------------------------------------------------- | ------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| No **Continue with …** buttons                          | `ExternalProvidersEnabled` false or provider incomplete | Check settings; call `GET /api/auth/settings`.                                                                       |
+| _External sign-in failed_                               | Redirect URI mismatch, wrong secret, clock skew         | Compare IdP redirect URI with §6.2; check client secret and authority URL.                                           |
+| _Sign-in with this account is not allowed_              | Email domain not in allowlist                           | Adjust `AllowedEmailDomains` or user’s IdP email.                                                                    |
+| _External sign-in failed_ (after Microsoft login)       | Wrong `IssuerValidationMode` for `/common` authority    | Set `IssuerValidationMode` to `MicrosoftMultiTenant` when using `/common` or `/organizations`.                       |
+| _No account exists for this email_                      | Registration disabled and no user row                   | Create user in admin UI or enable public registration.                                                               |
+| _No account exists for this email_ (Microsoft)          | Email claim not verified / missing optional claims      | Set `TrustIdpEmailWithoutEmailVerified: true`; add **`email`** optional claim (§6.6 or §6.7).                        |
 | _Complete your account setup using the invitation link_ | Pending account invitation (no password sign-in yet)    | User must complete **Accept invitation** (email link) or external sign-in with matching verified email when enabled. |
-| _Verify your email before signing in_                   | `EmailVerificationEnabled`                              | User verifies email or admin marks verified.                                                   |
-| Stuck on two-factor setup                               | `TwoFactorAuthenticationRequired`                       | User completes setup on **Required two-factor setup** or **My account**.                       |
-| External-only cannot unlink                             | Last sign-in method                                     | User must **Set password** first (after external step-up).                                     |
-| CORS errors on login                                    | Frontend origin not allowed                             | Add origin to `Cors:AllowedOrigins`.                                                           |
-| Settings change not visible                             | Cached app / no restart                                 | Hard refresh frontend; restart API.                                                            |
+| _Verify your email before signing in_                   | `EmailVerificationEnabled`                              | User verifies email or admin marks verified.                                                                         |
+| Stuck on two-factor setup                               | `TwoFactorAuthenticationRequired`                       | User completes setup on **Required two-factor setup** or **My account**.                                             |
+| External-only cannot unlink                             | Last sign-in method                                     | User must **Set password** first (after external step-up).                                                           |
+| CORS errors on login                                    | Frontend origin not allowed                             | Add origin to `Cors:AllowedOrigins`.                                                                                 |
+| Settings change not visible                             | Cached app / no restart                                 | Hard refresh frontend; restart API.                                                                                  |
 
 ---
 

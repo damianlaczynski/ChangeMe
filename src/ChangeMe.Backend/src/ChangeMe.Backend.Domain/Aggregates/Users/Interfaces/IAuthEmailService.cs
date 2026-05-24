@@ -29,4 +29,10 @@ public interface IAuthEmailService
     User user,
     string providerDisplayName,
     CancellationToken cancellationToken = default);
+
+  Task<Result> SendPasskeyAddedAsync(User user, string passkeyName, CancellationToken cancellationToken = default);
+
+  Task<Result> SendPasskeyRemovedAsync(User user, string passkeyName, CancellationToken cancellationToken = default);
+
+  Task<Result> SendPasskeysResetByAdminAsync(User user, CancellationToken cancellationToken = default);
 }

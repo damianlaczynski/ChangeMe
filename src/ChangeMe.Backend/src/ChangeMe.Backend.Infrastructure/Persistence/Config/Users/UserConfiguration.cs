@@ -53,6 +53,8 @@ public class UserConfiguration : BaseEntityTypeConfiguration<User>
       .IsRequired()
       .HasMaxLength(TwoFactorConstraints.ENCRYPTED_SECRET_MAX_LENGTH);
 
+    builder.Property(x => x.PasskeyStepUpCompletedAt);
+
     builder.HasIndex(x => x.NormalizedEmail)
       .IsUnique();
 
@@ -86,6 +88,14 @@ public class UserConfiguration : BaseEntityTypeConfiguration<User>
       .OnDelete(DeleteBehavior.Cascade);
 
     builder.Navigation(x => x.AccountInvitations)
+      .UsePropertyAccessMode(PropertyAccessMode.Field);
+
+    builder.HasMany(x => x.Passkeys)
+      .WithOne(x => x.User)
+      .HasForeignKey(x => x.UserId)
+      .OnDelete(DeleteBehavior.Cascade);
+
+    builder.Navigation(x => x.Passkeys)
       .UsePropertyAccessMode(PropertyAccessMode.Field);
   }
 }
