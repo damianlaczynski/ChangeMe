@@ -14,6 +14,7 @@ public sealed class RegisterUserHandlerTests
   [Fact]
   public async Task Handle_WhenPublicRegistrationDisabled_ReturnsForbidden()
   {
+    var cancellationToken = TestContext.Current.CancellationToken;
     await using var context = UseCasesTestDb.Create(nameof(Handle_WhenPublicRegistrationDisabled_ReturnsForbidden));
     await UseCasesTestDb.SeedSystemRolesAsync(context);
 
@@ -23,7 +24,7 @@ public sealed class RegisterUserHandlerTests
 
     var result = await handler.Handle(
       new RegisterUserCommand("A", "B", "user@example.com", "StrongPass123!"),
-      CancellationToken.None);
+      cancellationToken);
 
     Assert.Equal(ResultStatus.Forbidden, result.Status);
     Assert.Contains(AuthSessionUtils.RegistrationDisabledMessage, result.Errors.First());
@@ -32,6 +33,7 @@ public sealed class RegisterUserHandlerTests
   [Fact]
   public async Task Handle_WhenEmailVerificationEnabled_ReturnsRequiresVerificationWithoutSession()
   {
+    var cancellationToken = TestContext.Current.CancellationToken;
     await using var context = UseCasesTestDb.Create(nameof(Handle_WhenEmailVerificationEnabled_ReturnsRequiresVerificationWithoutSession));
     await UseCasesTestDb.SeedSystemRolesAsync(context);
 
@@ -41,7 +43,7 @@ public sealed class RegisterUserHandlerTests
 
     var result = await handler.Handle(
       new RegisterUserCommand("Verify", "Me", "verify@example.com", "StrongPass123!"),
-      CancellationToken.None);
+      cancellationToken);
 
     Assert.Equal(ResultStatus.Created, result.Status);
     Assert.True(result.Value.RequiresEmailVerification);
@@ -56,6 +58,7 @@ public sealed class RegisterUserHandlerTests
   [Fact]
   public async Task Handle_WhenEmailVerificationDisabled_ReturnsAuthSession()
   {
+    var cancellationToken = TestContext.Current.CancellationToken;
     await using var context = UseCasesTestDb.Create(nameof(Handle_WhenEmailVerificationDisabled_ReturnsAuthSession));
     await UseCasesTestDb.SeedSystemRolesAsync(context);
 
@@ -63,7 +66,7 @@ public sealed class RegisterUserHandlerTests
 
     var result = await handler.Handle(
       new RegisterUserCommand("Direct", "Login", "direct@example.com", "StrongPass123!"),
-      CancellationToken.None);
+      cancellationToken);
 
     Assert.Equal(ResultStatus.Created, result.Status);
     Assert.False(result.Value.RequiresEmailVerification);
@@ -78,20 +81,21 @@ public sealed class RegisterUserHandlerTests
   [Fact]
   public async Task Handle_WhenExistingExternalOnlyAccount_ReturnsConflict()
   {
+    var cancellationToken = TestContext.Current.CancellationToken;
     await using var context = UseCasesTestDb.Create(nameof(Handle_WhenExistingExternalOnlyAccount_ReturnsConflict));
     await UseCasesTestDb.SeedSystemRolesAsync(context);
 
     var user = User.CreateInvited("external-only@example.com", "Oidc", "User").Value;
     var login = ExternalLogin.Create(user.Id, "google", "subject-1").Value;
     user.AddExternalLogin(login);
-    await context.Users.AddAsync(user);
-    await context.SaveChangesAsync();
+    await context.Users.AddAsync(user, cancellationToken);
+    await context.SaveChangesAsync(cancellationToken);
 
     var handler = CreateHandler(context, TestAuthOptions.Create());
 
     var result = await handler.Handle(
       new RegisterUserCommand("Attacker", "User", "external-only@example.com", "StrongPass123!"),
-      CancellationToken.None);
+      cancellationToken);
 
     Assert.Equal(ResultStatus.Conflict, result.Status);
     Assert.Contains(AuthSessionUtils.DuplicateEmailMessage, result.Errors.First());
@@ -101,20 +105,21 @@ public sealed class RegisterUserHandlerTests
   [Fact]
   public async Task Handle_WhenInvitationCanceledAccount_CompletesExistingUser()
   {
+    var cancellationToken = TestContext.Current.CancellationToken;
     await using var context = UseCasesTestDb.Create(nameof(Handle_WhenInvitationCanceledAccount_CompletesExistingUser));
     await UseCasesTestDb.SeedSystemRolesAsync(context);
 
     var user = User.CreateInvited("canceled@example.com").Value;
     user.RecordInvitationIssued(DateTime.UtcNow);
     user.CancelPendingInvitations(DateTime.UtcNow);
-    await context.Users.AddAsync(user);
-    await context.SaveChangesAsync();
+    await context.Users.AddAsync(user, cancellationToken);
+    await context.SaveChangesAsync(cancellationToken);
 
     var handler = CreateHandler(context, TestAuthOptions.Create());
 
     var result = await handler.Handle(
       new RegisterUserCommand("New", "Name", "canceled@example.com", "StrongPass123!"),
-      CancellationToken.None);
+      cancellationToken);
 
     Assert.Equal(ResultStatus.Created, result.Status);
     Assert.NotNull(result.Value.AuthSession);

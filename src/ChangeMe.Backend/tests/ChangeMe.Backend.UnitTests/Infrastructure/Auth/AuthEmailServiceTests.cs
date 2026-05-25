@@ -25,10 +25,11 @@ public sealed class AuthEmailServiceTests
   [Fact]
   public async Task SendPasswordResetRequestedAsync_ShouldIncludeEncodedTokenLink()
   {
+    var cancellationToken = TestContext.Current.CancellationToken;
     var user = User.CreateWithPassword("Ada", "Lovelace", "ada@example.com", "hash").Value;
     const string plainToken = "token+with/special==";
 
-    await sut.SendPasswordResetRequestedAsync(user, plainToken);
+    await sut.SendPasswordResetRequestedAsync(user, plainToken, cancellationToken);
 
     Assert.Single(emailService.Messages);
     var message = emailService.Messages[0];
@@ -41,9 +42,10 @@ public sealed class AuthEmailServiceTests
   [Fact]
   public async Task SendAccountInvitationAsync_ShouldTargetAcceptInvitationRoute()
   {
+    var cancellationToken = TestContext.Current.CancellationToken;
     var user = User.CreateInvited("ada@example.com").Value;
 
-    await sut.SendAccountInvitationAsync(user, "invite-token");
+    await sut.SendAccountInvitationAsync(user, "invite-token", cancellationToken);
 
     Assert.Single(emailService.Messages);
     var message = emailService.Messages[0];

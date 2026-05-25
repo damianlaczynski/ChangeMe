@@ -11,6 +11,7 @@ public sealed class GetUsersHandlerTests
   [Fact]
   public async Task Handle_WhenEmailVerifiedFilterIsSet_ReturnsOnlyMatchingUsers()
   {
+    var cancellationToken = TestContext.Current.CancellationToken;
     await using var context = UseCasesTestDb.Create(
       nameof(Handle_WhenEmailVerifiedFilterIsSet_ReturnsOnlyMatchingUsers));
 
@@ -28,8 +29,8 @@ public sealed class GetUsersHandlerTests
       passwordHasher.HashPassword("hash"),
       emailVerified: false).Value;
 
-    await context.Users.AddRangeAsync(verified, unverified);
-    await context.SaveChangesAsync();
+    await context.Users.AddRangeAsync([verified, unverified], cancellationToken);
+    await context.SaveChangesAsync(cancellationToken);
 
     var handler = new GetUsersHandler(context);
     var result = await handler.Handle(
@@ -38,7 +39,7 @@ public sealed class GetUsersHandlerTests
         EmailVerified = [false],
         PaginationParameters = PaginationParameters<UserListItemDto>.Create()
       },
-      CancellationToken.None);
+      cancellationToken);
 
     Assert.True(result.IsSuccess);
     Assert.Single(result.Value.Items);
