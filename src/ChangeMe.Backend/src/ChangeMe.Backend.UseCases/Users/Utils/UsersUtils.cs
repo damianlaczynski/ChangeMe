@@ -1,3 +1,4 @@
+using ChangeMe.Backend.Domain.Aggregates.Roles;
 using ChangeMe.Backend.Domain.Aggregates.Sessions;
 using ChangeMe.Backend.Domain.Authorization;
 using ChangeMe.Backend.Infrastructure.Auth;
@@ -11,6 +12,8 @@ public static class UsersUtils
   public const string DuplicateEmailMessage = "A user with this email already exists.";
   public const string CannotRemoveOwnAdministratorMessage = "You cannot remove your own administrator access.";
   public const string CannotDeactivateOwnAccountMessage = "You cannot deactivate your own account.";
+  public const string CannotDeactivateLastAdministratorMessage =
+    "You cannot deactivate the last active administrator.";
   public const string CannotChangeOwnRolesMessage = "You cannot change your own roles.";
   public const string AtLeastOneRoleRequiredMessage = "At least one role is required.";
   public const string PermissionDeniedMessage = "You do not have permission to perform this action.";
@@ -89,6 +92,45 @@ public static class UsersUtils
         x.Group,
         x.FromRoleNames))
       .ToList();
+  }
+
+  public static async Task<Result> ValidateCanDeactivateUserAsync(
+    ApplicationDbContext context,
+    Guid userId,
+    CancellationToken cancellationToken)
+  {
+    var administratorRoleId = await context.Roles
+      .AsNoTracking()
+      .Where(x => x.Name == RoleConstraints.AdministratorRoleName)
+      .Select(x => x.Id)
+      .FirstOrDefaultAsync(cancellationToken);
+
+    if (administratorRoleId == Guid.Empty)
+      return Result.Success();
+
+    var targetIsActiveAdministrator = await context.Users
+      .AsNoTracking()
+      .Where(x => x.Id == userId && !x.Deactivated)
+      .AnyAsync(
+        x => x.Roles.Any(ur => ur.RoleId == administratorRoleId),
+        cancellationToken);
+
+    if (!targetIsActiveAdministrator)
+      return Result.Success();
+
+    var hasAnotherActiveAdministrator = await context.Users
+      .AsNoTracking()
+      .Where(x => x.Id != userId && !x.Deactivated)
+      .AnyAsync(
+        x => x.Roles.Any(ur =>
+          ur.RoleId == administratorRoleId &&
+          ur.Role.Permissions.Any(p => p.PermissionCode == PermissionCodes.UsersDeactivate)),
+        cancellationToken);
+
+    if (!hasAnotherActiveAdministrator)
+      return Result.Error(CannotDeactivateLastAdministratorMessage);
+
+    return Result.Success();
   }
 
   public static async Task RevokeAllActiveSessionsAsync(

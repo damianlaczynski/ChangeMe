@@ -85,6 +85,10 @@ public class UpdateUserHandler(
 
       if (command.Deactivated.Value && user.IsActive)
       {
+        var validationResult = await UsersUtils.ValidateCanDeactivateUserAsync(context, user.Id, cancellationToken);
+        if (!validationResult.IsSuccess)
+          return validationResult.Map();
+
         user.Deactivate();
         await UsersUtils.RevokeAllActiveSessionsAsync(context, user.Id, cancellationToken);
       }
