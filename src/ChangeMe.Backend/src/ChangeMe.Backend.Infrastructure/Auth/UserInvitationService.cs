@@ -1,21 +1,15 @@
 using ChangeMe.Backend.Domain.Aggregates.Users;
 using ChangeMe.Backend.Domain.Aggregates.Users.Enums;
-using ChangeMe.Backend.Infrastructure.Persistence;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
 namespace ChangeMe.Backend.Infrastructure.Auth;
 
 public sealed class UserInvitationService(
-  ApplicationDbContext context,
   IUserAuthTokenService tokenService,
   IAuthEmailService authEmailService,
   IOptions<AuthOptions> authOptions,
   TimeProvider timeProvider)
 {
-  public const string InvitationEmailDeliveryFailedMessage =
-    "The invitation email could not be sent. Please try again.";
-
   public async Task<Result> SendInvitationAsync(User user, CancellationToken cancellationToken)
   {
     var issuedAtUtc = timeProvider.GetUtcNow().UtcDateTime;
@@ -37,25 +31,11 @@ public sealed class UserInvitationService(
       cancellationToken);
 
     if (!emailResult.IsSuccess)
-    {
-      await tokenService.InvalidateUnusedTokensAsync(
-        user.Id,
-        UserAuthTokenType.Invitation,
-        cancellationToken);
-
-      return Result.Error(InvitationEmailDeliveryFailedMessage);
-    }
+      return emailResult;
 
     var recordResult = user.RecordInvitationIssued(issuedAtUtc, linkExpiresAtUtc);
     if (!recordResult.IsSuccess)
-    {
-      await tokenService.InvalidateUnusedTokensAsync(
-        user.Id,
-        UserAuthTokenType.Invitation,
-        cancellationToken);
-
       return recordResult.Map();
-    }
 
     return Result.Success();
   }
@@ -67,8 +47,6 @@ public sealed class UserInvitationService(
     var cancelResult = user.CancelPendingInvitations(utcNow);
     if (!cancelResult.IsSuccess)
       return cancelResult;
-
-    await context.SaveChangesAsync(cancellationToken);
 
     await tokenService.InvalidateUnusedTokensAsync(
       user.Id,

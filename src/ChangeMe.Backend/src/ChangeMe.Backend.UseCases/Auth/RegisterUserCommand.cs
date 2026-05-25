@@ -70,8 +70,6 @@ public class RegisterUserHandler(
 
     if (auth.EmailVerification.Enabled)
     {
-      await context.SaveChangesAsync(cancellationToken);
-
       var verificationResult = await emailVerificationService.SendVerificationAsync(user, cancellationToken);
       if (!verificationResult.IsSuccess)
         return verificationResult.Map();
@@ -104,8 +102,6 @@ public class RegisterUserHandler(
 
     if (auth.EmailVerification.Enabled && !user.EmailVerified)
     {
-      await context.SaveChangesAsync(cancellationToken);
-
       var verificationResult = await emailVerificationService.SendVerificationAsync(user, cancellationToken);
       if (!verificationResult.IsSuccess)
         return verificationResult.Map();

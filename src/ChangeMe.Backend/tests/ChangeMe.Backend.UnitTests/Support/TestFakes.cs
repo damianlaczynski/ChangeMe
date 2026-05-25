@@ -16,12 +16,16 @@ internal sealed class FakeUserAccessor : IUserAccessor
 internal sealed class FakeAuthEmailService : IAuthEmailService
 {
   public int PasswordChangedEmailsSent { get; private set; }
+  public string? LastPlainToken { get; private set; }
 
   public Task<Result> SendAccountInvitationAsync(
     User user,
     string plainToken,
-    CancellationToken cancellationToken = default) =>
-    Task.FromResult(Result.Success());
+    CancellationToken cancellationToken = default)
+  {
+    LastPlainToken = plainToken;
+    return Task.FromResult(Result.Success());
+  }
 
   public Task<Result> SendPasswordResetRequestedAsync(
     User user,

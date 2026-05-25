@@ -34,6 +34,8 @@ public class CancelInvitationHandler(
     if (!cancelResult.IsSuccess)
       return cancelResult.Map();
 
+    await context.SaveChangesAsync(cancellationToken);
+
     return await mediator.Send(new GetUserByIdQuery(user.Id), cancellationToken);
   }
 }

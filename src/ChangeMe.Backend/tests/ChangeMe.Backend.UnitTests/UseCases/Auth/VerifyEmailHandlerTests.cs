@@ -33,6 +33,7 @@ public sealed class VerifyEmailHandlerTests
       user.Id,
       UserAuthTokenType.EmailVerification,
       cancellationToken: cancellationToken)).Value;
+    await context.SaveChangesAsync(cancellationToken);
 
     var handler = new VerifyEmailHandler(context, tokenService);
     var result = await handler.Handle(new VerifyEmailCommand(plainToken), cancellationToken);

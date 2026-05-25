@@ -30,6 +30,7 @@ public sealed class RequestEmailVerificationHandlerTests
     var handler = new RequestEmailVerificationHandler(
       context,
       new UserEmailVerificationService(
+        context,
         new UserAuthTokenService(context, authOptions, TimeProvider.System),
         new FakeAuthEmailService()));
 
@@ -53,6 +54,7 @@ public sealed class RequestEmailVerificationHandlerTests
     var handler = new RequestEmailVerificationHandler(
       context,
       new UserEmailVerificationService(
+        context,
         new UserAuthTokenService(context, authOptions, TimeProvider.System),
         new FakeAuthEmailService()));
 

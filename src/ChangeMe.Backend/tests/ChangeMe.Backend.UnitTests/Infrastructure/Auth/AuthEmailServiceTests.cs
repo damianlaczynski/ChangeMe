@@ -52,12 +52,29 @@ public sealed class AuthEmailServiceTests
     Assert.Contains("https://app.example.com/accept-invitation?token=invite-token", message.Body);
   }
 
+  [Fact]
+  public async Task SendAsync_WhenDeliveryFails_ReturnsUserFacingMessage()
+  {
+    var cancellationToken = TestContext.Current.CancellationToken;
+    emailService.ShouldFail = true;
+    var user = User.CreateInvited("ada@example.com").Value;
+
+    var result = await sut.SendVerifyEmailAsync(user, "verify-token", cancellationToken);
+
+    Assert.False(result.IsSuccess);
+    Assert.Contains("The email could not be sent. Please try again.", result.Errors);
+  }
+
   private sealed class RecordingEmailService : IEmailService
   {
     public List<RecordedEmail> Messages { get; } = [];
+    public bool ShouldFail { get; set; }
 
     public Task<Result> SendEmailAsync(string to, string subject, string body)
     {
+      if (ShouldFail)
+        return Task.FromResult(Result.Error());
+
       Messages.Add(new RecordedEmail(to, subject, body));
       return Task.FromResult(Result.Success());
     }

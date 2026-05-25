@@ -1,6 +1,7 @@
 using Ardalis.Result;
 using ChangeMe.Backend.Domain.Aggregates.Users;
 using ChangeMe.Backend.Domain.Aggregates.Users.Enums;
+using ChangeMe.Backend.Domain.Aggregates.Users.Interfaces;
 using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.Infrastructure.Persistence;
 using ChangeMe.Backend.UnitTests.Support;
@@ -23,7 +24,6 @@ public sealed class UserInvitationServiceTests
     var tokenService = CreateTokenService(context);
     var authEmailService = new FailingAuthEmailService();
     var sut = new UserInvitationService(
-      context,
       tokenService,
       authEmailService,
       TestAuthOptions.Create(),
@@ -32,7 +32,7 @@ public sealed class UserInvitationServiceTests
     var result = await sut.SendInvitationAsync(user, cancellationToken);
 
     Assert.False(result.IsSuccess);
-    Assert.Contains(UserInvitationService.InvitationEmailDeliveryFailedMessage, result.Errors);
+    Assert.Contains("The email could not be sent. Please try again.", result.Errors);
     Assert.False(user.HasPendingInvitation);
 
     Assert.NotNull(authEmailService.LastPlainToken);
@@ -57,7 +57,6 @@ public sealed class UserInvitationServiceTests
     var tokenService = CreateTokenService(context);
     var authEmailService = new FakeAuthEmailService();
     var sut = new UserInvitationService(
-      context,
       tokenService,
       authEmailService,
       TestAuthOptions.Create(),
@@ -66,6 +65,7 @@ public sealed class UserInvitationServiceTests
     var result = await sut.SendInvitationAsync(user, cancellationToken);
 
     Assert.True(result.IsSuccess);
+    await context.SaveChangesAsync(cancellationToken);
     Assert.True(user.HasPendingInvitation);
 
     var pending = user.AccountInvitations.Single(x => x.IsPending);
@@ -74,6 +74,91 @@ public sealed class UserInvitationServiceTests
       cancellationToken);
 
     Assert.Equal(pending.LinkExpiresAtUtc, token.ExpiresAtUtc);
+  }
+
+  [Fact]
+  public async Task CancelInvitationAsync_WhenTokenInvalidationFails_DoesNotPersistInvitationRevocation()
+  {
+    var cancellationToken = TestContext.Current.CancellationToken;
+    await using var context = UseCasesTestDb.Create(
+      nameof(CancelInvitationAsync_WhenTokenInvalidationFails_DoesNotPersistInvitationRevocation));
+
+    var user = User.CreateInvited("invite@example.com").Value;
+    await context.Users.AddAsync(user, cancellationToken);
+    await context.SaveChangesAsync(cancellationToken);
+
+    var tokenService = CreateTokenService(context);
+    var authEmailService = new FakeAuthEmailService();
+    var sendSut = new UserInvitationService(
+      tokenService,
+      authEmailService,
+      TestAuthOptions.Create(),
+      TimeProvider.System);
+
+    var sendResult = await sendSut.SendInvitationAsync(user, cancellationToken);
+    Assert.True(sendResult.IsSuccess);
+    await context.SaveChangesAsync(cancellationToken);
+
+    var plainToken = authEmailService.LastPlainToken!;
+    var cancelSut = new UserInvitationService(
+      new ThrowingInvalidateTokenService(tokenService),
+      authEmailService,
+      TestAuthOptions.Create(),
+      TimeProvider.System);
+
+    await Assert.ThrowsAsync<InvalidOperationException>(
+      () => cancelSut.CancelInvitationAsync(user, cancellationToken));
+
+    context.ChangeTracker.Clear();
+    var reloadedUser = await context.Users
+      .Include(x => x.AccountInvitations)
+      .SingleAsync(x => x.Id == user.Id, cancellationToken);
+    Assert.True(reloadedUser.HasPendingInvitation);
+
+    var tokenValidation = await tokenService.ValidateTokenAsync(
+      plainToken,
+      UserAuthTokenType.Invitation,
+      cancellationToken);
+
+    Assert.True(tokenValidation.IsSuccess);
+  }
+
+  [Fact]
+  public async Task CancelInvitationAsync_WhenSuccessful_RevokesInvitationAndInvalidatesToken()
+  {
+    var cancellationToken = TestContext.Current.CancellationToken;
+    await using var context = UseCasesTestDb.Create(
+      nameof(CancelInvitationAsync_WhenSuccessful_RevokesInvitationAndInvalidatesToken));
+
+    var user = User.CreateInvited("invite@example.com").Value;
+    await context.Users.AddAsync(user, cancellationToken);
+    await context.SaveChangesAsync(cancellationToken);
+
+    var tokenService = CreateTokenService(context);
+    var authEmailService = new FakeAuthEmailService();
+    var sut = new UserInvitationService(
+      tokenService,
+      authEmailService,
+      TestAuthOptions.Create(),
+      TimeProvider.System);
+
+    var sendResult = await sut.SendInvitationAsync(user, cancellationToken);
+    Assert.True(sendResult.IsSuccess);
+    await context.SaveChangesAsync(cancellationToken);
+
+    var plainToken = authEmailService.LastPlainToken!;
+
+    var cancelResult = await sut.CancelInvitationAsync(user, cancellationToken);
+    Assert.True(cancelResult.IsSuccess);
+    await context.SaveChangesAsync(cancellationToken);
+    Assert.False(user.HasPendingInvitation);
+
+    var tokenValidation = await tokenService.ValidateTokenAsync(
+      plainToken,
+      UserAuthTokenType.Invitation,
+      cancellationToken);
+
+    Assert.False(tokenValidation.IsSuccess);
   }
 
   private static UserAuthTokenService CreateTokenService(ApplicationDbContext context) =>
@@ -92,7 +177,7 @@ public sealed class UserInvitationServiceTests
       CancellationToken cancellationToken = default)
     {
       LastPlainToken = plainToken;
-      return Task.FromResult(Result.Error());
+      return Task.FromResult(Result.Error("The email could not be sent. Please try again."));
     }
 
     public Task<Result> SendPasswordResetRequestedAsync(
@@ -148,5 +233,36 @@ public sealed class UserInvitationServiceTests
       string providerDisplayName,
       CancellationToken cancellationToken = default) =>
       Task.FromResult(Result.Success());
+  }
+
+  private sealed class ThrowingInvalidateTokenService(IUserAuthTokenService inner) : IUserAuthTokenService
+  {
+    public Task<DateTime?> GetActiveUnusedTokenExpiresAtUtcAsync(
+      Guid userId,
+      UserAuthTokenType type,
+      CancellationToken cancellationToken = default) =>
+      inner.GetActiveUnusedTokenExpiresAtUtcAsync(userId, type, cancellationToken);
+
+    public Task<Result<string>> IssueTokenAsync(
+      Guid userId,
+      UserAuthTokenType type,
+      DateTime? issuedAtUtc = null,
+      CancellationToken cancellationToken = default) =>
+      inner.IssueTokenAsync(userId, type, issuedAtUtc, cancellationToken);
+
+    public Task<Result<Guid>> ValidateTokenAsync(
+      string plainToken,
+      UserAuthTokenType type,
+      CancellationToken cancellationToken = default) =>
+      inner.ValidateTokenAsync(plainToken, type, cancellationToken);
+
+    public Task MarkTokenUsedAsync(string plainToken, CancellationToken cancellationToken = default) =>
+      inner.MarkTokenUsedAsync(plainToken, cancellationToken);
+
+    public Task InvalidateUnusedTokensAsync(
+      Guid userId,
+      UserAuthTokenType type,
+      CancellationToken cancellationToken = default) =>
+      throw new InvalidOperationException("Simulated token invalidation failure.");
   }
 }
