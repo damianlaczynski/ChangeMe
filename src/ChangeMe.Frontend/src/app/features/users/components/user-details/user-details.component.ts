@@ -21,11 +21,11 @@ import { EffectivePermissionsComponent } from '@features/users/components/effect
 import { AdminUserSessionDto, UserDetailsDto } from '@features/users/models/user.model';
 import { UsersService } from '@features/users/services/users.service';
 import {
-  getAccountBadgeLabel,
-  getAccountBadgeSeverity,
-  getAccountStateLabel,
   getActivateConfirmMessage,
   getDeactivateConfirmMessage,
+  getUserStatusLabel,
+  getUserStatusSeverity,
+  isInvitationLinkExpired,
   UserMessages
 } from '@features/users/utils/users.utils';
 import { PermissionCodes } from '@shared/authorization/permission-codes';
@@ -76,12 +76,22 @@ export class UserDetailsComponent {
 
   readonly formatUserName = formatUserName;
 
-  readonly canResendInvitation = computed(() => {
+  readonly canManageInvitationActions = computed(() => {
     const profile = this.user();
     return (
       !!profile &&
       this.canManageUsers() &&
-      !!profile.pendingInvitation &&
+      profile.status === 'Invited' &&
+      !!profile.pendingInvitation
+    );
+  });
+
+  readonly canSendInvitation = computed(() => {
+    const profile = this.user();
+    return (
+      !!profile &&
+      this.canManageUsers() &&
+      profile.status === 'InvitationCanceled' &&
       !profile.deactivated
     );
   });
@@ -106,10 +116,10 @@ export class UserDetailsComponent {
   readonly externalProvidersEnabled = signal(false);
 
   readonly UserMessages = UserMessages;
+  readonly isInvitationLinkExpired = isInvitationLinkExpired;
   readonly formatIpAddress = formatIpAddress;
-  readonly getAccountBadgeLabel = getAccountBadgeLabel;
-  readonly getAccountBadgeSeverity = getAccountBadgeSeverity;
-  readonly getAccountStateLabel = getAccountStateLabel;
+  readonly getUserStatusLabel = getUserStatusLabel;
+  readonly getUserStatusSeverity = getUserStatusSeverity;
   readonly canManageUsers = () =>
     this.authService.hasPermission(PermissionCodes.usersManage);
   readonly canDeactivateUsers = () =>
@@ -268,6 +278,38 @@ export class UserDetailsComponent {
     });
   }
 
+  confirmCancelInvitation(): void {
+    const profile = this.user();
+    if (!profile) {
+      return;
+    }
+
+    this.confirmationService.confirm({
+      header: UserMessages.cancelInvitationTitle,
+      message: UserMessages.cancelInvitationMessage(profile.email),
+      icon: 'pi pi-exclamation-triangle',
+      acceptButtonProps: { label: 'Cancel invitation', severity: 'danger' },
+      rejectButtonProps: { label: 'Keep', severity: 'secondary', outlined: true },
+      accept: () => this.cancelInvitation()
+    });
+  }
+
+  confirmSendInvitation(): void {
+    const profile = this.user();
+    if (!profile) {
+      return;
+    }
+
+    this.confirmationService.confirm({
+      header: UserMessages.sendInvitationTitle,
+      message: UserMessages.sendInvitationMessage(profile.email),
+      icon: 'pi pi-exclamation-triangle',
+      acceptButtonProps: { label: 'Send', severity: 'warn' },
+      rejectButtonProps: { label: 'Cancel', severity: 'secondary', outlined: true },
+      accept: () => this.sendInvitation()
+    });
+  }
+
   confirmRevokeAllSessions(): void {
     this.confirmationService.confirm({
       header: UserMessages.revokeAllSessionsTitle,
@@ -410,6 +452,32 @@ export class UserDetailsComponent {
         next: (user) => {
           this.user.set(user);
           this.toastService.success(UserMessages.invitationResent);
+        },
+        error: (error: Error) => this.errorMessage.set(error.message)
+      });
+  }
+
+  private cancelInvitation(): void {
+    this.usersService
+      .cancelInvitation(this.id())
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (user) => {
+          this.user.set(user);
+          this.toastService.success(UserMessages.invitationCancelled);
+        },
+        error: (error: Error) => this.errorMessage.set(error.message)
+      });
+  }
+
+  private sendInvitation(): void {
+    this.usersService
+      .sendInvitation(this.id())
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (user) => {
+          this.user.set(user);
+          this.toastService.success(UserMessages.invitationSent);
         },
         error: (error: Error) => this.errorMessage.set(error.message)
       });

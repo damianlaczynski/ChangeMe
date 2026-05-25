@@ -74,9 +74,12 @@ public sealed class ExternalAuthUtilsTests
 
     var auth = Options.Create(new AuthOptions
     {
-      TwoFactorAuthenticationEnabled = true,
-      TwoFactorAuthenticationRequired = true,
-      TrustIdentityProviderMfa = true
+      TwoFactor = new TwoFactorOptions
+      {
+        Enabled = true,
+        Required = true,
+        TrustIdentityProviderMfa = true
+      }
     }).Value;
 
     Assert.False(ExternalAuthUtils.IsTwoFactorSetupRequired(user, auth, identityProviderMfaAsserted: true));

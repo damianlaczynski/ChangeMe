@@ -4,9 +4,9 @@ public sealed class AuthFeaturesWebApplicationFactory : BackendWebApplicationFac
 {
   protected override void ConfigureAuthEnvironmentOverrides(Dictionary<string, string?> overrides)
   {
-    overrides["Auth__EmailVerificationEnabled"] = "true";
-    overrides["Auth__PasswordExpirationEnabled"] = "true";
-    overrides["Auth__MaximumPasswordAgeDays"] = "90";
-    overrides["Auth__PublicRegistrationEnabled"] = "true";
+    overrides["Auth__EmailVerification__Enabled"] = "true";
+    overrides["Auth__PasswordExpiration__Enabled"] = "true";
+    overrides["Auth__PasswordExpiration__MaximumPasswordAgeDays"] = "90";
+    overrides["Auth__Registration__PublicEnabled"] = "true";
   }
 }

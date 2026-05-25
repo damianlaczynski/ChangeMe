@@ -90,10 +90,13 @@ internal static class TestAuthOptions
     int maximumPasswordAgeDays = 90) =>
     Options.Create(new AuthOptions
     {
-      EmailVerificationEnabled = emailVerificationEnabled,
-      PublicRegistrationEnabled = publicRegistrationEnabled,
-      PasswordExpirationEnabled = passwordExpirationEnabled,
-      MaximumPasswordAgeDays = maximumPasswordAgeDays,
+      EmailVerification = new EmailVerificationOptions { Enabled = emailVerificationEnabled },
+      Registration = new RegistrationOptions { PublicEnabled = publicRegistrationEnabled },
+      PasswordExpiration = new PasswordExpirationOptions
+      {
+        Enabled = passwordExpirationEnabled,
+        MaximumPasswordAgeDays = maximumPasswordAgeDays
+      },
       Jwt = new JwtOptions
       {
         Issuer = "ChangeMe.Tests",

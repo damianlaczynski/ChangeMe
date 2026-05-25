@@ -15,11 +15,11 @@
           class="min-w-0 flex-1"
         />
         <p-button type="submit" label="Search" icon="pi pi-search" />
-        @if (canCreateUsers()) {
+        @if (canInviteUsers()) {
           <p-button
-            label="Add user"
-            icon="pi pi-plus"
-            [routerLink]="['/users/create']"
+            label="Invite user"
+            icon="pi pi-envelope"
+            [routerLink]="['/users/invite']"
           />
         }
       </div>
@@ -34,14 +34,14 @@
     >
       <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         <div class="flex flex-col gap-1.5">
-          <label for="deactivated">Account</label>
+          <label for="status">Status</label>
           <p-multiselect
-            inputId="deactivated"
-            [formControl]="filtersForm.controls.deactivated"
-            [options]="accountFilters"
+            inputId="status"
+            [formControl]="filtersForm.controls.status"
+            [options]="statusFilters"
             optionLabel="label"
             optionValue="value"
-            placeholder="Any account"
+            placeholder="Any status"
             display="chip"
           />
         </div>
@@ -105,8 +105,7 @@
           </div>
         </th>
         <th>Email</th>
-        <th>Account</th>
-        <th>Account state</th>
+        <th>Status</th>
         @if (emailVerificationEnabled()) {
           <th>Email verified</th>
         }
@@ -139,17 +138,9 @@
         <td>{{ user.email }}</td>
         <td>
           <p-tag
-            [value]="getAccountBadgeLabel(user.deactivated)"
-            [severity]="getAccountBadgeSeverity(user.deactivated)"
+            [value]="getUserStatusLabel(user.status)"
+            [severity]="getUserStatusSeverity(user.status)"
           />
-        </td>
-        <td>
-          @if (
-            getAccountStateLabel(user, emailVerificationEnabled());
-            as accountState
-          ) {
-            <p-tag [value]="accountState" severity="secondary" />
-          }
         </td>
         @if (emailVerificationEnabled()) {
           <td>
@@ -195,12 +186,12 @@
           <div class="flex flex-col items-center gap-2 py-4">
             <p class="text-muted-color m-0 text-center">No users found</p>
             <div class="flex flex-wrap items-center justify-center gap-2">
-              @if (canCreateUsers()) {
+              @if (canInviteUsers()) {
                 <p-button
                   size="small"
-                  label="Add user"
-                  icon="pi pi-plus"
-                  [routerLink]="['/users/create']"
+                  label="Invite user"
+                  icon="pi pi-envelope"
+                  [routerLink]="['/users/invite']"
                 />
               }
               <p-button

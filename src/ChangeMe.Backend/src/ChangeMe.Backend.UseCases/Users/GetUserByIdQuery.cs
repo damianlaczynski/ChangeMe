@@ -1,4 +1,6 @@
-﻿using ChangeMe.Backend.Infrastructure.Auth;
+﻿using ChangeMe.Backend.Domain.Aggregates.Users.Enums;
+using ChangeMe.Backend.Domain.Aggregates.Users.Interfaces;
+using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UseCases.Auth.Utils;
 using ChangeMe.Backend.UseCases.Users.Dtos;
 using ChangeMe.Backend.UseCases.Users.Utils;
@@ -11,6 +13,7 @@ public sealed record GetUserByIdQuery(Guid Id) : IQuery<UserDetailsDto>;
 public class GetUserByIdHandler(
   ApplicationDbContext context,
   IPasswordExpirationEvaluator passwordExpirationEvaluator,
+  IUserAuthTokenService tokenService,
   IOptions<AuthOptions> authOptions) : IQueryHandler<GetUserByIdQuery, UserDetailsDto>
 {
   public async Task<Result<UserDetailsDto>> Handle(GetUserByIdQuery query, CancellationToken cancellationToken)
@@ -39,7 +42,7 @@ public class GetUserByIdHandler(
     var lastSignInAt = await UsersUtils.GetLastSignInAtAsync(context, user.Id, cancellationToken);
 
     var auth = authOptions.Value;
-    var externalLogins = auth.ExternalProvidersEnabled
+    var externalLogins = auth.External.Enabled
       ? user.ExternalLogins
         .OrderBy(x => x.ProviderKey)
         .Select(login => new UserExternalLoginDto(
@@ -49,13 +52,28 @@ public class GetUserByIdHandler(
         .ToList()
       : [];
 
+    UserInvitationInfoDto? pendingInvitation = null;
+    if (user.PendingInvitationSentAtUtc is not null)
+    {
+      var tokenExpiresAtUtc = await tokenService.GetActiveUnusedTokenExpiresAtUtcAsync(
+        user.Id,
+        UserAuthTokenType.Invitation,
+        cancellationToken);
+
+      var expiry = user.GetPendingInvitationExpiry(
+        tokenExpiresAtUtc,
+        auth.Invitations.InvitationLinkLifetimeHours);
+      if (expiry is not null)
+        pendingInvitation = new UserInvitationInfoDto(expiry.Value.LastSentAtUtc, expiry.Value.ExpiresAtUtc);
+    }
+
     return Result.Success(
       user.ToDetailsDto(
         lastSignInAt,
         roles,
         effectivePermissions,
         externalLogins,
-        auth.InvitationLinkLifetimeHours,
+        pendingInvitation,
         passwordExpirationEvaluator));
   }
 }

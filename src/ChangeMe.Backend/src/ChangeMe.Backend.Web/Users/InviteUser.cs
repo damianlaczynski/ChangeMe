@@ -1,21 +1,21 @@
-﻿using ChangeMe.Backend.UseCases.Users;
+using ChangeMe.Backend.UseCases.Users;
 using ChangeMe.Backend.UseCases.Users.Dtos;
 
 namespace ChangeMe.Backend.Web.Users;
 
-public class CreateUser(IMediator mediator) : BaseEndpoint<CreateUserCommand, UserDetailsDto>(mediator)
+public class InviteUser(IMediator mediator) : BaseEndpoint<InviteUserCommand, UserDetailsDto>(mediator)
 {
   protected override void ConfigureEndpoint()
   {
     RequirePermissions(PermissionCodes.UsersManage, PermissionCodes.RolesManage);
     Post("/users");
-    Summary(s => s.Summary = "Create user");
+    Summary(s => s.Summary = "Invite user");
   }
 }
 
-public sealed class CreateUserCommandValidator : Validator<CreateUserCommand>
+public sealed class InviteUserCommandValidator : Validator<InviteUserCommand>
 {
-  public CreateUserCommandValidator()
+  public InviteUserCommandValidator()
   {
     RuleFor(x => x.FirstName)
       .MaximumLength(UserConstraints.NAME_MAX_LENGTH)

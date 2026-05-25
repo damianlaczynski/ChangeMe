@@ -22,15 +22,15 @@ import {
 } from '@features/users/models/user.model';
 import { UsersService } from '@features/users/services/users.service';
 import {
-  accountFilters,
   emailVerifiedFilters,
-  getAccountBadgeLabel,
-  getAccountBadgeSeverity,
-  getAccountStateLabel,
   getActivateConfirmMessage,
   getDeactivateConfirmMessage,
   getEmailVerifiedBadgeLabel,
   getEmailVerifiedBadgeSeverity,
+  getUserStatusLabel,
+  getUserStatusSeverity,
+  statusFilters,
+  UserMembershipStatus,
   UserMessages
 } from '@features/users/utils/users.utils';
 import { PermissionCodes } from '@shared/authorization/permission-codes';
@@ -55,7 +55,7 @@ import { catchError, of, switchMap, tap } from 'rxjs';
 
 type UsersFilterForm = {
   searchText: FormControl<string>;
-  deactivated: FormControl<boolean[]>;
+  status: FormControl<UserMembershipStatus[]>;
   emailVerified: FormControl<boolean[]>;
 };
 
@@ -92,11 +92,10 @@ export class UsersListComponent {
   private readonly toastService = inject(ToastService);
   private readonly destroyRef = inject(DestroyRef);
 
-  readonly accountFilters = accountFilters;
+  readonly statusFilters = statusFilters;
   readonly emailVerifiedFilters = emailVerifiedFilters;
-  readonly getAccountBadgeLabel = getAccountBadgeLabel;
-  readonly getAccountBadgeSeverity = getAccountBadgeSeverity;
-  readonly getAccountStateLabel = getAccountStateLabel;
+  readonly getUserStatusLabel = getUserStatusLabel;
+  readonly getUserStatusSeverity = getUserStatusSeverity;
   readonly getEmailVerifiedBadgeLabel = getEmailVerifiedBadgeLabel;
   readonly getEmailVerifiedBadgeSeverity = getEmailVerifiedBadgeSeverity;
   readonly UserMessages = UserMessages;
@@ -121,7 +120,7 @@ export class UsersListComponent {
   readonly canManageUsers = computed(() =>
     this.authService.hasPermission(PermissionCodes.usersManage)
   );
-  readonly canCreateUsers = computed(
+  readonly canInviteUsers = computed(
     () =>
       this.authService.hasPermission(PermissionCodes.usersManage) &&
       this.authService.hasPermission(PermissionCodes.rolesManage)
@@ -132,7 +131,7 @@ export class UsersListComponent {
 
   readonly filtersForm = new FormGroup<UsersFilterForm>({
     searchText: new FormControl('', { nonNullable: true }),
-    deactivated: new FormControl<boolean[]>([], { nonNullable: true }),
+    status: new FormControl<UserMembershipStatus[]>([], { nonNullable: true }),
     emailVerified: new FormControl<boolean[]>([], { nonNullable: true })
   });
 
@@ -140,10 +139,10 @@ export class UsersListComponent {
     const activeQuery = this.query();
     const chips: AppliedFilterChip[] = [];
 
-    for (const deactivated of activeQuery.deactivated ?? []) {
+    for (const status of activeQuery.status ?? []) {
       chips.push({
-        id: `account-${deactivated}`,
-        label: `Account: ${getAccountBadgeLabel(deactivated)}`
+        id: `status-${status}`,
+        label: `Status: ${getUserStatusLabel(status)}`
       });
     }
 
@@ -159,7 +158,7 @@ export class UsersListComponent {
     return chips;
   });
 
-  readonly tableColumnCount = computed(() => (this.emailVerificationEnabled() ? 9 : 8));
+  readonly tableColumnCount = computed(() => (this.emailVerificationEnabled() ? 8 : 7));
 
   readonly hasAppliedFilters = computed(() => this.appliedFilterChips().length > 0);
 
@@ -197,12 +196,12 @@ export class UsersListComponent {
   }
 
   applyFilters(): void {
-    const { searchText, deactivated, emailVerified } = this.filtersForm.getRawValue();
+    const { searchText, status, emailVerified } = this.filtersForm.getRawValue();
     this.query.update((current) => ({
       ...current,
       pageNumber: 1,
       searchText: searchText.trim() || undefined,
-      deactivated: deactivated.length > 0 ? deactivated : undefined,
+      status: status.length > 0 ? status : undefined,
       emailVerified:
         this.emailVerificationEnabled() && emailVerified.length > 0
           ? emailVerified
@@ -211,12 +210,12 @@ export class UsersListComponent {
   }
 
   clearFilters(): void {
-    this.filtersForm.reset({ searchText: '', deactivated: [], emailVerified: [] });
+    this.filtersForm.reset({ searchText: '', status: [], emailVerified: [] });
     this.query.update((current) => ({
       ...current,
       pageNumber: 1,
       searchText: undefined,
-      deactivated: undefined,
+      status: undefined,
       emailVerified: undefined
     }));
   }
@@ -356,12 +355,12 @@ export class UsersListComponent {
   }
 
   removeAppliedFilter(chip: AppliedFilterChip): void {
-    if (chip.id.startsWith('account-')) {
-      const deactivated = chip.id.slice('account-'.length) === 'true';
-      const values = this.filtersForm.controls.deactivated.value.filter(
-        (item) => item !== deactivated
+    if (chip.id.startsWith('status-')) {
+      const status = chip.id.slice('status-'.length) as UserMembershipStatus;
+      const values = this.filtersForm.controls.status.value.filter(
+        (item) => item !== status
       );
-      this.filtersForm.controls.deactivated.setValue(values);
+      this.filtersForm.controls.status.setValue(values);
       this.applyFilters();
       return;
     }

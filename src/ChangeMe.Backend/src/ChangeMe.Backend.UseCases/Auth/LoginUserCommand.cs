@@ -42,7 +42,7 @@ public class LoginUserHandler(
       return Result<LoginResponseDto>.Unauthorized(AuthSessionUtils.InvalidCredentialsMessage);
     }
 
-    if (authOptions.Value.EmailVerificationEnabled && !user.EmailVerified)
+    if (authOptions.Value.EmailVerification.Enabled && !user.EmailVerified)
       return Result<LoginResponseDto>.Unauthorized(AuthSessionUtils.EmailNotVerifiedMessage);
 
     if (!passwordHasher.VerifyPassword(user.PasswordHash, command.Password))

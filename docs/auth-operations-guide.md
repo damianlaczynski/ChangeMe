@@ -74,11 +74,9 @@ Administrators manage other users under **Users** (invitations, deactivate, rese
 
 ### 4.1 General
 
-| Setting                              | Default                      | What it does                                                            | Impact                                                                                                                                             |
-| ------------------------------------ | ---------------------------- | ----------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `FrontendBaseUrl`                    | `http://localhost:4200`      | Canonical URL of the Angular app.                                       | Used in email links (reset, verify, invite) and to build the **OIDC redirect URI**. Must match the URL users actually open.                        |
-| `ExternalSignInCallbackPath`         | `/external-sign-in/callback` | Path appended to `FrontendBaseUrl` for OIDC redirect.                   | **Redirect URI** registered at the IdP = `{FrontendBaseUrl}{ExternalSignInCallbackPath}` (e.g. `http://localhost:4200/external-sign-in/callback`). |
-| `ExternalAuthPendingLifetimeMinutes` | `10`                         | Lifetime of in-progress OIDC state (PKCE, nonce, mode) in the database. | Expired flows fail; user must start sign-in/link/step-up again.                                                                                    |
+| Setting           | Default                 | What it does                      | Impact                                                                                                                      |
+| ----------------- | ----------------------- | --------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `FrontendBaseUrl` | `http://localhost:4200` | Canonical URL of the Angular app. | Used in email links (reset, verify, invite) and to build the **OIDC redirect URI**. Must match the URL users actually open. |
 
 ### 4.2 JWT (`Auth:Jwt`)
 
@@ -107,39 +105,68 @@ Users can revoke sessions on **My account**; admins can revoke on **User details
 
 Policy is exposed to the frontend via `GET /api/auth/settings` so forms can show requirements before submit.
 
-### 4.5 Password expiration
+### 4.5 Password expiration (`Auth:PasswordExpiration`)
 
-| Setting                     | Default | What it does                           | Impact                                                                                                         |
-| --------------------------- | ------- | -------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| `PasswordExpirationEnabled` | `true`  | Enables maximum password age.          | When enabled, expired passwords trigger **Required password change** after sign-in instead of the main app.    |
-| `MaximumPasswordAgeDays`    | `90`    | Days after `password last changed at`. | Applies to password-based accounts; external-only users without a password are not subject until they set one. |
+| Setting                  | Default | What it does                           | Impact                                                                                                         |
+| ------------------------ | ------- | -------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `Enabled`                | `true`  | Enables maximum password age.          | When enabled, expired passwords trigger **Required password change** after sign-in instead of the main app.    |
+| `MaximumPasswordAgeDays` | `90`    | Days after `password last changed at`. | Applies to password-based accounts; external-only users without a password are not subject until they set one. |
 
-### 4.6 Email verification
+### 4.6 Email verification (`Auth:EmailVerification`)
 
-| Setting                              | Default | What it does                            | Impact                                                                                                         |
-| ------------------------------------ | ------- | --------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| `EmailVerificationEnabled`           | `true`  | Requires verified email before sign-in. | Register sends verification email; Login blocked until verified. Admins can mark verified on **User details**. |
-| `EmailVerificationLinkLifetimeHours` | `72`    | Validity of verification links.         | Expired links require resend from **Verify email**.                                                            |
+| Setting             | Default | What it does                            | Impact                                                                                                         |
+| ------------------- | ------- | --------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `Enabled`           | `true`  | Requires verified email before sign-in. | Register sends verification email; Login blocked until verified. Admins can mark verified on **User details**. |
+| `LinkLifetimeHours` | `72`    | Validity of verification links.         | Expired links require resend from **Verify email**.                                                            |
 
 **Requires working `Email` configuration** (or MailHog in Docker for local dev).
 
-### 4.7 Public registration
+### 4.7 Registration (`Auth:Registration`)
 
-| Setting                          | Default | What it does                                          | Impact                                                                                                           |
-| -------------------------------- | ------- | ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `PublicRegistrationEnabled`      | `true`  | Allows `/register` and self-service account creation. | When `false`, route is blocked; **external OIDC auto-registration** also fails unless an account already exists. |
-| `PasswordResetLinkLifetimeHours` | `24`    | Reset link validity.                                  | Used by forgot/reset password flow.                                                                              |
-| `InvitationLinkLifetimeHours`    | `72`    | Invitation link validity.                             | Used when admins create users without a password.                                                                |
+| Setting         | Default | What it does                                          | Impact                                                                                                           |
+| --------------- | ------- | ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `PublicEnabled` | `true`  | Allows `/register` and self-service account creation. | When `false`, route is blocked; **external OIDC auto-registration** also fails unless an account already exists. |
 
-### 4.8 Two-factor authentication (2FA)
+### 4.8 Password reset (`Auth:PasswordReset`)
 
-| Setting                           | Default | What it does                                          | Impact                                                                                                                                                                                                        |
-| --------------------------------- | ------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `TwoFactorAuthenticationEnabled`  | `false` | Master switch for TOTP/recovery codes.                | When `false`, 2FA UI and enforcement are off; stored secrets remain in DB but are inactive.                                                                                                                   |
-| `TwoFactorAuthenticationRequired` | `false` | Every account must enroll in 2FA.                     | When `true` (and 2FA enabled), users without TOTP get **strict two-factor setup** after sign-in or on next API call (`twoFactorSetupRequired`). Invite-pending users are exempt until they accept invitation. |
-| `TrustIdentityProviderMfa`        | `false` | Trust IdP MFA assertion on **external** sign-in only. | Effective only when **both** 2FA and external providers are enabled. See §6.10.                                                                                                                               |
+| Setting             | Default | What it does         | Impact                              |
+| ------------------- | ------- | -------------------- | ----------------------------------- |
+| `LinkLifetimeHours` | `24`    | Reset link validity. | Used by forgot/reset password flow. |
 
-#### `Auth:TwoFactor` sub-settings
+### 4.9 Invitations (`Auth:Invitations`)
+
+| Setting                       | Default | What it does              | Impact                                               |
+| ----------------------------- | ------- | ------------------------- | ---------------------------------------------------- |
+| `InvitationLinkLifetimeHours` | `72`    | Invitation link validity. | Used when admins **Invite user** without a password. |
+
+##### Retention (`Auth:Invitations:Retention`)
+
+| Setting                          | Default     | What it does                                                                | Impact                                                                                                   |
+| -------------------------------- | ----------- | --------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `RevokedInvitationRetentionDays` | `7`         | Delete **revoked** / **cancelled** `AccountInvitation` rows after this age. | **Pending** and **accepted** rows are never removed. Age uses `RevokedAtUtc`, or `SentAtUtc` if missing. |
+| `CleanupCronExpression`          | `0 4 * * *` | Hangfire schedule for the cleanup job.                                      | Same pattern as `Notifications:Retention`.                                                               |
+
+Example:
+
+```json
+"Auth": {
+  "Invitations": {
+    "InvitationLinkLifetimeHours": 72,
+    "Retention": {
+      "RevokedInvitationRetentionDays": 7,
+      "CleanupCronExpression": "0 4 * * *"
+    }
+  }
+}
+```
+
+### 4.10 Two-factor authentication (`Auth:TwoFactor`)
+
+| Setting                    | Default | What it does                                          | Impact                                                                                                                                                                                                        |
+| -------------------------- | ------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Enabled`                  | `false` | Master switch for TOTP/recovery codes.                | When `false`, 2FA UI and enforcement are off; stored secrets remain in DB but are inactive.                                                                                                                   |
+| `Required`                 | `false` | Every account must enroll in 2FA.                     | When `true` (and 2FA enabled), users without TOTP get **strict two-factor setup** after sign-in or on next API call (`twoFactorSetupRequired`). Invite-pending users are exempt until they accept invitation. |
+| `TrustIdentityProviderMfa` | `false` | Trust IdP MFA assertion on **external** sign-in only. | Effective only when **both** 2FA and external providers are enabled. See §6.10.                                                                                                                               |
 
 | Setting                                 | Default    | What it does                                            | Impact                                                                                          |
 | --------------------------------------- | ---------- | ------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
@@ -160,12 +187,14 @@ Policy is exposed to the frontend via `GET /api/auth/settings` so forms can show
 
 **Administrator:** **Reset two-factor** on **User details** clears 2FA and revokes all sessions (requires `Users.Manage`).
 
-### 4.9 External identity providers
+### 4.11 External identity providers (`Auth:External`)
 
-| Setting                    | Default | What it does                                   | Impact                                                                                                                            |
-| -------------------------- | ------- | ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `ExternalProvidersEnabled` | `false` | Master switch for OIDC sign-in and linking UI. | When `false`, no provider buttons; APIs return forbidden/disabled messages. Existing `External login` rows are kept but unusable. |
-| `ExternalProviders`        | `[]`    | List of provider configurations.               | Each fully configured entry appears on Login, Register, and **My account**. Incomplete entries are ignored.                       |
+| Setting                  | Default                      | What it does                                                  | Impact                                                                                                                            |
+| ------------------------ | ---------------------------- | ------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `Enabled`                | `false`                      | Master switch for OIDC sign-in and linking UI.                | When `false`, no provider buttons; APIs return forbidden/disabled messages. Existing `External login` rows are kept but unusable. |
+| `PendingLifetimeMinutes` | `10`                         | Lifetime of pending OIDC state rows.                          | Expired pending flows must be restarted from Login or **My account**.                                                             |
+| `SignInCallbackPath`     | `/external-sign-in/callback` | Frontend path appended to `FrontendBaseUrl` for redirect URI. | Must match IdP redirect URI registration.                                                                                         |
+| `Providers`              | `[]`                         | List of provider configurations.                              | Each fully configured entry appears on Login, Register, and **My account**. Incomplete entries are ignored.                       |
 
 Per-provider fields:
 
@@ -180,7 +209,7 @@ Per-provider fields:
 | `IssuerValidationMode`              | No       | How the API validates the ID token `iss` claim. Default: `Discovery`.                      | `Discovery` — issuer must match OIDC metadata from `{Authority}/.well-known/openid-configuration` (Google, single-tenant Microsoft, generic OIDC). `MicrosoftMultiTenant` — accept any Microsoft Entra tenant issuer; **required** when `Authority` uses `/common` or `/organizations`. |
 | `TrustIdpEmailWithoutEmailVerified` | No       | Treat the IdP `email` claim as verified when `email_verified` is absent. Default: `false`. | Set `true` for Microsoft Entra (often omits `email_verified`). Enables `email`, `preferred_username`, and `upn` as verified email sources. Google and most OIDC providers usually leave this `false`.                                                                                   |
 
-**Effective enablement:** `ExternalProvidersEnabled` must be `true` **and** at least one provider must pass `IsConfigured` (all required fields non-empty).
+**Effective enablement:** `External:Enabled` must be `true` **and** at least one provider must pass `IsConfigured` (all required fields non-empty).
 
 **OIDC discovery:** authorize URL, token endpoint, and (for `Discovery` issuer mode) expected issuer are loaded from `{Authority}/.well-known/openid-configuration`. Configure `Authority`, client credentials, and the optional fields above — not hard-coded endpoint paths.
 
@@ -188,14 +217,14 @@ Per-provider fields:
 
 ## 5. How options interact (common scenarios)
 
-| Scenario                                          | Recommended settings                                                           | Result                                                                                                                 |
-| ------------------------------------------------- | ------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
-| Internal app, passwords only                      | `ExternalProvidersEnabled: false`, 2FA optional or off                         | Classic email/password only.                                                                                           |
-| Enterprise SSO + optional password                | Enable one OIDC provider, domain allowlist, `PublicRegistrationEnabled: false` | Only existing users or admin-created users link/sign in; new emails without account get _No account exists…_.          |
-| High security                                     | `TwoFactorAuthenticationRequired: true`, 2FA enabled                           | All users must set up authenticator after first sign-in (unless IdP MFA trusted on external path).                     |
-| Google/Microsoft + skip app 2FA when IdP used MFA | `TrustIdentityProviderMfa: true` + 2FA enabled                                 | External sign-in with `amr` containing `mfa` skips app TOTP and mandatory setup; password sign-in still uses app TOTP. |
-| Public SaaS signup                                | `PublicRegistrationEnabled: true`, email verification on                       | Register → verify email → login.                                                                                       |
-| Lock registration, allow Google                   | `PublicRegistrationEnabled: false`, Google OIDC                                | New users only via Google if email not already in directory; matching email triggers link flow.                        |
+| Scenario                                          | Recommended settings                                                            | Result                                                                                                                 |
+| ------------------------------------------------- | ------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| Internal app, passwords only                      | `External:Enabled: false`, 2FA optional or off                                  | Classic email/password only.                                                                                           |
+| Enterprise SSO + optional password                | Enable one OIDC provider, domain allowlist, `Registration:PublicEnabled: false` | Only existing users or admin-created users link/sign in; new emails without account get _No account exists…_.          |
+| High security                                     | `TwoFactor:Required: true`, 2FA enabled                                         | All users must set up authenticator after first sign-in (unless IdP MFA trusted on external path).                     |
+| Google/Microsoft + skip app 2FA when IdP used MFA | `TwoFactor:TrustIdentityProviderMfa: true` + 2FA enabled                        | External sign-in with `amr` containing `mfa` skips app TOTP and mandatory setup; password sign-in still uses app TOTP. |
+| Public SaaS signup                                | `Registration:PublicEnabled: true`, email verification on                       | Register → verify email → login.                                                                                       |
+| Lock registration, allow Google                   | `Registration:PublicEnabled: false`, Google OIDC                                | New users only via Google if email not already in directory; matching email triggers link flow.                        |
 
 ---
 
@@ -214,7 +243,7 @@ Per-provider fields:
 Register this **exact** redirect URI at every identity provider:
 
 ```text
-{FrontendBaseUrl}{ExternalSignInCallbackPath}
+{FrontendBaseUrl}{External:SignInCallbackPath}
 ```
 
 Example (local):
@@ -238,12 +267,14 @@ The backend sends this URI in the authorization request and again at token excha
 ```json
 "Auth": {
   "FrontendBaseUrl": "http://localhost:4200",
-  "ExternalProvidersEnabled": true,
-  "ExternalProviders": [ ]
+  "External": {
+    "Enabled": true,
+    "Providers": [ ]
+  }
 }
 ```
 
-**Step 2 — Add one object per provider** (array index `0`, `1`, … or environment variables `Auth__ExternalProviders__0__ClientId`, etc.). Use the matching recipe below for your IdP type.
+**Step 2 — Add one object per provider** (array index `0`, `1`, … or environment variables `Auth__External__Providers__0__ClientId`, etc.). Use the matching recipe below for your IdP type.
 
 **Step 3 — Restart the API** and open Login; you should see **Continue with {Display name}** for each configured provider.
 
@@ -270,7 +301,7 @@ All patterns use the same **redirect URI** (§6.2) and request scopes `openid`, 
 
 1. Open [Google Cloud Console](https://console.cloud.google.com/) → **APIs & Services** → **Credentials**.
 2. Create **OAuth client ID** → type **Web application**.
-3. **Authorized redirect URIs:** add `{FrontendBaseUrl}{ExternalSignInCallbackPath}` (e.g. `http://localhost:4200/external-sign-in/callback` and your production URL).
+3. **Authorized redirect URIs:** add `{FrontendBaseUrl}{External:SignInCallbackPath}` (e.g. `http://localhost:4200/external-sign-in/callback` and your production URL).
 4. Configure **OAuth consent screen** (add test users while the app is in **Testing** mode).
 5. Copy **Client ID** and **Client secret**.
 
@@ -305,7 +336,7 @@ Use when the app registration is **single tenant** (one Entra directory only).
 
 1. [Microsoft Entra admin center](https://entra.microsoft.com/) → **App registrations** → **New registration**.
 2. **Supported account types:** **Accounts in this organizational directory only (single tenant)**.
-3. **Redirect URI:** Web → `{FrontendBaseUrl}{ExternalSignInCallbackPath}`.
+3. **Redirect URI:** Web → `{FrontendBaseUrl}{External:SignInCallbackPath}`.
 4. Note **Application (client) ID** and **Directory (tenant) ID**.
 5. **Certificates & secrets** → new client secret → copy into `ClientSecret`.
 6. **API permissions** → **Microsoft Graph** → **Delegated** → **`openid`**, **`profile`**, **`email`**, **`User.Read`** → **Grant admin consent**.
@@ -380,7 +411,7 @@ Use for any OIDC-compliant server that exposes `/.well-known/openid-configuratio
 #### IdP setup (checklist)
 
 1. Create an **OpenID Connect** client (confidential / web application).
-2. Set **redirect URI** to `{FrontendBaseUrl}{ExternalSignInCallbackPath}`.
+2. Set **redirect URI** to `{FrontendBaseUrl}{External:SignInCallbackPath}`.
 3. Enable grant type **Authorization code**; enable **PKCE** if the IdP requires it (ChangeMe always sends S256).
 4. Ensure scopes **`openid`**, **`profile`**, and **`email`** are allowed.
 5. Copy **issuer URL** (metadata base), **client id**, and **client secret** from the IdP admin UI.
@@ -439,7 +470,7 @@ Set `TrustIdentityProviderMfa` to `true` when:
 
 ### 6.11 Disabling external providers later
 
-Set `ExternalProvidersEnabled` to `false` and restart.
+Set `External:Enabled` to `false` and restart.
 
 | User type                   | Effect                                                                                     |
 | --------------------------- | ------------------------------------------------------------------------------------------ |
@@ -463,7 +494,7 @@ Changing a user’s email in **Edit user** does **not** remove external logins; 
 ### 6.13 Secrets and production
 
 - Store `ClientSecret` and `Jwt:SigningKey` in a secret manager or environment variables, not in source control.
-- Example override: `Auth__ExternalProviders__0__ClientSecret=<secret>`.
+- Example override: `Auth__External__Providers__0__ClientSecret=<secret>`.
 - Rotate secrets at the IdP and update configuration together.
 
 ---
@@ -488,7 +519,7 @@ Auth flows that send email:
 | ---------------------------------- | ----------------------------- |
 | Email verification                 | Register with verification on |
 | Password reset                     | Forgot password               |
-| User invitation                    | Admin creates user            |
+| User invitation                    | Admin **Invite user**         |
 | 2FA enabled / disabled / reset     | My account and admin reset    |
 | Recovery code used                 | 2FA verification or step-up   |
 | External account linked / unlinked | My account / admin unlink     |
@@ -499,20 +530,20 @@ Local Docker stack uses **MailHog** (see `docs/database-and-docker.md`). Without
 
 ## 9. Troubleshooting
 
-| Symptom                                                 | Likely cause                                            | Action                                                                                         |
-| ------------------------------------------------------- | ------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| No **Continue with …** buttons                          | `ExternalProvidersEnabled` false or provider incomplete | Check settings; call `GET /api/auth/settings`.                                                 |
-| _External sign-in failed_                               | Redirect URI mismatch, wrong secret, clock skew         | Compare IdP redirect URI with §6.2; check client secret and authority URL.                     |
-| _Sign-in with this account is not allowed_              | Email domain not in allowlist                           | Adjust `AllowedEmailDomains` or user’s IdP email.                                              |
-| _External sign-in failed_ (after Microsoft login)       | Wrong `IssuerValidationMode` for `/common` authority    | Set `IssuerValidationMode` to `MicrosoftMultiTenant` when using `/common` or `/organizations`. |
-| _No account exists for this email_                      | Registration disabled and no user row                   | Create user in admin UI or enable public registration.                                         |
-| _No account exists for this email_ (Microsoft)          | Email claim not verified / missing optional claims      | Set `TrustIdpEmailWithoutEmailVerified: true`; add **`email`** optional claim (§6.6 or §6.7).  |
-| _Complete your account setup using the invitation link_ | Pending account invitation (no password sign-in yet)    | User must complete **Accept invitation** (email link) or external sign-in with matching verified email when enabled. |
-| _Verify your email before signing in_                   | `EmailVerificationEnabled`                              | User verifies email or admin marks verified.                                                   |
-| Stuck on two-factor setup                               | `TwoFactorAuthenticationRequired`                       | User completes setup on **Required two-factor setup** or **My account**.                       |
-| External-only cannot unlink                             | Last sign-in method                                     | User must **Set password** first (after external step-up).                                     |
-| CORS errors on login                                    | Frontend origin not allowed                             | Add origin to `Cors:AllowedOrigins`.                                                           |
-| Settings change not visible                             | Cached app / no restart                                 | Hard refresh frontend; restart API.                                                            |
+| Symptom                                                 | Likely cause                                         | Action                                                                                                               |
+| ------------------------------------------------------- | ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| No **Continue with …** buttons                          | `External:Enabled` false or provider incomplete      | Check settings; call `GET /api/auth/settings`.                                                                       |
+| _External sign-in failed_                               | Redirect URI mismatch, wrong secret, clock skew      | Compare IdP redirect URI with §6.2; check client secret and authority URL.                                           |
+| _Sign-in with this account is not allowed_              | Email domain not in allowlist                        | Adjust `AllowedEmailDomains` or user’s IdP email.                                                                    |
+| _External sign-in failed_ (after Microsoft login)       | Wrong `IssuerValidationMode` for `/common` authority | Set `IssuerValidationMode` to `MicrosoftMultiTenant` when using `/common` or `/organizations`.                       |
+| _No account exists for this email_                      | Registration disabled and no user row                | **Invite user** in admin UI or enable public registration.                                                           |
+| _No account exists for this email_ (Microsoft)          | Email claim not verified / missing optional claims   | Set `TrustIdpEmailWithoutEmailVerified: true`; add **`email`** optional claim (§6.6 or §6.7).                        |
+| _Complete your account setup using the invitation link_ | Pending account invitation (no password sign-in yet) | User must complete **Accept invitation** (email link) or external sign-in with matching verified email when enabled. |
+| _Verify your email before signing in_                   | `EmailVerification:Enabled`                          | User verifies email or admin marks verified.                                                                         |
+| Stuck on two-factor setup                               | `TwoFactor:Required`                                 | User completes setup on **Required two-factor setup** or **My account**.                                             |
+| External-only cannot unlink                             | Last sign-in method                                  | User must **Set password** first (after external step-up).                                                           |
+| CORS errors on login                                    | Frontend origin not allowed                          | Add origin to `Cors:AllowedOrigins`.                                                                                 |
+| Settings change not visible                             | Cached app / no restart                              | Hard refresh frontend; restart API.                                                                                  |
 
 ---
 

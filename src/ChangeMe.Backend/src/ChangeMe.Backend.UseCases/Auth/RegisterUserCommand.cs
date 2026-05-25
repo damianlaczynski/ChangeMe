@@ -29,13 +29,21 @@ public class RegisterUserHandler(
     CancellationToken cancellationToken)
   {
     var auth = authOptions.Value;
-    if (!auth.PublicRegistrationEnabled)
+    if (!auth.Registration.PublicEnabled)
       return Result<RegisterUserResponseDto>.Forbidden(AuthSessionUtils.RegistrationDisabledMessage);
 
     var normalizedEmail = User.NormalizeEmail(command.Email);
-    var userExists = await context.Users.AnyAsync(x => x.NormalizedEmail == normalizedEmail, cancellationToken);
-    if (userExists)
-      return Result<RegisterUserResponseDto>.Conflict(AuthSessionUtils.DuplicateEmailMessage);
+    var existingUser = await context.Users
+      .Include(x => x.AccountInvitations)
+      .FirstOrDefaultAsync(x => x.NormalizedEmail == normalizedEmail, cancellationToken);
+
+    if (existingUser is not null)
+    {
+      if (!CanCompleteExistingAccount(existingUser))
+        return Result<RegisterUserResponseDto>.Conflict(AuthSessionUtils.DuplicateEmailMessage);
+
+      return await CompleteExistingAccountAsync(existingUser, command, auth, cancellationToken);
+    }
 
     var defaultRole = await context.Roles
       .FirstOrDefaultAsync(x => x.Name == RoleConstraints.UserRoleName, cancellationToken);
@@ -43,14 +51,13 @@ public class RegisterUserHandler(
     if (defaultRole is null)
       return Result<RegisterUserResponseDto>.CriticalError("Default user role is not configured.");
 
-    var emailVerified = !auth.EmailVerificationEnabled;
     var passwordHash = passwordHasher.HashPassword(command.Password);
     var createUserResult = User.CreateWithPassword(
       command.FirstName,
       command.LastName,
       command.Email,
       passwordHash,
-      emailVerified);
+      emailVerified: false);
     if (!createUserResult.IsSuccess)
       return createUserResult.Map();
 
@@ -58,7 +65,7 @@ public class RegisterUserHandler(
     user.AssignRole(defaultRole.Id);
     await context.Users.AddAsync(user, cancellationToken);
 
-    if (auth.EmailVerificationEnabled)
+    if (auth.EmailVerification.Enabled)
     {
       await context.SaveChangesAsync(cancellationToken);
 
@@ -71,6 +78,49 @@ public class RegisterUserHandler(
         $"/users/{user.Id}");
     }
 
+    return await CreateSessionAndReturnAsync(user, cancellationToken);
+  }
+
+  private static bool CanCompleteExistingAccount(User user) =>
+    !user.HasPasswordSet
+    && !user.HasPendingInvitation
+    && !user.Deactivated;
+
+  private async Task<Result<RegisterUserResponseDto>> CompleteExistingAccountAsync(
+    User user,
+    RegisterUserCommand command,
+    AuthOptions auth,
+    CancellationToken cancellationToken)
+  {
+    var profileResult = user.UpdateProfile(command.FirstName, command.LastName);
+    if (!profileResult.IsSuccess)
+      return profileResult.Map();
+
+    var passwordHash = passwordHasher.HashPassword(command.Password);
+    var passwordResult = user.SetPasswordHash(passwordHash);
+    if (!passwordResult.IsSuccess)
+      return passwordResult.Map();
+
+    if (auth.EmailVerification.Enabled && !user.EmailVerified)
+    {
+      await context.SaveChangesAsync(cancellationToken);
+
+      var verificationResult = await emailVerificationService.SendVerificationAsync(user, cancellationToken);
+      if (!verificationResult.IsSuccess)
+        return verificationResult.Map();
+
+      return Result<RegisterUserResponseDto>.Created(
+        new RegisterUserResponseDto { RequiresEmailVerification = true },
+        $"/users/{user.Id}");
+    }
+
+    return await CreateSessionAndReturnAsync(user, cancellationToken);
+  }
+
+  private async Task<Result<RegisterUserResponseDto>> CreateSessionAndReturnAsync(
+    User user,
+    CancellationToken cancellationToken)
+  {
     var sessionResult = await AuthSessionFactory.CreateSessionAsync(
       context,
       sessionLifetime,

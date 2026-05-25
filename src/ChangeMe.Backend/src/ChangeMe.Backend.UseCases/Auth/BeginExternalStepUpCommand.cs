@@ -23,7 +23,7 @@ public class BeginExternalStepUpHandler(
       return Result<BeginExternalSignInResponseDto>.Unauthorized();
 
     var auth = authOptions.Value;
-    if (!auth.ExternalProvidersEnabled)
+    if (!auth.External.Enabled)
       return Result<BeginExternalSignInResponseDto>.Forbidden(ExternalAuthUtils.ExternalProvidersDisabledMessage);
 
     var provider = ExternalAuthUtils.ResolveProvider(auth, command.ProviderKey);
@@ -45,7 +45,7 @@ public class BeginExternalStepUpHandler(
 
     var utcNow = DateTime.UtcNow;
     var (codeVerifier, codeChallenge, state, nonce) = ExternalAuthPkceUtils.CreateAuthorizationParameters();
-    var expiresAtUtc = utcNow.AddMinutes(auth.ExternalAuthPendingLifetimeMinutes);
+    var expiresAtUtc = utcNow.AddMinutes(auth.External.PendingLifetimeMinutes);
 
     var pendingResult = ExternalAuthPending.CreateStepUp(
       provider.ProviderKey,

@@ -50,6 +50,7 @@ export class AcceptInvitationComponent {
   readonly token = this.route.snapshot.queryParamMap.get('token') ?? '';
   readonly isLoadingPreview = signal(true);
   readonly isInvitationValid = signal(false);
+  readonly previewEmail = signal<string | null>(null);
   readonly errorMessage = signal('');
   readonly isSubmitting = signal(false);
   readonly authConstraints = AuthConstraints;
@@ -113,6 +114,7 @@ export class AcceptInvitationComponent {
         next: (preview) => {
           this.isInvitationValid.set(preview.isValid);
           if (preview.isValid) {
+            this.previewEmail.set(preview.email);
             this.form.patchValue({
               firstName: preview.firstName,
               lastName: preview.lastName

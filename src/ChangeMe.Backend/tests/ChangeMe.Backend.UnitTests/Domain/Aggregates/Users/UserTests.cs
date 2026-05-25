@@ -183,7 +183,21 @@ public sealed class UserTests
   }
 
   [Fact]
-  public void RecordInvitationIssued_WhenResent_ShouldRevokePreviousAndIncrementCount()
+  public void GetPendingInvitationExpiry_WhenTokenMissing_UsesLinkLifetimeFallback()
+  {
+    var utcNow = DateTime.UtcNow;
+    var user = User.CreateInvited("invite@example.com").Value;
+    user.RecordInvitationIssued(utcNow);
+
+    var expiry = user.GetPendingInvitationExpiry(null, 72);
+
+    Assert.NotNull(expiry);
+    Assert.Equal(utcNow, expiry.Value.LastSentAtUtc);
+    Assert.Equal(utcNow.AddHours(72), expiry.Value.ExpiresAtUtc);
+  }
+
+  [Fact]
+  public void RecordInvitationIssued_WhenResent_ShouldRevokePreviousAndKeepSinglePending()
   {
     var utcNow = DateTime.UtcNow;
     var user = User.CreateInvited("invite@example.com").Value;
@@ -191,13 +205,33 @@ public sealed class UserTests
     user.RecordInvitationIssued(utcNow);
     user.RecordInvitationIssued(utcNow.AddMinutes(5));
 
-    var summary = user.GetPendingInvitationSummary();
-
-    Assert.NotNull(summary);
-    Assert.Equal(2, summary.SentCount);
-    Assert.Equal(utcNow.AddMinutes(5), summary.LastSentAtUtc);
+    Assert.Equal(utcNow.AddMinutes(5), user.PendingInvitationSentAtUtc);
     Assert.Equal(1, user.AccountInvitations.Count(x => x.IsPending));
     Assert.Equal(1, user.AccountInvitations.Count(x => !x.IsPending));
+  }
+
+  [Fact]
+  public void CancelPendingInvitations_WhenPendingExists_ShouldRevokeAllPending()
+  {
+    var utcNow = DateTime.UtcNow;
+    var user = User.CreateInvited("invite@example.com").Value;
+    user.RecordInvitationIssued(utcNow);
+
+    var result = user.CancelPendingInvitations(utcNow.AddMinutes(1));
+
+    Assert.True(result.IsSuccess);
+    Assert.False(user.HasPendingInvitation);
+    Assert.Null(user.PendingInvitationSentAtUtc);
+  }
+
+  [Fact]
+  public void CancelPendingInvitations_WhenNoPending_ShouldFail()
+  {
+    var user = User.CreateInvited("invite@example.com").Value;
+
+    var result = user.CancelPendingInvitations(DateTime.UtcNow);
+
+    Assert.False(result.IsSuccess);
   }
 
   [Fact]
@@ -210,7 +244,7 @@ public sealed class UserTests
     var result = user.AcceptPendingInvitation(utcNow);
 
     Assert.True(result.IsSuccess);
-    Assert.Null(user.GetPendingInvitationSummary());
+    Assert.Null(user.PendingInvitationSentAtUtc);
     Assert.All(user.AccountInvitations, invitation => Assert.False(invitation.IsPending));
   }
 }

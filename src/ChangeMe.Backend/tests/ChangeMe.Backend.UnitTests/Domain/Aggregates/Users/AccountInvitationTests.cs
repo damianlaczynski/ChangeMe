@@ -5,12 +5,11 @@ namespace ChangeMe.Backend.UnitTests.Domain.Aggregates.Users;
 public sealed class AccountInvitationTests
 {
   [Fact]
-  public void GetExpiresAtUtc_WhenLifetimeHoursProvided_ShouldAddToSentAt()
+  public void IsPending_WhenNewlyCreated_ShouldBeTrue()
   {
-    var sentAt = new DateTime(2026, 1, 1, 12, 0, 0, DateTimeKind.Utc);
-    var invitation = AccountInvitation.Create(Guid.NewGuid(), sentAt).Value;
+    var invitation = AccountInvitation.Create(Guid.NewGuid(), DateTime.UtcNow).Value;
 
-    Assert.Equal(sentAt.AddHours(72), invitation.GetExpiresAtUtc(72));
+    Assert.True(invitation.IsPending);
   }
 
   [Fact]
@@ -33,14 +32,5 @@ public sealed class AccountInvitationTests
     invitation.Revoke(utcNow);
 
     Assert.False(invitation.IsPending);
-  }
-
-  [Fact]
-  public void IsExpired_WhenPastComputedExpiry_ShouldBeTrue()
-  {
-    var sentAt = DateTime.UtcNow.AddHours(-80);
-    var invitation = AccountInvitation.Create(Guid.NewGuid(), sentAt).Value;
-
-    Assert.True(invitation.IsExpired(DateTime.UtcNow, invitationLinkLifetimeHours: 72));
   }
 }

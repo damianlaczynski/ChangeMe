@@ -40,7 +40,7 @@ public class GetMyAccountHandler(
       userId,
       cancellationToken);
 
-    var externalLogins = auth.ExternalProvidersEnabled
+    var externalLogins = auth.External.Enabled
       ? user.ExternalLogins
         .OrderBy(x => x.ProviderKey)
         .Select(login => new MyAccountExternalLoginDto(
@@ -54,8 +54,8 @@ public class GetMyAccountHandler(
       .Select(x => x.ProviderKey)
       .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-    var linkableProviders = auth.ExternalProvidersEnabled
-      ? auth.ExternalProviders
+    var linkableProviders = auth.External.Enabled
+      ? auth.External.Providers
         .Where(x => x.IsConfigured && !linkedProviderKeys.Contains(x.ProviderKey))
         .Select(x => new ExternalProviderSettingsDto
         {

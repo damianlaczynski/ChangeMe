@@ -26,7 +26,7 @@ public sealed class ResendInvitationHandlerTests
     var result = await handler.Handle(new ResendInvitationCommand(user.Id), CancellationToken.None);
 
     Assert.False(result.IsSuccess);
-    Assert.Contains(UsersUtils.CannotResendInvitationToDeactivatedMessage, result.Errors);
+    Assert.Contains(UsersUtils.CannotManageInvitationForDeactivatedMessage, result.Errors);
   }
 
   [Fact]

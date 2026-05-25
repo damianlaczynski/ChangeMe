@@ -13,39 +13,53 @@ public sealed class AuthOptions
 
   public PasswordPolicyOptions PasswordPolicy { get; set; } = new();
 
-  public bool PasswordExpirationEnabled { get; set; }
+  public PasswordExpirationOptions PasswordExpiration { get; set; } = new();
 
-  public int MaximumPasswordAgeDays { get; set; } = 90;
+  public EmailVerificationOptions EmailVerification { get; set; } = new();
 
-  public bool EmailVerificationEnabled { get; set; }
+  public RegistrationOptions Registration { get; set; } = new();
 
-  public int EmailVerificationLinkLifetimeHours { get; set; } = 72;
+  public PasswordResetOptions PasswordReset { get; set; } = new();
 
-  public bool PublicRegistrationEnabled { get; set; } = true;
-
-  public int PasswordResetLinkLifetimeHours { get; set; } = 24;
-
-  public int InvitationLinkLifetimeHours { get; set; } = 72;
-
-  public bool TwoFactorAuthenticationEnabled { get; set; }
-
-  public bool TwoFactorAuthenticationRequired { get; set; }
-
-  public bool TrustIdentityProviderMfa { get; set; }
+  public InvitationOptions Invitations { get; set; } = new();
 
   public TwoFactorOptions TwoFactor { get; set; } = new();
 
-  public bool ExternalProvidersEnabled { get; set; }
+  public ExternalAuthOptions External { get; set; } = new();
+}
 
-  public List<ExternalProviderOptions> ExternalProviders { get; set; } = [];
+public sealed class PasswordExpirationOptions
+{
+  public bool Enabled { get; set; }
 
-  public int ExternalAuthPendingLifetimeMinutes { get; set; } = 10;
+  public int MaximumPasswordAgeDays { get; set; } = 90;
+}
 
-  public string ExternalSignInCallbackPath { get; set; } = "/external-sign-in/callback";
+public sealed class EmailVerificationOptions
+{
+  public bool Enabled { get; set; }
+
+  public int LinkLifetimeHours { get; set; } = 72;
+}
+
+public sealed class RegistrationOptions
+{
+  public bool PublicEnabled { get; set; } = true;
+}
+
+public sealed class PasswordResetOptions
+{
+  public int LinkLifetimeHours { get; set; } = 24;
 }
 
 public sealed class TwoFactorOptions
 {
+  public bool Enabled { get; set; }
+
+  public bool Required { get; set; }
+
+  public bool TrustIdentityProviderMfa { get; set; }
+
   public int TotpTimeStepSeconds { get; set; } = 30;
 
   public int TotpValidationWindowSteps { get; set; } = 1;
@@ -61,6 +75,17 @@ public sealed class TwoFactorOptions
   public int StepUpExternalSignInValidityMinutes { get; set; } = 15;
 
   public string TotpIssuerName { get; set; } = "ChangeMe";
+}
+
+public sealed class ExternalAuthOptions
+{
+  public bool Enabled { get; set; }
+
+  public int PendingLifetimeMinutes { get; set; } = 10;
+
+  public string SignInCallbackPath { get; set; } = "/external-sign-in/callback";
+
+  public List<ExternalProviderOptions> Providers { get; set; } = [];
 }
 
 public sealed class ExternalProviderOptions
@@ -95,6 +120,21 @@ public sealed class ExternalProviderOptions
     && !string.IsNullOrWhiteSpace(ClientId)
     && !string.IsNullOrWhiteSpace(ClientSecret);
 }
+
+public sealed class InvitationOptions
+{
+  public int InvitationLinkLifetimeHours { get; set; } = 72;
+
+  public InvitationRetentionSettings Retention { get; set; } = new();
+}
+
+public sealed class InvitationRetentionSettings
+{
+  public int RevokedInvitationRetentionDays { get; set; } = 7;
+
+  public string CleanupCronExpression { get; set; } = "0 4 * * *";
+}
+
 public sealed class PasswordPolicyOptions
 {
   public int MinimumLength { get; set; } = UserConstraints.PASSWORD_MIN_LENGTH;

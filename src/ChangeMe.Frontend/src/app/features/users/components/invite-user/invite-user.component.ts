@@ -22,7 +22,7 @@ import { Panel } from 'primeng/panel';
 import { catchError, debounceTime, of, startWith, switchMap } from 'rxjs';
 
 @Component({
-  selector: 'app-create-user',
+  selector: 'app-invite-user',
   imports: [
     ReactiveFormsModule,
     RouterLink,
@@ -35,9 +35,9 @@ import { catchError, debounceTime, of, startWith, switchMap } from 'rxjs';
     Panel,
     EffectivePermissionsComponent
   ],
-  templateUrl: './create-user.component.html'
+  templateUrl: './invite-user.component.html'
 })
-export class CreateUserComponent {
+export class InviteUserComponent {
   private readonly usersService = inject(UsersService);
   private readonly router = inject(Router);
   private readonly toastService = inject(ToastService);
@@ -119,7 +119,7 @@ export class CreateUserComponent {
     const raw = this.form.getRawValue();
 
     this.usersService
-      .createUser({
+      .inviteUser({
         firstName: raw.firstName.trim(),
         lastName: raw.lastName.trim(),
         email: raw.email.trim(),
@@ -128,7 +128,7 @@ export class CreateUserComponent {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (user) => {
-          this.toastService.success(UserMessages.userCreated);
+          this.toastService.success(UserMessages.invitationSent);
           void this.router.navigate(['/users', user.id]);
         },
         error: (error: Error) => {

@@ -4,15 +4,15 @@ using ChangeMe.Backend.UseCases.Users.Utils;
 
 namespace ChangeMe.Backend.UseCases.Users;
 
-public sealed record ResendInvitationCommand(Guid Id) : ICommand<UserDetailsDto>;
+public sealed record CancelInvitationCommand(Guid Id) : ICommand<UserDetailsDto>;
 
-public class ResendInvitationHandler(
+public class CancelInvitationHandler(
   IMediator mediator,
   ApplicationDbContext context,
-  UserInvitationService invitationService) : ICommandHandler<ResendInvitationCommand, UserDetailsDto>
+  UserInvitationService invitationService) : ICommandHandler<CancelInvitationCommand, UserDetailsDto>
 {
   public async Task<Result<UserDetailsDto>> Handle(
-    ResendInvitationCommand command,
+    CancelInvitationCommand command,
     CancellationToken cancellationToken)
   {
     var user = await context.Users
@@ -30,11 +30,9 @@ public class ResendInvitationHandler(
     if (!user.HasPendingInvitation)
       return Result<UserDetailsDto>.Error(UsersUtils.NoPendingInvitationMessage);
 
-    var invitationResult = await invitationService.SendInvitationAsync(user, cancellationToken);
-    if (!invitationResult.IsSuccess)
-      return invitationResult.Map();
-
-    await context.SaveChangesAsync(cancellationToken);
+    var cancelResult = await invitationService.CancelInvitationAsync(user, cancellationToken);
+    if (!cancelResult.IsSuccess)
+      return cancelResult.Map();
 
     return await mediator.Send(new GetUserByIdQuery(user.Id), cancellationToken);
   }
