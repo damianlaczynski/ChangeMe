@@ -1,4 +1,6 @@
 ﻿using Ardalis.Result;
+using ChangeMe.Backend.Domain.Aggregates.Users;
+using ChangeMe.Backend.Domain.Aggregates.Users.Entities;
 using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UnitTests.Support;
 using ChangeMe.Backend.UseCases.Auth;
@@ -71,6 +73,56 @@ public sealed class RegisterUserHandlerTests
     var user = context.Users.Single(x => x.Email == "direct@example.com");
     Assert.False(user.EmailVerified);
     Assert.Equal(1, context.UserSessions.Count(x => x.UserId == user.Id));
+  }
+
+  [Fact]
+  public async Task Handle_WhenExistingExternalOnlyAccount_ReturnsConflict()
+  {
+    await using var context = UseCasesTestDb.Create(nameof(Handle_WhenExistingExternalOnlyAccount_ReturnsConflict));
+    await UseCasesTestDb.SeedSystemRolesAsync(context);
+
+    var user = User.CreateInvited("external-only@example.com", "Oidc", "User").Value;
+    var login = ExternalLogin.Create(user.Id, "google", "subject-1").Value;
+    user.AddExternalLogin(login);
+    await context.Users.AddAsync(user);
+    await context.SaveChangesAsync();
+
+    var handler = CreateHandler(context, TestAuthOptions.Create());
+
+    var result = await handler.Handle(
+      new RegisterUserCommand("Attacker", "User", "external-only@example.com", "StrongPass123!"),
+      CancellationToken.None);
+
+    Assert.Equal(ResultStatus.Conflict, result.Status);
+    Assert.Contains(AuthSessionUtils.DuplicateEmailMessage, result.Errors.First());
+    Assert.False(context.Users.Single(x => x.Id == user.Id).HasPasswordSet);
+  }
+
+  [Fact]
+  public async Task Handle_WhenInvitationCanceledAccount_CompletesExistingUser()
+  {
+    await using var context = UseCasesTestDb.Create(nameof(Handle_WhenInvitationCanceledAccount_CompletesExistingUser));
+    await UseCasesTestDb.SeedSystemRolesAsync(context);
+
+    var user = User.CreateInvited("canceled@example.com").Value;
+    user.RecordInvitationIssued(DateTime.UtcNow);
+    user.CancelPendingInvitations(DateTime.UtcNow);
+    await context.Users.AddAsync(user);
+    await context.SaveChangesAsync();
+
+    var handler = CreateHandler(context, TestAuthOptions.Create());
+
+    var result = await handler.Handle(
+      new RegisterUserCommand("New", "Name", "canceled@example.com", "StrongPass123!"),
+      CancellationToken.None);
+
+    Assert.Equal(ResultStatus.Created, result.Status);
+    Assert.NotNull(result.Value.AuthSession);
+
+    var updated = context.Users.Single(x => x.Id == user.Id);
+    Assert.True(updated.HasPasswordSet);
+    Assert.Equal("New", updated.FirstName);
+    Assert.Equal("Name", updated.LastName);
   }
 
   private static RegisterUserHandler CreateHandler(
