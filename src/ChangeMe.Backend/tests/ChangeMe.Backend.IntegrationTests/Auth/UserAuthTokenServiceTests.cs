@@ -87,19 +87,15 @@ public sealed class UserAuthTokenServiceTests(BackendWebApplicationFactory facto
     var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     var tokenService = scope.ServiceProvider.GetRequiredService<IUserAuthTokenService>();
 
+    var issuedAtUtc = DateTime.UtcNow.AddHours(-100);
     var issueResult = await tokenService.IssueTokenAsync(
       authenticated.UserId,
       UserAuthTokenType.Invitation,
+      issuedAtUtc: issuedAtUtc,
       cancellationToken: cancellationToken);
 
     Assert.True(issueResult.IsSuccess);
 
-    await context.SaveChangesAsync(cancellationToken);
-
-    var token = await context.UserAuthTokens
-      .SingleAsync(x => x.UserId == authenticated.UserId && x.Type == UserAuthTokenType.Invitation, cancellationToken);
-
-    var expiredAtUtc = DateTime.UtcNow.AddHours(-1);
     await context.SaveChangesAsync(cancellationToken);
 
     var persistedExpiresAtUtc = await context.UserAuthTokens
@@ -107,6 +103,8 @@ public sealed class UserAuthTokenServiceTests(BackendWebApplicationFactory facto
       .Where(x => x.UserId == authenticated.UserId && x.Type == UserAuthTokenType.Invitation)
       .Select(x => x.ExpiresAtUtc)
       .SingleAsync(cancellationToken);
+
+    Assert.True(persistedExpiresAtUtc < DateTime.UtcNow);
 
     var expiresAtUtc = await tokenService.GetActiveUnusedTokenExpiresAtUtcAsync(
       authenticated.UserId,
