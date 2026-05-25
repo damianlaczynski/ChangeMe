@@ -27,8 +27,7 @@ public sealed class InvitationRetentionCleanupJob(
     var cutoffUtc = timeProvider.GetUtcNow().UtcDateTime.AddDays(-retentionDays);
 
     var deletedCount = await context.Set<AccountInvitation>()
-      .Where(x => x.RevokedAtUtc != null)
-      .Where(x => (x.RevokedAtUtc ?? x.SentAtUtc) <= cutoffUtc)
+      .Where(x => x.RevokedAtUtc != null && x.RevokedAtUtc <= cutoffUtc)
       .ExecuteDeleteAsync(cancellationToken);
 
     logger.LogInformation(

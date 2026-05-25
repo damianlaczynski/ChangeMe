@@ -47,7 +47,7 @@ Link expiry is stored on `AccountInvitation` as `LinkExpiresAtUtc` for the send 
 | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **lastSentAtUtc** | **Sent at** of the current pending invitation (latest pending send).                                                                                                                  |
 | **expiresAtUtc**  | **ExpiresAtUtc** of the current valid unused invitation token when one exists; otherwise **lastSentAtUtc** + current `Auth:Invitations:InvitationLinkLifetimeHours` for display only. |
-| **isExpired**     | **`true`** when there is no valid unused invitation token for the user at request time, or that token is past expiry. **`false`** when a valid unused token exists.                   |
+| **isLinkExpired** | **`true`** when there is no valid unused invitation token for the user at request time, or that token is past expiry. **`false`** when a valid unused token exists.                   |
 
 **Invitation pending** (API: `invitationPending` on **Users list** and **User details**): **`true`** when the user has a pending account invitation (same lifecycle rule as above). Drives **Status** **`Invited`** when **Deactivated** is false (REQ-INV-005).
 
@@ -55,8 +55,8 @@ Link expiry is stored on `AccountInvitation` as `LinkExpiresAtUtc` for the send 
 
 **API rules (not a separate REQ):**
 
-- **invitationPending** reflects domain pending lifecycle (not accepted, not revoked), independent of **isExpired**.
-- **isExpired** reflects **token** validity only; UI may show **`Expired`** while **Resend invitation** remains available (REQ-INV-003).
+- **invitationPending** reflects domain pending lifecycle (not accepted, not revoked), independent of **isLinkExpired**.
+- **isLinkExpired** reflects **token** validity only; UI may show **`Expired`** while **Resend invitation** remains available (REQ-INV-003).
 
 ---
 
@@ -123,14 +123,14 @@ On **User details**, administrators must immediately see that the person was **i
 
 ### Content (read-only)
 
-| Element             | Behavior                                                                                                                                                                             |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Intro**           | Short text, for example: **`This user was invited and has not completed account setup yet. They cannot sign in until they accept the invitation.`**                                  |
-| **Last sent at**    | `pendingInvitation.lastSentAtUtc` (date/time).                                                                                                                                       |
-| **Link expires at** | `pendingInvitation.expiresAtUtc` (date/time).                                                                                                                                        |
-| **Expiry note**     | Muted helper: **`Based on the active invitation link. Changing Auth:Invitations:InvitationLinkLifetimeHours does not change an already-issued token.`**                              |
-| **Expired state**   | When `pendingInvitation.isExpired` is **`true`**: show tag **`Expired`** (warn severity) and message **`This invitation link may no longer work. Resend or cancel the invitation.`** |
-| **Profile name**    | **First name** and **Last name** when set; **`Not set`** when both empty (admin may set on **Edit user**; invitee confirms on accept).                                               |
+| Element             | Behavior                                                                                                                                                                                 |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Intro**           | Short text, for example: **`This user was invited and has not completed account setup yet. They cannot sign in until they accept the invitation.`**                                      |
+| **Last sent at**    | `pendingInvitation.lastSentAtUtc` (date/time).                                                                                                                                           |
+| **Link expires at** | `pendingInvitation.expiresAtUtc` (date/time).                                                                                                                                            |
+| **Expiry note**     | Muted helper: **`Based on the active invitation link. Changing Auth:Invitations:InvitationLinkLifetimeHours does not change an already-issued token.`**                                  |
+| **Expired state**   | When `pendingInvitation.isLinkExpired` is **`true`**: show tag **`Expired`** (warn severity) and message **`This invitation link may no longer work. Resend or cancel the invitation.`** |
+| **Profile name**    | **First name** and **Last name** when set; **`Not set`** when both empty (admin may set on **Edit user**; invitee confirms on accept).                                                   |
 
 - **Do not show** **Email verified** in this panel (badge already appears in profile summary).
 
