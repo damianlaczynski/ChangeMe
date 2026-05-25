@@ -191,7 +191,9 @@ public class User : Entity, IAggregateRoot
     var expiresAtUtc = activeInvitationTokenExpiresAtUtc
       ?? lastSentAtUtc.Value.AddHours(linkLifetimeHours);
 
-    return (lastSentAtUtc.Value, expiresAtUtc, utcNow >= expiresAtUtc);
+    var isLinkExpired = activeInvitationTokenExpiresAtUtc is null || utcNow >= expiresAtUtc;
+
+    return (lastSentAtUtc.Value, expiresAtUtc, isLinkExpired);
   }
 
   public Result<AccountInvitation> RecordInvitationIssued(DateTime sentAtUtc)

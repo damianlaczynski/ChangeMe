@@ -183,7 +183,7 @@ public sealed class UserTests
   }
 
   [Fact]
-  public void GetPendingInvitationExpiry_WhenTokenMissing_UsesLinkLifetimeFallback()
+  public void GetPendingInvitationExpiry_WhenTokenMissing_UsesDisplayFallbackAndMarksLinkExpired()
   {
     var utcNow = DateTime.UtcNow;
     var user = User.CreateInvited("invite@example.com").Value;
@@ -194,7 +194,7 @@ public sealed class UserTests
     Assert.NotNull(expiry);
     Assert.Equal(utcNow, expiry.Value.LastSentAtUtc);
     Assert.Equal(utcNow.AddHours(72), expiry.Value.ExpiresAtUtc);
-    Assert.False(expiry.Value.IsLinkExpired);
+    Assert.True(expiry.Value.IsLinkExpired);
   }
 
   [Fact]
