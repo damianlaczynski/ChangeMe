@@ -1,5 +1,6 @@
 using ChangeMe.Backend.Domain.Aggregates.Users.Entities;
 using ChangeMe.Backend.Infrastructure.Auth;
+using Hangfire;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -11,6 +12,12 @@ public sealed class InvitationRetentionCleanupJob(
   TimeProvider timeProvider,
   ILogger<InvitationRetentionCleanupJob> logger)
 {
+  public Task ExecuteAsync(IJobCancellationToken jobCancellationToken)
+  {
+    jobCancellationToken.ThrowIfCancellationRequested();
+    return ExecuteAsync(jobCancellationToken.ShutdownToken);
+  }
+
   public async Task ExecuteAsync(CancellationToken cancellationToken)
   {
     var retentionDays = authOptions.Value.Invitations.Retention.RevokedInvitationRetentionDays;
@@ -20,8 +27,7 @@ public sealed class InvitationRetentionCleanupJob(
     var cutoffUtc = timeProvider.GetUtcNow().UtcDateTime.AddDays(-retentionDays);
 
     var deletedCount = await context.Set<AccountInvitation>()
-      .Where(x => x.RevokedAtUtc != null)
-      .Where(x => (x.RevokedAtUtc ?? x.SentAtUtc) <= cutoffUtc)
+      .Where(x => x.RevokedAtUtc != null && x.RevokedAtUtc <= cutoffUtc)
       .ExecuteDeleteAsync(cancellationToken);
 
     logger.LogInformation(

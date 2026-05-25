@@ -1,8 +1,11 @@
 ﻿using ChangeMe.Backend.Domain.Aggregates.Users;
+using ChangeMe.Backend.Domain.Aggregates.Users.Enums;
+using ChangeMe.Backend.Infrastructure.Persistence;
 
 namespace ChangeMe.Backend.Infrastructure.Auth;
 
 public sealed class UserEmailVerificationService(
+  ApplicationDbContext context,
   IUserAuthTokenService tokenService,
   IAuthEmailService authEmailService)
 {
@@ -11,11 +14,21 @@ public sealed class UserEmailVerificationService(
     var tokenResult = await tokenService.IssueTokenAsync(
       user.Id,
       UserAuthTokenType.EmailVerification,
-      cancellationToken);
+      cancellationToken: cancellationToken);
 
     if (!tokenResult.IsSuccess)
       return tokenResult.Map();
 
-    return await authEmailService.SendVerifyEmailAsync(user, tokenResult.Value, cancellationToken);
+    var emailResult = await authEmailService.SendVerifyEmailAsync(
+      user,
+      tokenResult.Value,
+      cancellationToken);
+
+    if (!emailResult.IsSuccess)
+      return emailResult;
+
+    await context.SaveChangesAsync(cancellationToken);
+
+    return Result.Success();
   }
 }

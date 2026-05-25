@@ -12,9 +12,10 @@ public sealed class UserAuthTokenService(
   public async Task<Result<string>> IssueTokenAsync(
     Guid userId,
     UserAuthTokenType type,
+    DateTime? issuedAtUtc = null,
     CancellationToken cancellationToken = default)
   {
-    var utcNow = timeProvider.GetUtcNow().UtcDateTime;
+    var utcNow = issuedAtUtc ?? timeProvider.GetUtcNow().UtcDateTime;
 
     await InvalidateUnusedTokensAsync(userId, type, utcNow, cancellationToken);
 
@@ -27,7 +28,6 @@ public sealed class UserAuthTokenService(
       return createResult.Map();
 
     await context.UserAuthTokens.AddAsync(createResult.Value, cancellationToken);
-    await context.SaveChangesAsync(cancellationToken);
 
     return Result.Success(plainToken);
   }
@@ -70,14 +70,17 @@ public sealed class UserAuthTokenService(
       return;
 
     token.MarkUsed(utcNow);
-    await context.SaveChangesAsync(cancellationToken);
   }
 
   public Task InvalidateUnusedTokensAsync(
     Guid userId,
     UserAuthTokenType type,
     CancellationToken cancellationToken = default) =>
-    InvalidateUnusedTokensAsync(userId, type, timeProvider.GetUtcNow().UtcDateTime, cancellationToken);
+    InvalidateUnusedTokensAsync(
+      userId,
+      type,
+      timeProvider.GetUtcNow().UtcDateTime,
+      cancellationToken);
 
   public async Task<DateTime?> GetActiveUnusedTokenExpiresAtUtcAsync(
     Guid userId,
@@ -105,9 +108,6 @@ public sealed class UserAuthTokenService(
 
     foreach (var token in tokens)
       token.MarkUsed(utcNow);
-
-    if (tokens.Count > 0)
-      await context.SaveChangesAsync(cancellationToken);
   }
 
   private DateTime GetExpiresAtUtc(UserAuthTokenType type, DateTime utcNow) =>

@@ -1,5 +1,6 @@
 ﻿using ChangeMe.Backend.Domain.Aggregates.Users;
 using ChangeMe.Backend.UseCases.Users.Dtos;
+using ChangeMe.Backend.UseCases.Users.Utils;
 
 namespace ChangeMe.Backend.UseCases.Users;
 
@@ -42,37 +43,37 @@ public class GetUsersHandler(ApplicationDbContext context)
     if (query.EmailVerified?.Count > 0)
       usersQuery = usersQuery.Where(u => query.EmailVerified.Contains(u.EmailVerified));
 
-    if (query.Status?.Count > 0)
-      usersQuery = ApplyStatusFilter(usersQuery, query.Status);
+    var flaggedUsers = usersQuery.WithMembershipFlags();
 
-    var projectedUsers = usersQuery.Select(u => new UserListItemDto
+    if (query.Status?.Count > 0)
+      flaggedUsers = ApplyStatusFilter(flaggedUsers, query.Status);
+
+    var projectedUsers = flaggedUsers.Select(x => new UserListItemDto
     {
-      Id = u.Id,
-      FirstName = u.FirstName,
-      LastName = u.LastName,
-      Email = u.Email,
-      Deactivated = u.Deactivated,
-      HasPasswordSet = u.HasPasswordSet,
-      EmailVerified = u.EmailVerified,
-      InvitationPending = u.AccountInvitations.Any(i => i.AcceptedAtUtc == null && i.RevokedAtUtc == null),
-      HasExternalLogin = u.ExternalLogins.Any(),
-      Status = u.Deactivated
-        ? UserMembershipStatus.Deactivated
-        : u.AccountInvitations.Any(i => i.AcceptedAtUtc == null && i.RevokedAtUtc == null)
-          ? UserMembershipStatus.Invited
-          : !u.HasPasswordSet && !u.ExternalLogins.Any()
-            ? UserMembershipStatus.InvitationCanceled
-            : UserMembershipStatus.Active,
-      RoleNames = u.Roles
+      Id = x.User.Id,
+      FirstName = x.User.FirstName,
+      LastName = x.User.LastName,
+      Email = x.User.Email,
+      Deactivated = x.User.Deactivated,
+      HasPasswordSet = x.User.HasPasswordSet,
+      EmailVerified = x.User.EmailVerified,
+      InvitationPending = x.InvitationPending,
+      HasExternalLogin = x.HasExternalLogin,
+      Status = UsersStatusUtils.ComputeStatus(
+        x.User.Deactivated,
+        x.InvitationPending,
+        x.User.HasPasswordSet,
+        x.HasExternalLogin),
+      RoleNames = x.User.Roles
         .Select(ur => ur.Role.Name)
         .OrderBy(name => name)
         .ToList(),
       LastSignInAt = context.UserSessions
-        .Where(s => s.UserId == u.Id)
+        .Where(s => s.UserId == x.User.Id)
         .OrderByDescending(s => s.SignedInAt)
         .Select(s => (DateTime?)s.SignedInAt)
         .FirstOrDefault(),
-      CreatedAt = u.CreatedAt
+      CreatedAt = x.User.CreatedAt
     });
 
     query.PaginationParameters.SortField = MapSortField(query.PaginationParameters.SortField);
@@ -85,25 +86,21 @@ public class GetUsersHandler(ApplicationDbContext context)
     return Result.Success(pagedUsers);
   }
 
-  private static IQueryable<User> ApplyStatusFilter(
-    IQueryable<User> usersQuery,
-    List<UserMembershipStatus> statuses)
-  {
-    return usersQuery.Where(u =>
-      (statuses.Contains(UserMembershipStatus.Deactivated) && u.Deactivated)
-      || (statuses.Contains(UserMembershipStatus.Invited)
-          && !u.Deactivated
-          && u.AccountInvitations.Any(i => i.AcceptedAtUtc == null && i.RevokedAtUtc == null))
+  private static IQueryable<UserMembershipFlags> ApplyStatusFilter(
+    IQueryable<UserMembershipFlags> flaggedUsers,
+    List<UserMembershipStatus> statuses) =>
+    flaggedUsers.Where(x =>
+      (statuses.Contains(UserMembershipStatus.Deactivated) && x.User.Deactivated)
+      || (statuses.Contains(UserMembershipStatus.Invited) && !x.User.Deactivated && x.InvitationPending)
       || (statuses.Contains(UserMembershipStatus.InvitationCanceled)
-          && !u.Deactivated
-          && !u.AccountInvitations.Any(i => i.AcceptedAtUtc == null && i.RevokedAtUtc == null)
-          && !u.HasPasswordSet
-          && !u.ExternalLogins.Any())
+          && !x.User.Deactivated
+          && !x.InvitationPending
+          && !x.User.HasPasswordSet
+          && !x.HasExternalLogin)
       || (statuses.Contains(UserMembershipStatus.Active)
-          && !u.Deactivated
-          && !u.AccountInvitations.Any(i => i.AcceptedAtUtc == null && i.RevokedAtUtc == null)
-          && (u.HasPasswordSet || u.ExternalLogins.Any())));
-  }
+          && !x.User.Deactivated
+          && !x.InvitationPending
+          && (x.User.HasPasswordSet || x.HasExternalLogin)));
 
   private static string MapSortField(string sortField) =>
     sortField switch

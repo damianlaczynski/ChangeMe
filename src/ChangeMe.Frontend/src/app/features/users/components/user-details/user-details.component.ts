@@ -507,7 +507,7 @@ export class UserDetailsComponent {
       .subscribe({
         next: (user) => {
           this.user.set(user);
-          this.toastService.success(UserMessages.invitationCancelled);
+          this.toastService.success(UserMessages.invitationCanceled);
         },
         error: (error: Error) => this.errorMessage.set(error.message)
       });

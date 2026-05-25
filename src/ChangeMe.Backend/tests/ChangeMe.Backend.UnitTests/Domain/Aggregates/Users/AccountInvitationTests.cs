@@ -7,7 +7,10 @@ public sealed class AccountInvitationTests
   [Fact]
   public void IsPending_WhenNewlyCreated_ShouldBeTrue()
   {
-    var invitation = AccountInvitation.Create(Guid.NewGuid(), DateTime.UtcNow).Value;
+    var invitation = AccountInvitation.Create(
+      Guid.NewGuid(),
+      DateTime.UtcNow,
+      DateTime.UtcNow.AddHours(72)).Value;
 
     Assert.True(invitation.IsPending);
   }
@@ -16,7 +19,7 @@ public sealed class AccountInvitationTests
   public void IsPending_WhenAccepted_ShouldBeFalse()
   {
     var utcNow = DateTime.UtcNow;
-    var invitation = AccountInvitation.Create(Guid.NewGuid(), utcNow).Value;
+    var invitation = AccountInvitation.Create(Guid.NewGuid(), utcNow, utcNow.AddHours(72)).Value;
 
     invitation.Accept(utcNow);
 
@@ -27,7 +30,7 @@ public sealed class AccountInvitationTests
   public void IsPending_WhenRevoked_ShouldBeFalse()
   {
     var utcNow = DateTime.UtcNow;
-    var invitation = AccountInvitation.Create(Guid.NewGuid(), utcNow).Value;
+    var invitation = AccountInvitation.Create(Guid.NewGuid(), utcNow, utcNow.AddHours(72)).Value;
 
     invitation.Revoke(utcNow);
 

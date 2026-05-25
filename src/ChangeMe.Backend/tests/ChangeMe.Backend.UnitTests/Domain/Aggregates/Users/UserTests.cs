@@ -137,7 +137,7 @@ public sealed class UserTests
   {
     var utcNow = DateTime.UtcNow;
     var user = User.CreateInvited("invite@example.com").Value;
-    user.RecordInvitationIssued(utcNow);
+    user.RecordInvitationIssued(utcNow, utcNow.AddHours(72));
 
     var result = user.CompleteInvitationViaExternalSignIn("Oidc", "User", utcNow);
 
@@ -153,7 +153,7 @@ public sealed class UserTests
   {
     var utcNow = DateTime.UtcNow;
     var user = User.CreateInvited("invite@example.com", "Admin", "Created").Value;
-    user.RecordInvitationIssued(utcNow);
+    user.RecordInvitationIssued(utcNow, utcNow.AddHours(72));
 
     var result = user.CompleteInvitationViaExternalSignIn("Oidc", "User", utcNow);
 
@@ -183,31 +183,31 @@ public sealed class UserTests
   }
 
   [Fact]
-  public void GetPendingInvitationExpiry_WhenTokenMissing_UsesLinkLifetimeFallback()
+  public void GetPendingInvitationExpiry_WhenTokenMissing_UsesSnapshotAndMarksLinkExpired()
   {
     var utcNow = DateTime.UtcNow;
+    var linkExpiresAtUtc = utcNow.AddHours(72);
     var user = User.CreateInvited("invite@example.com").Value;
-    user.RecordInvitationIssued(utcNow);
+    user.RecordInvitationIssued(utcNow, linkExpiresAtUtc);
 
-    var expiry = user.GetPendingInvitationExpiry(null, utcNow, 72);
+    var expiry = user.GetPendingInvitationExpiry(utcNow, null);
 
     Assert.NotNull(expiry);
     Assert.Equal(utcNow, expiry.Value.LastSentAtUtc);
-    Assert.Equal(utcNow.AddHours(72), expiry.Value.ExpiresAtUtc);
-    Assert.False(expiry.Value.IsLinkExpired);
+    Assert.Equal(linkExpiresAtUtc, expiry.Value.ExpiresAtUtc);
+    Assert.True(expiry.Value.IsLinkExpired);
   }
 
   [Fact]
-  public void GetPendingInvitationExpiry_WhenTokenExpired_UsesTokenExpiryNotConfigFallback()
+  public void GetPendingInvitationExpiry_WhenTokenExpired_UsesSnapshotExpiry()
   {
     var utcNow = new DateTime(2026, 5, 25, 12, 0, 0, DateTimeKind.Utc);
     var sentAt = utcNow.AddHours(-48);
-    var user = User.CreateInvited("invite@example.com").Value;
-    user.RecordInvitationIssued(sentAt);
-
     var tokenExpiresAt = sentAt.AddHours(24);
+    var user = User.CreateInvited("invite@example.com").Value;
+    user.RecordInvitationIssued(sentAt, tokenExpiresAt);
 
-    var expiry = user.GetPendingInvitationExpiry(tokenExpiresAt, utcNow, 72);
+    var expiry = user.GetPendingInvitationExpiry(utcNow, tokenExpiresAt);
 
     Assert.NotNull(expiry);
     Assert.Equal(sentAt, expiry.Value.LastSentAtUtc);
@@ -216,13 +216,27 @@ public sealed class UserTests
   }
 
   [Fact]
+  public void GetPendingInvitationExpiry_WhenTokenValid_ShouldNotMarkLinkExpired()
+  {
+    var utcNow = DateTime.UtcNow;
+    var linkExpiresAtUtc = utcNow.AddHours(72);
+    var user = User.CreateInvited("invite@example.com").Value;
+    user.RecordInvitationIssued(utcNow, linkExpiresAtUtc);
+
+    var expiry = user.GetPendingInvitationExpiry(utcNow, linkExpiresAtUtc);
+
+    Assert.NotNull(expiry);
+    Assert.False(expiry.Value.IsLinkExpired);
+  }
+
+  [Fact]
   public void RecordInvitationIssued_WhenResent_ShouldRevokePreviousAndKeepSinglePending()
   {
     var utcNow = DateTime.UtcNow;
     var user = User.CreateInvited("invite@example.com").Value;
 
-    user.RecordInvitationIssued(utcNow);
-    user.RecordInvitationIssued(utcNow.AddMinutes(5));
+    user.RecordInvitationIssued(utcNow, utcNow.AddHours(72));
+    user.RecordInvitationIssued(utcNow.AddMinutes(5), utcNow.AddMinutes(5).AddHours(72));
 
     Assert.Equal(utcNow.AddMinutes(5), user.PendingInvitationSentAtUtc);
     Assert.Equal(1, user.AccountInvitations.Count(x => x.IsPending));
@@ -234,7 +248,7 @@ public sealed class UserTests
   {
     var utcNow = DateTime.UtcNow;
     var user = User.CreateInvited("invite@example.com").Value;
-    user.RecordInvitationIssued(utcNow);
+    user.RecordInvitationIssued(utcNow, utcNow.AddHours(72));
 
     var result = user.CancelPendingInvitations(utcNow.AddMinutes(1));
 
@@ -258,7 +272,7 @@ public sealed class UserTests
   {
     var utcNow = DateTime.UtcNow;
     var user = User.CreateInvited("invite@example.com").Value;
-    user.RecordInvitationIssued(utcNow);
+    user.RecordInvitationIssued(utcNow, utcNow.AddHours(72));
 
     var result = user.AcceptPendingInvitation(utcNow);
 

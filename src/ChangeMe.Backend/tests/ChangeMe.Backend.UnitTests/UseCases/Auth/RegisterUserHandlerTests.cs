@@ -110,7 +110,7 @@ public sealed class RegisterUserHandlerTests
     await UseCasesTestDb.SeedSystemRolesAsync(context);
 
     var user = User.CreateInvited("canceled@example.com").Value;
-    user.RecordInvitationIssued(DateTime.UtcNow);
+    user.RecordInvitationIssued(DateTime.UtcNow, DateTime.UtcNow.AddHours(72));
     user.CancelPendingInvitations(DateTime.UtcNow);
     await context.Users.AddAsync(user, cancellationToken);
     await context.SaveChangesAsync(cancellationToken);
@@ -143,6 +143,7 @@ public sealed class RegisterUserHandlerTests
       new SessionLifetimeService(authOptions),
       new PasswordExpirationEvaluator(authOptions),
       new UserEmailVerificationService(
+        context,
         new UserAuthTokenService(context, authOptions, TimeProvider.System),
         new FakeAuthEmailService()),
       authOptions,

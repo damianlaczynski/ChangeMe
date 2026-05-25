@@ -38,7 +38,7 @@ public sealed class ExternalAuthUtilsTests
   {
     var utcNow = DateTime.UtcNow;
     var user = User.CreateInvited("invited@example.com").Value;
-    user.RecordInvitationIssued(utcNow);
+    user.RecordInvitationIssued(utcNow, utcNow.AddHours(72));
 
     Assert.True(ExternalAuthUtils.IsInvitationPending(user));
     Assert.False(ExternalAuthUtils.IsExternalOnlyAccount(user));

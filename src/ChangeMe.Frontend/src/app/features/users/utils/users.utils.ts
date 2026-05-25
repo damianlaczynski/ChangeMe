@@ -31,7 +31,7 @@ export const UserMessages = {
   duplicateEmail: 'A user with this email already exists.',
   invitationSent: 'Invitation sent.',
   invitationResent: 'Invitation resent.',
-  invitationCancelled: 'Invitation cancelled.',
+  invitationCanceled: 'Invitation canceled.',
   cancelInvitationTitle: 'Cancel invitation?',
   cancelInvitationMessage: (email: string) =>
     `Cancel invitation for ${highlightDialogValue(email)}? They will not be able to use the current invitation link. You can send a new invitation later.`,

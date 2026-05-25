@@ -22,15 +22,18 @@ public sealed class UserAuthTokenServiceTests(BackendWebApplicationFactory facto
     var issueResult = await tokenService.IssueTokenAsync(
       authenticated.UserId,
       UserAuthTokenType.PasswordReset,
-      cancellationToken);
+      cancellationToken: cancellationToken);
 
     Assert.True(issueResult.IsSuccess);
     Assert.False(string.IsNullOrWhiteSpace(issueResult.Value));
 
+    await scope.ServiceProvider.GetRequiredService<ApplicationDbContext>()
+      .SaveChangesAsync(cancellationToken);
+
     var validateResult = await tokenService.ValidateTokenAsync(
       issueResult.Value,
       UserAuthTokenType.PasswordReset,
-      cancellationToken);
+      cancellationToken: cancellationToken);
 
     Assert.True(validateResult.IsSuccess);
     Assert.Equal(authenticated.UserId, validateResult.Value);
@@ -43,27 +46,32 @@ public sealed class UserAuthTokenServiceTests(BackendWebApplicationFactory facto
     var authenticated = await TestAuthHelper.CreateAuthenticatedUserAsync(factory, cancellationToken);
 
     await using var scope = factory.Services.CreateAsyncScope();
+    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     var tokenService = scope.ServiceProvider.GetRequiredService<IUserAuthTokenService>();
 
     var first = await tokenService.IssueTokenAsync(
       authenticated.UserId,
       UserAuthTokenType.EmailVerification,
-      cancellationToken);
+      cancellationToken: cancellationToken);
+
+    await context.SaveChangesAsync(cancellationToken);
 
     var second = await tokenService.IssueTokenAsync(
       authenticated.UserId,
       UserAuthTokenType.EmailVerification,
-      cancellationToken);
+      cancellationToken: cancellationToken);
+
+    await context.SaveChangesAsync(cancellationToken);
 
     var firstValidation = await tokenService.ValidateTokenAsync(
       first.Value,
       UserAuthTokenType.EmailVerification,
-      cancellationToken);
+      cancellationToken: cancellationToken);
 
     var secondValidation = await tokenService.ValidateTokenAsync(
       second.Value,
       UserAuthTokenType.EmailVerification,
-      cancellationToken);
+      cancellationToken: cancellationToken);
 
     Assert.False(firstValidation.IsSuccess);
     Assert.True(secondValidation.IsSuccess);
@@ -79,25 +87,30 @@ public sealed class UserAuthTokenServiceTests(BackendWebApplicationFactory facto
     var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     var tokenService = scope.ServiceProvider.GetRequiredService<IUserAuthTokenService>();
 
+    var issuedAtUtc = DateTime.UtcNow.AddHours(-100);
     var issueResult = await tokenService.IssueTokenAsync(
       authenticated.UserId,
       UserAuthTokenType.Invitation,
-      cancellationToken);
+      issuedAtUtc: issuedAtUtc,
+      cancellationToken: cancellationToken);
 
     Assert.True(issueResult.IsSuccess);
 
-    var token = await context.UserAuthTokens
-      .SingleAsync(x => x.UserId == authenticated.UserId && x.Type == UserAuthTokenType.Invitation, cancellationToken);
-
-    var expiredAtUtc = DateTime.UtcNow.AddHours(-1);
-    context.Entry(token).Property(x => x.ExpiresAtUtc).CurrentValue = expiredAtUtc;
     await context.SaveChangesAsync(cancellationToken);
+
+    var persistedExpiresAtUtc = await context.UserAuthTokens
+      .AsNoTracking()
+      .Where(x => x.UserId == authenticated.UserId && x.Type == UserAuthTokenType.Invitation)
+      .Select(x => x.ExpiresAtUtc)
+      .SingleAsync(cancellationToken);
+
+    Assert.True(persistedExpiresAtUtc < DateTime.UtcNow);
 
     var expiresAtUtc = await tokenService.GetActiveUnusedTokenExpiresAtUtcAsync(
       authenticated.UserId,
       UserAuthTokenType.Invitation,
-      cancellationToken);
+      cancellationToken: cancellationToken);
 
-    Assert.Equal(expiredAtUtc, expiresAtUtc);
+    Assert.Equal(persistedExpiresAtUtc, expiresAtUtc);
   }
 }
