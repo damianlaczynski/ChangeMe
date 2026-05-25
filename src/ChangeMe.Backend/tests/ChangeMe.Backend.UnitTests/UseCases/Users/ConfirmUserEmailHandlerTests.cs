@@ -102,7 +102,8 @@ public sealed class ConfirmUserEmailHandlerTests
           context,
           new PasswordExpirationEvaluator(TestAuthOptions.Create()),
           new StubUserAuthTokenService(),
-          TestAuthOptions.Create());
+          TestAuthOptions.Create(),
+          TimeProvider.System);
         var result = await handler.Handle(getUserQuery, cancellationToken);
         return (TResponse)(object)result;
       }

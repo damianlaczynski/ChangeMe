@@ -189,11 +189,30 @@ public sealed class UserTests
     var user = User.CreateInvited("invite@example.com").Value;
     user.RecordInvitationIssued(utcNow);
 
-    var expiry = user.GetPendingInvitationExpiry(null, 72);
+    var expiry = user.GetPendingInvitationExpiry(null, utcNow, 72);
 
     Assert.NotNull(expiry);
     Assert.Equal(utcNow, expiry.Value.LastSentAtUtc);
     Assert.Equal(utcNow.AddHours(72), expiry.Value.ExpiresAtUtc);
+    Assert.False(expiry.Value.IsLinkExpired);
+  }
+
+  [Fact]
+  public void GetPendingInvitationExpiry_WhenTokenExpired_UsesTokenExpiryNotConfigFallback()
+  {
+    var utcNow = new DateTime(2026, 5, 25, 12, 0, 0, DateTimeKind.Utc);
+    var sentAt = utcNow.AddHours(-48);
+    var user = User.CreateInvited("invite@example.com").Value;
+    user.RecordInvitationIssued(sentAt);
+
+    var tokenExpiresAt = sentAt.AddHours(24);
+
+    var expiry = user.GetPendingInvitationExpiry(tokenExpiresAt, utcNow, 72);
+
+    Assert.NotNull(expiry);
+    Assert.Equal(sentAt, expiry.Value.LastSentAtUtc);
+    Assert.Equal(tokenExpiresAt, expiry.Value.ExpiresAtUtc);
+    Assert.True(expiry.Value.IsLinkExpired);
   }
 
   [Fact]

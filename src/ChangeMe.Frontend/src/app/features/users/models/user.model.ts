@@ -58,6 +58,7 @@ export interface UserDetailsDto {
 export interface UserInvitationInfoDto {
   lastSentAtUtc: string;
   expiresAtUtc: string;
+  isLinkExpired: boolean;
 }
 
 export interface UserExternalLoginDto {

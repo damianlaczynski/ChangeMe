@@ -1,6 +1,8 @@
 ﻿using ChangeMe.Backend.Domain.Aggregates.Users.Enums;
+using ChangeMe.Backend.Infrastructure.Persistence;
 using ChangeMe.Backend.IntegrationTests.Fixtures;
 using ChangeMe.Backend.IntegrationTests.Support;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace ChangeMe.Backend.IntegrationTests.Auth;
@@ -65,5 +67,37 @@ public sealed class UserAuthTokenServiceTests(BackendWebApplicationFactory facto
 
     Assert.False(firstValidation.IsSuccess);
     Assert.True(secondValidation.IsSuccess);
+  }
+
+  [Fact]
+  public async Task GetActiveUnusedTokenExpiresAtUtcAsync_WhenTokenExpired_ReturnsExpiresAtUtc()
+  {
+    var cancellationToken = TestContext.Current.CancellationToken;
+    var authenticated = await TestAuthHelper.CreateAuthenticatedUserAsync(factory, cancellationToken);
+
+    await using var scope = factory.Services.CreateAsyncScope();
+    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    var tokenService = scope.ServiceProvider.GetRequiredService<IUserAuthTokenService>();
+
+    var issueResult = await tokenService.IssueTokenAsync(
+      authenticated.UserId,
+      UserAuthTokenType.Invitation,
+      cancellationToken);
+
+    Assert.True(issueResult.IsSuccess);
+
+    var token = await context.UserAuthTokens
+      .SingleAsync(x => x.UserId == authenticated.UserId && x.Type == UserAuthTokenType.Invitation, cancellationToken);
+
+    var expiredAtUtc = DateTime.UtcNow.AddHours(-1);
+    context.Entry(token).Property(x => x.ExpiresAtUtc).CurrentValue = expiredAtUtc;
+    await context.SaveChangesAsync(cancellationToken);
+
+    var expiresAtUtc = await tokenService.GetActiveUnusedTokenExpiresAtUtcAsync(
+      authenticated.UserId,
+      UserAuthTokenType.Invitation,
+      cancellationToken);
+
+    Assert.Equal(expiredAtUtc, expiresAtUtc);
   }
 }

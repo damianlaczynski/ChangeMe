@@ -179,8 +179,9 @@ public class User : Entity, IAggregateRoot
 
   public DateTime? PendingInvitationSentAtUtc => GetActivePendingInvitation()?.SentAtUtc;
 
-  public (DateTime LastSentAtUtc, DateTime ExpiresAtUtc)? GetPendingInvitationExpiry(
+  public (DateTime LastSentAtUtc, DateTime ExpiresAtUtc, bool IsLinkExpired)? GetPendingInvitationExpiry(
     DateTime? activeInvitationTokenExpiresAtUtc,
+    DateTime utcNow,
     int linkLifetimeHours)
   {
     var lastSentAtUtc = PendingInvitationSentAtUtc;
@@ -190,7 +191,7 @@ public class User : Entity, IAggregateRoot
     var expiresAtUtc = activeInvitationTokenExpiresAtUtc
       ?? lastSentAtUtc.Value.AddHours(linkLifetimeHours);
 
-    return (lastSentAtUtc.Value, expiresAtUtc);
+    return (lastSentAtUtc.Value, expiresAtUtc, utcNow >= expiresAtUtc);
   }
 
   public Result<AccountInvitation> RecordInvitationIssued(DateTime sentAtUtc)

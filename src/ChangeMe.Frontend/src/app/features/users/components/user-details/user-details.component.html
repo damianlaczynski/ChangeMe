@@ -115,7 +115,7 @@
           {{ UserMessages.invitationPanelIntro }}
         </p>
 
-        @if (isInvitationLinkExpired(invitation.expiresAtUtc)) {
+        @if (invitation.isLinkExpired) {
           <div class="mb-4 flex flex-wrap items-center gap-2">
             <p-tag value="Expired" severity="warn" />
             <span class="text-muted-color text-sm">
