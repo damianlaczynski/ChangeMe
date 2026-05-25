@@ -11,6 +11,9 @@ public sealed class UserInvitationService(
   IAuthEmailService authEmailService,
   TimeProvider timeProvider)
 {
+  public const string InvitationEmailDeliveryFailedMessage =
+    "The invitation email could not be sent. Please try again.";
+
   public async Task<Result> SendInvitationAsync(User user, CancellationToken cancellationToken)
   {
     var tokenResult = await tokenService.IssueTokenAsync(
@@ -21,13 +24,33 @@ public sealed class UserInvitationService(
     if (!tokenResult.IsSuccess)
       return tokenResult.Map();
 
+    var emailResult = await authEmailService.SendAccountInvitationAsync(
+      user,
+      tokenResult.Value,
+      cancellationToken);
+
+    if (!emailResult.IsSuccess)
+    {
+      await tokenService.InvalidateUnusedTokensAsync(
+        user.Id,
+        UserAuthTokenType.Invitation,
+        cancellationToken);
+
+      return Result.Error(InvitationEmailDeliveryFailedMessage);
+    }
+
     var utcNow = timeProvider.GetUtcNow().UtcDateTime;
 
     var recordResult = user.RecordInvitationIssued(utcNow);
     if (!recordResult.IsSuccess)
-      return recordResult.Map();
+    {
+      await tokenService.InvalidateUnusedTokensAsync(
+        user.Id,
+        UserAuthTokenType.Invitation,
+        cancellationToken);
 
-    await authEmailService.SendAccountInvitationAsync(user, tokenResult.Value, cancellationToken);
+      return recordResult.Map();
+    }
 
     return Result.Success();
   }
