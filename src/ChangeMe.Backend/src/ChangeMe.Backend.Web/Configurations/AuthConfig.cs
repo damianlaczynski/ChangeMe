@@ -68,7 +68,7 @@ public static class AuthConfig
 
     RecurringJob.AddOrUpdate<InvitationRetentionCleanupJob>(
       "invitations-retention-cleanup",
-      job => job.ExecuteAsync(CancellationToken.None),
+      job => job.ExecuteAsync(JobCancellationToken.Null),
       cleanupCronExpression);
 
     return app;
