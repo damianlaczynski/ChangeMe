@@ -1,10 +1,9 @@
 namespace ChangeMe.Backend.Domain.Aggregates.Users.Entities;
 
-public class AccountInvitation
+public class AccountInvitation : Entity
 {
   private AccountInvitation() { }
 
-  public Guid Id { get; private set; } = Guid.CreateVersion7();
   public Guid UserId { get; private set; }
   public DateTime SentAtUtc { get; private set; }
   public DateTime LinkExpiresAtUtc { get; private set; }

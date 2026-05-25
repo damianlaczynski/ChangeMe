@@ -3,13 +3,13 @@ using ChangeMe.Backend.Domain.Aggregates.Users.Entities;
 
 namespace ChangeMe.Backend.Infrastructure.Persistence.Config.Users;
 
-public class AccountInvitationConfiguration : IEntityTypeConfiguration<AccountInvitation>
+public class AccountInvitationConfiguration : BaseEntityTypeConfiguration<AccountInvitation>
 {
-  public void Configure(EntityTypeBuilder<AccountInvitation> builder)
-  {
-    builder.ToTable("account_invitations");
+  protected override string TableName => "account_invitations";
 
-    builder.HasKey(x => x.Id);
+  public override void Configure(EntityTypeBuilder<AccountInvitation> builder)
+  {
+    base.Configure(builder);
 
     builder.Property(x => x.UserId)
       .IsRequired();

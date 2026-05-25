@@ -90,14 +90,19 @@ public sealed class UserAuthTokenServiceTests(BackendWebApplicationFactory facto
       .SingleAsync(x => x.UserId == authenticated.UserId && x.Type == UserAuthTokenType.Invitation, cancellationToken);
 
     var expiredAtUtc = DateTime.UtcNow.AddHours(-1);
-    context.Entry(token).Property(x => x.ExpiresAtUtc).CurrentValue = expiredAtUtc;
     await context.SaveChangesAsync(cancellationToken);
+
+    var persistedExpiresAtUtc = await context.UserAuthTokens
+      .AsNoTracking()
+      .Where(x => x.UserId == authenticated.UserId && x.Type == UserAuthTokenType.Invitation)
+      .Select(x => x.ExpiresAtUtc)
+      .SingleAsync(cancellationToken);
 
     var expiresAtUtc = await tokenService.GetActiveUnusedTokenExpiresAtUtcAsync(
       authenticated.UserId,
       UserAuthTokenType.Invitation,
       cancellationToken: cancellationToken);
 
-    Assert.Equal(expiredAtUtc, expiresAtUtc);
+    Assert.Equal(persistedExpiresAtUtc, expiresAtUtc);
   }
 }
