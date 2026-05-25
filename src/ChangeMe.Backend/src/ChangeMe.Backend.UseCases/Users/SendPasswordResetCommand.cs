@@ -27,6 +27,9 @@ public class SendPasswordResetHandler(
     if (user.HasPendingInvitation)
       return Result<UserDetailsDto>.Error(UsersUtils.CannotSendPasswordResetToInvitePendingMessage);
 
+    if (!user.HasPasswordSet)
+      return Result<UserDetailsDto>.Error(UsersUtils.CannotSendPasswordResetWithoutLocalPasswordMessage);
+
     var resetResult = await passwordResetService.SendPasswordResetAsync(user, cancellationToken);
     if (!resetResult.IsSuccess)
       return resetResult.Map();

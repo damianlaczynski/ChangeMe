@@ -22,6 +22,8 @@ public static class UsersUtils
     "Password reset cannot be sent to a deactivated account.";
   public const string CannotSendPasswordResetToInvitePendingMessage =
     "Password reset cannot be sent while the invitation is pending. Resend the invitation instead.";
+  public const string CannotSendPasswordResetWithoutLocalPasswordMessage =
+    "Password reset cannot be sent to an account without a local password.";
   public const string CannotManageInvitationForDeactivatedMessage =
     "Invitation cannot be managed for a deactivated account.";
 
