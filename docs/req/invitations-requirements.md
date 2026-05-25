@@ -32,13 +32,14 @@ Cross-references:
 
 Each send creates an `AccountInvitation` row on the user aggregate:
 
-| Field             | Stored | Purpose                                                                               |
-| ----------------- | ------ | ------------------------------------------------------------------------------------- |
-| **SentAtUtc**     | Yes    | When the invitation email was sent.                                                   |
-| **AcceptedAtUtc** | Yes    | Set when onboarding completes (password link or matching external sign-in).           |
-| **RevokedAtUtc**  | Yes    | Set when superseded by **Resend invitation**, **Cancel invitation**, or a newer send. |
+| Field                | Stored | Purpose                                                                                         |
+| -------------------- | ------ | ----------------------------------------------------------------------------------------------- |
+| **SentAtUtc**        | Yes    | When the invitation email was sent.                                                             |
+| **LinkExpiresAtUtc** | Yes    | Expiry recorded for the invitation link issued for that send; aligns with the associated token. |
+| **AcceptedAtUtc**    | Yes    | Set when onboarding completes (password link or matching external sign-in).                     |
+| **RevokedAtUtc**     | Yes    | Set when superseded by **Resend invitation**, **Cancel invitation**, or a newer send.           |
 
-**Not stored on the row:** link expiry. Expiry is determined by the active **invitation token** (`UserAuthToken` type `Invitation`) at send time.
+Link expiry is stored on `AccountInvitation` as `LinkExpiresAtUtc` for the send record, while invitation validity is enforced using the active **invitation token** (`UserAuthToken` type `Invitation`) and its expiry.
 
 **Pending invitation** (API: `pendingInvitation` on **User details**): present when the user has at least one account invitation with **pending** lifecycle (`AcceptedAtUtc` and `RevokedAtUtc` both null). When absent (`null`), the user is not **awaiting invitation acceptance** (accepted, cancelled, or never invited). Summary fields:
 
