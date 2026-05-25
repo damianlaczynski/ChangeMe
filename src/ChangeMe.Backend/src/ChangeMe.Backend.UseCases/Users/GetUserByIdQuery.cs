@@ -15,7 +15,8 @@ public class GetUserByIdHandler(
   IPasswordExpirationEvaluator passwordExpirationEvaluator,
   IUserAuthTokenService tokenService,
   IOptions<AuthOptions> authOptions,
-  IPasskeyPolicyEvaluator passkeyPolicyEvaluator) : IQueryHandler<GetUserByIdQuery, UserDetailsDto>
+  IPasskeyPolicyEvaluator passkeyPolicyEvaluator,
+  TimeProvider timeProvider) : IQueryHandler<GetUserByIdQuery, UserDetailsDto>
 {
   public async Task<Result<UserDetailsDto>> Handle(GetUserByIdQuery query, CancellationToken cancellationToken)
   {
@@ -71,6 +72,7 @@ public class GetUserByIdHandler(
     UserInvitationInfoDto? pendingInvitation = null;
     if (user.PendingInvitationSentAtUtc is not null)
     {
+      var utcNow = timeProvider.GetUtcNow().UtcDateTime;
       var tokenExpiresAtUtc = await tokenService.GetActiveUnusedTokenExpiresAtUtcAsync(
         user.Id,
         UserAuthTokenType.Invitation,
@@ -78,9 +80,15 @@ public class GetUserByIdHandler(
 
       var expiry = user.GetPendingInvitationExpiry(
         tokenExpiresAtUtc,
+        utcNow,
         auth.Invitations.InvitationLinkLifetimeHours);
       if (expiry is not null)
-        pendingInvitation = new UserInvitationInfoDto(expiry.Value.LastSentAtUtc, expiry.Value.ExpiresAtUtc);
+      {
+        pendingInvitation = new UserInvitationInfoDto(
+          expiry.Value.LastSentAtUtc,
+          expiry.Value.ExpiresAtUtc,
+          expiry.Value.IsLinkExpired);
+      }
     }
 
     return Result.Success(

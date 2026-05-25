@@ -10,6 +10,7 @@ public sealed class GetAssignableUsersHandlerTests
   [Fact]
   public async Task Handle_WhenEmailVerificationDisabled_IncludesUnverifiedUsersWithPassword()
   {
+    var cancellationToken = TestContext.Current.CancellationToken;
     await using var context = UseCasesTestDb.Create(
       nameof(Handle_WhenEmailVerificationDisabled_IncludesUnverifiedUsersWithPassword));
 
@@ -21,11 +22,11 @@ public sealed class GetAssignableUsersHandlerTests
       passwordHasher.HashPassword("StrongPass123!"),
       emailVerified: false).Value;
 
-    await context.Users.AddAsync(unverified);
-    await context.SaveChangesAsync();
+    await context.Users.AddAsync(unverified, cancellationToken);
+    await context.SaveChangesAsync(cancellationToken);
 
     var handler = new GetAssignableUsersHandler(context, TestAuthOptions.Create());
-    var result = await handler.Handle(new GetAssignableUsersQuery(), CancellationToken.None);
+    var result = await handler.Handle(new GetAssignableUsersQuery(), cancellationToken);
 
     Assert.True(result.IsSuccess);
     Assert.Contains(result.Value, x => x.Id == unverified.Id);
@@ -34,6 +35,7 @@ public sealed class GetAssignableUsersHandlerTests
   [Fact]
   public async Task Handle_WhenEmailVerificationEnabled_ExcludesUnverifiedUsers()
   {
+    var cancellationToken = TestContext.Current.CancellationToken;
     await using var context = UseCasesTestDb.Create(
       nameof(Handle_WhenEmailVerificationEnabled_ExcludesUnverifiedUsers));
 
@@ -51,13 +53,13 @@ public sealed class GetAssignableUsersHandlerTests
       passwordHasher.HashPassword("StrongPass123!"),
       emailVerified: true).Value;
 
-    await context.Users.AddRangeAsync(unverified, verified);
-    await context.SaveChangesAsync();
+    await context.Users.AddRangeAsync([unverified, verified], cancellationToken);
+    await context.SaveChangesAsync(cancellationToken);
 
     var handler = new GetAssignableUsersHandler(
       context,
       TestAuthOptions.Create(emailVerificationEnabled: true));
-    var result = await handler.Handle(new GetAssignableUsersQuery(), CancellationToken.None);
+    var result = await handler.Handle(new GetAssignableUsersQuery(), cancellationToken);
 
     Assert.True(result.IsSuccess);
     Assert.DoesNotContain(result.Value, x => x.Id == unverified.Id);

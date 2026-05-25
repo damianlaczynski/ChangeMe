@@ -84,15 +84,13 @@ public sealed class UserAuthTokenService(
     UserAuthTokenType type,
     CancellationToken cancellationToken = default)
   {
-    var utcNow = timeProvider.GetUtcNow().UtcDateTime;
-
     var token = await context.UserAuthTokens
       .AsNoTracking()
       .Where(x => x.UserId == userId && x.Type == type && x.UsedAtUtc == null)
       .OrderByDescending(x => x.ExpiresAtUtc)
       .FirstOrDefaultAsync(cancellationToken);
 
-    return token is not null && token.IsValid(utcNow) ? token.ExpiresAtUtc : null;
+    return token?.ExpiresAtUtc;
   }
 
   private async Task InvalidateUnusedTokensAsync(

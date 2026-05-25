@@ -12,6 +12,7 @@ public sealed class RequestEmailVerificationHandlerTests
   [Fact]
   public async Task Handle_WhenUnverifiedUserExists_ShouldIssueVerificationToken()
   {
+    var cancellationToken = TestContext.Current.CancellationToken;
     await using var context = UseCasesTestDb.Create(nameof(Handle_WhenUnverifiedUserExists_ShouldIssueVerificationToken));
     var authOptions = TestAuthOptions.Create(emailVerificationEnabled: true);
     var passwordHasher = new PasswordHasherAdapter();
@@ -23,8 +24,8 @@ public sealed class RequestEmailVerificationHandlerTests
       passwordHasher.HashPassword("StrongPass123!"),
       emailVerified: false).Value;
 
-    await context.Users.AddAsync(user);
-    await context.SaveChangesAsync();
+    await context.Users.AddAsync(user, cancellationToken);
+    await context.SaveChangesAsync(cancellationToken);
 
     var handler = new RequestEmailVerificationHandler(
       context,
@@ -34,7 +35,7 @@ public sealed class RequestEmailVerificationHandlerTests
 
     var result = await handler.Handle(
       new RequestEmailVerificationCommand("resend@example.com"),
-      CancellationToken.None);
+      cancellationToken);
 
     Assert.True(result.IsSuccess);
     Assert.Equal(AuthSessionUtils.EmailVerificationResendAckMessage, result.Value.Message);
@@ -45,6 +46,7 @@ public sealed class RequestEmailVerificationHandlerTests
   [Fact]
   public async Task Handle_WhenEmailUnknown_ShouldStillReturnAckWithoutToken()
   {
+    var cancellationToken = TestContext.Current.CancellationToken;
     await using var context = UseCasesTestDb.Create(nameof(Handle_WhenEmailUnknown_ShouldStillReturnAckWithoutToken));
     var authOptions = TestAuthOptions.Create(emailVerificationEnabled: true);
 
@@ -56,7 +58,7 @@ public sealed class RequestEmailVerificationHandlerTests
 
     var result = await handler.Handle(
       new RequestEmailVerificationCommand("missing@example.com"),
-      CancellationToken.None);
+      cancellationToken);
 
     Assert.True(result.IsSuccess);
     Assert.Empty(context.UserAuthTokens);

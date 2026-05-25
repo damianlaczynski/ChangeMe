@@ -4,6 +4,8 @@ using ChangeMe.Backend.Domain.Aggregates.Users;
 using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UseCases.Auth.Dtos;
 using ChangeMe.Backend.UseCases.Auth.Utils;
+using ChangeMe.Backend.UseCases.Users.Dtos;
+using ChangeMe.Backend.UseCases.Users.Utils;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 
@@ -36,6 +38,7 @@ public class RegisterUserHandler(
     var normalizedEmail = User.NormalizeEmail(command.Email);
     var existingUser = await context.Users
       .Include(x => x.AccountInvitations)
+      .Include(x => x.ExternalLogins)
       .FirstOrDefaultAsync(x => x.NormalizedEmail == normalizedEmail, cancellationToken);
 
     if (existingUser is not null)
@@ -83,9 +86,7 @@ public class RegisterUserHandler(
   }
 
   private static bool CanCompleteExistingAccount(User user) =>
-    !user.HasPasswordSet
-    && !user.HasPendingInvitation
-    && !user.Deactivated;
+    UsersStatusUtils.ComputeStatus(user) == UserMembershipStatus.InvitationCanceled;
 
   private async Task<Result<RegisterUserResponseDto>> CompleteExistingAccountAsync(
     User user,

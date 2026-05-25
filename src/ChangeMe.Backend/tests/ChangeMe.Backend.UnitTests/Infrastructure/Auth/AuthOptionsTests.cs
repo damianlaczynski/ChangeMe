@@ -44,7 +44,9 @@ public sealed class AuthOptionsTests
     });
 
     var handler = new GetAuthSettingsHandler(options);
-    var result = await handler.Handle(new GetAuthSettingsQuery(), CancellationToken.None);
+    var result = await handler.Handle(
+      new GetAuthSettingsQuery(),
+      TestContext.Current.CancellationToken);
 
     Assert.True(result.IsSuccess);
     Assert.False(result.Value.PublicRegistrationEnabled);
@@ -101,7 +103,9 @@ public sealed class AuthOptionsTests
     });
 
     var handler = new GetAuthSettingsHandler(options);
-    var result = await handler.Handle(new GetAuthSettingsQuery(), CancellationToken.None);
+    var result = await handler.Handle(
+      new GetAuthSettingsQuery(),
+      TestContext.Current.CancellationToken);
 
     Assert.True(result.IsSuccess);
     Assert.True(result.Value.TwoFactorAuthenticationEnabled);

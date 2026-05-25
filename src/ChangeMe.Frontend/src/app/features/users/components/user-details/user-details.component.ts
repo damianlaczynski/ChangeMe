@@ -25,7 +25,6 @@ import {
   getDeactivateConfirmMessage,
   getUserStatusLabel,
   getUserStatusSeverity,
-  isInvitationLinkExpired,
   UserMessages
 } from '@features/users/utils/users.utils';
 import { PermissionCodes } from '@shared/authorization/permission-codes';
@@ -117,7 +116,6 @@ export class UserDetailsComponent {
   readonly externalProvidersEnabled = signal(false);
 
   readonly UserMessages = UserMessages;
-  readonly isInvitationLinkExpired = isInvitationLinkExpired;
   readonly formatIpAddress = formatIpAddress;
   readonly getUserStatusLabel = getUserStatusLabel;
   readonly getUserStatusSeverity = getUserStatusSeverity;
