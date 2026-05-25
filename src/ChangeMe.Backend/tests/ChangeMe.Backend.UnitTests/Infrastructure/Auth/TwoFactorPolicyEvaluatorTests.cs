@@ -38,8 +38,11 @@ public sealed class TwoFactorPolicyEvaluatorTests
     bool twoFactorRequired) =>
     new(Options.Create(new AuthOptions
     {
-      TwoFactorAuthenticationEnabled = twoFactorEnabled,
-      TwoFactorAuthenticationRequired = twoFactorRequired
+      TwoFactor = new TwoFactorOptions
+      {
+        Enabled = twoFactorEnabled,
+        Required = twoFactorRequired
+      }
     }));
 
   private static User CreateUser(bool hasPasswordSet, bool twoFactorEnabled)

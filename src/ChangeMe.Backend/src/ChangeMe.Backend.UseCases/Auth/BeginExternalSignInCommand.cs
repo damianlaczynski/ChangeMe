@@ -20,7 +20,7 @@ public class BeginExternalSignInHandler(
     CancellationToken cancellationToken)
   {
     var auth = authOptions.Value;
-    if (!auth.ExternalProvidersEnabled)
+    if (!auth.External.Enabled)
       return Result<BeginExternalSignInResponseDto>.Forbidden(ExternalAuthUtils.ExternalProvidersDisabledMessage);
 
     var provider = ExternalAuthUtils.ResolveProvider(auth, command.ProviderKey);
@@ -29,7 +29,7 @@ public class BeginExternalSignInHandler(
 
     var utcNow = DateTime.UtcNow;
     var (codeVerifier, codeChallenge, state, nonce) = ExternalAuthPkceUtils.CreateAuthorizationParameters();
-    var expiresAtUtc = utcNow.AddMinutes(auth.ExternalAuthPendingLifetimeMinutes);
+    var expiresAtUtc = utcNow.AddMinutes(auth.External.PendingLifetimeMinutes);
 
     Result<ExternalAuthPending> pendingResult;
     if (userAccessor.UserId is Guid userId)

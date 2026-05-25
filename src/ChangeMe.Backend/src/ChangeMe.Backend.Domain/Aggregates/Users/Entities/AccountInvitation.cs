@@ -12,12 +12,6 @@ public class AccountInvitation
 
   public bool IsPending => AcceptedAtUtc is null && RevokedAtUtc is null;
 
-  public DateTime GetExpiresAtUtc(int invitationLinkLifetimeHours) =>
-    SentAtUtc.AddHours(invitationLinkLifetimeHours);
-
-  public bool IsExpired(DateTime utcNow, int invitationLinkLifetimeHours) =>
-    utcNow >= GetExpiresAtUtc(invitationLinkLifetimeHours);
-
   public static Result<AccountInvitation> Create(Guid userId, DateTime sentAtUtc)
   {
     var validationErrors = new List<ValidationError>();

@@ -21,7 +21,7 @@ public class UnlinkUserExternalLoginHandler(
     CancellationToken cancellationToken)
   {
     var auth = authOptions.Value;
-    if (!auth.ExternalProvidersEnabled)
+    if (!auth.External.Enabled)
       return Result<UserDetailsDto>.Forbidden(ExternalAuthUtils.ExternalProvidersDisabledMessage);
 
     var user = await context.Users

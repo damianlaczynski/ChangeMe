@@ -1,7 +1,7 @@
 <p-card
   class="mb-4"
-  header="Create User"
-  subheader="Invite a user by email; they will set their password from the invitation link"
+  header="Invite user"
+  subheader="Send an invitation by email. The person completes setup from the link before they can sign in."
 >
   <div class="mb-4 flex flex-wrap items-center gap-2">
     <app-back-button label="Back to users list" [route]="['/users']" />
@@ -86,8 +86,8 @@
       />
       <p-button
         type="submit"
-        [label]="isSubmitting() ? 'Creating user...' : 'Create user'"
-        icon="pi pi-user-plus"
+        [label]="isSubmitting() ? 'Sending invitation...' : 'Send invitation'"
+        icon="pi pi-envelope"
         [loading]="isSubmitting()"
       />
     </div>

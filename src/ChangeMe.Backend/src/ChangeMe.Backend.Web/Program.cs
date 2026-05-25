@@ -40,6 +40,7 @@ app.UseHangfireDashboard();
 
 app.MapHealthChecks("/health");
 app.UseNotifications();
+app.UseInvitationRetention();
 
 await app.UseDatabase();
 

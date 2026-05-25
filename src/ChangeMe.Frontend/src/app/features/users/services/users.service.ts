@@ -4,8 +4,8 @@ import { PaginationResult } from '@shared/data/models/pagination-result.model';
 import { Observable } from 'rxjs';
 import {
   AdminUserSessionDto,
-  CreateUserRequest,
   EffectivePermissionDto,
+  InviteUserRequest,
   PreviewEffectivePermissionsRequest,
   RoleAssignmentOptionDto,
   UpdateUserRequest,
@@ -47,7 +47,7 @@ export class UsersService {
     );
   }
 
-  createUser(request: CreateUserRequest): Observable<UserDetailsDto> {
+  inviteUser(request: InviteUserRequest): Observable<UserDetailsDto> {
     return this.apiService.post<UserDetailsDto>(this.baseEndpoint, request);
   }
 
@@ -75,6 +75,20 @@ export class UsersService {
   resendInvitation(id: string): Observable<UserDetailsDto> {
     return this.apiService.post<UserDetailsDto>(
       `${this.baseEndpoint}/${id}/resend-invitation`,
+      {}
+    );
+  }
+
+  cancelInvitation(id: string): Observable<UserDetailsDto> {
+    return this.apiService.post<UserDetailsDto>(
+      `${this.baseEndpoint}/${id}/cancel-invitation`,
+      {}
+    );
+  }
+
+  sendInvitation(id: string): Observable<UserDetailsDto> {
+    return this.apiService.post<UserDetailsDto>(
+      `${this.baseEndpoint}/${id}/send-invitation`,
       {}
     );
   }

@@ -57,8 +57,11 @@ public sealed class PasswordExpirationEvaluatorTests
   private static PasswordExpirationEvaluator CreateEvaluator(bool enabled, int maxAgeDays) =>
     new(Options.Create(new AuthOptions
     {
-      PasswordExpirationEnabled = enabled,
-      MaximumPasswordAgeDays = maxAgeDays
+      PasswordExpiration = new PasswordExpirationOptions
+      {
+        Enabled = enabled,
+        MaximumPasswordAgeDays = maxAgeDays
+      }
     }));
 
   private static User CreateUserWithPasswordLastChangedAt(DateTime passwordLastChangedAt)

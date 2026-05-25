@@ -25,7 +25,7 @@ public static class SignInMethodDisplay
       if (string.IsNullOrWhiteSpace(key))
         return "Unknown";
 
-      var provider = auth.ExternalProviders
+      var provider = auth.External.Providers
         .FirstOrDefault(x => x.ProviderKey.Equals(key, StringComparison.OrdinalIgnoreCase));
       return string.IsNullOrWhiteSpace(provider?.DisplayName) ? key : provider.DisplayName;
     }

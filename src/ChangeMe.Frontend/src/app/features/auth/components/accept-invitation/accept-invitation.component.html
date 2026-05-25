@@ -13,6 +13,11 @@
   } @else if (!isInvitationValid()) {
     <p-message severity="error">{{ invalidInvitationMessage }}</p-message>
   } @else {
+    @if (previewEmail()) {
+      <p class="text-muted-color mt-0 mb-4 text-sm">
+        Activating account for <span class="text-color font-medium">{{ previewEmail() }}</span>
+      </p>
+    }
     <form
       class="p-fluid flex flex-col gap-4"
       [formGroup]="form"

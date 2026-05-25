@@ -37,8 +37,8 @@ import { CreateRoleComponent } from '@features/roles/components/create-role/crea
 import { EditRoleComponent } from '@features/roles/components/edit-role/edit-role.component';
 import { RoleDetailsComponent } from '@features/roles/components/role-details/role-details.component';
 import { RolesListComponent } from '@features/roles/components/roles-list/roles-list.component';
-import { CreateUserComponent } from '@features/users/components/create-user/create-user.component';
 import { EditUserComponent } from '@features/users/components/edit-user/edit-user.component';
+import { InviteUserComponent } from '@features/users/components/invite-user/invite-user.component';
 import { UserDetailsComponent } from '@features/users/components/user-details/user-details.component';
 import { UsersListComponent } from '@features/users/components/users-list/users-list.component';
 import { PermissionCodes } from '@shared/authorization/permission-codes';
@@ -155,8 +155,8 @@ export const routes: Routes = [
     canActivate: [authGuard, permissionGuard(PermissionCodes.usersView)]
   },
   {
-    path: 'users/create',
-    component: CreateUserComponent,
+    path: 'users/invite',
+    component: InviteUserComponent,
     canActivate: [
       authGuard,
       permissionsGuard(

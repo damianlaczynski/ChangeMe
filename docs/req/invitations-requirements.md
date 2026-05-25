@@ -43,11 +43,11 @@ Each send creates an `AccountInvitation` row on the user aggregate:
 
 **Pending invitation** (API: `pendingInvitation` on **User details**): present when the user has at least one account invitation with **pending** lifecycle (`AcceptedAtUtc` and `RevokedAtUtc` both null). When absent (`null`), the user is not **awaiting invitation acceptance** (accepted, cancelled, or never invited). Summary fields:
 
-| Field             | Source                                                                                                                                                                    |
-| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **lastSentAtUtc** | **Sent at** of the current pending invitation (latest pending send).                                                                                                      |
-| **expiresAtUtc**  | **ExpiresAtUtc** of the current valid unused invitation token when one exists; otherwise **lastSentAtUtc** + current `Auth:InvitationLinkLifetimeHours` for display only. |
-| **isExpired**     | **`true`** when there is no valid unused invitation token for the user at request time, or that token is past expiry. **`false`** when a valid unused token exists.       |
+| Field             | Source                                                                                                                                                                                |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **lastSentAtUtc** | **Sent at** of the current pending invitation (latest pending send).                                                                                                                  |
+| **expiresAtUtc**  | **ExpiresAtUtc** of the current valid unused invitation token when one exists; otherwise **lastSentAtUtc** + current `Auth:Invitations:InvitationLinkLifetimeHours` for display only. |
+| **isExpired**     | **`true`** when there is no valid unused invitation token for the user at request time, or that token is past expiry. **`false`** when a valid unused token exists.                   |
 
 **Invitation pending** (API: `invitationPending` on **Users list** and **User details**): **`true`** when the user has a pending account invitation (same lifecycle rule as above). Drives **Status** **`Invited`** when **Deactivated** is false (REQ-INV-005).
 
@@ -128,7 +128,7 @@ On **User details**, administrators must immediately see that the person was **i
 | **Intro**           | Short text, for example: **`This user was invited and has not completed account setup yet. They cannot sign in until they accept the invitation.`**                                  |
 | **Last sent at**    | `pendingInvitation.lastSentAtUtc` (date/time).                                                                                                                                       |
 | **Link expires at** | `pendingInvitation.expiresAtUtc` (date/time).                                                                                                                                        |
-| **Expiry note**     | Muted helper: **`Based on the active invitation link. Changing Auth:InvitationLinkLifetimeHours does not change an already-issued token.`**                                          |
+| **Expiry note**     | Muted helper: **`Based on the active invitation link. Changing Auth:Invitations:InvitationLinkLifetimeHours does not change an already-issued token.`**                              |
 | **Expired state**   | When `pendingInvitation.isExpired` is **`true`**: show tag **`Expired`** (warn severity) and message **`This invitation link may no longer work. Resend or cancel the invitation.`** |
 | **Profile name**    | **First name** and **Last name** when set; **`Not set`** when both empty (admin may set on **Edit user**; invitee confirms on accept).                                               |
 
@@ -318,8 +318,8 @@ Section: **`Auth:Invitations:Retention`**
 
 ```json
 "Auth": {
-  "InvitationLinkLifetimeHours": 72,
   "Invitations": {
+    "InvitationLinkLifetimeHours": 72,
     "Retention": {
       "RevokedInvitationRetentionDays": 7,
       "CleanupCronExpression": "0 4 * * *"

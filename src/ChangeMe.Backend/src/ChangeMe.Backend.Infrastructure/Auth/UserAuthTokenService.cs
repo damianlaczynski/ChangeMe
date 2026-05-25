@@ -79,6 +79,22 @@ public sealed class UserAuthTokenService(
     CancellationToken cancellationToken = default) =>
     InvalidateUnusedTokensAsync(userId, type, timeProvider.GetUtcNow().UtcDateTime, cancellationToken);
 
+  public async Task<DateTime?> GetActiveUnusedTokenExpiresAtUtcAsync(
+    Guid userId,
+    UserAuthTokenType type,
+    CancellationToken cancellationToken = default)
+  {
+    var utcNow = timeProvider.GetUtcNow().UtcDateTime;
+
+    var token = await context.UserAuthTokens
+      .AsNoTracking()
+      .Where(x => x.UserId == userId && x.Type == type && x.UsedAtUtc == null)
+      .OrderByDescending(x => x.ExpiresAtUtc)
+      .FirstOrDefaultAsync(cancellationToken);
+
+    return token is not null && token.IsValid(utcNow) ? token.ExpiresAtUtc : null;
+  }
+
   private async Task InvalidateUnusedTokensAsync(
     Guid userId,
     UserAuthTokenType type,
@@ -99,9 +115,9 @@ public sealed class UserAuthTokenService(
   private DateTime GetExpiresAtUtc(UserAuthTokenType type, DateTime utcNow) =>
     type switch
     {
-      UserAuthTokenType.Invitation => utcNow.AddHours(authOptions.Value.InvitationLinkLifetimeHours),
-      UserAuthTokenType.PasswordReset => utcNow.AddHours(authOptions.Value.PasswordResetLinkLifetimeHours),
-      UserAuthTokenType.EmailVerification => utcNow.AddHours(authOptions.Value.EmailVerificationLinkLifetimeHours),
+      UserAuthTokenType.Invitation => utcNow.AddHours(authOptions.Value.Invitations.InvitationLinkLifetimeHours),
+      UserAuthTokenType.PasswordReset => utcNow.AddHours(authOptions.Value.PasswordReset.LinkLifetimeHours),
+      UserAuthTokenType.EmailVerification => utcNow.AddHours(authOptions.Value.EmailVerification.LinkLifetimeHours),
       _ => utcNow.AddHours(24)
     };
 }

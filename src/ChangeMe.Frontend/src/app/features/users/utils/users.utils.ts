@@ -7,12 +7,38 @@ export const UserConstraints = {
   PASSWORD_MAX_LENGTH: 128
 };
 
+export type UserMembershipStatus =
+  | 'Invited'
+  | 'InvitationCanceled'
+  | 'Active'
+  | 'Deactivated';
+
+export function isInvitationLinkExpired(
+  expiresAtUtc: string,
+  utcNowMs = Date.now()
+): boolean {
+  return new Date(expiresAtUtc).getTime() <= utcNowMs;
+}
+
 export const UserMessages = {
   externalLoginEmailWarning:
     'This user has external sign-in linked. Changing email does not remove external logins; the user signs in by provider identity, not email match.',
   duplicateEmail: 'A user with this email already exists.',
-  userCreated: 'User created. An invitation email has been sent.',
+  invitationSent: 'Invitation sent.',
   invitationResent: 'Invitation resent.',
+  invitationCancelled: 'Invitation cancelled.',
+  cancelInvitationTitle: 'Cancel invitation?',
+  cancelInvitationMessage: (email: string) =>
+    `Cancel invitation for ${highlightDialogValue(email)}? They will not be able to use the current invitation link. You can send a new invitation later.`,
+  sendInvitationTitle: 'Send invitation?',
+  sendInvitationMessage: (email: string) =>
+    `Send invitation to ${highlightDialogValue(email)}?`,
+  invitationPanelIntro:
+    'This user was invited and has not completed account setup yet. They cannot sign in until they accept the invitation.',
+  invitationExpiryNote:
+    'Based on the active invitation link. Changing Auth:Invitations:InvitationLinkLifetimeHours does not change an already-issued token.',
+  invitationExpiredMessage:
+    'This invitation link may no longer work. Resend or cancel the invitation.',
   passwordResetSent: 'Password reset email sent.',
   emailMarkedAsVerified: 'Email marked as verified.',
   confirmEmailTitle: 'Confirm email',
@@ -48,9 +74,11 @@ export const UserMessages = {
     'Revoke all active sessions for this user? They will be signed out on every device.'
 };
 
-export const accountFilters: { label: string; value: boolean }[] = [
-  { label: 'Active', value: false },
-  { label: 'Deactivated', value: true }
+export const statusFilters: { label: string; value: UserMembershipStatus }[] = [
+  { label: 'Invited', value: 'Invited' },
+  { label: 'Invitation canceled', value: 'InvitationCanceled' },
+  { label: 'Active', value: 'Active' },
+  { label: 'Deactivated', value: 'Deactivated' }
 ];
 
 export const emailVerifiedFilters: { label: string; value: boolean }[] = [
@@ -58,12 +86,42 @@ export const emailVerifiedFilters: { label: string; value: boolean }[] = [
   { label: 'Unverified', value: false }
 ];
 
+export function getUserStatusLabel(status: UserMembershipStatus): string {
+  switch (status) {
+    case 'Invited':
+      return 'Invited';
+    case 'InvitationCanceled':
+      return 'Invitation canceled';
+    case 'Deactivated':
+      return 'Deactivated';
+    default:
+      return 'Active';
+  }
+}
+
+/** @deprecated Use getUserStatusLabel for full membership status; kept for role-details user rows. */
 export function getAccountBadgeLabel(deactivated: boolean): string {
   return deactivated ? 'Deactivated' : 'Active';
 }
 
+/** @deprecated Use getUserStatusSeverity for full membership status; kept for role-details user rows. */
 export function getAccountBadgeSeverity(deactivated: boolean): 'success' | 'danger' {
   return deactivated ? 'danger' : 'success';
+}
+
+export function getUserStatusSeverity(
+  status: UserMembershipStatus
+): 'success' | 'danger' | 'warn' | 'secondary' {
+  switch (status) {
+    case 'Deactivated':
+      return 'danger';
+    case 'Invited':
+      return 'warn';
+    case 'InvitationCanceled':
+      return 'secondary';
+    default:
+      return 'success';
+  }
 }
 
 export function getEmailVerifiedBadgeLabel(verified: boolean): string {
@@ -72,29 +130,6 @@ export function getEmailVerifiedBadgeLabel(verified: boolean): string {
 
 export function getEmailVerifiedBadgeSeverity(verified: boolean): 'success' | 'warn' {
   return verified ? 'success' : 'warn';
-}
-
-export function getAccountStateLabel(
-  user: {
-    deactivated: boolean;
-    emailVerified: boolean;
-    invitationPending?: boolean;
-  },
-  emailVerificationEnabled = false
-): string | null {
-  if (user.deactivated) {
-    return null;
-  }
-
-  if (user.invitationPending) {
-    return 'Awaiting invitation';
-  }
-
-  if (emailVerificationEnabled && !user.emailVerified) {
-    return 'Awaiting email verification';
-  }
-
-  return 'Complete';
 }
 
 export function formatFromRoles(roleNames: string[]): string {

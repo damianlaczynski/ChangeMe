@@ -1,7 +1,10 @@
 ﻿using System.Text;
 using ChangeMe.Backend.Infrastructure.Auth;
+using ChangeMe.Backend.UseCases.Users.Services;
 using ChangeMe.Backend.Web.Authorization;
+using Hangfire;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 
@@ -12,6 +15,7 @@ public static class AuthConfig
   public static IServiceCollection AddJwtAuthentication(this IServiceCollection services, WebApplicationBuilder builder)
   {
     services.Configure<AuthOptions>(builder.Configuration.GetSection(AuthOptions.SectionName));
+    services.AddScoped<InvitationRetentionCleanupJob>();
 
     var jwtOptions = builder.Configuration
       .GetSection(AuthOptions.SectionName)
@@ -53,5 +57,20 @@ public static class AuthConfig
     services.AddPermissionAuthorization();
 
     return services;
+  }
+
+  public static WebApplication UseInvitationRetention(this WebApplication app)
+  {
+    var authOptions = app.Services.GetRequiredService<IOptions<AuthOptions>>().Value;
+    var cleanupCronExpression = string.IsNullOrWhiteSpace(authOptions.Invitations.Retention.CleanupCronExpression)
+      ? "0 4 * * *"
+      : authOptions.Invitations.Retention.CleanupCronExpression;
+
+    RecurringJob.AddOrUpdate<InvitationRetentionCleanupJob>(
+      "invitations-retention-cleanup",
+      job => job.ExecuteAsync(CancellationToken.None),
+      cleanupCronExpression);
+
+    return app;
   }
 }

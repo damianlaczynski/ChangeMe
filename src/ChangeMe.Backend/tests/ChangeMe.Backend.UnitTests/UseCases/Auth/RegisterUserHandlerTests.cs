@@ -69,7 +69,7 @@ public sealed class RegisterUserHandlerTests
     Assert.False(string.IsNullOrWhiteSpace(result.Value.AuthSession!.Token));
 
     var user = context.Users.Single(x => x.Email == "direct@example.com");
-    Assert.True(user.EmailVerified);
+    Assert.False(user.EmailVerified);
     Assert.Equal(1, context.UserSessions.Count(x => x.UserId == user.Id));
   }
 

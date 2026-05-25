@@ -1,22 +1,22 @@
-﻿using ChangeMe.Backend.Domain.Aggregates.Users;
+using ChangeMe.Backend.Domain.Aggregates.Users;
 using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UseCases.Users.Dtos;
 using ChangeMe.Backend.UseCases.Users.Utils;
 
 namespace ChangeMe.Backend.UseCases.Users;
 
-public sealed record CreateUserCommand(
+public sealed record InviteUserCommand(
   string FirstName,
   string LastName,
   string Email,
   IReadOnlyList<Guid> RoleIds) : ICommand<UserDetailsDto>;
 
-public class CreateUserHandler(
+public class InviteUserHandler(
   IMediator mediator,
   ApplicationDbContext context,
-  UserInvitationService invitationService) : ICommandHandler<CreateUserCommand, UserDetailsDto>
+  UserInvitationService invitationService) : ICommandHandler<InviteUserCommand, UserDetailsDto>
 {
-  public async Task<Result<UserDetailsDto>> Handle(CreateUserCommand command, CancellationToken cancellationToken)
+  public async Task<Result<UserDetailsDto>> Handle(InviteUserCommand command, CancellationToken cancellationToken)
   {
     var normalizedEmail = User.NormalizeEmail(command.Email);
     var emailExists = await context.Users.AnyAsync(x => x.NormalizedEmail == normalizedEmail, cancellationToken);
@@ -26,11 +26,11 @@ public class CreateUserHandler(
     var firstName = string.IsNullOrWhiteSpace(command.FirstName) ? null : command.FirstName;
     var lastName = string.IsNullOrWhiteSpace(command.LastName) ? null : command.LastName;
 
-    var createUserResult = User.CreateInvited(command.Email, firstName, lastName);
-    if (!createUserResult.IsSuccess)
-      return createUserResult.Map();
+    var inviteUserResult = User.CreateInvited(command.Email, firstName, lastName);
+    if (!inviteUserResult.IsSuccess)
+      return inviteUserResult.Map();
 
-    var user = createUserResult.Value;
+    var user = inviteUserResult.Value;
 
     var distinctRoleIds = command.RoleIds.Distinct().ToList();
     var existingRoleCount = await context.Roles
@@ -52,10 +52,10 @@ public class CreateUserHandler(
 
     await context.SaveChangesAsync(cancellationToken);
 
-    var createdUserResult = await mediator.Send(new GetUserByIdQuery(user.Id), cancellationToken);
-    if (!createdUserResult.IsSuccess)
-      return createdUserResult.Map();
+    var invitedUserResult = await mediator.Send(new GetUserByIdQuery(user.Id), cancellationToken);
+    if (!invitedUserResult.IsSuccess)
+      return invitedUserResult.Map();
 
-    return Result.Created(createdUserResult.Value, $"/users/{createdUserResult.Value.Id}");
+    return Result.Created(invitedUserResult.Value, $"/users/{invitedUserResult.Value.Id}");
   }
 }

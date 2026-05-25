@@ -22,4 +22,9 @@ public interface IUserAuthTokenService
     Guid userId,
     UserAuthTokenType type,
     CancellationToken cancellationToken = default);
+
+  Task<DateTime?> GetActiveUnusedTokenExpiresAtUtcAsync(
+    Guid userId,
+    UserAuthTokenType type,
+    CancellationToken cancellationToken = default);
 }

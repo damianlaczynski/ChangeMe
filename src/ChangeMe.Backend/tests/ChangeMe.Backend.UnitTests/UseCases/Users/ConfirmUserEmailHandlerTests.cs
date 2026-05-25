@@ -1,5 +1,7 @@
 ﻿using Ardalis.Result;
 using ChangeMe.Backend.Domain.Aggregates.Users;
+using ChangeMe.Backend.Domain.Aggregates.Users.Enums;
+using ChangeMe.Backend.Domain.Aggregates.Users.Interfaces;
 using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.Infrastructure.Persistence;
 using ChangeMe.Backend.UnitTests.Support;
@@ -58,6 +60,36 @@ public sealed class ConfirmUserEmailHandlerTests
     Assert.Contains(UsersUtils.EmailAlreadyVerifiedMessage, result.Errors.First());
   }
 
+  private sealed class StubUserAuthTokenService : IUserAuthTokenService
+  {
+    public Task<DateTime?> GetActiveUnusedTokenExpiresAtUtcAsync(
+      Guid userId,
+      UserAuthTokenType type,
+      CancellationToken cancellationToken = default) =>
+      Task.FromResult<DateTime?>(null);
+
+    public Task<Result<string>> IssueTokenAsync(
+      Guid userId,
+      UserAuthTokenType type,
+      CancellationToken cancellationToken = default) =>
+      throw new NotSupportedException();
+
+    public Task<Result<Guid>> ValidateTokenAsync(
+      string plainToken,
+      UserAuthTokenType type,
+      CancellationToken cancellationToken = default) =>
+      throw new NotSupportedException();
+
+    public Task MarkTokenUsedAsync(string plainToken, CancellationToken cancellationToken = default) =>
+      throw new NotSupportedException();
+
+    public Task InvalidateUnusedTokensAsync(
+      Guid userId,
+      UserAuthTokenType type,
+      CancellationToken cancellationToken = default) =>
+      throw new NotSupportedException();
+  }
+
   private sealed class StubMediator(ApplicationDbContext context) : IMediator, IPublisher
   {
     public async Task<TResponse> Send<TResponse>(
@@ -69,6 +101,7 @@ public sealed class ConfirmUserEmailHandlerTests
         var handler = new GetUserByIdHandler(
           context,
           new PasswordExpirationEvaluator(TestAuthOptions.Create()),
+          new StubUserAuthTokenService(),
           TestAuthOptions.Create(),
           new PasskeyPolicyEvaluator(TestAuthOptions.Create()));
         var result = await handler.Handle(getUserQuery, cancellationToken);

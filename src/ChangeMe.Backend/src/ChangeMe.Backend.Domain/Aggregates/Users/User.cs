@@ -180,6 +180,22 @@ public class User : Entity, IAggregateRoot
 
   public bool HasPendingInvitation => GetActivePendingInvitation() is not null;
 
+  public DateTime? PendingInvitationSentAtUtc => GetActivePendingInvitation()?.SentAtUtc;
+
+  public (DateTime LastSentAtUtc, DateTime ExpiresAtUtc)? GetPendingInvitationExpiry(
+    DateTime? activeInvitationTokenExpiresAtUtc,
+    int linkLifetimeHours)
+  {
+    var lastSentAtUtc = PendingInvitationSentAtUtc;
+    if (lastSentAtUtc is null)
+      return null;
+
+    var expiresAtUtc = activeInvitationTokenExpiresAtUtc
+      ?? lastSentAtUtc.Value.AddHours(linkLifetimeHours);
+
+    return (lastSentAtUtc.Value, expiresAtUtc);
+  }
+
   public Result<AccountInvitation> RecordInvitationIssued(DateTime sentAtUtc)
   {
     foreach (var invitation in accountInvitations.Where(x => x.IsPending))
@@ -193,6 +209,18 @@ public class User : Entity, IAggregateRoot
     return createResult;
   }
 
+  public Result CancelPendingInvitations(DateTime revokedAtUtc)
+  {
+    var pendingInvitations = accountInvitations.Where(x => x.IsPending).ToList();
+    if (pendingInvitations.Count == 0)
+      return Result.Error("No invitation is pending.");
+
+    foreach (var invitation in pendingInvitations)
+      invitation.Revoke(revokedAtUtc);
+
+    return Result.Success();
+  }
+
   public Result AcceptPendingInvitation(DateTime acceptedAtUtc)
   {
     var pending = GetActivePendingInvitation();
@@ -201,17 +229,6 @@ public class User : Entity, IAggregateRoot
 
     pending.Accept(acceptedAtUtc);
     return Result.Success();
-  }
-
-  public PendingInvitationSummary? GetPendingInvitationSummary()
-  {
-    var pending = GetActivePendingInvitation();
-    if (pending is null)
-      return null;
-
-    return new PendingInvitationSummary(
-      pending.SentAtUtc,
-      accountInvitations.Count);
   }
 
   public Result CompleteInvitationViaExternalSignIn(string? firstName, string? lastName, DateTime acceptedAtUtc)
@@ -405,10 +422,6 @@ public class User : Entity, IAggregateRoot
     PasskeyStepUpCompletedAt.HasValue
     && PasskeyStepUpCompletedAt.Value.AddMinutes(validityMinutes) > utcNow;
 }
-
-public sealed record PendingInvitationSummary(
-  DateTime LastSentAtUtc,
-  int SentCount);
 
 public static class UserConstraints
 {

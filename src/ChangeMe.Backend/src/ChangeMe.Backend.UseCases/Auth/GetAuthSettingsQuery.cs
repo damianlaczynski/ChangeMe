@@ -16,7 +16,7 @@ public class GetAuthSettingsHandler(IOptions<AuthOptions> options)
     var policy = auth.PasswordPolicy;
 
     var twoFactor = auth.TwoFactor;
-    var configuredProviders = auth.ExternalProviders
+    var configuredProviders = auth.External.Providers
       .Where(x => x.IsConfigured)
       .Select(x => new ExternalProviderSettingsDto
       {
@@ -36,16 +36,16 @@ public class GetAuthSettingsHandler(IOptions<AuthOptions> options)
         RequireDigit = policy.RequireDigit,
         RequireSpecialCharacter = policy.RequireSpecialCharacter
       },
-      PublicRegistrationEnabled = auth.PublicRegistrationEnabled,
-      EmailVerificationEnabled = auth.EmailVerificationEnabled,
-      PasswordExpirationEnabled = auth.PasswordExpirationEnabled,
-      MaximumPasswordAgeDays = auth.MaximumPasswordAgeDays,
-      TwoFactorAuthenticationEnabled = auth.TwoFactorAuthenticationEnabled,
-      TwoFactorAuthenticationRequired = auth.TwoFactorAuthenticationRequired,
-      TrustIdentityProviderMfa = auth.TrustIdentityProviderMfa
-        && auth.TwoFactorAuthenticationEnabled
-        && auth.ExternalProvidersEnabled,
-      ExternalProvidersEnabled = auth.ExternalProvidersEnabled && configuredProviders.Count > 0,
+      PublicRegistrationEnabled = auth.Registration.PublicEnabled,
+      EmailVerificationEnabled = auth.EmailVerification.Enabled,
+      PasswordExpirationEnabled = auth.PasswordExpiration.Enabled,
+      MaximumPasswordAgeDays = auth.PasswordExpiration.MaximumPasswordAgeDays,
+      TwoFactorAuthenticationEnabled = auth.TwoFactor.Enabled,
+      TwoFactorAuthenticationRequired = auth.TwoFactor.Required,
+      TrustIdentityProviderMfa = auth.TwoFactor.TrustIdentityProviderMfa
+        && auth.TwoFactor.Enabled
+        && auth.External.Enabled,
+      ExternalProvidersEnabled = auth.External.Enabled && configuredProviders.Count > 0,
       TwoFactor = new TwoFactorSettingsDto
       {
         VerificationCodeLength = twoFactor.VerificationCodeLength,

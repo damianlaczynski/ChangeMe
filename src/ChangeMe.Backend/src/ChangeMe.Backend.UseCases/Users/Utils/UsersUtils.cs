@@ -19,11 +19,14 @@ public static class UsersUtils
     "Password reset cannot be sent to a deactivated account.";
   public const string CannotSendPasswordResetToInvitePendingMessage =
     "Password reset cannot be sent while the invitation is pending. Resend the invitation instead.";
-  public const string CannotResendInvitationToDeactivatedMessage =
-    "Invitation cannot be resent to a deactivated account.";
+  public const string CannotManageInvitationForDeactivatedMessage =
+    "Invitation cannot be managed for a deactivated account.";
 
   public const string NoPendingInvitationMessage =
     "This account has no pending invitation.";
+
+  public const string PendingInvitationAlreadyExistsMessage =
+    "This account already has a pending invitation. Resend the invitation instead.";
   public const string EmailAlreadyVerifiedMessage = "This email is already verified.";
   public const string EmailMarkedAsVerifiedMessage = "Email marked as verified.";
 

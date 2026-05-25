@@ -1,5 +1,4 @@
 using ChangeMe.Backend.Domain.Aggregates.Users;
-using ChangeMe.Backend.UseCases.Auth;
 using ChangeMe.Backend.UseCases.Users.Dtos;
 
 namespace ChangeMe.Backend.UseCases.Users.Utils;
@@ -12,7 +11,7 @@ public static class UsersMappingExtensions
     IReadOnlyList<UserRoleSummaryDto> roles,
     IReadOnlyList<EffectivePermissionDto> effectivePermissions,
     IReadOnlyList<UserExternalLoginDto> externalLogins,
-    int invitationLinkLifetimeHours,
+    UserInvitationInfoDto? pendingInvitation,
     IReadOnlyList<UserPasskeyDto> passkeys,
     IPasswordExpirationEvaluator? passwordExpirationEvaluator = null) =>
     new()
@@ -30,12 +29,9 @@ public static class UsersMappingExtensions
       PasswordExpiresAtUtc = passwordExpirationEvaluator?.GetPasswordExpiresAtUtc(user),
       TwoFactorEnabled = user.TwoFactorEnabled,
       TwoFactorEnabledAt = user.TwoFactorEnabledAt,
-      PendingInvitation = user.GetPendingInvitationSummary() is { } summary
-        ? new UserInvitationInfoDto(
-          summary.LastSentAtUtc,
-          summary.SentCount,
-          summary.LastSentAtUtc.AddHours(invitationLinkLifetimeHours))
-        : null,
+      InvitationPending = user.HasPendingInvitation,
+      Status = UsersStatusUtils.ComputeStatus(user),
+      PendingInvitation = pendingInvitation,
       MemberSince = user.CreatedAt,
       LastSignInAt = lastSignInAt,
       Roles = roles,

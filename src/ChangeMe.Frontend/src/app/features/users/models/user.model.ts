@@ -1,4 +1,5 @@
 import { PaginationParameters } from '@shared/data/models/pagination-parameters.model';
+import { UserMembershipStatus } from '../utils/users.utils';
 
 export interface UserListItemDto {
   id: string;
@@ -9,6 +10,8 @@ export interface UserListItemDto {
   hasPasswordSet: boolean;
   emailVerified: boolean;
   invitationPending: boolean;
+  hasExternalLogin: boolean;
+  status: UserMembershipStatus;
   roleNames: string[];
   lastSignInAt: string | null;
   createdAt: string;
@@ -52,6 +55,8 @@ export interface UserDetailsDto {
   passwordExpiresAtUtc: string | null;
   twoFactorEnabled: boolean;
   twoFactorEnabledAt: string | null;
+  invitationPending: boolean;
+  status: UserMembershipStatus;
   pendingInvitation: UserInvitationInfoDto | null;
   memberSince: string;
   lastSignInAt: string | null;
@@ -63,7 +68,6 @@ export interface UserDetailsDto {
 
 export interface UserInvitationInfoDto {
   lastSentAtUtc: string;
-  sentCount: number;
   expiresAtUtc: string;
 }
 
@@ -89,7 +93,7 @@ export interface AdminUserSessionDto {
   lastActivityAt: string;
 }
 
-export interface CreateUserRequest {
+export interface InviteUserRequest {
   firstName: string;
   lastName: string;
   email: string;
@@ -109,6 +113,7 @@ export interface UserSearchParameters extends PaginationParameters {
   searchText?: string;
   deactivated?: boolean[];
   emailVerified?: boolean[];
+  status?: UserMembershipStatus[];
 }
 
 export interface PreviewEffectivePermissionsRequest {

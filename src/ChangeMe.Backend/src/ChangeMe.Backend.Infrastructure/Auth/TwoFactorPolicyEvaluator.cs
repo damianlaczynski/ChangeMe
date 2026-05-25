@@ -6,7 +6,7 @@ namespace ChangeMe.Backend.Infrastructure.Auth;
 
 public sealed class TwoFactorPolicyEvaluator(IOptions<AuthOptions> authOptions) : ITwoFactorPolicyEvaluator
 {
-  public bool IsTwoFactorEnabledForDeployment() => authOptions.Value.TwoFactorAuthenticationEnabled;
+  public bool IsTwoFactorEnabledForDeployment() => authOptions.Value.TwoFactor.Enabled;
 
   public bool IsTwoFactorVerificationRequired(User user) =>
     IsTwoFactorEnabledForDeployment() && user.TwoFactorEnabled;
@@ -14,7 +14,7 @@ public sealed class TwoFactorPolicyEvaluator(IOptions<AuthOptions> authOptions) 
   public bool IsTwoFactorSetupRequired(User user)
   {
     var options = authOptions.Value;
-    if (!options.TwoFactorAuthenticationEnabled || !options.TwoFactorAuthenticationRequired)
+    if (!options.TwoFactor.Enabled || !options.TwoFactor.Required)
       return false;
 
     if (!user.HasPasswordSet)
