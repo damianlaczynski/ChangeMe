@@ -73,6 +73,7 @@ public sealed class ConfirmUserEmailHandlerTests
     public Task<Result<string>> IssueTokenAsync(
       Guid userId,
       UserAuthTokenType type,
+      DateTime? issuedAtUtc = null,
       CancellationToken cancellationToken = default) =>
       throw new NotSupportedException();
 

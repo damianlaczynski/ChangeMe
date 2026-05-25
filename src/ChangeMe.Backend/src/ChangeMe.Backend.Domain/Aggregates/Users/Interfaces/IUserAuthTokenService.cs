@@ -7,6 +7,7 @@ public interface IUserAuthTokenService
   Task<Result<string>> IssueTokenAsync(
     Guid userId,
     UserAuthTokenType type,
+    DateTime? issuedAtUtc = null,
     CancellationToken cancellationToken = default);
 
   Task<Result<Guid>> ValidateTokenAsync(

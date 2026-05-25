@@ -2,6 +2,7 @@ using ChangeMe.Backend.Domain.Aggregates.Users;
 using ChangeMe.Backend.Domain.Aggregates.Users.Enums;
 using ChangeMe.Backend.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace ChangeMe.Backend.Infrastructure.Auth;
 
@@ -9,6 +10,7 @@ public sealed class UserInvitationService(
   ApplicationDbContext context,
   IUserAuthTokenService tokenService,
   IAuthEmailService authEmailService,
+  IOptions<AuthOptions> authOptions,
   TimeProvider timeProvider)
 {
   public const string InvitationEmailDeliveryFailedMessage =
@@ -16,9 +18,14 @@ public sealed class UserInvitationService(
 
   public async Task<Result> SendInvitationAsync(User user, CancellationToken cancellationToken)
   {
+    var issuedAtUtc = timeProvider.GetUtcNow().UtcDateTime;
+    var linkExpiresAtUtc = issuedAtUtc.AddHours(
+      authOptions.Value.Invitations.InvitationLinkLifetimeHours);
+
     var tokenResult = await tokenService.IssueTokenAsync(
       user.Id,
       UserAuthTokenType.Invitation,
+      issuedAtUtc,
       cancellationToken);
 
     if (!tokenResult.IsSuccess)
@@ -39,9 +46,7 @@ public sealed class UserInvitationService(
       return Result.Error(InvitationEmailDeliveryFailedMessage);
     }
 
-    var utcNow = timeProvider.GetUtcNow().UtcDateTime;
-
-    var recordResult = user.RecordInvitationIssued(utcNow);
+    var recordResult = user.RecordInvitationIssued(issuedAtUtc, linkExpiresAtUtc);
     if (!recordResult.IsSuccess)
     {
       await tokenService.InvalidateUnusedTokensAsync(

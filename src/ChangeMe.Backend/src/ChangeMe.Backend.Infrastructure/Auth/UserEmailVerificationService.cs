@@ -11,7 +11,7 @@ public sealed class UserEmailVerificationService(
     var tokenResult = await tokenService.IssueTokenAsync(
       user.Id,
       UserAuthTokenType.EmailVerification,
-      cancellationToken);
+      cancellationToken: cancellationToken);
 
     if (!tokenResult.IsSuccess)
       return tokenResult.Map();

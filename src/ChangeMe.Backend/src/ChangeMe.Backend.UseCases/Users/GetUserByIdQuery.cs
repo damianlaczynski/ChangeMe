@@ -62,10 +62,7 @@ public class GetUserByIdHandler(
         UserAuthTokenType.Invitation,
         cancellationToken);
 
-      var expiry = user.GetPendingInvitationExpiry(
-        tokenExpiresAtUtc,
-        utcNow,
-        auth.Invitations.InvitationLinkLifetimeHours);
+      var expiry = user.GetPendingInvitationExpiry(utcNow, tokenExpiresAtUtc);
       if (expiry is not null)
       {
         pendingInvitation = new UserInvitationInfoDto(

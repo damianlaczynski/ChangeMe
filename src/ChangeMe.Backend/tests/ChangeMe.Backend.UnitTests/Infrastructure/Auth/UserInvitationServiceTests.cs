@@ -26,6 +26,7 @@ public sealed class UserInvitationServiceTests
       context,
       tokenService,
       authEmailService,
+      TestAuthOptions.Create(),
       TimeProvider.System);
 
     var result = await sut.SendInvitationAsync(user, cancellationToken);
@@ -59,12 +60,20 @@ public sealed class UserInvitationServiceTests
       context,
       tokenService,
       authEmailService,
+      TestAuthOptions.Create(),
       TimeProvider.System);
 
     var result = await sut.SendInvitationAsync(user, cancellationToken);
 
     Assert.True(result.IsSuccess);
     Assert.True(user.HasPendingInvitation);
+
+    var pending = user.AccountInvitations.Single(x => x.IsPending);
+    var token = await context.UserAuthTokens.SingleAsync(
+      x => x.UserId == user.Id && x.Type == UserAuthTokenType.Invitation,
+      cancellationToken);
+
+    Assert.Equal(pending.LinkExpiresAtUtc, token.ExpiresAtUtc);
   }
 
   private static UserAuthTokenService CreateTokenService(ApplicationDbContext context) =>

@@ -17,6 +17,9 @@ public class AccountInvitationConfiguration : IEntityTypeConfiguration<AccountIn
     builder.Property(x => x.SentAtUtc)
       .IsRequired();
 
+    builder.Property(x => x.LinkExpiresAtUtc)
+      .IsRequired();
+
     builder.Property(x => x.AcceptedAtUtc);
     builder.Property(x => x.RevokedAtUtc);
 

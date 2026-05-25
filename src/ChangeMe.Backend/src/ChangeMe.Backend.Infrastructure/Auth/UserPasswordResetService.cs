@@ -11,7 +11,7 @@ public sealed class UserPasswordResetService(
     var tokenResult = await tokenService.IssueTokenAsync(
       user.Id,
       UserAuthTokenType.PasswordReset,
-      cancellationToken);
+      cancellationToken: cancellationToken);
 
     if (!tokenResult.IsSuccess)
       return tokenResult.Map();

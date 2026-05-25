@@ -12,9 +12,10 @@ public sealed class UserAuthTokenService(
   public async Task<Result<string>> IssueTokenAsync(
     Guid userId,
     UserAuthTokenType type,
+    DateTime? issuedAtUtc = null,
     CancellationToken cancellationToken = default)
   {
-    var utcNow = timeProvider.GetUtcNow().UtcDateTime;
+    var utcNow = issuedAtUtc ?? timeProvider.GetUtcNow().UtcDateTime;
 
     await InvalidateUnusedTokensAsync(userId, type, utcNow, cancellationToken);
 

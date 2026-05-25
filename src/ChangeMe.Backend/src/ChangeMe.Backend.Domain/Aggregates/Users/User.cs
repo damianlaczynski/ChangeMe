@@ -180,28 +180,27 @@ public class User : Entity, IAggregateRoot
   public DateTime? PendingInvitationSentAtUtc => GetActivePendingInvitation()?.SentAtUtc;
 
   public (DateTime LastSentAtUtc, DateTime ExpiresAtUtc, bool IsLinkExpired)? GetPendingInvitationExpiry(
-    DateTime? activeInvitationTokenExpiresAtUtc,
     DateTime utcNow,
-    int linkLifetimeHours)
+    DateTime? unusedInvitationTokenExpiresAtUtc)
   {
-    var lastSentAtUtc = PendingInvitationSentAtUtc;
-    if (lastSentAtUtc is null)
+    var pending = GetActivePendingInvitation();
+    if (pending is null)
       return null;
 
-    var expiresAtUtc = activeInvitationTokenExpiresAtUtc
-      ?? lastSentAtUtc.Value.AddHours(linkLifetimeHours);
+    var hasValidUnusedToken = unusedInvitationTokenExpiresAtUtc is not null
+      && utcNow < unusedInvitationTokenExpiresAtUtc.Value;
 
-    var isLinkExpired = activeInvitationTokenExpiresAtUtc is null || utcNow >= expiresAtUtc;
-
-    return (lastSentAtUtc.Value, expiresAtUtc, isLinkExpired);
+    return (pending.SentAtUtc, pending.LinkExpiresAtUtc, !hasValidUnusedToken);
   }
 
-  public Result<AccountInvitation> RecordInvitationIssued(DateTime sentAtUtc)
+  public Result<AccountInvitation> RecordInvitationIssued(
+    DateTime sentAtUtc,
+    DateTime linkExpiresAtUtc)
   {
     foreach (var invitation in accountInvitations.Where(x => x.IsPending))
       invitation.Revoke(sentAtUtc);
 
-    var createResult = AccountInvitation.Create(Id, sentAtUtc);
+    var createResult = AccountInvitation.Create(Id, sentAtUtc, linkExpiresAtUtc);
     if (!createResult.IsSuccess)
       return createResult.Map();
 

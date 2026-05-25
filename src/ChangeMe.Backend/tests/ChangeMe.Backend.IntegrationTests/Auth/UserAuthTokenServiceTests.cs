@@ -22,7 +22,7 @@ public sealed class UserAuthTokenServiceTests(BackendWebApplicationFactory facto
     var issueResult = await tokenService.IssueTokenAsync(
       authenticated.UserId,
       UserAuthTokenType.PasswordReset,
-      cancellationToken);
+      cancellationToken: cancellationToken);
 
     Assert.True(issueResult.IsSuccess);
     Assert.False(string.IsNullOrWhiteSpace(issueResult.Value));
@@ -30,7 +30,7 @@ public sealed class UserAuthTokenServiceTests(BackendWebApplicationFactory facto
     var validateResult = await tokenService.ValidateTokenAsync(
       issueResult.Value,
       UserAuthTokenType.PasswordReset,
-      cancellationToken);
+      cancellationToken: cancellationToken);
 
     Assert.True(validateResult.IsSuccess);
     Assert.Equal(authenticated.UserId, validateResult.Value);
@@ -48,22 +48,22 @@ public sealed class UserAuthTokenServiceTests(BackendWebApplicationFactory facto
     var first = await tokenService.IssueTokenAsync(
       authenticated.UserId,
       UserAuthTokenType.EmailVerification,
-      cancellationToken);
+      cancellationToken: cancellationToken);
 
     var second = await tokenService.IssueTokenAsync(
       authenticated.UserId,
       UserAuthTokenType.EmailVerification,
-      cancellationToken);
+      cancellationToken: cancellationToken);
 
     var firstValidation = await tokenService.ValidateTokenAsync(
       first.Value,
       UserAuthTokenType.EmailVerification,
-      cancellationToken);
+      cancellationToken: cancellationToken);
 
     var secondValidation = await tokenService.ValidateTokenAsync(
       second.Value,
       UserAuthTokenType.EmailVerification,
-      cancellationToken);
+      cancellationToken: cancellationToken);
 
     Assert.False(firstValidation.IsSuccess);
     Assert.True(secondValidation.IsSuccess);
@@ -82,7 +82,7 @@ public sealed class UserAuthTokenServiceTests(BackendWebApplicationFactory facto
     var issueResult = await tokenService.IssueTokenAsync(
       authenticated.UserId,
       UserAuthTokenType.Invitation,
-      cancellationToken);
+      cancellationToken: cancellationToken);
 
     Assert.True(issueResult.IsSuccess);
 
@@ -96,7 +96,7 @@ public sealed class UserAuthTokenServiceTests(BackendWebApplicationFactory facto
     var expiresAtUtc = await tokenService.GetActiveUnusedTokenExpiresAtUtcAsync(
       authenticated.UserId,
       UserAuthTokenType.Invitation,
-      cancellationToken);
+      cancellationToken: cancellationToken);
 
     Assert.Equal(expiredAtUtc, expiresAtUtc);
   }
