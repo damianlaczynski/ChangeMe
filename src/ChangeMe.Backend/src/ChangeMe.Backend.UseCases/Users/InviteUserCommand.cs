@@ -44,7 +44,6 @@ public class InviteUserHandler(
       return roleResult.Map();
 
     await context.Users.AddAsync(user, cancellationToken);
-    await context.SaveChangesAsync(cancellationToken);
 
     var invitationResult = await invitationService.SendInvitationAsync(user, cancellationToken);
     if (!invitationResult.IsSuccess)
