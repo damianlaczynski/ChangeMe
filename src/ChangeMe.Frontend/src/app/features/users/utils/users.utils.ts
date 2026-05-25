@@ -17,7 +17,12 @@ export function isInvitationLinkExpired(
   expiresAtUtc: string,
   utcNowMs = Date.now()
 ): boolean {
-  return new Date(expiresAtUtc).getTime() <= utcNowMs;
+  const expiresAtMs = new Date(expiresAtUtc).getTime();
+  if (Number.isNaN(expiresAtMs)) {
+    return true;
+  }
+
+  return expiresAtMs <= utcNowMs;
 }
 
 export const UserMessages = {
