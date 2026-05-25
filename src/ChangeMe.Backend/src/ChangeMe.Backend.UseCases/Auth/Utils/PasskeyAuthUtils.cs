@@ -46,7 +46,7 @@ public static class PasskeyAuthUtils
     IPasskeyPolicyEvaluator passkeyPolicy,
     bool userVerificationPresent) =>
     user.TwoFactorEnabled
-    && auth.TwoFactorAuthenticationEnabled
+    && auth.TwoFactor.Enabled
     && !passkeyPolicy.DoesPasskeySatisfyTwoFactor(userVerificationPresent);
 
   public static bool IsTwoFactorSetupRequiredAfterPasskey(
@@ -54,8 +54,8 @@ public static class PasskeyAuthUtils
     AuthOptions auth,
     IPasskeyPolicyEvaluator passkeyPolicy,
     bool userVerificationPresent) =>
-    auth.TwoFactorAuthenticationEnabled
-    && auth.TwoFactorAuthenticationRequired
+    auth.TwoFactor.Enabled
+    && auth.TwoFactor.Required
     && !user.TwoFactorEnabled
     && user.HasPasswordSet
     && !passkeyPolicy.DoesPasskeySatisfyTwoFactor(userVerificationPresent);

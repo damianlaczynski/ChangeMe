@@ -59,7 +59,7 @@ public class GetAuthSettingsHandler(IOptions<AuthOptions> options)
         PasskeysAuthenticationEnabled = auth.Passkeys.PasskeysAuthenticationEnabled,
         PasskeysAuthenticationRequired = auth.Passkeys.PasskeysAuthenticationRequired,
         PasskeySatisfiesTwoFactor = auth.Passkeys.PasskeySatisfiesTwoFactor
-          && auth.TwoFactorAuthenticationEnabled,
+          && auth.TwoFactor.Enabled,
         DiscoverablePasskeySignInOnLogin = auth.Passkeys.DiscoverablePasskeySignInOnLogin,
         RelyingPartyId = PasskeyFido2Service.ResolveRpId(auth),
         RelyingPartyDisplayName = auth.Passkeys.RelyingPartyDisplayName,

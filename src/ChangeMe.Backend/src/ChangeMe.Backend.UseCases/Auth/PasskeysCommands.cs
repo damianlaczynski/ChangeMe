@@ -149,7 +149,7 @@ public class CompletePasskeySignInHandler(
         cancellationToken);
 
       if (auth.Passkeys.PasskeySatisfiesTwoFactor
-          && auth.TwoFactorAuthenticationEnabled
+          && auth.TwoFactor.Enabled
           && !PasskeyWebAuthnUtils.HasUserVerification(command.AssertionResponse))
       {
         return Result<LoginResponseDto>.Unauthorized(PasskeyAuthUtils.UvRequiredMessage);
@@ -163,7 +163,7 @@ public class CompletePasskeySignInHandler(
       if (ExternalAuthUtils.IsInvitationPending(user))
         return Result<LoginResponseDto>.Unauthorized(AuthSessionUtils.InvitePendingAccountMessage);
 
-      if (auth.EmailVerificationEnabled && !user.EmailVerified)
+      if (auth.EmailVerification.Enabled && !user.EmailVerified)
         return Result<LoginResponseDto>.Unauthorized(AuthSessionUtils.EmailNotVerifiedMessage);
 
       var passkeyCount = await context.PasskeyCredentials.CountAsync(x => x.UserId == user.Id, cancellationToken);

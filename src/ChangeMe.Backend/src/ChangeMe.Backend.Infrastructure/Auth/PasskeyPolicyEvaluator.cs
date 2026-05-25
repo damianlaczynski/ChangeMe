@@ -26,7 +26,7 @@ public sealed class PasskeyPolicyEvaluator(IOptions<AuthOptions> authOptions) : 
     var options = authOptions.Value;
     return options.Passkeys.PasskeySatisfiesTwoFactor
       && options.Passkeys.PasskeysAuthenticationEnabled
-      && options.TwoFactorAuthenticationEnabled
+      && options.TwoFactor.Enabled
       && userVerificationPresent;
   }
 }
