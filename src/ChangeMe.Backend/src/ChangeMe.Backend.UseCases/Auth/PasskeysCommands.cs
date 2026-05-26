@@ -52,11 +52,11 @@ public class BeginPasskeySignInHandler(
         return Result<PasskeyCeremonyBeginResponseDto>.Unauthorized(PasskeyAuthUtils.NoPasskeyForAccountMessage);
 
       var count = await context.PasskeyCredentials.CountAsync(x => x.UserId == user.Id, cancellationToken);
-      if (!PasskeyAuthUtils.CanUsePasskeySignIn(user, count, auth))
-        return Result<PasskeyCeremonyBeginResponseDto>.Unauthorized(PasskeyAuthUtils.PasskeyOnlyNotAllowedMessage);
-
       if (count == 0)
         return Result<PasskeyCeremonyBeginResponseDto>.Unauthorized(PasskeyAuthUtils.NoPasskeyForAccountMessage);
+
+      if (!PasskeyAuthUtils.CanUsePasskeySignIn(user, count, auth))
+        return Result<PasskeyCeremonyBeginResponseDto>.Unauthorized(PasskeyAuthUtils.PasskeyOnlyNotAllowedMessage);
 
       allowIds = await context.PasskeyCredentials
         .AsNoTracking()
@@ -135,6 +135,9 @@ public class CompletePasskeySignInHandler(
     if (stored is null)
     {
       await PasskeyCeremonyUtils.RecordFailedAttemptAsync(context, ceremony, cancellationToken);
+      if (PasskeyCeremonyUtils.IsAttemptLimitReached(ceremony, maxAttempts))
+        return Result<LoginResponseDto>.Unauthorized(PasskeyAuthUtils.TooManyAttemptsMessage);
+
       return Result<LoginResponseDto>.Unauthorized(PasskeyAuthUtils.NoMatchMessage);
     }
 
@@ -143,6 +146,9 @@ public class CompletePasskeySignInHandler(
     if (!PasskeyAuthUtils.DoesCeremonyEmailMatchUser(ceremony, user))
     {
       await PasskeyCeremonyUtils.RecordFailedAttemptAsync(context, ceremony, cancellationToken);
+      if (PasskeyCeremonyUtils.IsAttemptLimitReached(ceremony, maxAttempts))
+        return Result<LoginResponseDto>.Unauthorized(PasskeyAuthUtils.TooManyAttemptsMessage);
+
       return Result<LoginResponseDto>.Unauthorized(PasskeyAuthUtils.NoMatchMessage);
     }
 
@@ -190,6 +196,9 @@ public class CompletePasskeySignInHandler(
     catch (Fido2VerificationException)
     {
       await PasskeyCeremonyUtils.RecordFailedAttemptAsync(context, ceremony, cancellationToken);
+      if (PasskeyCeremonyUtils.IsAttemptLimitReached(ceremony, maxAttempts))
+        return Result<LoginResponseDto>.Unauthorized(PasskeyAuthUtils.TooManyAttemptsMessage);
+
       return Result<LoginResponseDto>.Unauthorized(PasskeyAuthUtils.NoMatchMessage);
     }
   }

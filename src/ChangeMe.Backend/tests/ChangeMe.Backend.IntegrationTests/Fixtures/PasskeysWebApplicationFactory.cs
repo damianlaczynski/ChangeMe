@@ -17,6 +17,7 @@ public class PasskeysWebApplicationFactory : BackendWebApplicationFactory
     overrides["Auth__Passkeys__DiscoverablePasskeySignInOnLogin"] = "false";
     overrides["Auth__Passkeys__OfferPasskeyEnrollmentPrompt"] = "true";
     overrides["Auth__Passkeys__MaxFailedPasskeyAttempts"] = "5";
+    overrides["Auth__TwoFactor__Enabled"] = "true";
   }
 
   protected override void ConfigureWebHost(IWebHostBuilder builder)
