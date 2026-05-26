@@ -22,7 +22,9 @@ export class AuthStorageService {
         passwordChangeStrict: parsed.passwordChangeStrict === true,
         passwordExpiresAtUtc: parsed.passwordExpiresAtUtc ?? null,
         twoFactorSetupRequired: parsed.twoFactorSetupRequired === true,
-        twoFactorSetupStrict: parsed.twoFactorSetupStrict === true
+        twoFactorSetupStrict: parsed.twoFactorSetupStrict === true,
+        passkeySetupRequired: parsed.passkeySetupRequired === true,
+        passkeySetupStrict: parsed.passkeySetupStrict === true
       };
     } catch {
       this.clearSession();

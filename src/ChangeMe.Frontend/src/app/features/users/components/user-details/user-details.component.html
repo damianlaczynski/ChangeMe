@@ -46,6 +46,16 @@
           (onClick)="confirmResetTwoFactor()"
         />
       }
+      @if (canResetPasskeys()) {
+        <p-button
+          label="Reset passkeys"
+          icon="pi pi-key"
+          severity="danger"
+          [outlined]="true"
+          size="small"
+          (onClick)="confirmResetPasskeys()"
+        />
+      }
       @if (canManageUsers() && !profile.deactivated && profile.hasPasswordSet) {
         <p-button
           label="Send password reset"
@@ -314,6 +324,82 @@
       </p-panel>
     }
 
+    @if (passkeysAuthenticationEnabled()) {
+      <p-panel header="Passkeys" [toggleable]="true" [collapsed]="true" class="mb-4">
+        <p-table [value]="profile.passkeys ?? []" stripedRows>
+          <ng-template #header>
+            <tr>
+              <th>Name</th>
+              <th>Created at</th>
+              <th>Last used at</th>
+              <th>Authenticator type</th>
+              <th>Backup eligible</th>
+              <th>Backup state</th>
+              @if (canManageUsers()) {
+                <th>Actions</th>
+              }
+            </tr>
+          </ng-template>
+          <ng-template #body let-pk>
+            <tr>
+              <td>{{ pk.name }}</td>
+              <td>{{ pk.createdAtUtc | date: 'dd.MM.yyyy HH:mm' }}</td>
+              <td>
+                @if (pk.lastUsedAtUtc) {
+                  {{ pk.lastUsedAtUtc | date: 'dd.MM.yyyy HH:mm' }}
+                } @else {
+                  <span class="text-muted-color">—</span>
+                }
+              </td>
+              <td>{{ pk.authenticatorType }}</td>
+              <td>
+                @if (pk.backupEligible) {
+                  <p-tag [value]="AuthMessages.passkeyBackupEligible" severity="info" />
+                } @else {
+                  <span class="text-muted-color">—</span>
+                }
+              </td>
+              <td>
+                @if (pk.backupEligible) {
+                  <p-tag
+                    [value]="
+                      pk.backupState
+                        ? AuthMessages.passkeyBackedUp
+                        : AuthMessages.passkeyNotBackedUp
+                    "
+                    [severity]="pk.backupState ? 'success' : 'secondary'"
+                  />
+                } @else {
+                  <span class="text-muted-color">—</span>
+                }
+              </td>
+              @if (canManageUsers()) {
+                <td>
+                  <p-button
+                    label="Remove"
+                    icon="pi pi-trash"
+                    severity="danger"
+                    [text]="true"
+                    size="small"
+                    (onClick)="confirmRemovePasskey(pk.id, pk.name)"
+                  />
+                </td>
+              }
+            </tr>
+          </ng-template>
+          <ng-template #emptymessage>
+            <tr>
+              <td [attr.colspan]="canManageUsers() ? 7 : 6">
+                <p class="text-muted-color m-0 py-4 text-center">
+                  No passkeys registered.
+                </p>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </p-panel>
+    }
+
     <p-panel header="Roles" [toggleable]="true" class="mb-4">
       @if (profile.roles.length === 0) {
         <p class="text-muted-color m-0 text-sm">{{ UserMessages.noRolesAssigned }}</p>
@@ -343,6 +429,7 @@
           <ng-template #header>
             <tr>
               <th>Device / browser</th>
+              <th>Sign-in method</th>
               <th>Signed in at</th>
               <th>Last activity</th>
               @if (canManageSessions()) {
@@ -358,6 +445,7 @@
                   {{ formatIpAddress(session.ipAddress) }}
                 </div>
               </td>
+              <td>{{ session.signInMethodLabel }}</td>
               <td>{{ session.signedInAt | date: 'dd.MM.yyyy HH:mm' }}</td>
               <td>{{ session.lastActivityAt | date: 'dd.MM.yyyy HH:mm' }}</td>
               @if (canManageSessions()) {

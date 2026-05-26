@@ -13,4 +13,5 @@ public sealed record AuthResponseDto(
   IReadOnlyList<string> Permissions,
   bool PasswordChangeRequired = false,
   DateTime? PasswordExpiresAtUtc = null,
-  bool TwoFactorSetupRequired = false);
+  bool TwoFactorSetupRequired = false,
+  bool PasskeySetupRequired = false);

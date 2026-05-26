@@ -56,6 +56,14 @@ export const UserMessages = {
   resetTwoFactorMessage: (userReference: string) =>
     `Reset two-factor authentication for ${highlightDialogValue(userReference)}? They will be signed out on every device and must set up two-factor again if required.`,
   twoFactorReset: 'Two-factor authentication reset.',
+  resetPasskeysTitle: 'Reset passkeys?',
+  resetPasskeysMessage: (userReference: string) =>
+    `Remove all passkeys for ${highlightDialogValue(userReference)}? They will be signed out on every device and must register a passkey again if required.`,
+  passkeysReset: 'Passkeys reset.',
+  removePasskeyTitle: 'Remove passkey?',
+  removePasskeyMessage: (name: string) =>
+    `Remove passkey ${highlightDialogValue(name)} from this account?`,
+  passkeyRemoved: 'Passkey removed.',
   resendInvitationTitle: 'Resend invitation?',
   resendInvitationMessage: (email: string) =>
     `Resend invitation to ${highlightDialogValue(email)}? A new invitation link will be sent. Previous unused links will stop working.`,

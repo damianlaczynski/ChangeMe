@@ -7,7 +7,9 @@ import { ForgotPasswordComponent } from '@features/auth/components/forgot-passwo
 import { LinkExternalAccountComponent } from '@features/auth/components/link-external-account/link-external-account.component';
 import { LoginComponent } from '@features/auth/components/login/login.component';
 import { MyAccountComponent } from '@features/auth/components/my-account/my-account.component';
+import { OptionalPasskeyEnrollmentComponent } from '@features/auth/components/optional-passkey-enrollment/optional-passkey-enrollment.component';
 import { RegisterComponent } from '@features/auth/components/register/register.component';
+import { RequiredPasskeySetupComponent } from '@features/auth/components/required-passkey-setup/required-passkey-setup.component';
 import { RequiredPasswordChangeComponent } from '@features/auth/components/required-password-change/required-password-change.component';
 import { RequiredTwoFactorSetupComponent } from '@features/auth/components/required-two-factor-setup/required-two-factor-setup.component';
 import { ResetPasswordComponent } from '@features/auth/components/reset-password/reset-password.component';
@@ -17,6 +19,10 @@ import { VerifyEmailComponent } from '@features/auth/components/verify-email/ver
 import { authGuard } from '@features/auth/guards/auth.guard';
 import { externalSignInCallbackGuard } from '@features/auth/guards/external-sign-in-callback.guard';
 import { guestGuard } from '@features/auth/guards/guest.guard';
+import {
+  optionalPasskeyEnrollmentGuard,
+  passkeySetupRequiredGuard
+} from '@features/auth/guards/passkey.guard';
 import { passwordChangeRequiredGuard } from '@features/auth/guards/password-change-required.guard';
 import {
   permissionGuard,
@@ -101,6 +107,16 @@ export const routes: Routes = [
     path: 'required-two-factor-setup',
     component: RequiredTwoFactorSetupComponent,
     canActivate: [twoFactorSetupRequiredGuard]
+  },
+  {
+    path: 'required-passkey-setup',
+    component: RequiredPasskeySetupComponent,
+    canActivate: [passkeySetupRequiredGuard]
+  },
+  {
+    path: 'add-passkey-prompt',
+    component: OptionalPasskeyEnrollmentComponent,
+    canActivate: [optionalPasskeyEnrollmentGuard]
   },
   {
     path: 'issues',

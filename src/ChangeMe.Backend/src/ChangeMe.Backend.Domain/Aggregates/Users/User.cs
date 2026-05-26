@@ -9,6 +9,7 @@ public class User : Entity, IAggregateRoot
   private readonly List<ExternalLogin> externalLogins = [];
   private readonly List<UserRecoveryCode> recoveryCodes = [];
   private readonly List<AccountInvitation> accountInvitations = [];
+  private readonly List<PasskeyCredential> passkeys = [];
 
   private User() { }
 
@@ -16,6 +17,7 @@ public class User : Entity, IAggregateRoot
   public IReadOnlyCollection<ExternalLogin> ExternalLogins => externalLogins;
   public IReadOnlyCollection<UserRecoveryCode> RecoveryCodes => recoveryCodes;
   public IReadOnlyCollection<AccountInvitation> AccountInvitations => accountInvitations;
+  public IReadOnlyCollection<PasskeyCredential> Passkeys => passkeys;
 
   public string FirstName { get; private set; } = string.Empty;
   public string LastName { get; private set; } = string.Empty;
@@ -31,6 +33,7 @@ public class User : Entity, IAggregateRoot
   public bool TwoFactorEnabled { get; private set; }
   public DateTime? TwoFactorEnabledAt { get; private set; }
   public string TwoFactorSecretCiphertext { get; private set; } = string.Empty;
+  public DateTime? PasskeyStepUpCompletedAt { get; private set; }
 
   public bool IsActive => !Deactivated;
   public bool HasCompleteProfile =>
@@ -414,6 +417,12 @@ public class User : Entity, IAggregateRoot
     if (value.Trim().Length > UserConstraints.NAME_MAX_LENGTH)
       validationErrors.Add(new ValidationError(propertyName, $"cannot be longer than {UserConstraints.NAME_MAX_LENGTH} characters"));
   }
+
+  public void RecordPasskeyStepUp(DateTime utcNow) => PasskeyStepUpCompletedAt = utcNow;
+
+  public bool IsPasskeyStepUpFresh(DateTime utcNow, int validityMinutes) =>
+    PasskeyStepUpCompletedAt.HasValue
+    && PasskeyStepUpCompletedAt.Value.AddMinutes(validityMinutes) > utcNow;
 }
 
 public static class UserConstraints

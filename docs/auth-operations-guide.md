@@ -2,7 +2,7 @@
 
 > **Audience:** operators, administrators, and developers deploying or supporting **ChangeMe**.
 > **Scope:** deployment settings under `Auth` in backend configuration, how each option affects sign-in and accounts, and how to connect external identity providers (OIDC).
-> **Related:** acceptance-level behaviour is defined in `docs/req/auth-requirements.md` and `docs/req/users-requirements.md`. This guide explains **operations**, not formal requirements.
+> **Related:** acceptance-level behaviour is defined in `docs/req/auth-requirements.md` and `docs/req/users-requirements.md`. **Passkeys (WebAuthn):** `docs/req/passkeys-requirements.md`. This guide explains **operations**, not formal requirements.
 
 ---
 
@@ -223,6 +223,7 @@ Per-provider fields:
 | Enterprise SSO + optional password                | Enable one OIDC provider, domain allowlist, `Registration:PublicEnabled: false` | Only existing users or admin-created users link/sign in; new emails without account get _No account exists…_.          |
 | High security                                     | `TwoFactor:Required: true`, 2FA enabled                                         | All users must set up authenticator after first sign-in (unless IdP MFA trusted on external path).                     |
 | Google/Microsoft + skip app 2FA when IdP used MFA | `TwoFactor:TrustIdentityProviderMfa: true` + 2FA enabled                        | External sign-in with `amr` containing `mfa` skips app TOTP and mandatory setup; password sign-in still uses app TOTP. |
+| Phishing-resistant sign-in                        | `Passkeys:PasskeysAuthenticationEnabled: true`                                  | Users enroll passkeys on **My account**; optional mandatory passkeys and 2FA substitution per REQ-PKY-001.             |
 | Public SaaS signup                                | `Registration:PublicEnabled: true`, email verification on                       | Register → verify email → login.                                                                                       |
 | Lock registration, allow Google                   | `Registration:PublicEnabled: false`, Google OIDC                                | New users only via Google if email not already in directory; matching email triggers link flow.                        |
 

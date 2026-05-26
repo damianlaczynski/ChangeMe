@@ -107,6 +107,20 @@ export class UsersService {
     );
   }
 
+  resetPasskeys(id: string): Observable<UserDetailsDto> {
+    return this.apiService.post<UserDetailsDto>(
+      `${this.baseEndpoint}/${id}/reset-passkeys`,
+      {}
+    );
+  }
+
+  removePasskey(userId: string, passkeyId: string): Observable<UserDetailsDto> {
+    return this.apiService.post<UserDetailsDto>(
+      `${this.baseEndpoint}/${userId}/passkeys/${passkeyId}/remove`,
+      {}
+    );
+  }
+
   unlinkExternalLogin(userId: string, providerKey: string): Observable<UserDetailsDto> {
     return this.apiService.post<UserDetailsDto>(
       `${this.baseEndpoint}/${userId}/external-logins/${encodeURIComponent(providerKey)}/unlink`,

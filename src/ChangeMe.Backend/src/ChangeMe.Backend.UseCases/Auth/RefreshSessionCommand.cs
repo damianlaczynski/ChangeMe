@@ -1,4 +1,5 @@
-﻿using ChangeMe.Backend.Infrastructure.Auth;
+﻿using ChangeMe.Backend.Domain.Aggregates.Users.Interfaces;
+using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UseCases.Auth.Dtos;
 
 using ChangeMe.Backend.UseCases.Auth.Utils;
@@ -12,7 +13,8 @@ public class RefreshSessionHandler(
   IJwtTokenGenerator jwtTokenGenerator,
   ISessionLifetimeService sessionLifetime,
   IPasswordExpirationEvaluator passwordExpirationEvaluator,
-  ITwoFactorPolicyEvaluator twoFactorPolicyEvaluator) : ICommandHandler<RefreshSessionCommand, AuthResponseDto>
+  ITwoFactorPolicyEvaluator twoFactorPolicyEvaluator,
+  IPasskeyPolicyEvaluator passkeyPolicyEvaluator) : ICommandHandler<RefreshSessionCommand, AuthResponseDto>
 {
   public async Task<Result<AuthResponseDto>> Handle(RefreshSessionCommand command, CancellationToken cancellationToken)
   {
@@ -28,7 +30,9 @@ public class RefreshSessionHandler(
     if (session is null || !sessionLifetime.IsActive(session, utcNow))
       return Result<AuthResponseDto>.Unauthorized();
 
-    var user = await context.Users.FirstOrDefaultAsync(x => x.Id == session.UserId, cancellationToken);
+    var user = await context.Users
+      .Include(x => x.AccountInvitations)
+      .FirstOrDefaultAsync(x => x.Id == session.UserId, cancellationToken);
     if (user is null || !user.IsActive)
       return Result<AuthResponseDto>.Unauthorized();
 
@@ -43,6 +47,10 @@ public class RefreshSessionHandler(
     var passwordExpiresAtUtc = passwordExpirationEvaluator.GetPasswordExpiresAtUtc(user);
     var twoFactorSetupRequired = !passwordChangeRequired
       && twoFactorPolicyEvaluator.IsTwoFactorSetupRequired(user);
+    var passkeyCount = await context.PasskeyCredentials.CountAsync(x => x.UserId == user.Id, cancellationToken);
+    var passkeySetupRequired = !passwordChangeRequired
+      && !twoFactorSetupRequired
+      && passkeyPolicyEvaluator.IsPasskeySetupRequired(user, passkeyCount);
 
     return await AuthSessionUtils.CreateAuthResponseAsync(
       context,
@@ -53,6 +61,7 @@ public class RefreshSessionHandler(
       passwordChangeRequired,
       passwordExpiresAtUtc,
       twoFactorSetupRequired,
-      cancellationToken);
+      cancellationToken,
+      passkeySetupRequired);
   }
 }

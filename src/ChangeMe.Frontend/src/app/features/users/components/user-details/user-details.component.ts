@@ -112,9 +112,11 @@ export class UserDetailsComponent {
   readonly passwordExpirationEnabled = signal(false);
   readonly emailVerificationEnabled = signal(false);
   readonly twoFactorAuthenticationEnabled = signal(false);
+  readonly passkeysAuthenticationEnabled = signal(false);
   readonly externalProvidersEnabled = signal(false);
 
   readonly UserMessages = UserMessages;
+  readonly AuthMessages = AuthMessages;
   readonly formatIpAddress = formatIpAddress;
   readonly getUserStatusLabel = getUserStatusLabel;
   readonly getUserStatusSeverity = getUserStatusSeverity;
@@ -138,6 +140,18 @@ export class UserDetailsComponent {
     );
   });
 
+  readonly canResetPasskeys = computed(() => {
+    const profile = this.user();
+    return (
+      !!profile &&
+      this.passkeysAuthenticationEnabled() &&
+      profile.passkeys &&
+      profile.passkeys.length > 0 &&
+      this.canManageUsers() &&
+      !profile.deactivated
+    );
+  });
+
   constructor() {
     this.authService
       .getAuthSettings()
@@ -148,6 +162,9 @@ export class UserDetailsComponent {
           this.emailVerificationEnabled.set(settings.emailVerificationEnabled);
           this.twoFactorAuthenticationEnabled.set(
             settings.twoFactorAuthenticationEnabled
+          );
+          this.passkeysAuthenticationEnabled.set(
+            settings.passkeys?.passkeysAuthenticationEnabled === true
           );
           this.externalProvidersEnabled.set(settings.externalProvidersEnabled);
         }
@@ -225,6 +242,33 @@ export class UserDetailsComponent {
       acceptButtonProps: { label: 'Reset', severity: 'danger' },
       rejectButtonProps: { label: 'Cancel', severity: 'secondary', outlined: true },
       accept: () => this.resetTwoFactor()
+    });
+  }
+
+  confirmResetPasskeys(): void {
+    const profile = this.user();
+    if (!profile) {
+      return;
+    }
+
+    this.confirmationService.confirm({
+      header: UserMessages.resetPasskeysTitle,
+      message: UserMessages.resetPasskeysMessage(formatUserReference(profile)),
+      icon: 'pi pi-exclamation-triangle',
+      acceptButtonProps: { label: 'Reset', severity: 'danger' },
+      rejectButtonProps: { label: 'Cancel', severity: 'secondary', outlined: true },
+      accept: () => this.resetPasskeys()
+    });
+  }
+
+  confirmRemovePasskey(passkeyId: string, passkeyName: string): void {
+    this.confirmationService.confirm({
+      header: UserMessages.removePasskeyTitle,
+      message: UserMessages.removePasskeyMessage(passkeyName),
+      icon: 'pi pi-exclamation-triangle',
+      acceptButtonProps: { label: 'Remove', severity: 'danger' },
+      rejectButtonProps: { label: 'Cancel', severity: 'secondary', outlined: true },
+      accept: () => this.removePasskey(passkeyId)
     });
   }
 
@@ -414,6 +458,32 @@ export class UserDetailsComponent {
         next: (user) => {
           this.user.set(user);
           this.toastService.success(UserMessages.twoFactorReset);
+        },
+        error: (error: Error) => this.errorMessage.set(error.message)
+      });
+  }
+
+  private resetPasskeys(): void {
+    this.usersService
+      .resetPasskeys(this.id())
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (user) => {
+          this.user.set(user);
+          this.toastService.success(UserMessages.passkeysReset);
+        },
+        error: (error: Error) => this.errorMessage.set(error.message)
+      });
+  }
+
+  private removePasskey(passkeyId: string): void {
+    this.usersService
+      .removePasskey(this.id(), passkeyId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (user) => {
+          this.user.set(user);
+          this.toastService.success(UserMessages.passkeyRemoved);
         },
         error: (error: Error) => this.errorMessage.set(error.message)
       });

@@ -1,5 +1,7 @@
-﻿using ChangeMe.Backend.Domain.Aggregates.Users;
+﻿using ChangeMe.Backend.Domain.Aggregates.Sessions;
+using ChangeMe.Backend.Domain.Aggregates.Users;
 using ChangeMe.Backend.Domain.Aggregates.Users.Entities;
+using ChangeMe.Backend.Domain.Aggregates.Users.Interfaces;
 using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UseCases.Auth.Dtos;
 using ChangeMe.Backend.UseCases.Auth.Utils;
@@ -19,6 +21,7 @@ public class LoginUserHandler(
   ISessionLifetimeService sessionLifetime,
   IPasswordExpirationEvaluator passwordExpirationEvaluator,
   ITwoFactorPolicyEvaluator twoFactorPolicyEvaluator,
+  IPasskeyPolicyEvaluator passkeyPolicyEvaluator,
   IOptions<AuthOptions> authOptions,
   IHttpContextAccessor httpContextAccessor) : ICommandHandler<LoginUserCommand, LoginResponseDto>
 {
@@ -68,7 +71,8 @@ public class LoginUserHandler(
       sessionLifetime,
       httpContextAccessor,
       user,
-      cancellationToken);
+      cancellationToken,
+      SignInMethods.Password);
     if (!sessionResult.IsSuccess)
       return Result<LoginResponseDto>.Invalid(sessionResult.ValidationErrors);
 
@@ -77,6 +81,10 @@ public class LoginUserHandler(
     var passwordExpiresAtUtc = passwordExpirationEvaluator.GetPasswordExpiresAtUtc(user);
     var twoFactorSetupRequired = !passwordChangeRequired
       && twoFactorPolicyEvaluator.IsTwoFactorSetupRequired(user);
+    var passkeyCount = await context.PasskeyCredentials.CountAsync(x => x.UserId == user.Id, cancellationToken);
+    var passkeySetupRequired = !passwordChangeRequired
+      && !twoFactorSetupRequired
+      && passkeyPolicyEvaluator.IsPasskeySetupRequired(user, passkeyCount);
 
     var authResponse = await AuthSessionUtils.CreateAuthResponseAsync(
       context,
@@ -87,7 +95,8 @@ public class LoginUserHandler(
       passwordChangeRequired,
       passwordExpiresAtUtc,
       twoFactorSetupRequired,
-      cancellationToken);
+      cancellationToken,
+      passkeySetupRequired);
 
     if (!authResponse.IsSuccess)
       return authResponse.Map();
@@ -102,7 +111,7 @@ public class LoginUserHandler(
   {
     var lifetimeMinutes = authOptions.Value.TwoFactor.PendingSignInChallengeLifetimeMinutes;
     var expiresAtUtc = utcNow.AddMinutes(lifetimeMinutes);
-    var challengeResult = SignInChallenge.Create(user.Id, expiresAtUtc);
+    var challengeResult = SignInChallenge.Create(user.Id, expiresAtUtc, SignInMethods.Password);
     if (!challengeResult.IsSuccess)
       return challengeResult.Map();
 

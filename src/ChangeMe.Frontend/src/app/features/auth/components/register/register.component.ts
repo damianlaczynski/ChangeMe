@@ -145,13 +145,9 @@ export class RegisterComponent {
           return;
         }
 
-        if (this.authService.passwordChangeRequired()) {
-          this.authService.enablePasswordChangeScreen();
-          void this.router.navigateByUrl('/required-password-change');
-          return;
-        }
-
-        void this.router.navigateByUrl('/issues');
+        this.authService.continueAfterPrimaryAuthentication({
+          offerPasskeyEnrollment: true
+        });
       },
       error: (error) => {
         const message = error instanceof Error ? error.message : 'Registration failed.';

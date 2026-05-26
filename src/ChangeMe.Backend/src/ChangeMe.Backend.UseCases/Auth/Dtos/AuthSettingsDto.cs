@@ -13,6 +13,7 @@ public sealed record AuthSettingsDto
   public bool ExternalProvidersEnabled { get; init; }
   public TwoFactorSettingsDto TwoFactor { get; init; } = new();
   public IReadOnlyList<ExternalProviderSettingsDto> ExternalProviders { get; init; } = [];
+  public PasskeySettingsDto Passkeys { get; init; } = new();
 }
 
 public sealed record TwoFactorSettingsDto

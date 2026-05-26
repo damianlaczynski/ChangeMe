@@ -13,6 +13,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ToastService } from '@core/toast/services/toast.service';
 import { MyAccountExternalMethodsComponent } from '@features/auth/components/my-account-external-methods/my-account-external-methods.component';
+import { MyAccountPasskeysComponent } from '@features/auth/components/my-account-passkeys/my-account-passkeys.component';
 import { MyAccountTwoFactorComponent } from '@features/auth/components/my-account-two-factor/my-account-two-factor.component';
 import { MySessionsComponent } from '@features/auth/components/my-sessions/my-sessions.component';
 import { MyAccountDto } from '@features/auth/models/auth.model';
@@ -42,6 +43,7 @@ import { Tag } from 'primeng/tag';
     EffectivePermissionsComponent,
     MySessionsComponent,
     MyAccountTwoFactorComponent,
+    MyAccountPasskeysComponent,
     MyAccountExternalMethodsComponent
   ],
   templateUrl: './my-account.component.html'
@@ -59,6 +61,9 @@ export class MyAccountComponent implements OnInit {
   readonly account = signal<MyAccountDto | null>(null);
   readonly twoFactorAuthenticationEnabled = signal(false);
   readonly twoFactorAuthenticationRequired = signal(false);
+  readonly passkeysAuthenticationEnabled = signal(false);
+  readonly passkeysAuthenticationRequired = signal(false);
+  readonly maximumPasskeysPerUser = signal(10);
   readonly externalProvidersEnabled = signal(false);
   readonly errorMessage = signal<string | null>(null);
   readonly isLoading = signal(true);
@@ -98,8 +103,16 @@ export class MyAccountComponent implements OnInit {
           );
           this.externalProvidersEnabled.set(settings.externalProvidersEnabled);
           this.stepUpExternalSignInValidityMinutes.set(
-            settings.twoFactor.stepUpExternalSignInValidityMinutes
+            settings.twoFactor?.stepUpExternalSignInValidityMinutes ?? 15
           );
+          const passkeys = settings.passkeys;
+          this.passkeysAuthenticationEnabled.set(
+            passkeys?.passkeysAuthenticationEnabled === true
+          );
+          this.passkeysAuthenticationRequired.set(
+            passkeys?.passkeysAuthenticationRequired === true
+          );
+          this.maximumPasskeysPerUser.set(passkeys?.maximumPasskeysPerUser ?? 10);
         }
       });
 

@@ -26,6 +26,7 @@
       <ng-template pTemplate="header">
         <tr>
           <th>Device / browser</th>
+          <th>Sign-in method</th>
           <th>Signed in at</th>
           <th>Last activity</th>
           <th>Current</th>
@@ -42,6 +43,7 @@
               {{ formatIpAddress(session.ipAddress) }}
             </div>
           </td>
+          <td>{{ session.signInMethodLabel }}</td>
           <td>{{ session.signedInAt | date: 'dd.MM.yyyy HH:mm' }}</td>
           <td>{{ session.lastActivityAt | date: 'dd.MM.yyyy HH:mm' }}</td>
           <td>

@@ -24,6 +24,7 @@ public class GetMyAccountHandler(
       .Include(x => x.Roles)
       .ThenInclude(x => x.Role)
       .Include(x => x.ExternalLogins)
+      .Include(x => x.Passkeys)
       .FirstOrDefaultAsync(x => x.Id == userId, cancellationToken);
     if (user is null || !user.IsActive)
       return Result<MyAccountDto>.Unauthorized();
@@ -65,6 +66,16 @@ public class GetMyAccountHandler(
         .ToList()
       : [];
 
+    var passkeys = auth.Passkeys.PasskeysAuthenticationEnabled
+      ? user.Passkeys
+        .OrderBy(x => x.CreatedAtUtc)
+        .Select(CompletePasskeyRegistrationHandler.Map)
+        .ToList()
+      : [];
+
+    var passkeyStepUpFresh = auth.Passkeys.PasskeysAuthenticationEnabled
+      && user.IsPasskeyStepUpFresh(DateTime.UtcNow, auth.Passkeys.PasskeyStepUpValidityMinutes);
+
     return Result.Success(new MyAccountDto(
       user.Id,
       user.FirstName,
@@ -78,6 +89,8 @@ public class GetMyAccountHandler(
       roles,
       effectivePermissions,
       externalLogins,
-      linkableProviders));
+      linkableProviders,
+      passkeys,
+      passkeyStepUpFresh));
   }
 }

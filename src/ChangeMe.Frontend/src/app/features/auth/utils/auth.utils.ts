@@ -106,7 +106,41 @@ export const AuthMessages = {
     'The external account email does not match your account email.',
   cannotRemoveOnlySignInMethod:
     'Set a password before removing your only sign-in method.',
-  verifyWithProvider: 'Verify with provider'
+  verifyWithProvider: 'Verify with provider',
+  passkeySignInFailed: 'Passkey sign-in failed. Try again or use email and password.',
+  passkeyNotSupported: 'Passkeys are not supported in this browser.',
+  passkeyNotSupportedSignIn:
+    'Passkeys are not supported in this browser. Use email and password or try another browser.',
+  optionalPasskeyEnrollmentTitle: 'Add a passkey for faster sign-in',
+  optionalPasskeyEnrollmentSubtitle:
+    'Passkeys let you sign in with your device PIN, fingerprint, or face instead of typing your password.',
+  passkeyAdded: 'Passkey added.',
+  passkeyRemoved: 'Passkey removed.',
+  passkeyRenamed: 'Passkey renamed.',
+  passkeyStepUpCompleted: 'Identity verified with passkey.',
+  passkeySetupRequiredTitle: 'Set up a passkey',
+  passkeySetupRequiredSubtitle:
+    'A passkey is required for your account before you can continue.',
+  passkeyRequiredWarning: 'A passkey is required for your account.',
+  passkeySetupRequiredSummary: 'Passkey required',
+  passkeySetupRequiredDetail:
+    'Add a passkey to continue saving your work to the server.',
+  passkeySetupRequiredAction: 'Add now',
+  passkeyVerifyWithPasskey: 'Verify with passkey',
+  nameYourPasskeyTitle: 'Name your passkey',
+  passkeyEnterEmailHint: 'Enter your email to use a passkey.',
+  passkeyEmptyState: 'No passkeys registered.',
+  passkeyEmptyStateDescription:
+    'Passkeys let you sign in with your device PIN, fingerprint, or face.',
+  passkeyMaximumReached:
+    'Maximum number of passkeys reached. Remove one before adding another.',
+  passkeyRemoveOnlySignInMethod:
+    'Add a password or external sign-in before removing your only sign-in method.',
+  passkeyRemoveRequiredPasskey:
+    'At least one passkey is required. Add another passkey before removing this one.',
+  passkeyBackupEligible: 'Backup eligible',
+  passkeyBackedUp: 'Backed up',
+  passkeyNotBackedUp: 'Not backed up'
 };
 
 export { PermissionCodes } from '@shared/authorization/permission-codes';

@@ -1,6 +1,8 @@
 using ChangeMe.Backend.Domain.Aggregates.Roles;
+using ChangeMe.Backend.Domain.Aggregates.Sessions;
 using ChangeMe.Backend.Domain.Aggregates.Users;
 using ChangeMe.Backend.Domain.Aggregates.Users.Entities;
+using ChangeMe.Backend.Domain.Aggregates.Users.Interfaces;
 using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UseCases.Auth.Dtos;
 using ChangeMe.Backend.UseCases.Auth.Utils;
@@ -23,6 +25,7 @@ public class CompleteExternalSignInHandler(
   IAuthEmailService authEmailService,
   IUserAuthTokenService userAuthTokenService,
   IOptions<AuthOptions> authOptions,
+  IPasskeyPolicyEvaluator passkeyPolicyEvaluator,
   TimeProvider timeProvider) : ICommandHandler<CompleteExternalSignInCommand, ExternalSignInResponseDto>
 {
   public async Task<Result<ExternalSignInResponseDto>> Handle(
@@ -311,10 +314,12 @@ public class CompleteExternalSignInHandler(
       jwtTokenGenerator,
       sessionLifetime,
       passwordExpirationEvaluator,
+      passkeyPolicyEvaluator,
       httpContextAccessor,
       auth,
       user,
       assertion.IdentityProviderMfaAsserted,
+      SignInMethods.ExternalWithProvider(provider.ProviderKey),
       cancellationToken);
   }
 
@@ -429,10 +434,12 @@ public class CompleteExternalSignInHandler(
       jwtTokenGenerator,
       sessionLifetime,
       passwordExpirationEvaluator,
+      passkeyPolicyEvaluator,
       httpContextAccessor,
       auth,
       user,
       identityProviderMfaAsserted,
+      SignInMethods.ExternalWithProvider(pending.ProviderKey),
       cancellationToken);
   }
 

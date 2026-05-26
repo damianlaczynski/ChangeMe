@@ -26,6 +26,8 @@ public sealed class AuthOptions
   public TwoFactorOptions TwoFactor { get; set; } = new();
 
   public ExternalAuthOptions External { get; set; } = new();
+
+  public PasskeyOptions Passkeys { get; set; } = new();
 }
 
 public sealed class PasswordExpirationOptions
@@ -133,6 +135,39 @@ public sealed class InvitationRetentionSettings
   public int RevokedInvitationRetentionDays { get; set; } = 7;
 
   public string CleanupCronExpression { get; set; } = "0 4 * * *";
+}
+
+public sealed class PasskeyOptions
+{
+  public bool PasskeysAuthenticationEnabled { get; set; }
+
+  public bool PasskeysAuthenticationRequired { get; set; }
+
+  public bool PasskeySatisfiesTwoFactor { get; set; }
+
+  public bool AllowPasskeyOnlyAccounts { get; set; }
+
+  public bool DiscoverablePasskeySignInOnLogin { get; set; } = true;
+
+  public bool OfferPasskeyEnrollmentPrompt { get; set; }
+
+  public string? RelyingPartyId { get; set; }
+
+  public string RelyingPartyDisplayName { get; set; } = "ChangeMe";
+
+  public int MaximumPasskeysPerUser { get; set; } = 10;
+
+  public int ChallengeLifetimeMinutes { get; set; } = 5;
+
+  public bool UserVerificationRequired { get; set; } = true;
+
+  public string AllowedAuthenticatorAttachment { get; set; } = "Any";
+
+  public string AttestationConveyance { get; set; } = "None";
+
+  public int PasskeyStepUpValidityMinutes { get; set; } = 15;
+
+  public int MaxFailedPasskeyAttempts { get; set; } = 5;
 }
 
 public sealed class PasswordPolicyOptions

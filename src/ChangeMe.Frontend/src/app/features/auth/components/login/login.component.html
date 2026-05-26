@@ -99,6 +99,24 @@
       styleClass="w-full"
     />
 
+    @if (passkeysAuthenticationEnabled()) {
+      <p-button
+        type="button"
+        label="Sign in with a passkey"
+        icon="pi pi-key"
+        severity="secondary"
+        styleClass="w-full"
+        [loading]="isPasskeySigningIn()"
+        [disabled]="isSubmitting() || isPasskeySigningIn() || !canSignInWithPasskey()"
+        (onClick)="signInWithPasskey()"
+      />
+      @if (passkeySignInHint()) {
+        <p-message severity="secondary" variant="simple">
+          {{ passkeySignInHint() }}
+        </p-message>
+      }
+    }
+
     @if (externalProvidersEnabled() && externalProviders().length > 0) {
       <div class="flex items-center gap-3">
         <span class="bg-surface-200 h-px flex-1 dark:bg-surface-700"></span>

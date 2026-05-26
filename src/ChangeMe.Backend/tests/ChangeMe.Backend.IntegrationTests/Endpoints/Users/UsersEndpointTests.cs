@@ -69,6 +69,37 @@ public sealed class UsersEndpointTests(BackendWebApplicationFactory factory)
     Assert.Contains(fakeEmail.SentEmails, e => e.Subject == "You're invited to ChangeMe");
   }
 
+  [Fact]
+  public async Task PutUsers_WhenInvitedUserHasNoPassword_ShouldAllowEmptyNames()
+  {
+    var cancellationToken = TestContext.Current.CancellationToken;
+    var admin = await TestAuthHelper.CreateAdministratorUserAsync(factory, cancellationToken);
+    var userRoleId = await GetRoleIdByNameAsync(factory, "User", cancellationToken);
+    var email = $"invited-{Guid.NewGuid():N}@example.com";
+
+    var inviteResponse = await admin.Client.PostAsJsonAsync("/api/users", new
+    {
+      FirstName = "",
+      LastName = "",
+      Email = email,
+      RoleIds = new[] { userRoleId }
+    }, cancellationToken);
+
+    inviteResponse.EnsureSuccessStatusCode();
+    var inviteBody = await inviteResponse.Content.ReadAsStringAsync(cancellationToken);
+    var userId = RolesTestHelper.ReadGuidFromResultBody(inviteBody, "id");
+
+    var updateResponse = await admin.Client.PutAsJsonAsync($"/api/users/{userId}", new
+    {
+      Id = userId,
+      FirstName = "",
+      LastName = "",
+      Email = email
+    }, cancellationToken);
+
+    Assert.Equal(HttpStatusCode.OK, updateResponse.StatusCode);
+  }
+
   private static async Task<Guid> GetRoleIdByNameAsync(
     BackendWebApplicationFactory factory,
     string roleName,

@@ -18,8 +18,14 @@ public sealed class UpdateUserCommandValidator : Validator<UpdateUserCommand>
   public UpdateUserCommandValidator()
   {
     RuleFor(x => x.Id).NotEmpty();
-    RuleFor(x => x.FirstName).NotEmpty().MaximumLength(UserConstraints.NAME_MAX_LENGTH);
-    RuleFor(x => x.LastName).NotEmpty().MaximumLength(UserConstraints.NAME_MAX_LENGTH);
+    RuleFor(x => x.FirstName)
+      .MaximumLength(UserConstraints.NAME_MAX_LENGTH)
+      .When(x => !string.IsNullOrWhiteSpace(x.FirstName));
+
+    RuleFor(x => x.LastName)
+      .MaximumLength(UserConstraints.NAME_MAX_LENGTH)
+      .When(x => !string.IsNullOrWhiteSpace(x.LastName));
+
     RuleFor(x => x.Email).NotEmpty().EmailAddress().MaximumLength(UserConstraints.EMAIL_MAX_LENGTH);
   }
 }

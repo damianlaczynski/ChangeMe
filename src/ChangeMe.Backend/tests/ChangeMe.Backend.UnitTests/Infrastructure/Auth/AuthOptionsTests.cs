@@ -116,4 +116,42 @@ public sealed class AuthOptionsTests
     Assert.Single(result.Value.ExternalProviders);
     Assert.Equal("google", result.Value.ExternalProviders[0].ProviderKey);
   }
+
+  [Fact]
+  public async Task GetAuthSettingsHandler_ShouldExposeOfferPasskeyEnrollmentPromptOnlyWhenPasskeysEnabled()
+  {
+    var options = Options.Create(new AuthOptions
+    {
+      Passkeys = new PasskeyOptions
+      {
+        PasskeysAuthenticationEnabled = true,
+        OfferPasskeyEnrollmentPrompt = true
+      }
+    });
+
+    var handler = new GetAuthSettingsHandler(options);
+    var enabledResult = await handler.Handle(
+      new GetAuthSettingsQuery(),
+      TestContext.Current.CancellationToken);
+
+    Assert.True(enabledResult.IsSuccess);
+    Assert.True(enabledResult.Value.Passkeys.OfferPasskeyEnrollmentPrompt);
+
+    options = Options.Create(new AuthOptions
+    {
+      Passkeys = new PasskeyOptions
+      {
+        PasskeysAuthenticationEnabled = false,
+        OfferPasskeyEnrollmentPrompt = true
+      }
+    });
+
+    handler = new GetAuthSettingsHandler(options);
+    var disabledResult = await handler.Handle(
+      new GetAuthSettingsQuery(),
+      TestContext.Current.CancellationToken);
+
+    Assert.True(disabledResult.IsSuccess);
+    Assert.False(disabledResult.Value.Passkeys.OfferPasskeyEnrollmentPrompt);
+  }
 }

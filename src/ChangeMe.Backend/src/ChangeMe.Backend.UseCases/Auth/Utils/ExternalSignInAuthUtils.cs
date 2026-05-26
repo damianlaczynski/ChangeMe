@@ -1,5 +1,6 @@
 using ChangeMe.Backend.Domain.Aggregates.Users;
 using ChangeMe.Backend.Domain.Aggregates.Users.Entities;
+using ChangeMe.Backend.Domain.Aggregates.Users.Interfaces;
 using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UseCases.Auth.Dtos;
 using Microsoft.AspNetCore.Http;
@@ -13,10 +14,12 @@ public static class ExternalSignInAuthUtils
     IJwtTokenGenerator jwtTokenGenerator,
     ISessionLifetimeService sessionLifetime,
     IPasswordExpirationEvaluator passwordExpirationEvaluator,
+    IPasskeyPolicyEvaluator passkeyPolicyEvaluator,
     IHttpContextAccessor httpContextAccessor,
     AuthOptions auth,
     User user,
     bool identityProviderMfaAsserted,
+    string sessionSignInMethod,
     CancellationToken cancellationToken)
   {
     var utcNow = DateTime.UtcNow;
@@ -30,6 +33,7 @@ public static class ExternalSignInAuthUtils
         auth,
         user,
         utcNow,
+        sessionSignInMethod,
         cancellationToken);
       if (!challengeResult.IsSuccess)
         return challengeResult.Map();
@@ -45,7 +49,8 @@ public static class ExternalSignInAuthUtils
       sessionLifetime,
       httpContextAccessor,
       user,
-      cancellationToken);
+      cancellationToken,
+      sessionSignInMethod);
     if (!sessionResult.IsSuccess)
       return Result<ExternalSignInResponseDto>.Invalid(sessionResult.ValidationErrors);
 
@@ -54,6 +59,10 @@ public static class ExternalSignInAuthUtils
     var passwordExpiresAtUtc = passwordExpirationEvaluator.GetPasswordExpiresAtUtc(user);
     var twoFactorSetupRequired = !passwordChangeRequired
       && ExternalAuthUtils.IsTwoFactorSetupRequired(user, auth, identityProviderMfaAsserted);
+    var passkeyCount = await context.PasskeyCredentials.CountAsync(x => x.UserId == user.Id, cancellationToken);
+    var passkeySetupRequired = !passwordChangeRequired
+      && !twoFactorSetupRequired
+      && passkeyPolicyEvaluator.IsPasskeySetupRequired(user, passkeyCount);
 
     var authResponse = await AuthSessionUtils.CreateAuthResponseAsync(
       context,
@@ -64,7 +73,8 @@ public static class ExternalSignInAuthUtils
       passwordChangeRequired,
       passwordExpiresAtUtc,
       twoFactorSetupRequired,
-      cancellationToken);
+      cancellationToken,
+      passkeySetupRequired);
 
     if (!authResponse.IsSuccess)
       return authResponse.Map();
@@ -77,10 +87,11 @@ public static class ExternalSignInAuthUtils
     AuthOptions auth,
     User user,
     DateTime utcNow,
+    string pendingSignInMethod,
     CancellationToken cancellationToken)
   {
     var expiresAtUtc = utcNow.AddMinutes(auth.TwoFactor.PendingSignInChallengeLifetimeMinutes);
-    var challengeResult = SignInChallenge.Create(user.Id, expiresAtUtc);
+    var challengeResult = SignInChallenge.Create(user.Id, expiresAtUtc, pendingSignInMethod);
     if (!challengeResult.IsSuccess)
       return challengeResult.Map();
 

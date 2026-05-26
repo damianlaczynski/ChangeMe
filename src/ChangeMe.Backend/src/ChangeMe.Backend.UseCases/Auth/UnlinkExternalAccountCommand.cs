@@ -42,6 +42,7 @@ public class UnlinkExternalAccountHandler(
       return canUnlinkResult.Map();
 
     var utcNow = DateTime.UtcNow;
+    var passkeyCount = await context.PasskeyCredentials.CountAsync(x => x.UserId == userId, cancellationToken);
     var stepUpResult = TwoFactorStepUpUtils.ValidateStepUp(
       user,
       command.CurrentPassword,
@@ -51,6 +52,8 @@ public class UnlinkExternalAccountHandler(
       secretProtector,
       recoveryCodeHasher,
       authOptions,
+      auth.Passkeys.PasskeysAuthenticationEnabled,
+      passkeyCount,
       utcNow,
       out var consumedRecoveryCode);
     if (!stepUpResult.IsSuccess)

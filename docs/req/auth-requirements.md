@@ -3,6 +3,8 @@
 This document covers fourteen REQs for the **Auth** area:
 login and registration with tracked sessions, staying signed in, logout, own sessions, password change, self-service reset, auth emails, password policy, password expiration, account invite acceptance, optional email verification, optional public registration, optional two-factor authentication, and optional external identity providers.
 
+**Passkeys (WebAuthn)** are specified in `docs/req/passkeys-requirements.md` (REQ-PKY-001 through REQ-PKY-007). When implemented, **Login** and compliance gates integrate with passkey policy per REQ-PKY-002 and REQ-PKY-006.
+
 Screens **Login**, **Forgot password**, **Reset password**, **Accept invitation**, **Two-factor verification**, and **External sign-in callback** are available to guests when applicable. **Link external account** is available to guests during external sign-in when linking an existing password account. **Register** and **Verify email** are available to guests only when the corresponding deployment settings allow them (REQ-AUTH-012, REQ-AUTH-011). All other application screens require an authenticated user whose account is **not deactivated** and whose email is **verified** when email verification is enabled (REQ-AUTH-011).
 
 Account lifecycle terms (**awaiting invitation acceptance**, **account invitation**, **external-only account**, **local password**) are defined in `docs/req/invitations-requirements.md` and `docs/req/users-requirements.md` (**Business terms**).
@@ -38,6 +40,7 @@ The user must be able to sign in with email and password and begin an authentica
 - Footer link on **Login**: **Forgot password?** → **Forgot password** (REQ-AUTH-006).
 - Footer link on **Login**: **Create an account** → **Register** — shown only when **public registration** is **enabled** (REQ-AUTH-012).
 - When **external identity providers** are **enabled** (REQ-AUTH-014), **Login** shows a **Continue with {Provider}** button for each configured provider below the email and password form, separated by an **or** divider.
+- When **passkeys authentication enabled** is **true** (REQ-PKY-002), **Login** shows **Sign in with a passkey** per passkeys requirements; passkey sign-in is subject to the same account gates as password sign-in and to **Combined account compliance gates** in REQ-PKY-006 (which extends REQ-AUTH-013 ordering).
 
 ### Register screen
 
@@ -320,6 +323,9 @@ The system must notify users by email about important account security events.
 | **External account linked**   | User links an external provider on **My account** (REQ-AUTH-014)                                         | `External sign-in method linked`           |
 | **External account unlinked** | User or administrator removes an external provider link                                                  | `External sign-in method removed`          |
 | **Recovery code used**        | A recovery code succeeds at sign-in or step-up authentication                                            | `A recovery code was used on your account` |
+| **Passkey added**             | User completes **Add passkey** on **My account** (REQ-PKY-003)                                           | `Passkey added to your account`            |
+| **Passkey removed**           | User or administrator removes a passkey credential (REQ-PKY-003, REQ-PKY-005)                            | `Passkey removed from your account`        |
+| **Passkeys reset by admin**   | Administrator **Reset passkeys** on **User details** (REQ-PKY-005)                                       | `Passkeys reset on your account`           |
 
 - Each email contains a short summary and, where applicable, a button link to the frontend (invitation, reset, verify email, or sign-in).
 - Email delivery uses the configured mail server (same as issue notifications).
@@ -796,7 +802,8 @@ When **Two-factor authentication required** is **true** and **Two-factor enabled
 - **Sign out everywhere** and session revoke (REQ-AUTH-003, REQ-AUTH-004) do not disable two-factor authentication.
 - Deactivating a user (REQ-USR-005) does not clear two-factor settings; reactivation preserves them.
 - A used recovery code cannot be reused; the system sends **Recovery code used** email (REQ-AUTH-007).
-- **Out of scope for this REQ:** SMS or email one-time codes as the second factor; WebAuthn / passkeys; per-role two-factor requirement; trusted devices that skip two-factor; admin UI to change deployment two-factor flags at runtime.
+- **Out of scope for this REQ:** SMS or email one-time codes as the second factor; per-role two-factor requirement; trusted devices that skip two-factor; admin UI to change deployment two-factor flags at runtime.
+- Passkeys (WebAuthn): `docs/req/passkeys-requirements.md` (REQ-PKY-001 through REQ-PKY-007). **Passkey satisfies two-factor** deployment setting interacts with this REQ; see REQ-PKY-001 and REQ-PKY-006.
 
 ---
 

@@ -74,6 +74,13 @@ export class EditUserComponent {
     return name ? `Edit ${name}` : 'Edit User';
   });
   readonly isEditingSelf = signal(false);
+  readonly namesRequired = signal(true);
+  readonly firstNameLabel = computed(() =>
+    this.namesRequired() ? 'First name' : 'First name (optional)'
+  );
+  readonly lastNameLabel = computed(() =>
+    this.namesRequired() ? 'Last name' : 'Last name (optional)'
+  );
 
   readonly canManageRoles = this.authService.hasPermission(PermissionCodes.rolesManage);
   readonly canDeactivateUsers = this.authService.hasPermission(
@@ -174,6 +181,8 @@ export class EditUserComponent {
             roleIds: user.roles.map((role) => role.id),
             deactivated: user.deactivated
           });
+
+          this.namesRequired.set(user.hasPasswordSet);
 
           const nameValidators = user.hasPasswordSet
             ? [

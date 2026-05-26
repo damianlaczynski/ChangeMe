@@ -53,6 +53,60 @@ public sealed class AuthEmailServiceTests
   }
 
   [Fact]
+  public async Task SendPasskeyAddedAsync_ShouldIncludeAccountEmailEventTimeAndPasskeyName()
+  {
+    var cancellationToken = TestContext.Current.CancellationToken;
+    var user = User.CreateWithPassword("Ada", "Lovelace", "ada@example.com", "hash").Value;
+
+    await sut.SendPasskeyAddedAsync(user, "Work laptop", cancellationToken);
+
+    Assert.Single(emailService.Messages);
+    var message = emailService.Messages[0];
+    Assert.Equal("Passkey added to your account", message.Subject);
+    Assert.Contains("Account: ada@example.com", message.Body);
+    Assert.Contains("Event time (UTC):", message.Body);
+    Assert.Contains("Passkey: Work laptop", message.Body);
+    Assert.Contains(
+      "If you did not perform this action, contact your administrator immediately.",
+      message.Body);
+  }
+
+  [Fact]
+  public async Task SendPasskeysResetByAdminAsync_ShouldIncludeAccountEmailAndEventTime()
+  {
+    var cancellationToken = TestContext.Current.CancellationToken;
+    var user = User.CreateWithPassword("Ada", "Lovelace", "ada@example.com", "hash").Value;
+
+    await sut.SendPasskeysResetByAdminAsync(user, cancellationToken);
+
+    Assert.Single(emailService.Messages);
+    var message = emailService.Messages[0];
+    Assert.Equal("Passkeys reset on your account", message.Subject);
+    Assert.Contains("Account: ada@example.com", message.Body);
+    Assert.Contains("Event time (UTC):", message.Body);
+    Assert.DoesNotContain("Passkey:", message.Body);
+  }
+
+  [Fact]
+  public async Task SendPasskeyRemovedAsync_ShouldIncludeAccountEmailEventTimeAndPasskeyName()
+  {
+    var cancellationToken = TestContext.Current.CancellationToken;
+    var user = User.CreateWithPassword("Ada", "Lovelace", "ada@example.com", "hash").Value;
+
+    await sut.SendPasskeyRemovedAsync(user, "Work laptop", cancellationToken);
+
+    Assert.Single(emailService.Messages);
+    var message = emailService.Messages[0];
+    Assert.Equal("Passkey removed from your account", message.Subject);
+    Assert.Contains("Account: ada@example.com", message.Body);
+    Assert.Contains("Event time (UTC):", message.Body);
+    Assert.Contains("Passkey: Work laptop", message.Body);
+    Assert.Contains(
+      "If you did not perform this action, contact your administrator immediately.",
+      message.Body);
+  }
+
+  [Fact]
   public async Task SendAsync_WhenDeliveryFails_ReturnsUserFacingMessage()
   {
     var cancellationToken = TestContext.Current.CancellationToken;

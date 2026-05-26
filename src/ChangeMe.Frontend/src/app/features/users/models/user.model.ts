@@ -31,6 +31,16 @@ export interface EffectivePermissionDto {
   fromRoleNames: string[];
 }
 
+export interface UserPasskeyDto {
+  id: string;
+  name: string;
+  createdAtUtc: string;
+  lastUsedAtUtc: string | null;
+  authenticatorType: string;
+  backupEligible: boolean;
+  backupState: boolean;
+}
+
 export interface UserDetailsDto {
   id: string;
   firstName: string;
@@ -53,6 +63,7 @@ export interface UserDetailsDto {
   roles: UserRoleSummaryDto[];
   effectivePermissions: EffectivePermissionDto[];
   externalLogins: UserExternalLoginDto[];
+  passkeys: UserPasskeyDto[];
 }
 
 export interface UserInvitationInfoDto {
@@ -76,6 +87,8 @@ export interface RoleAssignmentOptionDto {
 export interface AdminUserSessionDto {
   id: string;
   deviceBrowserLabel: string;
+  signInMethod: string;
+  signInMethodLabel: string;
   ipAddress: string | null;
   signedInAt: string;
   lastActivityAt: string;

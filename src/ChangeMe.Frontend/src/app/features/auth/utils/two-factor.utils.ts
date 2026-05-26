@@ -10,5 +10,8 @@ export function isTwoFactorSetupRequiredApiError(error: unknown): boolean {
 }
 
 export function shouldUseSoftTwoFactorUx(routerUrl: string): boolean {
-  return !routerUrl.startsWith('/required-two-factor-setup');
+  return (
+    !routerUrl.startsWith('/required-two-factor-setup') &&
+    !routerUrl.startsWith('/required-passkey-setup')
+  );
 }

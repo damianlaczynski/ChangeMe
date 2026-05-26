@@ -1,3 +1,4 @@
+using ChangeMe.Backend.Domain.Aggregates.Sessions;
 using ChangeMe.Backend.Domain.Aggregates.Users.Entities;
 
 namespace ChangeMe.Backend.Infrastructure.Persistence.Config.Users;
@@ -18,6 +19,9 @@ public class SignInChallengeConfiguration : IEntityTypeConfiguration<SignInChall
 
     builder.Property(x => x.ExpiresAtUtc)
       .IsRequired();
+
+    builder.Property(x => x.PendingSignInMethod)
+      .HasMaxLength(SessionConstraints.SIGN_IN_METHOD_MAX_LENGTH);
 
     builder.HasIndex(x => x.UserId);
     builder.HasIndex(x => x.ExpiresAtUtc);

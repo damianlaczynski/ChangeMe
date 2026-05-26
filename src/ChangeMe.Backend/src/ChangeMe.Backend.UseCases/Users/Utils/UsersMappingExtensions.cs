@@ -1,5 +1,4 @@
 using ChangeMe.Backend.Domain.Aggregates.Users;
-using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UseCases.Users.Dtos;
 
 namespace ChangeMe.Backend.UseCases.Users.Utils;
@@ -13,6 +12,7 @@ public static class UsersMappingExtensions
     IReadOnlyList<EffectivePermissionDto> effectivePermissions,
     IReadOnlyList<UserExternalLoginDto> externalLogins,
     UserInvitationInfoDto? pendingInvitation,
+    IReadOnlyList<UserPasskeyDto> passkeys,
     IPasswordExpirationEvaluator? passwordExpirationEvaluator = null) =>
     new()
     {
@@ -36,6 +36,7 @@ public static class UsersMappingExtensions
       LastSignInAt = lastSignInAt,
       Roles = roles,
       EffectivePermissions = effectivePermissions,
-      ExternalLogins = externalLogins
+      ExternalLogins = externalLogins,
+      Passkeys = passkeys
     };
 }

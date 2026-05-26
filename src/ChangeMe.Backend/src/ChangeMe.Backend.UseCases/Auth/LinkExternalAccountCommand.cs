@@ -1,4 +1,6 @@
+using ChangeMe.Backend.Domain.Aggregates.Sessions;
 using ChangeMe.Backend.Domain.Aggregates.Users;
+using ChangeMe.Backend.Domain.Aggregates.Users.Interfaces;
 using ChangeMe.Backend.Domain.Aggregates.Users.Entities;
 using ChangeMe.Backend.Domain.Aggregates.Users.Enums;
 using ChangeMe.Backend.Infrastructure.Auth;
@@ -20,7 +22,8 @@ public class LinkExternalAccountHandler(
   IJwtTokenGenerator jwtTokenGenerator,
   ISessionLifetimeService sessionLifetime,
   IHttpContextAccessor httpContextAccessor,
-  IOptions<AuthOptions> authOptions) : ICommandHandler<LinkExternalAccountCommand, ExternalSignInResponseDto>
+  IOptions<AuthOptions> authOptions,
+  IPasskeyPolicyEvaluator passkeyPolicyEvaluator) : ICommandHandler<LinkExternalAccountCommand, ExternalSignInResponseDto>
 {
   public async Task<Result<ExternalSignInResponseDto>> Handle(
     LinkExternalAccountCommand command,
@@ -89,10 +92,12 @@ public class LinkExternalAccountHandler(
       jwtTokenGenerator,
       sessionLifetime,
       passwordExpirationEvaluator,
+      passkeyPolicyEvaluator,
       httpContextAccessor,
       auth,
       user,
       pending.IdentityProviderMfaAsserted,
+      SignInMethods.ExternalWithProvider(provider.ProviderKey),
       cancellationToken);
   }
 }
