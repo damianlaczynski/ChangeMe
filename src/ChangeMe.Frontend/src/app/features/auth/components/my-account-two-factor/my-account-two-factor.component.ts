@@ -91,14 +91,15 @@ export class MyAccountTwoFactorComponent implements OnInit {
 
   ngOnInit(): void {
     this.externalStepUpReturn.watchQueryParamReturn(this.destroyRef, this.route, () => {
-      const pending = readPendingTwoFactorStepUp();
-      if (!pending) {
+      const action = readPendingTwoFactorStepUp();
+      if (!action) {
         return;
       }
 
       clearPendingTwoFactorStepUp();
-      this.stepUpAction.set(pending.action);
+      this.stepUpAction.set(action);
       this.resumeStepUpAfterExternalReturn.set(true);
+      this.toastService.info(AuthMessages.twoFactorReenterAfterExternalStepUp);
     });
   }
 
@@ -188,18 +189,13 @@ export class MyAccountTwoFactorComponent implements OnInit {
       });
   }
 
-  readonly prepareExternalRedirect = (context: {
-    verificationCode: string;
-  }): boolean => {
+  readonly prepareExternalRedirect = (): boolean => {
     const action = this.stepUpAction();
     if (!action) {
       return false;
     }
 
-    storePendingTwoFactorStepUp({
-      action,
-      verificationCode: context.verificationCode
-    });
+    storePendingTwoFactorStepUp(action);
     return true;
   };
 

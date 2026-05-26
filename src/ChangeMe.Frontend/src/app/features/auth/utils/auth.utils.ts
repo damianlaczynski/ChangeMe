@@ -76,6 +76,8 @@ export const AuthMessages = {
   twoFactorManualKeyLabel: 'Manual entry key',
   twoFactorIssuerLabel: 'Issuer',
   recoveryCodesRegenerated: 'Recovery codes regenerated.',
+  twoFactorReenterAfterExternalStepUp:
+    'Provider verified. Re-enter your verification code to continue.',
   profileUpdated: 'Profile updated.',
   noActiveSessions: 'No active sessions.',
   permissionDenied: 'You do not have permission to perform this action.',
