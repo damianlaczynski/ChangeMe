@@ -14,6 +14,10 @@ concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
   frontend:
     name: Frontend
@@ -47,6 +51,19 @@ jobs:
       - name: Test with coverage
         run: npm test -- --watch=false --coverage
 
+      - name: Publish frontend coverage report
+        if: always()
+        uses: irongut/CodeCoverageSummaryAction@v1.3.0
+        with:
+          filename: src/ChangeMe.Frontend/coverage/**/clover.xml
+          badge: true
+          fail_below_min: false
+          format: markdown
+          hide_complexity: true
+          indicators: true
+          output: both
+          thresholds: "60 80"
+
       - name: Upload frontend coverage
         if: always()
         uses: actions/upload-artifact@v4
@@ -79,10 +96,11 @@ jobs:
       - name: Audit NuGet dependencies
         shell: bash
         run: |
-          dotnet list src/ChangeMe.Backend/ChangeMe.Backend.sln package --vulnerable --include-transitive --format json > vulnerable.json
-          if jq -e '[.projects[] | .frameworks[]? | (.transitivePackages // []) + (.topLevelPackages // []) | .[] | select(.vulnerabilities[]? | .severity == "High" or .severity == "Critical")] | length > 0' vulnerable.json >/dev/null; then
+          vulnerable_file="${RUNNER_TEMP}/vulnerable.json"
+          dotnet list src/ChangeMe.Backend/ChangeMe.Backend.sln package --vulnerable --include-transitive --format json > "${vulnerable_file}"
+          if jq -e '[.projects[] | .frameworks[]? | (.transitivePackages // []) + (.topLevelPackages // []) | .[] | select(.vulnerabilities[]? | .severity == "High" or .severity == "Critical")] | length > 0' "${vulnerable_file}" >/dev/null; then
             echo "High or Critical vulnerable NuGet packages found:"
-            jq '[.projects[] | {project: .path, packages: [.frameworks[]? | (.transitivePackages // []) + (.topLevelPackages // []) | .[] | select(.vulnerabilities[]? | .severity == "High" or .severity == "Critical") | {id, resolvedVersion, vulnerabilities}]} | select(.packages | length > 0)]' vulnerable.json
+            jq '[.projects[] | {project: .path, packages: [.frameworks[]? | (.transitivePackages // []) + (.topLevelPackages // []) | .[] | select(.vulnerabilities[]? | .severity == "High" or .severity == "Critical") | {id, resolvedVersion, vulnerabilities}]} | select(.packages | length > 0)]' "${vulnerable_file}"
             exit 1
           fi
 
@@ -105,6 +123,19 @@ jobs:
 
       - name: Test with coverage
         run: dotnet test src/ChangeMe.Backend/ChangeMe.Backend.sln -c Release --no-restore --results-directory coverage/backend --collect:"XPlat Code Coverage"
+
+      - name: Publish backend coverage report
+        if: always()
+        uses: irongut/CodeCoverageSummaryAction@v1.3.0
+        with:
+          filename: coverage/backend/**/coverage.cobertura.xml
+          badge: true
+          fail_below_min: false
+          format: markdown
+          hide_complexity: true
+          indicators: true
+          output: both
+          thresholds: "60 80"
 
       - name: Generate backend coverage report
         if: always()

@@ -95,7 +95,6 @@ TestResults/
 
 # Test coverage output
 coverage/
-vulnerable.json
 
 # Database
 *.db
