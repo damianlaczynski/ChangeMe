@@ -91,6 +91,16 @@ public sealed class PasskeyAuthUtilsTests
   }
 
   [Fact]
+  public void CanUsePasskeySignIn_WhenExternalLoginExistsAndPasskeyExists_ShouldReturnTrue()
+  {
+    var user = User.CreateInvited("user@example.com").Value;
+    user.AddExternalLogin(ExternalLogin.Create(user.Id, "google", "subject-1").Value);
+    var auth = CreateAuthOptions(allowPasskeyOnlyAccounts: false);
+
+    Assert.True(PasskeyAuthUtils.CanUsePasskeySignIn(user, passkeyCount: 1, auth));
+  }
+
+  [Fact]
   public void IsTwoFactorVerificationRequiredAfterPasskey_WhenSatisfiesTwoFactorWithUv_ShouldReturnFalse()
   {
     var user = User.CreateWithPassword("A", "B", "user@example.com", "hash").Value;

@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using ChangeMe.Backend.Domain.Aggregates.Users;
+using ChangeMe.Backend.Domain.Aggregates.Users.Entities;
 using ChangeMe.Backend.Infrastructure.Persistence;
 using ChangeMe.Backend.IntegrationTests.Fixtures;
 using ChangeMe.Backend.UseCases.Auth.Dtos;
@@ -175,6 +176,20 @@ internal static class PasskeyTestHelper
     return (await IntegrationApiJson.ReadValueAsync<LoginResponseDto>(
       completeResponse.Content,
       cancellationToken))!;
+  }
+
+  public static async Task AddExternalLoginAsync(
+    PasskeysWebApplicationFactory factory,
+    Guid userId,
+    string providerKey = "google",
+    CancellationToken cancellationToken = default)
+  {
+    await using var scope = factory.Services.CreateAsyncScope();
+    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+    var login = ExternalLogin.Create(userId, providerKey, $"subject-{Guid.NewGuid():N}").Value;
+    await context.ExternalLogins.AddAsync(login, cancellationToken);
+    await context.SaveChangesAsync(cancellationToken);
   }
 
   public static async Task ClearLocalPasswordAsync(

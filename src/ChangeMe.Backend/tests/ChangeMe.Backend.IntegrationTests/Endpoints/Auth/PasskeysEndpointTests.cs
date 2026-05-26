@@ -381,6 +381,33 @@ public sealed class PasskeysEndpointTests(PasskeysWebApplicationFactory factory)
   }
 
   [Fact]
+  public async Task PostPasskeySignInBegin_WhenExternalOnlyWithPasskey_ShouldBeginCeremony()
+  {
+    var cancellationToken = TestContext.Current.CancellationToken;
+    var testUser = await PasskeyTestHelper.CreateUserWithPasskeyAsync(factory, cancellationToken: cancellationToken);
+    await PasskeyTestHelper.ClearLocalPasswordAsync(factory, testUser.UserId, cancellationToken);
+    await PasskeyTestHelper.AddExternalLoginAsync(factory, testUser.UserId, cancellationToken: cancellationToken);
+
+    using var client = factory.CreateClient(new WebApplicationFactoryClientOptions
+    {
+      BaseAddress = new Uri("https://localhost")
+    });
+
+    var beginResponse = await client.PostAsJsonAsync(
+      "/api/auth/passkeys/sign-in/begin",
+      new { email = testUser.Email },
+      cancellationToken);
+
+    beginResponse.EnsureSuccessStatusCode();
+
+    var begin = await IntegrationApiJson.ReadValueAsync<PasskeyCeremonyBeginResponseDto>(
+      beginResponse.Content,
+      cancellationToken);
+    Assert.NotNull(begin?.CeremonyId);
+    Assert.NotNull(begin.Options);
+  }
+
+  [Fact]
   public async Task PostResetUserPasskeys_WhenAdministrator_ShouldRevokeActiveSessions()
   {
     var cancellationToken = TestContext.Current.CancellationToken;

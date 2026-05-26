@@ -45,6 +45,7 @@ public class BeginPasskeySignInHandler(
       normalizedEmail = User.NormalizeEmail(command.Email);
       var user = await context.Users
         .AsNoTracking()
+        .Include(x => x.ExternalLogins)
         .FirstOrDefaultAsync(x => x.NormalizedEmail == normalizedEmail, cancellationToken);
 
       if (user is null)
