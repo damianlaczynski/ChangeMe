@@ -39,7 +39,12 @@ public class VerifyTwoFactorHandler(
       return Result<AuthResponseDto>.Unauthorized(TwoFactorAuthUtils.SignInTimedOutMessage);
 
     if (challenge.FailedAttemptCount >= maxAttempts)
+    {
+      await context.SignInChallenges
+        .Where(x => x.Id == challenge.Id)
+        .ExecuteDeleteAsync(cancellationToken);
       return Result<AuthResponseDto>.Unauthorized(TwoFactorAuthUtils.TooManyAttemptsMessage);
+    }
 
     var user = await context.Users
       .Include(x => x.RecoveryCodes)
