@@ -22,7 +22,6 @@ import {
 } from '@features/auth/utils/password-policy.utils';
 import {
   clearPendingSetPassword,
-  readPendingSetPassword,
   storePendingSetPassword
 } from '@features/auth/utils/pending-set-password.storage';
 import { BackButtonComponent } from '@shared/components/back-button/back-button.component';
@@ -110,7 +109,6 @@ export class SetPasswordComponent implements OnInit {
             return;
           }
           this.account.set(account);
-          this.restorePendingPassword();
         },
         error: () => void this.router.navigateByUrl('/account')
       });
@@ -126,9 +124,8 @@ export class SetPasswordComponent implements OnInit {
         }
 
         this.account.set(account);
-        this.restorePendingPassword();
-        this.stepUpError.set('');
-        this.stepUpVisible.set(true);
+        clearPendingSetPassword();
+        this.toastService.info(AuthMessages.setPasswordReenterAfterExternalStepUp);
       }
     );
   }
@@ -188,7 +185,7 @@ export class SetPasswordComponent implements OnInit {
       return false;
     }
 
-    storePendingSetPassword({ newPassword: this.form.controls.newPassword.value });
+    storePendingSetPassword();
     return true;
   };
 
@@ -203,15 +200,5 @@ export class SetPasswordComponent implements OnInit {
   private applyPasswordPolicy(policy: PasswordPolicySettings): void {
     this.form.controls.newPassword.setValidators(buildPasswordPolicyValidators(policy));
     this.form.controls.newPassword.updateValueAndValidity();
-  }
-
-  private restorePendingPassword(): void {
-    const pending = readPendingSetPassword();
-    if (!pending) {
-      return;
-    }
-
-    this.form.controls.newPassword.setValue(pending.newPassword);
-    this.form.controls.confirmNewPassword.setValue(pending.newPassword);
   }
 }

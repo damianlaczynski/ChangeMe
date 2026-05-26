@@ -100,6 +100,8 @@ export const AuthMessages = {
   setPasswordSubtitle:
     'Create a password so you can also sign in with email and use forgot password.',
   passwordSet: 'Password set.',
+  setPasswordReenterAfterExternalStepUp:
+    'Provider verified. Re-enter your new password and click Set password to continue.',
   externalStepUpRequired:
     'Complete sign-in with a linked external provider to continue.',
   externalProviderEmailMismatch:
