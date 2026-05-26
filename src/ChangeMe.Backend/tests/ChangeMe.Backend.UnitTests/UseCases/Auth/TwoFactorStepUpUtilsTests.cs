@@ -87,6 +87,71 @@ public sealed class TwoFactorStepUpUtilsTests
 
     Assert.False(result.IsSuccess);
   }
+
+  [Fact]
+  public void ValidateStepUp_WhenTwoFactorEnabledAndPasskeyStepUpWithoutCode_ShouldRequireVerificationCode()
+  {
+    var utcNow = DateTime.UtcNow;
+    var user = User.CreateWithPassword("A", "B", "user@example.com", "hash").Value;
+    user.EnableTwoFactor("secret", utcNow);
+    user.RecordPasskeyStepUp(utcNow);
+
+    var result = TwoFactorStepUpUtils.ValidateStepUp(
+      user,
+      currentPassword: null,
+      verificationCode: null,
+      new FakePasswordHasher(),
+      new FakeTotpService(),
+      new FakeTwoFactorSecretProtector(),
+      new FakeRecoveryCodeHasher(),
+      Options.Create(DefaultAuth),
+      passkeysEnabled: true,
+      passkeyCount: 1,
+      utcNow,
+      out _);
+
+    Assert.False(result.IsSuccess);
+    Assert.Contains(result.ValidationErrors, x => x.Identifier == "verificationCode");
+  }
+
+  [Fact]
+  public void ValidateStepUp_WhenPasskeyStepUpExpired_ShouldRequirePassword()
+  {
+    var utcNow = DateTime.UtcNow;
+    var user = User.CreateWithPassword("A", "B", "user@example.com", "hash").Value;
+    user.RecordPasskeyStepUp(utcNow.AddMinutes(-20));
+
+    var result = TwoFactorStepUpUtils.ValidateStepUp(
+      user,
+      currentPassword: null,
+      verificationCode: null,
+      new FakePasswordHasher(valid: false),
+      new FakeTotpService(),
+      new FakeTwoFactorSecretProtector(),
+      new FakeRecoveryCodeHasher(),
+      Options.Create(DefaultAuth),
+      passkeysEnabled: true,
+      passkeyCount: 1,
+      utcNow,
+      out _);
+
+    Assert.False(result.IsSuccess);
+  }
+
+  [Fact]
+  public void IsPasskeyStepUpFresh_WhenWithinValidityWindow_ShouldReturnTrue()
+  {
+    var utcNow = DateTime.UtcNow;
+    var user = User.CreateWithPassword("A", "B", "user@example.com", "hash").Value;
+    user.RecordPasskeyStepUp(utcNow.AddMinutes(-5));
+
+    Assert.True(TwoFactorStepUpUtils.IsPasskeyStepUpFresh(
+      user,
+      DefaultAuth,
+      passkeysEnabled: true,
+      passkeyCount: 1,
+      utcNow));
+  }
 }
 
 internal sealed class FakePasswordHasher(bool valid = true) : IPasswordHasher

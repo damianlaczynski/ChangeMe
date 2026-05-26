@@ -638,15 +638,15 @@ export class AuthService {
 
   markPasskeySetupRequired(): void {
     const current = this.session();
-    if (!current) {
+    if (!current || current.passkeySetupRequired) {
       return;
     }
 
-    this.enablePasskeySetupScreen();
-
-    if (!this.router.url.startsWith('/required-passkey-setup')) {
-      void this.router.navigateByUrl('/required-passkey-setup');
-    }
+    this.setSession({
+      ...current,
+      passkeySetupRequired: true,
+      passkeySetupStrict: false
+    });
   }
 
   beginPasskeySignIn(email?: string | null) {

@@ -12,6 +12,7 @@
     [label]="isRegisteringCeremony() ? 'Waiting for device…' : 'Add passkey now'"
     icon="pi pi-key"
     [loading]="isRegisteringCeremony()"
+    [disabled]="!account()"
     styleClass="mb-4 w-full max-w-md"
     (onClick)="startPasskeyRegistration()"
   />
@@ -77,3 +78,18 @@
     </div>
   </form>
 </p-dialog>
+
+@if (account(); as profile) {
+  <app-identity-step-up-dialog
+    [account]="profile"
+    [visible]="stepUpVisible()"
+    [passkeysEnabled]="passkeysEnabled()"
+    [stepUpValidityMinutes]="stepUpValidityMinutes()"
+    submitLabel="Add passkey"
+    [errorMessage]="stepUpError()"
+    fieldIdPrefix="optionalPasskeyStepUp"
+    (visibleChange)="stepUpVisible.set($event)"
+    (cancelled)="closeStepUp()"
+    (verified)="onStepUpVerified($event)"
+  />
+}

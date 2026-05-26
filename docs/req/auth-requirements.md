@@ -323,6 +323,9 @@ The system must notify users by email about important account security events.
 | **External account linked**   | User links an external provider on **My account** (REQ-AUTH-014)                                         | `External sign-in method linked`           |
 | **External account unlinked** | User or administrator removes an external provider link                                                  | `External sign-in method removed`          |
 | **Recovery code used**        | A recovery code succeeds at sign-in or step-up authentication                                            | `A recovery code was used on your account` |
+| **Passkey added**             | User completes **Add passkey** on **My account** (REQ-PKY-003)                                           | `Passkey added to your account`            |
+| **Passkey removed**           | User or administrator removes a passkey credential (REQ-PKY-003, REQ-PKY-005)                            | `Passkey removed from your account`        |
+| **Passkeys reset by admin**   | Administrator **Reset passkeys** on **User details** (REQ-PKY-005)                                       | `Passkeys reset on your account`           |
 
 - Each email contains a short summary and, where applicable, a button link to the frontend (invitation, reset, verify email, or sign-in).
 - Email delivery uses the configured mail server (same as issue notifications).
