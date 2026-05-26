@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.Infrastructure.Auth;
+using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UseCases.Users.Dtos;
 using ChangeMe.Backend.UseCases.Users.Utils;
 
@@ -15,7 +15,9 @@ public class ResendInvitationHandler(
     ResendInvitationCommand command,
     CancellationToken cancellationToken)
   {
-    var user = await context.Users.FirstOrDefaultAsync(x => x.Id == command.Id, cancellationToken);
+    var user = await context.Users
+      .Include(x => x.AccountInvitations)
+      .FirstOrDefaultAsync(x => x.Id == command.Id, cancellationToken);
     if (user is null)
       return Result<UserDetailsDto>.NotFound();
 
@@ -23,7 +25,10 @@ public class ResendInvitationHandler(
       return Result<UserDetailsDto>.Error(UsersUtils.InvitationAlreadyAcceptedMessage);
 
     if (user.Deactivated)
-      return Result<UserDetailsDto>.Error(UsersUtils.CannotResendInvitationToDeactivatedMessage);
+      return Result<UserDetailsDto>.Error(UsersUtils.CannotManageInvitationForDeactivatedMessage);
+
+    if (!user.HasPendingInvitation)
+      return Result<UserDetailsDto>.Error(UsersUtils.NoPendingInvitationMessage);
 
     var invitationResult = await invitationService.SendInvitationAsync(user, cancellationToken);
     if (!invitationResult.IsSuccess)

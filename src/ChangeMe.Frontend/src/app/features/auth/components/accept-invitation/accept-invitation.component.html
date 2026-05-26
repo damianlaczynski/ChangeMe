@@ -1,6 +1,6 @@
 <app-auth-page
   title="Accept invitation"
-  subtitle="Set your name and password to activate your ChangeMe account."
+  subtitle="Set your name and password to activate your account, or continue with an external sign-in method."
   [wide]="true"
   footerPrompt="Already have an account?"
   footerLinkLabel="Sign in"
@@ -13,6 +13,11 @@
   } @else if (!isInvitationValid()) {
     <p-message severity="error">{{ invalidInvitationMessage }}</p-message>
   } @else {
+    @if (previewEmail()) {
+      <p class="text-muted-color mt-0 mb-4 text-sm">
+        Activating account for <span class="text-color font-medium">{{ previewEmail() }}</span>
+      </p>
+    }
     <form
       class="p-fluid flex flex-col gap-4"
       [formGroup]="form"
@@ -132,6 +137,27 @@
         [loading]="isSubmitting()"
         styleClass="w-full"
       />
+
+      @if (externalProvidersEnabled() && externalProviders().length > 0) {
+        <div class="flex items-center gap-3">
+          <span class="bg-surface-200 h-px flex-1 dark:bg-surface-700"></span>
+          <span class="text-muted-color text-xs font-medium uppercase">or</span>
+          <span class="bg-surface-200 h-px flex-1 dark:bg-surface-700"></span>
+        </div>
+
+        @for (provider of externalProviders(); track provider.providerKey) {
+          <p-button
+            type="button"
+            [label]="'Continue with ' + provider.displayName"
+            icon="pi pi-external-link"
+            severity="secondary"
+            styleClass="w-full"
+            [loading]="externalProviderLoadingKey() === provider.providerKey"
+            [disabled]="externalProviderLoadingKey() !== null"
+            (onClick)="beginExternalSignIn(provider)"
+          />
+        }
+      }
     </form>
   }
 </app-auth-page>

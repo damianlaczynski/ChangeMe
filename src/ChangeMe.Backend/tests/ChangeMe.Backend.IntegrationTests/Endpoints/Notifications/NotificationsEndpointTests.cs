@@ -1,5 +1,4 @@
 ﻿using System.Net;
-using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using ChangeMe.Backend.Domain.Aggregates.Issue.Enums;
@@ -7,9 +6,9 @@ using ChangeMe.Backend.Domain.Aggregates.Notifications;
 using ChangeMe.Backend.Domain.Aggregates.Notifications.Enums;
 using ChangeMe.Backend.Infrastructure.Persistence;
 using ChangeMe.Backend.IntegrationTests.Fixtures;
+using ChangeMe.Backend.IntegrationTests.Support;
 using ChangeMe.Backend.IntegrationTests.Support.Fakes;
 using ChangeMe.Backend.UseCases.Notifications.Services;
-using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -422,62 +421,8 @@ public sealed class NotificationsEndpointTests(BackendWebApplicationFactory fact
 
   private async Task<AuthenticatedNotificationUser> CreateAuthenticatedUserAsync(CancellationToken cancellationToken)
   {
-    var email = $"user-{Guid.NewGuid():N}@example.com";
-    const string password = "StrongPass123!";
-
-    using var anonymousClient = factory.CreateClient(new WebApplicationFactoryClientOptions
-    {
-      BaseAddress = new Uri("https://localhost")
-    });
-
-    await anonymousClient.PostAsJsonAsync("/api/auth/register", new
-    {
-      FirstName = "Notification",
-      LastName = "User",
-      Email = email,
-      Password = password
-    }, cancellationToken);
-
-    var loginResponse = await anonymousClient.PostAsJsonAsync("/api/auth/login", new
-    {
-      Email = email,
-      Password = password
-    }, cancellationToken);
-
-    loginResponse.EnsureSuccessStatusCode();
-
-    var responseBody = await loginResponse.Content.ReadAsStringAsync(cancellationToken);
-    var token = ExtractToken(responseBody);
-
-    var authenticatedClient = factory.CreateClient(new WebApplicationFactoryClientOptions
-    {
-      BaseAddress = new Uri("https://localhost")
-    });
-
-    authenticatedClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-
-    await using var scope = factory.Services.CreateAsyncScope();
-    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    var userId = await dbContext.Users
-      .AsNoTracking()
-      .Where(u => u.Email == email)
-      .Select(u => u.Id)
-      .SingleAsync(cancellationToken);
-
-    return new AuthenticatedNotificationUser(authenticatedClient, userId);
-  }
-
-  private static string ExtractToken(string responseBody)
-  {
-    using var document = JsonDocument.Parse(responseBody);
-
-    if (document.RootElement.TryGetProperty("value", out var valueElement)
-        && valueElement.TryGetProperty("token", out var tokenElement))
-    {
-      return tokenElement.GetString() ?? throw new InvalidOperationException("Token value is null.");
-    }
-
-    throw new InvalidOperationException("Token was not found in login response.");
+    var user = await TestAuthHelper.CreateAuthenticatedUserAsync(factory, cancellationToken);
+    return new AuthenticatedNotificationUser(user.Client, user.UserId);
   }
 
   private static Guid ExtractId(string responseBody)

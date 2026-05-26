@@ -13,6 +13,7 @@ public sealed class LoginUserHandlerTests
   [Fact]
   public async Task Handle_WhenEmailVerificationEnabledAndUserUnverified_ReturnsUnauthorized()
   {
+    var cancellationToken = TestContext.Current.CancellationToken;
     await using var context = UseCasesTestDb.Create(nameof(Handle_WhenEmailVerificationEnabledAndUserUnverified_ReturnsUnauthorized));
 
     var passwordHasher = new PasswordHasherAdapter();
@@ -23,8 +24,8 @@ public sealed class LoginUserHandlerTests
       passwordHasher.HashPassword("StrongPass123!"),
       emailVerified: false).Value;
 
-    await context.Users.AddAsync(user);
-    await context.SaveChangesAsync();
+    await context.Users.AddAsync(user, cancellationToken);
+    await context.SaveChangesAsync(cancellationToken);
 
     var authOptions = TestAuthOptions.Create(emailVerificationEnabled: true);
     var handler = new LoginUserHandler(
@@ -33,12 +34,14 @@ public sealed class LoginUserHandlerTests
       new JwtTokenGenerator(authOptions),
       new SessionLifetimeService(authOptions),
       new PasswordExpirationEvaluator(authOptions),
+      new TwoFactorPolicyEvaluator(authOptions),
+      new PasskeyPolicyEvaluator(authOptions),
       authOptions,
       new HttpContextAccessor { HttpContext = new DefaultHttpContext() });
 
     var result = await handler.Handle(
-      new LoginUserCommand("unverified@example.com", "StrongPass123!", false),
-      CancellationToken.None);
+      new LoginUserCommand("unverified@example.com", "StrongPass123!"),
+      cancellationToken);
 
     Assert.Equal(ResultStatus.Unauthorized, result.Status);
     Assert.Contains(AuthSessionUtils.EmailNotVerifiedMessage, result.Errors.First());

@@ -15,7 +15,7 @@ public class GetAssignableUsersHandler(
     GetAssignableUsersQuery query,
     CancellationToken cancellationToken)
   {
-    var emailVerificationEnabled = authOptions.Value.EmailVerificationEnabled;
+    var emailVerificationEnabled = authOptions.Value.EmailVerification.Enabled;
 
     var users = await context.Users
       .AsNoTracking()

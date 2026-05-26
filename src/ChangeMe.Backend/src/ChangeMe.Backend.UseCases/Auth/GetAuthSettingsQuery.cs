@@ -1,4 +1,5 @@
 ﻿using ChangeMe.Backend.Infrastructure.Auth;
+using ChangeMe.Backend.Infrastructure.Auth.Passkey;
 using ChangeMe.Backend.UseCases.Auth.Dtos;
 using Microsoft.Extensions.Options;
 
@@ -14,6 +15,16 @@ public class GetAuthSettingsHandler(IOptions<AuthOptions> options)
     var auth = options.Value;
     var policy = auth.PasswordPolicy;
 
+    var twoFactor = auth.TwoFactor;
+    var configuredProviders = auth.External.Providers
+      .Where(x => x.IsConfigured)
+      .Select(x => new ExternalProviderSettingsDto
+      {
+        ProviderKey = x.ProviderKey.Trim(),
+        DisplayName = x.DisplayName.Trim()
+      })
+      .ToList();
+
     var dto = new AuthSettingsDto
     {
       PasswordPolicy = new PasswordPolicySettingsDto
@@ -25,10 +36,37 @@ public class GetAuthSettingsHandler(IOptions<AuthOptions> options)
         RequireDigit = policy.RequireDigit,
         RequireSpecialCharacter = policy.RequireSpecialCharacter
       },
-      PublicRegistrationEnabled = auth.PublicRegistrationEnabled,
-      EmailVerificationEnabled = auth.EmailVerificationEnabled,
-      PasswordExpirationEnabled = auth.PasswordExpirationEnabled,
-      MaximumPasswordAgeDays = auth.MaximumPasswordAgeDays
+      PublicRegistrationEnabled = auth.Registration.PublicEnabled,
+      EmailVerificationEnabled = auth.EmailVerification.Enabled,
+      PasswordExpirationEnabled = auth.PasswordExpiration.Enabled,
+      MaximumPasswordAgeDays = auth.PasswordExpiration.MaximumPasswordAgeDays,
+      TwoFactorAuthenticationEnabled = auth.TwoFactor.Enabled,
+      TwoFactorAuthenticationRequired = auth.TwoFactor.Required,
+      TrustIdentityProviderMfa = auth.TwoFactor.TrustIdentityProviderMfa
+        && auth.TwoFactor.Enabled
+        && auth.External.Enabled,
+      ExternalProvidersEnabled = auth.External.Enabled && configuredProviders.Count > 0,
+      TwoFactor = new TwoFactorSettingsDto
+      {
+        VerificationCodeLength = twoFactor.VerificationCodeLength,
+        RecoveryCodeCount = twoFactor.RecoveryCodeCount,
+        TotpTimeStepSeconds = twoFactor.TotpTimeStepSeconds,
+        StepUpExternalSignInValidityMinutes = twoFactor.StepUpExternalSignInValidityMinutes
+      },
+      ExternalProviders = configuredProviders,
+      Passkeys = new PasskeySettingsDto
+      {
+        PasskeysAuthenticationEnabled = auth.Passkeys.PasskeysAuthenticationEnabled,
+        PasskeysAuthenticationRequired = auth.Passkeys.PasskeysAuthenticationRequired,
+        PasskeySatisfiesTwoFactor = auth.Passkeys.PasskeySatisfiesTwoFactor
+          && auth.TwoFactor.Enabled,
+        DiscoverablePasskeySignInOnLogin = auth.Passkeys.DiscoverablePasskeySignInOnLogin,
+        OfferPasskeyEnrollmentPrompt = auth.Passkeys.PasskeysAuthenticationEnabled
+          && auth.Passkeys.OfferPasskeyEnrollmentPrompt,
+        RelyingPartyId = PasskeyFido2Service.ResolveRpId(auth),
+        RelyingPartyDisplayName = auth.Passkeys.RelyingPartyDisplayName,
+        MaximumPasskeysPerUser = auth.Passkeys.MaximumPasskeysPerUser
+      }
     };
 
     return Task.FromResult(Result.Success(dto));

@@ -84,6 +84,153 @@ public sealed class AuthEmailService(
         "Verify email"),
       cancellationToken);
 
+  public Task<Result> SendTwoFactorEnabledAsync(
+    User user,
+    CancellationToken cancellationToken = default) =>
+    SendAsync(
+      user.Email,
+      "Two-factor authentication enabled",
+      BrandedEmailTemplates.BuildActionEmail(
+        "Two-factor authentication enabled",
+        "Two-factor authentication was enabled on your ChangeMe account.",
+        "You will need an authenticator app code when signing in with your password.",
+        BuildLink("/login", null),
+        "Sign in"),
+      cancellationToken);
+
+  public Task<Result> SendTwoFactorDisabledAsync(
+    User user,
+    CancellationToken cancellationToken = default) =>
+    SendAsync(
+      user.Email,
+      "Two-factor authentication disabled",
+      BrandedEmailTemplates.BuildActionEmail(
+        "Two-factor authentication disabled",
+        "Two-factor authentication was disabled on your ChangeMe account.",
+        "If this was not you, contact an administrator immediately.",
+        BuildLink("/login", null),
+        "Sign in"),
+      cancellationToken);
+
+  public Task<Result> SendTwoFactorResetByAdminAsync(
+    User user,
+    CancellationToken cancellationToken = default) =>
+    SendAsync(
+      user.Email,
+      "Two-factor authentication was reset",
+      BrandedEmailTemplates.BuildActionEmail(
+        "Two-factor authentication reset",
+        "An administrator reset two-factor authentication on your ChangeMe account.",
+        "Sign in and set up two-factor authentication again if required.",
+        BuildLink("/login", null),
+        "Sign in"),
+      cancellationToken);
+
+  public Task<Result> SendRecoveryCodeUsedAsync(
+    User user,
+    CancellationToken cancellationToken = default) =>
+    SendAsync(
+      user.Email,
+      "A recovery code was used on your account",
+      BrandedEmailTemplates.BuildActionEmail(
+        "Recovery code used",
+        "A recovery code was used to sign in to your ChangeMe account.",
+        "If this was not you, reset your password and contact an administrator.",
+        BuildLink("/login", null),
+        "Sign in"),
+      cancellationToken);
+
+  public Task<Result> SendExternalAccountLinkedAsync(
+    User user,
+    string providerDisplayName,
+    CancellationToken cancellationToken = default) =>
+    SendAsync(
+      user.Email,
+      "External sign-in method linked",
+      BrandedEmailTemplates.BuildActionEmail(
+        "External sign-in linked",
+        $"{providerDisplayName} was linked to your ChangeMe account.",
+        "You can now sign in with this provider.",
+        BuildLink("/account", null),
+        "My account"),
+      cancellationToken);
+
+  public Task<Result> SendExternalAccountUnlinkedAsync(
+    User user,
+    string providerDisplayName,
+    CancellationToken cancellationToken = default) =>
+    SendAsync(
+      user.Email,
+      "External sign-in method removed",
+      BrandedEmailTemplates.BuildActionEmail(
+        "External sign-in removed",
+        $"{providerDisplayName} was removed from your ChangeMe account.",
+        "If this was not you, contact an administrator.",
+        BuildLink("/account", null),
+        "My account"),
+      cancellationToken);
+
+  public Task<Result> SendPasskeyAddedAsync(
+    User user,
+    string passkeyName,
+    CancellationToken cancellationToken = default)
+  {
+    var eventTimeUtc = DateTime.UtcNow;
+    return SendAsync(
+      user.Email,
+      "Passkey added to your account",
+      BrandedEmailTemplates.BuildAuthEventEmail(
+        "Passkey added",
+        $"A passkey named \"{passkeyName}\" was added to your ChangeMe account.",
+        user.Email,
+        eventTimeUtc,
+        "If you did not perform this action, contact your administrator immediately.",
+        BuildLink("/account", null),
+        "My account",
+        passkeyName),
+      cancellationToken);
+  }
+
+  public Task<Result> SendPasskeyRemovedAsync(
+    User user,
+    string passkeyName,
+    CancellationToken cancellationToken = default)
+  {
+    var eventTimeUtc = DateTime.UtcNow;
+    return SendAsync(
+      user.Email,
+      "Passkey removed from your account",
+      BrandedEmailTemplates.BuildAuthEventEmail(
+        "Passkey removed",
+        $"Passkey \"{passkeyName}\" was removed from your ChangeMe account.",
+        user.Email,
+        eventTimeUtc,
+        "If you did not perform this action, contact your administrator immediately.",
+        BuildLink("/account", null),
+        "My account",
+        passkeyName),
+      cancellationToken);
+  }
+
+  public Task<Result> SendPasskeysResetByAdminAsync(
+    User user,
+    CancellationToken cancellationToken = default)
+  {
+    var eventTimeUtc = DateTime.UtcNow;
+    return SendAsync(
+      user.Email,
+      "Passkeys reset on your account",
+      BrandedEmailTemplates.BuildAuthEventEmail(
+        "Passkeys reset",
+        "An administrator removed all passkeys from your ChangeMe account.",
+        user.Email,
+        eventTimeUtc,
+        "If you did not expect this, contact your administrator immediately.",
+        BuildLink("/login", null),
+        "Sign in"),
+      cancellationToken);
+  }
+
   private async Task<Result> SendAsync(
     string to,
     string subject,
@@ -93,7 +240,10 @@ public sealed class AuthEmailService(
     var result = await emailService.SendEmailAsync(to, subject, body);
 
     if (!result.IsSuccess)
+    {
       logger.LogWarning("Auth email delivery failed for {Subject} to {Recipient}", subject, to);
+      return Result.Error("The email could not be sent. Please try again.");
+    }
 
     return result;
   }

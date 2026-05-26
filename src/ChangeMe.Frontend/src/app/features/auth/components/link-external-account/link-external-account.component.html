@@ -1,0 +1,63 @@
+<app-auth-page
+  [title]="authMessages.linkExternalAccountTitle"
+  [subtitle]="authMessages.linkExternalAccountSubtitle"
+>
+  @if (link(); as linkDetails) {
+    <form
+      class="p-fluid flex flex-col gap-4"
+      [formGroup]="form"
+      (ngSubmit)="onSubmit()"
+    >
+      <div class="flex flex-col gap-1.5">
+        <span class="text-muted-color text-sm font-medium">Email</span>
+        <span class="text-color text-sm">{{ linkDetails.email }}</span>
+      </div>
+
+      <div class="flex flex-col gap-1.5">
+        <span class="text-muted-color text-sm font-medium">Provider</span>
+        <span class="text-color text-sm">{{ linkDetails.providerDisplayName }}</span>
+      </div>
+
+      <div class="flex flex-col gap-1.5">
+        <label class="text-color text-sm font-medium" for="password">
+          Current password
+        </label>
+        <p-password
+          inputId="password"
+          autocomplete="current-password"
+          [formControl]="form.controls.password"
+          [feedback]="false"
+          [toggleMask]="true"
+          fluid
+          [invalid]="form.controls.password.touched && form.controls.password.errors"
+        />
+        @if (
+          form.controls.password.touched && form.controls.password.errors?.['required']
+        ) {
+          <p-message severity="error" variant="simple">Password is required.</p-message>
+        }
+      </div>
+
+      @if (errorMessage()) {
+        <p-message severity="error">{{ errorMessage() }}</p-message>
+      }
+
+      <p-button
+        type="submit"
+        label="Link and sign in"
+        icon="pi pi-link"
+        [loading]="isSubmitting()"
+        styleClass="w-full"
+      />
+
+      <p-button
+        type="button"
+        label="Cancel"
+        severity="secondary"
+        [text]="true"
+        styleClass="w-full"
+        (onClick)="cancel()"
+      />
+    </form>
+  }
+</app-auth-page>

@@ -1,4 +1,5 @@
-﻿using ChangeMe.Backend.Infrastructure.Auth;
+﻿using ChangeMe.Backend.Domain.Aggregates.Users.Interfaces;
+using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UseCases.Auth.Dtos;
 
 using ChangeMe.Backend.UseCases.Auth.Utils;
@@ -11,7 +12,9 @@ public class RefreshSessionHandler(
   ApplicationDbContext context,
   IJwtTokenGenerator jwtTokenGenerator,
   ISessionLifetimeService sessionLifetime,
-  IPasswordExpirationEvaluator passwordExpirationEvaluator) : ICommandHandler<RefreshSessionCommand, AuthResponseDto>
+  IPasswordExpirationEvaluator passwordExpirationEvaluator,
+  ITwoFactorPolicyEvaluator twoFactorPolicyEvaluator,
+  IPasskeyPolicyEvaluator passkeyPolicyEvaluator) : ICommandHandler<RefreshSessionCommand, AuthResponseDto>
 {
   public async Task<Result<AuthResponseDto>> Handle(RefreshSessionCommand command, CancellationToken cancellationToken)
   {
@@ -27,21 +30,27 @@ public class RefreshSessionHandler(
     if (session is null || !sessionLifetime.IsActive(session, utcNow))
       return Result<AuthResponseDto>.Unauthorized();
 
-    var user = await context.Users.FirstOrDefaultAsync(x => x.Id == session.UserId, cancellationToken);
+    var user = await context.Users
+      .Include(x => x.AccountInvitations)
+      .FirstOrDefaultAsync(x => x.Id == session.UserId, cancellationToken);
     if (user is null || !user.IsActive)
       return Result<AuthResponseDto>.Unauthorized();
 
     var newRefreshToken = RefreshTokenGenerator.CreateToken();
     var newRefreshTokenHash = RefreshTokenGenerator.HashToken(newRefreshToken);
-    var refreshTokenExpiresAtUtc = sessionLifetime.GetRefreshTokenExpiresAtUtc(
-      session.IsPersistent,
-      session.SignedInAt);
+    var refreshTokenExpiresAtUtc = sessionLifetime.GetRefreshTokenExpiresAtUtc(session.SignedInAt);
     session.RotateRefreshToken(newRefreshTokenHash, refreshTokenExpiresAtUtc);
 
     await context.SaveChangesAsync(cancellationToken);
 
     var passwordChangeRequired = passwordExpirationEvaluator.IsPasswordChangeRequired(user, utcNow);
     var passwordExpiresAtUtc = passwordExpirationEvaluator.GetPasswordExpiresAtUtc(user);
+    var twoFactorSetupRequired = !passwordChangeRequired
+      && twoFactorPolicyEvaluator.IsTwoFactorSetupRequired(user);
+    var passkeyCount = await context.PasskeyCredentials.CountAsync(x => x.UserId == user.Id, cancellationToken);
+    var passkeySetupRequired = !passwordChangeRequired
+      && !twoFactorSetupRequired
+      && passkeyPolicyEvaluator.IsPasskeySetupRequired(user, passkeyCount);
 
     return await AuthSessionUtils.CreateAuthResponseAsync(
       context,
@@ -51,6 +60,8 @@ public class RefreshSessionHandler(
       newRefreshToken,
       passwordChangeRequired,
       passwordExpiresAtUtc,
-      cancellationToken);
+      twoFactorSetupRequired,
+      cancellationToken,
+      passkeySetupRequired);
   }
 }

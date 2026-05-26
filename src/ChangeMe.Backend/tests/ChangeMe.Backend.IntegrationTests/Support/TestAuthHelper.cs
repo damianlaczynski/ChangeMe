@@ -135,10 +135,19 @@ internal static class TestAuthHelper
   {
     using var document = JsonDocument.Parse(responseBody);
 
-    if (document.RootElement.TryGetProperty("value", out var valueElement) &&
-        valueElement.TryGetProperty("token", out var tokenElement))
+    if (document.RootElement.TryGetProperty("value", out var valueElement))
     {
-      return tokenElement.GetString() ?? throw new InvalidOperationException("Token value is null.");
+      if (valueElement.TryGetProperty("authSession", out var authSession) &&
+          authSession.ValueKind == JsonValueKind.Object &&
+          authSession.TryGetProperty("token", out var nestedToken))
+      {
+        return nestedToken.GetString() ?? throw new InvalidOperationException("Token value is null.");
+      }
+
+      if (valueElement.TryGetProperty("token", out var tokenElement))
+      {
+        return tokenElement.GetString() ?? throw new InvalidOperationException("Token value is null.");
+      }
     }
 
     throw new InvalidOperationException("Token was not found in login response.");

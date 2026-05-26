@@ -2,10 +2,11 @@
 
 namespace ChangeMe.Backend.Domain.Aggregates.Users.Entities;
 
-public class UserAuthToken : Entity
+public class UserAuthToken
 {
   private UserAuthToken() { }
 
+  public Guid Id { get; private set; } = Guid.CreateVersion7();
   public Guid UserId { get; private set; }
   public UserAuthTokenType Type { get; private set; }
   public string TokenHash { get; private set; } = string.Empty;
@@ -40,9 +41,7 @@ public class UserAuthToken : Entity
       UserId = userId,
       Type = type,
       TokenHash = tokenHash.Trim(),
-      ExpiresAtUtc = expiresAtUtc,
-      CreatedBy = Guid.Empty,
-      UpdatedBy = Guid.Empty
+      ExpiresAtUtc = expiresAtUtc
     });
   }
 

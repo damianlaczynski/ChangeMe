@@ -23,7 +23,13 @@ public class RequestPasswordResetHandler(
         cancellationToken);
 
     if (user is not null)
-      await passwordResetService.SendPasswordResetAsync(user, cancellationToken);
+    {
+      var resetResult = await passwordResetService.SendPasswordResetAsync(user, cancellationToken);
+      if (!resetResult.IsSuccess)
+        return resetResult.Map();
+
+      await context.SaveChangesAsync(cancellationToken);
+    }
 
     return Result.Success(new PasswordResetAckDto
     {

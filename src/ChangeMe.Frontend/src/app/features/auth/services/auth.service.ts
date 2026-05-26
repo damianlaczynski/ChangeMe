@@ -9,21 +9,42 @@ import { Router } from '@angular/router';
 import { environment } from '@environments/environment';
 import { Result } from '@shared/api/models/api-response.model';
 import { ApiService } from '@shared/api/services/api.service';
-import { Observable, firstValueFrom, from, of, throwError } from 'rxjs';
+import { EMPTY, Observable, firstValueFrom, from, of, throwError } from 'rxjs';
 import { catchError, finalize, map, switchMap, tap } from 'rxjs/operators';
 import {
   AuthResponse,
   AuthSettings,
+  BeginExternalSignInResponse,
+  BeginTwoFactorSetupRequest,
+  BeginTwoFactorSetupResponse,
   ChangePasswordRequest,
+  CompleteExternalSignInRequest,
+  ConfirmTwoFactorSetupRequest,
+  DisableTwoFactorRequest,
   EmailVerificationAck,
+  ExternalSignInResponse,
+  LinkExternalAccountRequest,
   LoginRequest,
+  LoginResponse,
   MyAccountDto,
+  MyAccountPasskey,
+  PasskeyCeremonyBeginResponse,
+  PasskeyRegisterBeginRequest,
+  PasskeyRegisterCompleteRequest,
+  PasskeyRemoveRequest,
+  PasskeyRenameRequest,
+  PasskeySignInCompleteRequest,
   RegisterRequest,
   RegisterResponse,
   RequiredChangePasswordRequest,
+  SetPasswordRequest,
+  TwoFactorSetupCompletedResponse,
+  TwoFactorStepUpRequest,
+  UnlinkExternalAccountRequest,
   UpdateMyAccountRequest,
   UserSessionDto,
-  UserSessionSearchParameters
+  UserSessionSearchParameters,
+  VerifyTwoFactorRequest
 } from '../models/auth.model';
 import { AcceptInvitationRequest, InvitationPreview } from '../models/invitation.model';
 import {
@@ -33,6 +54,26 @@ import {
   ResetPasswordRequest
 } from '../models/password-reset.model';
 import { AuthConstraints } from '../utils/auth.utils';
+import {
+  clearExternalAccountFlow,
+  readExternalAccountFlow,
+  storeExternalAccountFlow
+} from '../utils/external-account-flow.storage';
+import { storeExternalLinkRequired } from '../utils/external-link.storage';
+import {
+  canOfferOptionalPasskeyEnrollment,
+  isPasskeySupported,
+  isWebAuthnCeremonyCancelled,
+  performPasskeyAuthentication,
+  performPasskeyRegistration
+} from '../utils/passkey.utils';
+import { storePendingPasskeyEnrollmentOffer } from '../utils/pending-passkey-enrollment.storage';
+import { hasPendingSetPassword } from '../utils/pending-set-password.storage';
+import {
+  clearTwoFactorChallenge,
+  readTwoFactorChallenge,
+  storeTwoFactorChallenge
+} from '../utils/two-factor-challenge.storage';
 import { AuthStorageService } from './auth-storage.service';
 
 @Injectable({
@@ -63,6 +104,22 @@ export class AuthService {
     () =>
       this.session()?.passwordChangeRequired === true &&
       this.session()?.passwordChangeStrict === true
+  );
+  readonly twoFactorSetupRequired = computed(
+    () => this.session()?.twoFactorSetupRequired === true
+  );
+  readonly requiresTwoFactorSetupScreen = computed(
+    () =>
+      this.session()?.twoFactorSetupRequired === true &&
+      this.session()?.twoFactorSetupStrict === true
+  );
+  readonly passkeySetupRequired = computed(
+    () => this.session()?.passkeySetupRequired === true
+  );
+  readonly requiresPasskeySetupScreen = computed(
+    () =>
+      this.session()?.passkeySetupRequired === true &&
+      this.session()?.passkeySetupStrict === true
   );
   readonly token = computed(() => {
     const current = this.session();
@@ -110,14 +167,259 @@ export class AuthService {
   }
 
   login(request: LoginRequest) {
-    return this.apiService.post<AuthResponse>('auth/login', request).pipe(
-      tap((session) =>
-        this.setSession({
-          ...session,
-          isPersistent: request.rememberMe,
-          passwordChangeStrict: false
-        })
+    return this.apiService
+      .post<LoginResponse>('auth/login', request)
+      .pipe(tap((response) => this.applyPasswordSignInResponse(response)));
+  }
+
+  beginExternalSignIn(providerKey: string) {
+    return this.apiService.post<BeginExternalSignInResponse>(
+      `auth/external/${encodeURIComponent(providerKey)}/begin`,
+      {}
+    );
+  }
+
+  completeExternalSignIn(request: CompleteExternalSignInRequest) {
+    return this.apiService.post<ExternalSignInResponse>(
+      'auth/external/complete',
+      request
+    );
+  }
+
+  linkExternalAccount(request: LinkExternalAccountRequest) {
+    return this.apiService.post<ExternalSignInResponse>('auth/external/link', request);
+  }
+
+  beginExternalAccountLink(providerKey: string) {
+    storeExternalAccountFlow('account-link');
+    return this.beginExternalSignIn(providerKey);
+  }
+
+  beginExternalProviderStepUp(providerKey: string) {
+    storeExternalAccountFlow('account-step-up');
+    return this.apiService.post<BeginExternalSignInResponse>(
+      `auth/external/${encodeURIComponent(providerKey)}/step-up/begin`,
+      {}
+    );
+  }
+
+  unlinkExternalAccount(providerKey: string, request: UnlinkExternalAccountRequest) {
+    return this.apiService.post<boolean>(
+      `auth/external/${encodeURIComponent(providerKey)}/unlink`,
+      request
+    );
+  }
+
+  setPassword(request: SetPasswordRequest) {
+    return this.apiService.post<boolean>('auth/set-password', request);
+  }
+
+  continueAfterExternalSignIn(
+    response: ExternalSignInResponse,
+    returnUrl = '/issues'
+  ): void {
+    const accountFlow = readExternalAccountFlow();
+    if (accountFlow) {
+      clearExternalAccountFlow();
+      if (response.accountLinkCompleted) {
+        void this.router.navigate(['/account'], {
+          queryParams: { externalLinked: '1' }
+        });
+        return;
+      }
+      if (response.externalStepUpCompleted) {
+        void this.router.navigate(
+          [hasPendingSetPassword() ? '/account/set-password' : '/account'],
+          { queryParams: { externalStepUp: '1' } }
+        );
+        return;
+      }
+
+      const errorTarget = this.isAuthenticated() ? '/account' : '/login';
+      void this.router.navigate([errorTarget], {
+        queryParams: { externalSignInError: '1' }
+      });
+      return;
+    }
+
+    if (response.linkAccountRequired) {
+      storeExternalLinkRequired(response.linkAccountRequired);
+      void this.router.navigateByUrl('/link-external-account');
+      return;
+    }
+
+    this.applyExternalSignInResponse(response);
+
+    if (this.passwordChangeRequired()) {
+      this.enablePasswordChangeScreen();
+      void this.router.navigateByUrl('/required-password-change');
+      return;
+    }
+
+    if (readTwoFactorChallenge()) {
+      void this.router.navigateByUrl('/two-factor-verification');
+      return;
+    }
+
+    if (this.twoFactorSetupRequired()) {
+      this.enableTwoFactorSetupScreen();
+      void this.router.navigateByUrl('/required-two-factor-setup');
+      return;
+    }
+
+    if (this.passkeySetupRequired()) {
+      this.enablePasskeySetupScreen();
+      void this.router.navigateByUrl('/required-passkey-setup');
+      return;
+    }
+
+    void this.router.navigateByUrl(returnUrl);
+  }
+
+  continueAfterPrimaryAuthentication(options?: {
+    offerPasskeyEnrollment?: boolean;
+    returnUrl?: string;
+  }): void {
+    const returnUrl = options?.returnUrl ?? '/issues';
+
+    if (this.passwordChangeRequired()) {
+      this.enablePasswordChangeScreen();
+      void this.router.navigateByUrl('/required-password-change');
+      return;
+    }
+
+    if (readTwoFactorChallenge()) {
+      void this.router.navigateByUrl('/two-factor-verification');
+      return;
+    }
+
+    if (this.twoFactorSetupRequired()) {
+      this.enableTwoFactorSetupScreen();
+      void this.router.navigateByUrl('/required-two-factor-setup');
+      return;
+    }
+
+    if (this.passkeySetupRequired()) {
+      this.enablePasskeySetupScreen();
+      void this.router.navigateByUrl('/required-passkey-setup');
+      return;
+    }
+
+    if (options?.offerPasskeyEnrollment) {
+      this.navigateToOptionalPasskeyEnrollmentIfEligible(returnUrl);
+      return;
+    }
+
+    void this.router.navigateByUrl(returnUrl);
+  }
+
+  private navigateToOptionalPasskeyEnrollmentIfEligible(fallbackUrl: string): void {
+    if (!isPasskeySupported()) {
+      void this.router.navigateByUrl(fallbackUrl);
+      return;
+    }
+
+    this.getAuthSettings()
+      .pipe(
+        switchMap((settings) => {
+          const passkeysEnabled =
+            settings.passkeys?.passkeysAuthenticationEnabled === true;
+          const enrollmentPromptEnabled =
+            settings.passkeys?.offerPasskeyEnrollmentPrompt === true;
+          if (!passkeysEnabled || !enrollmentPromptEnabled) {
+            return of(fallbackUrl);
+          }
+
+          return this.getMyAccount().pipe(
+            map((account) =>
+              canOfferOptionalPasskeyEnrollment(
+                passkeysEnabled,
+                enrollmentPromptEnabled,
+                account.passkeys.length
+              )
+                ? '/add-passkey-prompt'
+                : fallbackUrl
+            ),
+            catchError(() => of(fallbackUrl))
+          );
+        }),
+        catchError(() => of(fallbackUrl))
       )
+      .subscribe((targetUrl) => {
+        if (targetUrl === '/add-passkey-prompt') {
+          storePendingPasskeyEnrollmentOffer();
+        }
+
+        void this.router.navigateByUrl(targetUrl);
+      });
+  }
+
+  private applyPasswordSignInResponse(response: LoginResponse): void {
+    if (response.authSession) {
+      this.setSession(this.withSetupStrictFlags(response.authSession));
+      return;
+    }
+
+    if (response.twoFactorChallenge) {
+      storeTwoFactorChallenge({
+        challengeId: response.twoFactorChallenge.challengeId
+      });
+    }
+  }
+
+  private applyExternalSignInResponse(response: ExternalSignInResponse): void {
+    if (response.authSession) {
+      this.setSession(this.withSetupStrictFlags(response.authSession));
+      return;
+    }
+
+    if (response.twoFactorChallenge) {
+      storeTwoFactorChallenge({
+        challengeId: response.twoFactorChallenge.challengeId
+      });
+    }
+  }
+
+  private withSetupStrictFlags(session: AuthResponse): AuthResponse {
+    return {
+      ...session,
+      passwordChangeStrict: false,
+      twoFactorSetupStrict: session.twoFactorSetupRequired === true,
+      passkeySetupStrict: session.passkeySetupRequired === true
+    };
+  }
+
+  verifyTwoFactor(request: VerifyTwoFactorRequest) {
+    return this.apiService.post<AuthResponse>('auth/two-factor/verify', request).pipe(
+      tap((session) => {
+        clearTwoFactorChallenge();
+        this.setSession(this.withSetupStrictFlags(session));
+      })
+    );
+  }
+
+  beginTwoFactorSetup(request: BeginTwoFactorSetupRequest) {
+    return this.apiService.post<BeginTwoFactorSetupResponse>(
+      'auth/two-factor/setup/begin',
+      request
+    );
+  }
+
+  confirmTwoFactorSetup(request: ConfirmTwoFactorSetupRequest) {
+    return this.apiService.post<TwoFactorSetupCompletedResponse>(
+      'auth/two-factor/setup/confirm',
+      request
+    );
+  }
+
+  disableTwoFactor(request: DisableTwoFactorRequest) {
+    return this.apiService.post<boolean>('auth/two-factor/disable', request);
+  }
+
+  regenerateRecoveryCodes(request: TwoFactorStepUpRequest) {
+    return this.apiService.post<TwoFactorSetupCompletedResponse>(
+      'auth/two-factor/recovery-codes/regenerate',
+      request
     );
   }
 
@@ -151,8 +453,9 @@ export class AuthService {
         if (response.authSession) {
           this.setSession({
             ...response.authSession,
-            isPersistent: false,
-            passwordChangeStrict: false
+            passwordChangeStrict: false,
+            twoFactorSetupStrict: false,
+            passkeySetupStrict: false
           });
         }
       })
@@ -268,6 +571,216 @@ export class AuthService {
     });
   }
 
+  enableTwoFactorSetupScreen(): void {
+    const current = this.session();
+    if (!current) {
+      return;
+    }
+
+    this.setSession({
+      ...current,
+      twoFactorSetupRequired: true,
+      twoFactorSetupStrict: true
+    });
+  }
+
+  clearTwoFactorSetupRequired(): void {
+    const current = this.session();
+    if (!current?.twoFactorSetupRequired && !current?.twoFactorSetupStrict) {
+      return;
+    }
+
+    this.setSession({
+      ...current,
+      twoFactorSetupRequired: false,
+      twoFactorSetupStrict: false
+    });
+  }
+
+  markTwoFactorSetupRequired(): void {
+    const current = this.session();
+    if (!current || current.twoFactorSetupRequired) {
+      return;
+    }
+
+    this.setSession({
+      ...current,
+      twoFactorSetupRequired: true,
+      twoFactorSetupStrict: false
+    });
+  }
+
+  enablePasskeySetupScreen(): void {
+    const current = this.session();
+    if (!current) {
+      return;
+    }
+
+    this.setSession({
+      ...current,
+      passkeySetupRequired: true,
+      passkeySetupStrict: true
+    });
+  }
+
+  clearPasskeySetupRequired(): void {
+    const current = this.session();
+    if (!current?.passkeySetupRequired && !current?.passkeySetupStrict) {
+      return;
+    }
+
+    this.setSession({
+      ...current,
+      passkeySetupRequired: false,
+      passkeySetupStrict: false
+    });
+  }
+
+  markPasskeySetupRequired(): void {
+    const current = this.session();
+    if (!current || current.passkeySetupRequired) {
+      return;
+    }
+
+    this.setSession({
+      ...current,
+      passkeySetupRequired: true,
+      passkeySetupStrict: false
+    });
+  }
+
+  beginPasskeySignIn(email?: string | null) {
+    return this.postAuth<PasskeyCeremonyBeginResponse>('auth/passkeys/sign-in/begin', {
+      email: email ?? null
+    });
+  }
+
+  completePasskeySignIn(request: PasskeySignInCompleteRequest) {
+    return this.postAuth<LoginResponse>('auth/passkeys/sign-in/complete', request).pipe(
+      tap((response) => this.applyPasswordSignInResponse(response))
+    );
+  }
+
+  signInWithPasskey(email?: string | null) {
+    return this.beginPasskeySignIn(email).pipe(
+      switchMap((begin) =>
+        from(performPasskeyAuthentication(begin.options)).pipe(
+          switchMap((assertionResponse) =>
+            this.completePasskeySignIn({
+              ceremonyId: begin.ceremonyId,
+              assertionResponse
+            })
+          ),
+          catchError((error) =>
+            isWebAuthnCeremonyCancelled(error) ? EMPTY : throwError(() => error)
+          )
+        )
+      )
+    );
+  }
+
+  beginPasskeyRegistration(stepUp?: TwoFactorStepUpRequest) {
+    const body: PasskeyRegisterBeginRequest = {
+      unused: null,
+      currentPassword: stepUp?.currentPassword ?? null,
+      verificationCode: stepUp?.verificationCode ?? null
+    };
+    return this.apiService.post<PasskeyCeremonyBeginResponse>(
+      'auth/passkeys/register/begin',
+      body
+    );
+  }
+
+  completePasskeyRegistration(request: PasskeyRegisterCompleteRequest) {
+    return this.apiService.post<MyAccountPasskey>(
+      'auth/passkeys/register/complete',
+      request
+    );
+  }
+
+  performPasskeyRegistrationCeremony(stepUp?: TwoFactorStepUpRequest) {
+    return this.beginPasskeyRegistration(stepUp).pipe(
+      switchMap((begin) =>
+        from(performPasskeyRegistration(begin.options)).pipe(
+          map((attestationResponse) => ({
+            ceremonyId: begin.ceremonyId,
+            attestationResponse
+          })),
+          catchError((error) =>
+            isWebAuthnCeremonyCancelled(error) ? EMPTY : throwError(() => error)
+          )
+        )
+      )
+    );
+  }
+
+  completePasskeyRegistrationAfterCeremony(
+    ceremony: { ceremonyId: string; attestationResponse: unknown },
+    name: string,
+    stepUp?: TwoFactorStepUpRequest
+  ) {
+    return this.completePasskeyRegistration({
+      ceremonyId: ceremony.ceremonyId,
+      attestationResponse: ceremony.attestationResponse,
+      name,
+      currentPassword: stepUp?.currentPassword ?? null,
+      verificationCode: stepUp?.verificationCode ?? null
+    });
+  }
+
+  registerPasskey(name: string, stepUp?: TwoFactorStepUpRequest) {
+    return this.performPasskeyRegistrationCeremony(stepUp).pipe(
+      switchMap((ceremony) =>
+        this.completePasskeyRegistrationAfterCeremony(ceremony, name, stepUp)
+      )
+    );
+  }
+
+  renamePasskey(passkeyId: string, request: PasskeyRenameRequest) {
+    return this.apiService.post<MyAccountPasskey>(
+      `auth/passkeys/${passkeyId}/rename`,
+      request
+    );
+  }
+
+  removePasskey(passkeyId: string, stepUp?: TwoFactorStepUpRequest) {
+    const body: PasskeyRemoveRequest = {
+      unused: null,
+      currentPassword: stepUp?.currentPassword ?? null,
+      verificationCode: stepUp?.verificationCode ?? null
+    };
+    return this.apiService.post<boolean>(`auth/passkeys/${passkeyId}/remove`, body);
+  }
+
+  beginPasskeyStepUp() {
+    return this.apiService.post<PasskeyCeremonyBeginResponse>(
+      'auth/passkeys/step-up/begin',
+      {}
+    );
+  }
+
+  completePasskeyStepUp(request: PasskeySignInCompleteRequest) {
+    return this.apiService.post<boolean>('auth/passkeys/step-up/complete', request);
+  }
+
+  verifyWithPasskey() {
+    return this.beginPasskeyStepUp().pipe(
+      switchMap((begin) =>
+        from(performPasskeyAuthentication(begin.options)).pipe(
+          switchMap((assertionResponse) =>
+            this.completePasskeyStepUp({
+              ceremonyId: begin.ceremonyId,
+              assertionResponse
+            })
+          ),
+          catchError((error) =>
+            isWebAuthnCeremonyCancelled(error) ? EMPTY : throwError(() => error)
+          )
+        )
+      )
+    );
+  }
+
   tryRefreshAndRetry(req: HttpRequest<unknown>, next: HttpHandlerFn) {
     if (req.headers.has('X-Skip-Auth-Refresh')) {
       return next(req);
@@ -328,8 +841,13 @@ export class AuthService {
         tap((session) =>
           this.setSession({
             ...session,
-            isPersistent: current.isPersistent,
-            passwordChangeStrict: current.passwordChangeStrict
+            passwordChangeStrict: current.passwordChangeStrict,
+            twoFactorSetupStrict:
+              session.twoFactorSetupRequired === true
+                ? true
+                : current.twoFactorSetupStrict,
+            passkeySetupStrict:
+              session.passkeySetupRequired === true ? true : current.passkeySetupStrict
           })
         ),
         catchError((error: unknown) => {

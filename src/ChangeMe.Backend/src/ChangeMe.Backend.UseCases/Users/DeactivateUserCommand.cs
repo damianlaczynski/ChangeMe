@@ -22,6 +22,10 @@ public class DeactivateUserHandler(
 
     if (user.IsActive)
     {
+      var validationResult = await UsersUtils.ValidateCanDeactivateUserAsync(context, user.Id, cancellationToken);
+      if (!validationResult.IsSuccess)
+        return validationResult.Map();
+
       user.Deactivate();
       await UsersUtils.RevokeAllActiveSessionsAsync(context, user.Id, cancellationToken);
       await context.SaveChangesAsync(cancellationToken);

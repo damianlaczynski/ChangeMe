@@ -10,9 +10,13 @@ import {
 } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthPageComponent } from '@features/auth/components/auth-page/auth-page.component';
-import { PasswordPolicySettings } from '@features/auth/models/auth.model';
+import {
+  ExternalProviderSettings,
+  PasswordPolicySettings
+} from '@features/auth/models/auth.model';
 import { AuthService } from '@features/auth/services/auth.service';
 import { AuthConstraints, AuthMessages } from '@features/auth/utils/auth.utils';
+import { clearExternalAccountFlow } from '@features/auth/utils/external-account-flow.storage';
 import {
   buildPasswordPolicyValidators,
   defaultPasswordPolicySettings
@@ -46,10 +50,14 @@ export class AcceptInvitationComponent {
   readonly token = this.route.snapshot.queryParamMap.get('token') ?? '';
   readonly isLoadingPreview = signal(true);
   readonly isInvitationValid = signal(false);
+  readonly previewEmail = signal<string | null>(null);
   readonly errorMessage = signal('');
   readonly isSubmitting = signal(false);
   readonly authConstraints = AuthConstraints;
   readonly invalidInvitationMessage = AuthMessages.invalidInvitationLink;
+  readonly externalProvidersEnabled = signal(false);
+  readonly externalProviders = signal<ExternalProviderSettings[]>([]);
+  readonly externalProviderLoadingKey = signal<string | null>(null);
 
   readonly form = new FormGroup(
     {
@@ -86,7 +94,11 @@ export class AcceptInvitationComponent {
       .getAuthSettings()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (settings) => this.applyPasswordPolicy(settings.passwordPolicy)
+        next: (settings) => {
+          this.applyPasswordPolicy(settings.passwordPolicy);
+          this.externalProvidersEnabled.set(settings.externalProvidersEnabled);
+          this.externalProviders.set(settings.externalProviders);
+        }
       });
 
     if (!this.token) {
@@ -102,6 +114,7 @@ export class AcceptInvitationComponent {
         next: (preview) => {
           this.isInvitationValid.set(preview.isValid);
           if (preview.isValid) {
+            this.previewEmail.set(preview.email);
             this.form.patchValue({
               firstName: preview.firstName,
               lastName: preview.lastName
@@ -112,6 +125,29 @@ export class AcceptInvitationComponent {
         error: () => {
           this.isInvitationValid.set(false);
           this.isLoadingPreview.set(false);
+        }
+      });
+  }
+
+  beginExternalSignIn(provider: ExternalProviderSettings): void {
+    if (this.externalProviderLoadingKey()) {
+      return;
+    }
+
+    this.errorMessage.set('');
+    this.externalProviderLoadingKey.set(provider.providerKey);
+    clearExternalAccountFlow();
+
+    this.authService
+      .beginExternalSignIn(provider.providerKey)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (response) => window.location.assign(response.authorizationUrl),
+        error: (error) => {
+          this.externalProviderLoadingKey.set(null);
+          this.errorMessage.set(
+            error instanceof Error ? error.message : AuthMessages.externalSignInFailed
+          );
         }
       });
   }

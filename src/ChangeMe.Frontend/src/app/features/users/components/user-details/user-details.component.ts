@@ -16,16 +16,15 @@ import {
   formatUserReference
 } from '@core/user/utils/user-display.utils';
 import { AuthService } from '@features/auth/services/auth.service';
-import { formatIpAddress, formatSessionType } from '@features/auth/utils/auth.utils';
+import { AuthMessages, formatIpAddress } from '@features/auth/utils/auth.utils';
 import { EffectivePermissionsComponent } from '@features/users/components/effective-permissions/effective-permissions.component';
 import { AdminUserSessionDto, UserDetailsDto } from '@features/users/models/user.model';
 import { UsersService } from '@features/users/services/users.service';
 import {
-  getAccountBadgeLabel,
-  getAccountBadgeSeverity,
-  getAccountStateLabel,
   getActivateConfirmMessage,
   getDeactivateConfirmMessage,
+  getUserStatusLabel,
+  getUserStatusSeverity,
   UserMessages
 } from '@features/users/utils/users.utils';
 import { PermissionCodes } from '@shared/authorization/permission-codes';
@@ -76,12 +75,22 @@ export class UserDetailsComponent {
 
   readonly formatUserName = formatUserName;
 
-  readonly canResendInvitation = computed(() => {
+  readonly canManageInvitationActions = computed(() => {
     const profile = this.user();
     return (
       !!profile &&
       this.canManageUsers() &&
-      !profile.hasPasswordSet &&
+      profile.status === 'Invited' &&
+      !!profile.pendingInvitation
+    );
+  });
+
+  readonly canSendInvitation = computed(() => {
+    const profile = this.user();
+    return (
+      !!profile &&
+      this.canManageUsers() &&
+      profile.status === 'InvitationCanceled' &&
       !profile.deactivated
     );
   });
@@ -102,14 +111,15 @@ export class UserDetailsComponent {
   readonly pendingRevokeSessionIds = signal<string[]>([]);
   readonly passwordExpirationEnabled = signal(false);
   readonly emailVerificationEnabled = signal(false);
+  readonly twoFactorAuthenticationEnabled = signal(false);
+  readonly passkeysAuthenticationEnabled = signal(false);
+  readonly externalProvidersEnabled = signal(false);
 
   readonly UserMessages = UserMessages;
-  readonly formatSessionType = formatSessionType;
+  readonly AuthMessages = AuthMessages;
   readonly formatIpAddress = formatIpAddress;
-  readonly getAccountBadgeLabel = getAccountBadgeLabel;
-  readonly getAccountBadgeSeverity = getAccountBadgeSeverity;
-  readonly getAccountStateLabel = getAccountStateLabel;
-
+  readonly getUserStatusLabel = getUserStatusLabel;
+  readonly getUserStatusSeverity = getUserStatusSeverity;
   readonly canManageUsers = () =>
     this.authService.hasPermission(PermissionCodes.usersManage);
   readonly canDeactivateUsers = () =>
@@ -119,6 +129,29 @@ export class UserDetailsComponent {
   readonly canManageSessions = () =>
     this.authService.hasPermission(PermissionCodes.sessionsManageAny);
 
+  readonly canResetTwoFactor = computed(() => {
+    const profile = this.user();
+    return (
+      !!profile &&
+      this.twoFactorAuthenticationEnabled() &&
+      profile.twoFactorEnabled &&
+      this.canManageUsers() &&
+      !profile.deactivated
+    );
+  });
+
+  readonly canResetPasskeys = computed(() => {
+    const profile = this.user();
+    return (
+      !!profile &&
+      this.passkeysAuthenticationEnabled() &&
+      profile.passkeys &&
+      profile.passkeys.length > 0 &&
+      this.canManageUsers() &&
+      !profile.deactivated
+    );
+  });
+
   constructor() {
     this.authService
       .getAuthSettings()
@@ -127,6 +160,13 @@ export class UserDetailsComponent {
         next: (settings) => {
           this.passwordExpirationEnabled.set(settings.passwordExpirationEnabled);
           this.emailVerificationEnabled.set(settings.emailVerificationEnabled);
+          this.twoFactorAuthenticationEnabled.set(
+            settings.twoFactorAuthenticationEnabled
+          );
+          this.passkeysAuthenticationEnabled.set(
+            settings.passkeys?.passkeysAuthenticationEnabled === true
+          );
+          this.externalProvidersEnabled.set(settings.externalProvidersEnabled);
         }
       });
 
@@ -165,6 +205,70 @@ export class UserDetailsComponent {
       acceptButtonProps: { label: 'Activate', severity: 'success' },
       rejectButtonProps: { label: 'Cancel', severity: 'secondary', outlined: true },
       accept: () => this.activateUser()
+    });
+  }
+
+  confirmUnlinkExternal(providerKey: string, displayName: string): void {
+    const profile = this.user();
+    if (!profile) {
+      return;
+    }
+
+    if (!profile.hasPasswordSet && profile.externalLogins.length <= 1) {
+      this.toastService.error(AuthMessages.cannotRemoveOnlySignInMethod);
+      return;
+    }
+
+    this.confirmationService.confirm({
+      header: AuthMessages.unlinkExternalProviderTitle,
+      message: AuthMessages.unlinkExternalProviderMessage(displayName),
+      icon: 'pi pi-exclamation-triangle',
+      acceptButtonProps: { label: 'Remove', severity: 'danger' },
+      rejectButtonProps: { label: 'Cancel', severity: 'secondary', outlined: true },
+      accept: () => this.unlinkExternal(providerKey)
+    });
+  }
+
+  confirmResetTwoFactor(): void {
+    const profile = this.user();
+    if (!profile) {
+      return;
+    }
+
+    this.confirmationService.confirm({
+      header: UserMessages.resetTwoFactorTitle,
+      message: UserMessages.resetTwoFactorMessage(formatUserReference(profile)),
+      icon: 'pi pi-exclamation-triangle',
+      acceptButtonProps: { label: 'Reset', severity: 'danger' },
+      rejectButtonProps: { label: 'Cancel', severity: 'secondary', outlined: true },
+      accept: () => this.resetTwoFactor()
+    });
+  }
+
+  confirmResetPasskeys(): void {
+    const profile = this.user();
+    if (!profile) {
+      return;
+    }
+
+    this.confirmationService.confirm({
+      header: UserMessages.resetPasskeysTitle,
+      message: UserMessages.resetPasskeysMessage(formatUserReference(profile)),
+      icon: 'pi pi-exclamation-triangle',
+      acceptButtonProps: { label: 'Reset', severity: 'danger' },
+      rejectButtonProps: { label: 'Cancel', severity: 'secondary', outlined: true },
+      accept: () => this.resetPasskeys()
+    });
+  }
+
+  confirmRemovePasskey(passkeyId: string, passkeyName: string): void {
+    this.confirmationService.confirm({
+      header: UserMessages.removePasskeyTitle,
+      message: UserMessages.removePasskeyMessage(passkeyName),
+      icon: 'pi pi-exclamation-triangle',
+      acceptButtonProps: { label: 'Remove', severity: 'danger' },
+      rejectButtonProps: { label: 'Cancel', severity: 'secondary', outlined: true },
+      accept: () => this.removePasskey(passkeyId)
     });
   }
 
@@ -213,6 +317,38 @@ export class UserDetailsComponent {
       acceptButtonProps: { label: 'Resend', severity: 'warn' },
       rejectButtonProps: { label: 'Cancel', severity: 'secondary', outlined: true },
       accept: () => this.resendInvitation()
+    });
+  }
+
+  confirmCancelInvitation(): void {
+    const profile = this.user();
+    if (!profile) {
+      return;
+    }
+
+    this.confirmationService.confirm({
+      header: UserMessages.cancelInvitationTitle,
+      message: UserMessages.cancelInvitationMessage(profile.email),
+      icon: 'pi pi-exclamation-triangle',
+      acceptButtonProps: { label: 'Cancel invitation', severity: 'danger' },
+      rejectButtonProps: { label: 'Keep', severity: 'secondary', outlined: true },
+      accept: () => this.cancelInvitation()
+    });
+  }
+
+  confirmSendInvitation(): void {
+    const profile = this.user();
+    if (!profile) {
+      return;
+    }
+
+    this.confirmationService.confirm({
+      header: UserMessages.sendInvitationTitle,
+      message: UserMessages.sendInvitationMessage(profile.email),
+      icon: 'pi pi-exclamation-triangle',
+      acceptButtonProps: { label: 'Send', severity: 'warn' },
+      rejectButtonProps: { label: 'Cancel', severity: 'secondary', outlined: true },
+      accept: () => this.sendInvitation()
     });
   }
 
@@ -301,6 +437,58 @@ export class UserDetailsComponent {
       });
   }
 
+  private unlinkExternal(providerKey: string): void {
+    this.usersService
+      .unlinkExternalLogin(this.id(), providerKey)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (user) => {
+          this.user.set(user);
+          this.toastService.success(AuthMessages.externalAccountUnlinked);
+        },
+        error: (error: Error) => this.errorMessage.set(error.message)
+      });
+  }
+
+  private resetTwoFactor(): void {
+    this.usersService
+      .resetTwoFactor(this.id())
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (user) => {
+          this.user.set(user);
+          this.toastService.success(UserMessages.twoFactorReset);
+        },
+        error: (error: Error) => this.errorMessage.set(error.message)
+      });
+  }
+
+  private resetPasskeys(): void {
+    this.usersService
+      .resetPasskeys(this.id())
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (user) => {
+          this.user.set(user);
+          this.toastService.success(UserMessages.passkeysReset);
+        },
+        error: (error: Error) => this.errorMessage.set(error.message)
+      });
+  }
+
+  private removePasskey(passkeyId: string): void {
+    this.usersService
+      .removePasskey(this.id(), passkeyId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (user) => {
+          this.user.set(user);
+          this.toastService.success(UserMessages.passkeyRemoved);
+        },
+        error: (error: Error) => this.errorMessage.set(error.message)
+      });
+  }
+
   private sendPasswordReset(): void {
     this.usersService
       .sendPasswordReset(this.id())
@@ -332,6 +520,32 @@ export class UserDetailsComponent {
         next: (user) => {
           this.user.set(user);
           this.toastService.success(UserMessages.invitationResent);
+        },
+        error: (error: Error) => this.errorMessage.set(error.message)
+      });
+  }
+
+  private cancelInvitation(): void {
+    this.usersService
+      .cancelInvitation(this.id())
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (user) => {
+          this.user.set(user);
+          this.toastService.success(UserMessages.invitationCanceled);
+        },
+        error: (error: Error) => this.errorMessage.set(error.message)
+      });
+  }
+
+  private sendInvitation(): void {
+    this.usersService
+      .sendInvitation(this.id())
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (user) => {
+          this.user.set(user);
+          this.toastService.success(UserMessages.invitationSent);
         },
         error: (error: Error) => this.errorMessage.set(error.message)
       });

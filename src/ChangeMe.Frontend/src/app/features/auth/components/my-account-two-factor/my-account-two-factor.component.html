@@ -1,0 +1,99 @@
+<p-panel header="Two-factor authentication" [toggleable]="true" class="mb-4">
+  @if (account().twoFactorEnabled) {
+    <div class="mb-4 flex flex-wrap items-center gap-2">
+      <p-tag value="Enabled" severity="success" />
+      @if (account().twoFactorEnabledAt; as enabledAt) {
+        <span class="text-muted-color text-sm">
+          Enabled {{ enabledAt | date: 'dd.MM.yyyy HH:mm' }}
+        </span>
+      }
+    </div>
+    <div class="flex flex-wrap gap-2">
+      <p-button
+        label="Regenerate recovery codes"
+        icon="pi pi-refresh"
+        severity="secondary"
+        [outlined]="true"
+        size="small"
+        (onClick)="confirmRegenerate()"
+      />
+      @if (!twoFactorRequired()) {
+        <p-button
+          label="Disable two-factor authentication"
+          icon="pi pi-times"
+          severity="danger"
+          [outlined]="true"
+          size="small"
+          (onClick)="confirmDisable()"
+        />
+      }
+    </div>
+  } @else if (twoFactorRequired()) {
+    <p-message severity="warn" variant="simple" class="mb-4">
+      {{ AuthMessages.twoFactorRequiredWarning }}
+    </p-message>
+    <p-button
+      label="Set up two-factor authentication"
+      icon="pi pi-shield"
+      (onClick)="openEnableSetup()"
+    />
+  } @else {
+    <p class="text-muted-color m-0 mb-4 text-sm">
+      Protect your account with a verification code from an authenticator app.
+    </p>
+    <p-button
+      label="Enable two-factor authentication"
+      icon="pi pi-shield"
+      (onClick)="openEnableSetup()"
+    />
+  }
+</p-panel>
+
+<app-identity-step-up-dialog
+  [account]="account()"
+  [visible]="stepUpVisible()"
+  [passkeysEnabled]="passkeysEnabled()"
+  [stepUpValidityMinutes]="stepUpValidityMinutes()"
+  [submitting]="isStepUpSubmitting()"
+  [errorMessage]="stepUpError()"
+  fieldIdPrefix="twoFactorStepUp"
+  (visibleChange)="stepUpVisible.set($event)"
+  (cancelled)="closeStepUp()"
+  (verified)="onStepUpVerified($event)"
+  [beforeExternalRedirect]="prepareExternalRedirect"
+  (externalRedirectFailed)="onExternalRedirectFailed()"
+/>
+
+<p-dialog
+  header="Recovery codes"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [visible]="recoveryCodes().length > 0"
+  (visibleChange)="!$event && recoveryCodes.set([])"
+  styleClass="w-full max-w-lg"
+>
+  <div class="flex flex-col gap-4">
+    <p class="text-muted-color m-0 text-sm">
+      Save these recovery codes in a secure place. Each code can be used only once.
+    </p>
+    <ul
+      class="text-color m-0 list-none rounded-lg border border-surface-200 bg-surface-0 p-4 font-mono text-sm dark:border-surface-700 dark:bg-surface-900"
+    >
+      @for (code of recoveryCodes(); track code) {
+        <li class="py-1">{{ code }}</li>
+      }
+    </ul>
+    <div class="flex items-center gap-2">
+      <p-checkbox
+        inputId="myAccountRecoveryCodesSaved"
+        [formControl]="recoveryCodesSaved"
+        [binary]="true"
+      />
+      <label class="text-color text-sm" for="myAccountRecoveryCodesSaved">
+        I have saved my recovery codes
+      </label>
+    </div>
+    <p-button label="Done" icon="pi pi-check" (onClick)="closeRecoveryCodes()" />
+  </div>
+</p-dialog>

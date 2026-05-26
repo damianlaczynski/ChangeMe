@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.UseCases.Auth.Utils;
+using ChangeMe.Backend.UseCases.Auth.Utils;
 
 namespace ChangeMe.Backend.UseCases.Auth;
 
@@ -12,7 +12,8 @@ public class AcceptInvitationHandler(
   ApplicationDbContext context,
   IPasswordHasher passwordHasher,
   IUserAuthTokenService tokenService,
-  IAuthEmailService authEmailService) : ICommandHandler<AcceptInvitationCommand, bool>
+  IAuthEmailService authEmailService,
+  TimeProvider timeProvider) : ICommandHandler<AcceptInvitationCommand, bool>
 {
   public async Task<Result<bool>> Handle(AcceptInvitationCommand command, CancellationToken cancellationToken)
   {
@@ -24,7 +25,9 @@ public class AcceptInvitationHandler(
     if (!validateResult.IsSuccess)
       return Result<bool>.NotFound(AuthSessionUtils.InvalidInvitationTokenMessage);
 
-    var user = await context.Users.FirstOrDefaultAsync(x => x.Id == validateResult.Value, cancellationToken);
+    var user = await context.Users
+      .Include(x => x.AccountInvitations)
+      .FirstOrDefaultAsync(x => x.Id == validateResult.Value, cancellationToken);
     if (user is null)
       return Result<bool>.NotFound(AuthSessionUtils.InvalidInvitationTokenMessage);
 
@@ -41,6 +44,10 @@ public class AcceptInvitationHandler(
       return Result<bool>.Invalid(passwordResult.ValidationErrors);
 
     user.MarkEmailVerified();
+
+    var acceptInvitationResult = user.AcceptPendingInvitation(timeProvider.GetUtcNow().UtcDateTime);
+    if (!acceptInvitationResult.IsSuccess)
+      return Result<bool>.Conflict(acceptInvitationResult.Errors.First());
 
     await tokenService.MarkTokenUsedAsync(command.Token, cancellationToken);
     await context.SaveChangesAsync(cancellationToken);

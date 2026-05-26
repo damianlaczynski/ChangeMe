@@ -6,10 +6,18 @@ namespace ChangeMe.Backend.Domain.Aggregates.Users;
 public class User : Entity, IAggregateRoot
 {
   private readonly List<UserRole> roles = [];
+  private readonly List<ExternalLogin> externalLogins = [];
+  private readonly List<UserRecoveryCode> recoveryCodes = [];
+  private readonly List<AccountInvitation> accountInvitations = [];
+  private readonly List<PasskeyCredential> passkeys = [];
 
   private User() { }
 
   public IReadOnlyCollection<UserRole> Roles => roles;
+  public IReadOnlyCollection<ExternalLogin> ExternalLogins => externalLogins;
+  public IReadOnlyCollection<UserRecoveryCode> RecoveryCodes => recoveryCodes;
+  public IReadOnlyCollection<AccountInvitation> AccountInvitations => accountInvitations;
+  public IReadOnlyCollection<PasskeyCredential> Passkeys => passkeys;
 
   public string FirstName { get; private set; } = string.Empty;
   public string LastName { get; private set; } = string.Empty;
@@ -22,7 +30,10 @@ public class User : Entity, IAggregateRoot
   public bool EmailVerified { get; private set; }
   public DateTime? EmailVerifiedAt { get; private set; }
   public DateTime? PasswordLastChangedAt { get; private set; }
-  public DateTime? InvitationSentAt { get; private set; }
+  public bool TwoFactorEnabled { get; private set; }
+  public DateTime? TwoFactorEnabledAt { get; private set; }
+  public string TwoFactorSecretCiphertext { get; private set; } = string.Empty;
+  public DateTime? PasskeyStepUpCompletedAt { get; private set; }
 
   public bool IsActive => !Deactivated;
   public bool HasCompleteProfile =>
@@ -167,9 +178,138 @@ public class User : Entity, IAggregateRoot
     EmailVerifiedAt = DateTime.UtcNow;
   }
 
-  public void RecordInvitationSent()
+  public bool HasPendingInvitation => GetActivePendingInvitation() is not null;
+
+  public DateTime? PendingInvitationSentAtUtc => GetActivePendingInvitation()?.SentAtUtc;
+
+  public (DateTime LastSentAtUtc, DateTime ExpiresAtUtc, bool IsLinkExpired)? GetPendingInvitationExpiry(
+    DateTime utcNow,
+    DateTime? unusedInvitationTokenExpiresAtUtc)
   {
-    InvitationSentAt = DateTime.UtcNow;
+    var pending = GetActivePendingInvitation();
+    if (pending is null)
+      return null;
+
+    var hasValidUnusedToken = unusedInvitationTokenExpiresAtUtc is not null
+      && utcNow < unusedInvitationTokenExpiresAtUtc.Value;
+
+    return (pending.SentAtUtc, pending.LinkExpiresAtUtc, !hasValidUnusedToken);
+  }
+
+  public Result<AccountInvitation> RecordInvitationIssued(
+    DateTime sentAtUtc,
+    DateTime linkExpiresAtUtc)
+  {
+    foreach (var invitation in accountInvitations.Where(x => x.IsPending))
+      invitation.Revoke(sentAtUtc);
+
+    var createResult = AccountInvitation.Create(Id, sentAtUtc, linkExpiresAtUtc);
+    if (!createResult.IsSuccess)
+      return createResult.Map();
+
+    accountInvitations.Add(createResult.Value);
+    return createResult;
+  }
+
+  public Result CancelPendingInvitations(DateTime revokedAtUtc)
+  {
+    var pendingInvitations = accountInvitations.Where(x => x.IsPending).ToList();
+    if (pendingInvitations.Count == 0)
+      return Result.Error("No invitation is pending.");
+
+    foreach (var invitation in pendingInvitations)
+      invitation.Revoke(revokedAtUtc);
+
+    return Result.Success();
+  }
+
+  public Result AcceptPendingInvitation(DateTime acceptedAtUtc)
+  {
+    var pending = GetActivePendingInvitation();
+    if (pending is null)
+      return Result.Error("No invitation is pending.");
+
+    pending.Accept(acceptedAtUtc);
+    return Result.Success();
+  }
+
+  public Result CompleteInvitationViaExternalSignIn(string? firstName, string? lastName, DateTime acceptedAtUtc)
+  {
+    if (HasPasswordSet)
+      return Result.Error("Invitation was already accepted.");
+
+    if (!HasCompleteProfile
+        && !string.IsNullOrWhiteSpace(firstName)
+        && !string.IsNullOrWhiteSpace(lastName))
+    {
+      var profileResult = UpdateProfile(firstName, lastName);
+      if (!profileResult.IsSuccess)
+        return profileResult;
+    }
+
+    var acceptResult = AcceptPendingInvitation(acceptedAtUtc);
+    if (!acceptResult.IsSuccess)
+      return acceptResult;
+
+    MarkEmailVerified();
+    return Result.Success();
+  }
+
+  private AccountInvitation? GetActivePendingInvitation() =>
+    accountInvitations
+      .Where(x => x.IsPending)
+      .OrderByDescending(x => x.SentAtUtc)
+      .FirstOrDefault();
+
+  public Result EnableTwoFactor(string encryptedSecret, DateTime utcNow)
+  {
+    if (string.IsNullOrWhiteSpace(encryptedSecret))
+      return Result.Invalid(new ValidationError(nameof(TwoFactorSecretCiphertext), "cannot be null or empty"));
+
+    if (encryptedSecret.Length > TwoFactorConstraints.ENCRYPTED_SECRET_MAX_LENGTH)
+      return Result.Invalid(new ValidationError(
+        nameof(TwoFactorSecretCiphertext),
+        $"cannot be longer than {TwoFactorConstraints.ENCRYPTED_SECRET_MAX_LENGTH} characters"));
+
+    TwoFactorEnabled = true;
+    TwoFactorEnabledAt = utcNow;
+    TwoFactorSecretCiphertext = encryptedSecret.Trim();
+    return Result.Success();
+  }
+
+  public void DisableTwoFactor()
+  {
+    TwoFactorEnabled = false;
+    TwoFactorEnabledAt = null;
+    TwoFactorSecretCiphertext = string.Empty;
+    recoveryCodes.Clear();
+  }
+
+  public Result AddExternalLogin(ExternalLogin externalLogin)
+  {
+    if (externalLogins.Any(x =>
+          x.ProviderKey.Equals(externalLogin.ProviderKey, StringComparison.OrdinalIgnoreCase)))
+      return Result.Error("This provider is already linked to the account.");
+
+    externalLogins.Add(externalLogin);
+    return Result.Success();
+  }
+
+  public Result RemoveExternalLogin(string providerKey)
+  {
+    var login = externalLogins.FirstOrDefault(x =>
+      x.ProviderKey.Equals(providerKey, StringComparison.OrdinalIgnoreCase));
+    if (login is null)
+      return Result.NotFound();
+
+    externalLogins.Remove(login);
+    return Result.Success();
+  }
+
+  public void ReplaceRecoveryCodes(IEnumerable<UserRecoveryCode> codes)
+  {
+    recoveryCodes.Clear();
+    recoveryCodes.AddRange(codes);
   }
 
   public Result ReplaceRoles(IEnumerable<Guid> roleIds)
@@ -277,6 +417,12 @@ public class User : Entity, IAggregateRoot
     if (value.Trim().Length > UserConstraints.NAME_MAX_LENGTH)
       validationErrors.Add(new ValidationError(propertyName, $"cannot be longer than {UserConstraints.NAME_MAX_LENGTH} characters"));
   }
+
+  public void RecordPasskeyStepUp(DateTime utcNow) => PasskeyStepUpCompletedAt = utcNow;
+
+  public bool IsPasskeyStepUpFresh(DateTime utcNow, int validityMinutes) =>
+    PasskeyStepUpCompletedAt.HasValue
+    && PasskeyStepUpCompletedAt.Value.AddMinutes(validityMinutes) > utcNow;
 }
 
 public static class UserConstraints

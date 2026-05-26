@@ -4,6 +4,6 @@ public sealed class PublicRegistrationDisabledWebApplicationFactory : BackendWeb
 {
   protected override void ConfigureAuthEnvironmentOverrides(Dictionary<string, string?> overrides)
   {
-    overrides["Auth__PublicRegistrationEnabled"] = "false";
+    overrides["Auth__Registration__PublicEnabled"] = "false";
   }
 }

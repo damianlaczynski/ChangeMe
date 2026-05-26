@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using System.Net.Http.Json;
 using ChangeMe.Backend.IntegrationTests.Fixtures;
 using ChangeMe.Backend.IntegrationTests.Support;
@@ -56,14 +56,48 @@ public sealed class UsersEndpointTests(BackendWebApplicationFactory factory)
 
     await using var scope = factory.Services.CreateAsyncScope();
     var dbContext = scope.ServiceProvider.GetRequiredService<ChangeMe.Backend.Infrastructure.Persistence.ApplicationDbContext>();
-    var createdUser = await dbContext.Users.SingleAsync(x => x.Email == email, cancellationToken);
+    var createdUser = await dbContext.Users
+      .Include(x => x.AccountInvitations)
+      .SingleAsync(x => x.Email == email, cancellationToken);
     Assert.False(createdUser.HasPasswordSet);
-    Assert.NotNull(createdUser.InvitationSentAt);
+    Assert.True(createdUser.HasPendingInvitation);
+    Assert.Single(createdUser.AccountInvitations);
 
     var fakeEmail = scope.ServiceProvider.GetRequiredService<ChangeMe.Backend.Domain.Common.IEmailService>()
       as ChangeMe.Backend.IntegrationTests.Support.Fakes.FakeEmailService;
     Assert.NotNull(fakeEmail);
     Assert.Contains(fakeEmail.SentEmails, e => e.Subject == "You're invited to ChangeMe");
+  }
+
+  [Fact]
+  public async Task PutUsers_WhenInvitedUserHasNoPassword_ShouldAllowEmptyNames()
+  {
+    var cancellationToken = TestContext.Current.CancellationToken;
+    var admin = await TestAuthHelper.CreateAdministratorUserAsync(factory, cancellationToken);
+    var userRoleId = await GetRoleIdByNameAsync(factory, "User", cancellationToken);
+    var email = $"invited-{Guid.NewGuid():N}@example.com";
+
+    var inviteResponse = await admin.Client.PostAsJsonAsync("/api/users", new
+    {
+      FirstName = "",
+      LastName = "",
+      Email = email,
+      RoleIds = new[] { userRoleId }
+    }, cancellationToken);
+
+    inviteResponse.EnsureSuccessStatusCode();
+    var inviteBody = await inviteResponse.Content.ReadAsStringAsync(cancellationToken);
+    var userId = RolesTestHelper.ReadGuidFromResultBody(inviteBody, "id");
+
+    var updateResponse = await admin.Client.PutAsJsonAsync($"/api/users/{userId}", new
+    {
+      Id = userId,
+      FirstName = "",
+      LastName = "",
+      Email = email
+    }, cancellationToken);
+
+    Assert.Equal(HttpStatusCode.OK, updateResponse.StatusCode);
   }
 
   private static async Task<Guid> GetRoleIdByNameAsync(

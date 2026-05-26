@@ -2,6 +2,7 @@
 using System.Net.Http.Json;
 using System.Text.Json;
 using ChangeMe.Backend.Domain.Aggregates.Issue.Enums;
+using ChangeMe.Backend.Domain.Aggregates.Users;
 using ChangeMe.Backend.Infrastructure.Persistence;
 using ChangeMe.Backend.IntegrationTests.Fixtures;
 using ChangeMe.Backend.IntegrationTests.Support;
@@ -125,6 +126,7 @@ public sealed class UpdateIssueEndpointTests(BackendWebApplicationFactory factor
       .First(entry => entry.GetProperty("eventType").GetString() == IssueHistoryEventType.ASSIGNEE_CHANGED.ToString());
 
     Assert.Equal("Unassigned", assigneeChangedEntry.GetProperty("previousValue").GetString());
-    Assert.Equal("Test User", assigneeChangedEntry.GetProperty("currentValue").GetString());
+    var currentValue = assigneeChangedEntry.GetProperty("currentValue").GetString();
+    Assert.Equal(UserDisplayFormat.DisplayLabel("Test", "User", assignee.Email), currentValue);
   }
 }

@@ -1,5 +1,7 @@
 ﻿using ChangeMe.Backend.Domain.Aggregates.Sessions;
 using ChangeMe.Backend.Domain.Aggregates.Users;
+using ChangeMe.Backend.Domain.Aggregates.Users.Entities;
+using ChangeMe.Backend.Domain.Aggregates.Users.Interfaces;
 using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UseCases.Auth.Dtos;
 using ChangeMe.Backend.UseCases.Auth.Utils;
@@ -10,8 +12,7 @@ namespace ChangeMe.Backend.UseCases.Auth;
 
 public sealed record LoginUserCommand(
   string Email,
-  string Password,
-  bool RememberMe) : ICommand<AuthResponseDto>;
+  string Password) : ICommand<LoginResponseDto>;
 
 public class LoginUserHandler(
   ApplicationDbContext context,
@@ -19,39 +20,73 @@ public class LoginUserHandler(
   IJwtTokenGenerator jwtTokenGenerator,
   ISessionLifetimeService sessionLifetime,
   IPasswordExpirationEvaluator passwordExpirationEvaluator,
+  ITwoFactorPolicyEvaluator twoFactorPolicyEvaluator,
+  IPasskeyPolicyEvaluator passkeyPolicyEvaluator,
   IOptions<AuthOptions> authOptions,
-  IHttpContextAccessor httpContextAccessor) : ICommandHandler<LoginUserCommand, AuthResponseDto>
+  IHttpContextAccessor httpContextAccessor) : ICommandHandler<LoginUserCommand, LoginResponseDto>
 {
-  public async Task<Result<AuthResponseDto>> Handle(LoginUserCommand command, CancellationToken cancellationToken)
+  public async Task<Result<LoginResponseDto>> Handle(LoginUserCommand command, CancellationToken cancellationToken)
   {
     var normalizedEmail = User.NormalizeEmail(command.Email);
-    var user = await context.Users.FirstOrDefaultAsync(x => x.NormalizedEmail == normalizedEmail, cancellationToken);
+    var user = await context.Users
+      .Include(x => x.AccountInvitations)
+      .FirstOrDefaultAsync(x => x.NormalizedEmail == normalizedEmail, cancellationToken);
     if (user is null)
-      return Result<AuthResponseDto>.Unauthorized(AuthSessionUtils.InvalidCredentialsMessage);
+      return Result<LoginResponseDto>.Unauthorized(AuthSessionUtils.InvalidCredentialsMessage);
 
     if (!user.IsActive)
-      return Result<AuthResponseDto>.Unauthorized(AuthSessionUtils.DeactivatedAccountMessage);
+      return Result<LoginResponseDto>.Unauthorized(AuthSessionUtils.DeactivatedAccountMessage);
 
     if (!user.HasPasswordSet)
-      return Result<AuthResponseDto>.Unauthorized(AuthSessionUtils.InvitePendingAccountMessage);
+    {
+      if (ExternalAuthUtils.IsInvitationPending(user))
+        return Result<LoginResponseDto>.Unauthorized(AuthSessionUtils.InvitePendingAccountMessage);
 
-    if (authOptions.Value.EmailVerificationEnabled && !user.EmailVerified)
-      return Result<AuthResponseDto>.Unauthorized(AuthSessionUtils.EmailNotVerifiedMessage);
+      return Result<LoginResponseDto>.Unauthorized(AuthSessionUtils.InvalidCredentialsMessage);
+    }
+
+    if (authOptions.Value.EmailVerification.Enabled && !user.EmailVerified)
+      return Result<LoginResponseDto>.Unauthorized(AuthSessionUtils.EmailNotVerifiedMessage);
 
     if (!passwordHasher.VerifyPassword(user.PasswordHash, command.Password))
-      return Result<AuthResponseDto>.Unauthorized(AuthSessionUtils.InvalidCredentialsMessage);
-
-    var sessionResult = await CreateSessionAsync(user, command.RememberMe, cancellationToken);
-    if (!sessionResult.IsSuccess)
-      return Result<AuthResponseDto>.Invalid(sessionResult.ValidationErrors);
-
-    await context.SaveChangesAsync(cancellationToken);
+      return Result<LoginResponseDto>.Unauthorized(AuthSessionUtils.InvalidCredentialsMessage);
 
     var utcNow = DateTime.UtcNow;
     var passwordChangeRequired = passwordExpirationEvaluator.IsPasswordChangeRequired(user, utcNow);
-    var passwordExpiresAtUtc = passwordExpirationEvaluator.GetPasswordExpiresAtUtc(user);
 
-    return await AuthSessionUtils.CreateAuthResponseAsync(
+    if (!passwordChangeRequired && twoFactorPolicyEvaluator.IsTwoFactorVerificationRequired(user))
+    {
+      var challengeResult = await CreateSignInChallengeAsync(user, utcNow, cancellationToken);
+      if (!challengeResult.IsSuccess)
+        return challengeResult.Map();
+
+      return Result.Success(new LoginResponseDto
+      {
+        TwoFactorChallenge = new PendingSignInChallengeDto(challengeResult.Value.Id)
+      });
+    }
+
+    var sessionResult = await AuthSessionFactory.CreateSessionAsync(
+      context,
+      sessionLifetime,
+      httpContextAccessor,
+      user,
+      cancellationToken,
+      SignInMethods.Password);
+    if (!sessionResult.IsSuccess)
+      return Result<LoginResponseDto>.Invalid(sessionResult.ValidationErrors);
+
+    await context.SaveChangesAsync(cancellationToken);
+
+    var passwordExpiresAtUtc = passwordExpirationEvaluator.GetPasswordExpiresAtUtc(user);
+    var twoFactorSetupRequired = !passwordChangeRequired
+      && twoFactorPolicyEvaluator.IsTwoFactorSetupRequired(user);
+    var passkeyCount = await context.PasskeyCredentials.CountAsync(x => x.UserId == user.Id, cancellationToken);
+    var passkeySetupRequired = !passwordChangeRequired
+      && !twoFactorSetupRequired
+      && passkeyPolicyEvaluator.IsPasskeySetupRequired(user, passkeyCount);
+
+    var authResponse = await AuthSessionUtils.CreateAuthResponseAsync(
       context,
       jwtTokenGenerator,
       user,
@@ -59,35 +94,33 @@ public class LoginUserHandler(
       sessionResult.Value.RefreshToken,
       passwordChangeRequired,
       passwordExpiresAtUtc,
-      cancellationToken);
+      twoFactorSetupRequired,
+      cancellationToken,
+      passkeySetupRequired);
+
+    if (!authResponse.IsSuccess)
+      return authResponse.Map();
+
+    return Result.Success(new LoginResponseDto { AuthSession = authResponse.Value });
   }
 
-  private async Task<Result<(UserSession Session, string RefreshToken)>> CreateSessionAsync(
+  private async Task<Result<SignInChallenge>> CreateSignInChallengeAsync(
     User user,
-    bool rememberMe,
+    DateTime utcNow,
     CancellationToken cancellationToken)
   {
-    var signedInAt = DateTime.UtcNow;
-    var refreshToken = RefreshTokenGenerator.CreateToken();
-    var refreshTokenHash = RefreshTokenGenerator.HashToken(refreshToken);
-    var refreshTokenExpiresAtUtc = sessionLifetime.GetRefreshTokenExpiresAtUtc(rememberMe, signedInAt);
-    var httpContext = httpContextAccessor.HttpContext;
-    var deviceLabel = ClientInfoParser.ParseDeviceBrowserLabel(httpContext?.Request.Headers.UserAgent);
-    var ipAddress = AuthSessionUtils.GetClientIpAddress(httpContext);
+    var lifetimeMinutes = authOptions.Value.TwoFactor.PendingSignInChallengeLifetimeMinutes;
+    var expiresAtUtc = utcNow.AddMinutes(lifetimeMinutes);
+    var challengeResult = SignInChallenge.Create(user.Id, expiresAtUtc, SignInMethods.Password);
+    if (!challengeResult.IsSuccess)
+      return challengeResult.Map();
 
-    var sessionResult = UserSession.Create(
-      user.Id,
-      rememberMe,
-      deviceLabel,
-      ipAddress,
-      refreshTokenHash,
-      refreshTokenExpiresAtUtc,
-      signedInAt);
+    await context.SignInChallenges
+      .Where(x => x.UserId == user.Id)
+      .ExecuteDeleteAsync(cancellationToken);
 
-    if (!sessionResult.IsSuccess)
-      return sessionResult.Map();
-
-    await context.UserSessions.AddAsync(sessionResult.Value, cancellationToken);
-    return Result.Success((sessionResult.Value, refreshToken));
+    await context.SignInChallenges.AddAsync(challengeResult.Value, cancellationToken);
+    await context.SaveChangesAsync(cancellationToken);
+    return challengeResult;
   }
 }

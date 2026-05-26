@@ -5,23 +5,16 @@ namespace ChangeMe.Backend.Infrastructure.Auth;
 
 public sealed class SessionLifetimeService(IOptions<AuthOptions> options) : ISessionLifetimeService
 {
-  private readonly AuthSessionOptions sessionOptions = options.Value.Session;
+  private readonly JwtOptions jwtOptions = options.Value.Jwt;
 
-  public int PersistentSessionLifetimeDays =>
-    sessionOptions.PersistentSessionLifetimeDays > 0
-      ? sessionOptions.PersistentSessionLifetimeDays
+  public int SessionLifetimeDays =>
+    jwtOptions.SessionLifetimeDays > 0
+      ? jwtOptions.SessionLifetimeDays
       : 14;
 
-  public int BrowserSessionLifetimeDays =>
-    sessionOptions.BrowserSessionLifetimeDays > 0
-      ? sessionOptions.BrowserSessionLifetimeDays
-      : 1;
-
   public bool IsActive(UserSession session, DateTime utcNow) =>
-    session.IsActive(utcNow, PersistentSessionLifetimeDays);
+    session.IsActive(utcNow, SessionLifetimeDays);
 
-  public DateTime GetRefreshTokenExpiresAtUtc(bool isPersistent, DateTime signedInAtUtc) =>
-    isPersistent
-      ? signedInAtUtc.AddDays(PersistentSessionLifetimeDays)
-      : signedInAtUtc.AddDays(BrowserSessionLifetimeDays);
+  public DateTime GetRefreshTokenExpiresAtUtc(DateTime signedInAtUtc) =>
+    signedInAtUtc.AddDays(SessionLifetimeDays);
 }

@@ -34,5 +34,11 @@ public sealed class GetAuthSettingsEndpointTests(BackendWebApplicationFactory fa
     Assert.True(settings.PasswordPolicy.RequireLowercase);
     Assert.True(settings.PasswordPolicy.RequireDigit);
     Assert.False(settings.PasswordPolicy.RequireSpecialCharacter);
+    Assert.False(settings.TwoFactorAuthenticationEnabled);
+    Assert.False(settings.ExternalProvidersEnabled);
+    Assert.Equal(6, settings.TwoFactor.VerificationCodeLength);
+    Assert.Equal(10, settings.TwoFactor.RecoveryCodeCount);
+    Assert.Equal(30, settings.TwoFactor.TotpTimeStepSeconds);
+    Assert.Empty(settings.ExternalProviders);
   }
 }

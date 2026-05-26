@@ -3,16 +3,23 @@ import {
   Component,
   computed,
   DestroyRef,
+  effect,
   inject,
+  OnInit,
   signal,
   viewChild
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ToastService } from '@core/toast/services/toast.service';
+import { MyAccountExternalMethodsComponent } from '@features/auth/components/my-account-external-methods/my-account-external-methods.component';
+import { MyAccountPasskeysComponent } from '@features/auth/components/my-account-passkeys/my-account-passkeys.component';
+import { MyAccountTwoFactorComponent } from '@features/auth/components/my-account-two-factor/my-account-two-factor.component';
 import { MySessionsComponent } from '@features/auth/components/my-sessions/my-sessions.component';
 import { MyAccountDto } from '@features/auth/models/auth.model';
 import { AuthService } from '@features/auth/services/auth.service';
-import { PermissionCodes } from '@features/auth/utils/auth.utils';
+import { TwoFactorSetupDialogService } from '@features/auth/services/two-factor-setup-dialog.service';
+import { AuthMessages, PermissionCodes } from '@features/auth/utils/auth.utils';
 import { EffectivePermissionsComponent } from '@features/users/components/effective-permissions/effective-permissions.component';
 import { UserMessages } from '@features/users/utils/users.utils';
 import { Button } from 'primeng/button';
@@ -34,15 +41,30 @@ import { Tag } from 'primeng/tag';
     Panel,
     ProgressSpinner,
     EffectivePermissionsComponent,
-    MySessionsComponent
+    MySessionsComponent,
+    MyAccountTwoFactorComponent,
+    MyAccountPasskeysComponent,
+    MyAccountExternalMethodsComponent
   ],
   templateUrl: './my-account.component.html'
 })
-export class MyAccountComponent {
+export class MyAccountComponent implements OnInit {
   private readonly authService = inject(AuthService);
+  private readonly setupDialogService = inject(TwoFactorSetupDialogService);
+  private readonly toastService = inject(ToastService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
 
+  private handledSetupCompleted = 0;
+
   readonly account = signal<MyAccountDto | null>(null);
+  readonly twoFactorAuthenticationEnabled = signal(false);
+  readonly twoFactorAuthenticationRequired = signal(false);
+  readonly passkeysAuthenticationEnabled = signal(false);
+  readonly passkeysAuthenticationRequired = signal(false);
+  readonly maximumPasskeysPerUser = signal(10);
+  readonly externalProvidersEnabled = signal(false);
   readonly errorMessage = signal<string | null>(null);
   readonly isLoading = signal(true);
   readonly UserMessages = UserMessages;
@@ -61,17 +83,92 @@ export class MyAccountComponent {
   readonly isSigningOutEverywhere = computed(
     () => this.sessionsComponent()?.isSigningOutEverywhere() ?? false
   );
+  readonly stepUpExternalSignInValidityMinutes = signal(15);
 
   readonly effectivePermissions = computed(
     () => this.account()?.effectivePermissions ?? []
   );
 
   constructor() {
+    this.authService
+      .getAuthSettings()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (settings) => {
+          this.twoFactorAuthenticationEnabled.set(
+            settings.twoFactorAuthenticationEnabled
+          );
+          this.twoFactorAuthenticationRequired.set(
+            settings.twoFactorAuthenticationRequired
+          );
+          this.externalProvidersEnabled.set(settings.externalProvidersEnabled);
+          this.stepUpExternalSignInValidityMinutes.set(
+            settings.twoFactor?.stepUpExternalSignInValidityMinutes ?? 15
+          );
+          const passkeys = settings.passkeys;
+          this.passkeysAuthenticationEnabled.set(
+            passkeys?.passkeysAuthenticationEnabled === true
+          );
+          this.passkeysAuthenticationRequired.set(
+            passkeys?.passkeysAuthenticationRequired === true
+          );
+          this.maximumPasskeysPerUser.set(passkeys?.maximumPasskeysPerUser ?? 10);
+        }
+      });
+
+    effect(() => {
+      const completed = this.setupDialogService.setupCompleted();
+      if (completed <= this.handledSetupCompleted || !this.account()) {
+        return;
+      }
+
+      this.handledSetupCompleted = completed;
+      this.reload();
+    });
+
     this.reload();
   }
 
+  ngOnInit(): void {
+    this.route.queryParamMap
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((params) => {
+        const queryCleanup: Record<string, null> = {};
+
+        if (params.get('externalStepUp') === '1') {
+          this.reload();
+        }
+
+        if (params.get('externalLinked') === '1') {
+          this.toastService.success(AuthMessages.externalAccountLinked);
+          queryCleanup['externalLinked'] = null;
+        }
+        if (params.get('externalSignInError') === '1') {
+          this.toastService.error(AuthMessages.externalSignInFailed);
+          queryCleanup['externalSignInError'] = null;
+        }
+        const message = params.get('externalSignInMessage');
+        if (message) {
+          this.toastService.error(message);
+          queryCleanup['externalSignInMessage'] = null;
+        }
+
+        if (Object.keys(queryCleanup).length > 0) {
+          void this.router.navigate([], {
+            relativeTo: this.route,
+            queryParams: queryCleanup,
+            queryParamsHandling: 'merge',
+            replaceUrl: true
+          });
+        }
+      });
+  }
+
   reload(): void {
-    this.isLoading.set(true);
+    const hasAccount = this.account() !== null;
+    if (!hasAccount) {
+      this.isLoading.set(true);
+    }
     this.errorMessage.set(null);
 
     this.authService

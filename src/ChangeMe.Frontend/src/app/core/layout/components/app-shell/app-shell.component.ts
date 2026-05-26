@@ -6,10 +6,16 @@ import { SidebarNavComponent } from '@core/layout/components/sidebar-nav/sidebar
 import { LayoutNavItem } from '@core/layout/models/layout-nav-item.model';
 import { LayoutService } from '@core/layout/services/layout.service';
 import { formatUserReference } from '@core/user/utils/user-display.utils';
+import { PasskeySetupBannerComponent } from '@features/auth/components/passkey-setup-banner/passkey-setup-banner.component';
+import { PasskeySetupDialogComponent } from '@features/auth/components/passkey-setup-dialog/passkey-setup-dialog.component';
 import { PasswordExpirationBannerComponent } from '@features/auth/components/password-expiration-banner/password-expiration-banner.component';
 import { RequiredPasswordChangeDialogComponent } from '@features/auth/components/required-password-change-dialog/required-password-change-dialog.component';
+import { TwoFactorSetupBannerComponent } from '@features/auth/components/two-factor-setup-banner/two-factor-setup-banner.component';
+import { TwoFactorSetupDialogComponent } from '@features/auth/components/two-factor-setup-dialog/two-factor-setup-dialog.component';
 import { AuthService } from '@features/auth/services/auth.service';
+import { PasskeySetupNoticeService } from '@features/auth/services/passkey-setup-notice.service';
 import { PasswordExpirationNoticeService } from '@features/auth/services/password-expiration-notice.service';
+import { TwoFactorSetupNoticeService } from '@features/auth/services/two-factor-setup-notice.service';
 import { NotificationsBellComponent } from '@features/notifications/components/notifications-bell/notifications-bell.component';
 import { PermissionCodes } from '@shared/authorization/permission-codes';
 import { Button } from 'primeng/button';
@@ -24,7 +30,11 @@ import { filter, map } from 'rxjs/operators';
     SidebarNavComponent,
     NotificationsBellComponent,
     PasswordExpirationBannerComponent,
+    TwoFactorSetupBannerComponent,
+    PasskeySetupBannerComponent,
     RequiredPasswordChangeDialogComponent,
+    TwoFactorSetupDialogComponent,
+    PasskeySetupDialogComponent,
     Button,
     Drawer
   ],
@@ -42,8 +52,14 @@ export class AppShellComponent {
   readonly formatUserReference = formatUserReference;
   readonly isAuthenticated = this.authService.isAuthenticated;
   readonly requiresPasswordChangeScreen = this.authService.requiresPasswordChangeScreen;
+  readonly requiresTwoFactorSetupScreen = this.authService.requiresTwoFactorSetupScreen;
+  readonly requiresPasskeySetupScreen = this.authService.requiresPasskeySetupScreen;
   readonly showAuthenticatedChrome = computed(
-    () => this.isAuthenticated() && !this.requiresPasswordChangeScreen()
+    () =>
+      this.isAuthenticated() &&
+      !this.requiresPasswordChangeScreen() &&
+      !this.requiresTwoFactorSetupScreen() &&
+      !this.requiresPasskeySetupScreen()
   );
   readonly isDesktop = toSignal(
     this.breakpointObserver
@@ -82,6 +98,8 @@ export class AppShellComponent {
 
   constructor() {
     inject(PasswordExpirationNoticeService);
+    inject(TwoFactorSetupNoticeService);
+    inject(PasskeySetupNoticeService);
 
     this.router.events
       .pipe(

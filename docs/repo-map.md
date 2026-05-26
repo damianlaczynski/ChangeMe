@@ -110,3 +110,7 @@ Current issue endpoints illustrate the standard flow:
 `BackendWebApplicationFactory` starts disposable SQL Server via Testcontainers, applies test environment overrides, and replaces `IEmailService` with a fake implementation for integration tests.
 
 <!--#endif-->
+
+## Operations documentation
+
+- `docs/auth-operations-guide.md` — `Auth` configuration, sign-in flows, 2FA, and external OIDC provider setup.

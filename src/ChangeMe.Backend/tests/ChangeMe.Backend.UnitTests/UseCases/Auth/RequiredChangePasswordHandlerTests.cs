@@ -12,6 +12,7 @@ public sealed class RequiredChangePasswordHandlerTests
   [Fact]
   public async Task Handle_WhenNewPasswordMatchesCurrent_ShouldReturnInvalid()
   {
+    var cancellationToken = TestContext.Current.CancellationToken;
     await using var context = UseCasesTestDb.Create(nameof(Handle_WhenNewPasswordMatchesCurrent_ShouldReturnInvalid));
     var passwordHasher = new PasswordHasherAdapter();
     const string password = "StrongPass123!";
@@ -22,9 +23,9 @@ public sealed class RequiredChangePasswordHandlerTests
       passwordHasher.HashPassword(password)).Value;
 
     var session = CreateSession(user.Id);
-    await context.Users.AddAsync(user);
-    await context.UserSessions.AddAsync(session);
-    await context.SaveChangesAsync();
+    await context.Users.AddAsync(user, cancellationToken);
+    await context.UserSessions.AddAsync(session, cancellationToken);
+    await context.SaveChangesAsync(cancellationToken);
 
     var userAccessor = new FakeUserAccessor { UserId = user.Id, SessionId = session.Id };
     var handler = new RequiredChangePasswordHandler(
@@ -35,7 +36,7 @@ public sealed class RequiredChangePasswordHandlerTests
 
     var result = await handler.Handle(
       new RequiredChangePasswordCommand(password),
-      CancellationToken.None);
+      cancellationToken);
 
     Assert.Equal(ResultStatus.Invalid, result.Status);
   }
@@ -43,6 +44,7 @@ public sealed class RequiredChangePasswordHandlerTests
   [Fact]
   public async Task Handle_WhenPasswordChanges_ShouldRevokeOtherSessionsAndKeepCurrent()
   {
+    var cancellationToken = TestContext.Current.CancellationToken;
     await using var context = UseCasesTestDb.Create(nameof(Handle_WhenPasswordChanges_ShouldRevokeOtherSessionsAndKeepCurrent));
     var passwordHasher = new PasswordHasherAdapter();
     var user = User.CreateWithPassword(
@@ -53,9 +55,9 @@ public sealed class RequiredChangePasswordHandlerTests
 
     var currentSession = CreateSession(user.Id);
     var otherSession = CreateSession(user.Id);
-    await context.Users.AddAsync(user);
-    await context.UserSessions.AddRangeAsync(currentSession, otherSession);
-    await context.SaveChangesAsync();
+    await context.Users.AddAsync(user, cancellationToken);
+    await context.UserSessions.AddRangeAsync([currentSession, otherSession], cancellationToken);
+    await context.SaveChangesAsync(cancellationToken);
 
     var userAccessor = new FakeUserAccessor { UserId = user.Id, SessionId = currentSession.Id };
     var emailService = new FakeAuthEmailService();
@@ -67,7 +69,7 @@ public sealed class RequiredChangePasswordHandlerTests
 
     var result = await handler.Handle(
       new RequiredChangePasswordCommand("NewStrongPass456!"),
-      CancellationToken.None);
+      cancellationToken);
 
     Assert.True(result.IsSuccess);
     Assert.Equal(1, emailService.PasswordChangedEmailsSent);
@@ -76,7 +78,7 @@ public sealed class RequiredChangePasswordHandlerTests
     Assert.Null(sessions.Single(x => x.Id == currentSession.Id).RevokedAt);
     Assert.NotNull(sessions.Single(x => x.Id == otherSession.Id).RevokedAt);
 
-    var updatedUser = await context.Users.FindAsync(user.Id);
+    var updatedUser = await context.Users.FindAsync([user.Id], cancellationToken);
     Assert.NotNull(updatedUser!.PasswordLastChangedAt);
   }
 
@@ -85,11 +87,10 @@ public sealed class RequiredChangePasswordHandlerTests
     var signedInAt = DateTime.UtcNow;
     return UserSession.Create(
       userId,
-      false,
       "Test Browser",
       "127.0.0.1",
       RefreshTokenGenerator.HashToken(RefreshTokenGenerator.CreateToken()),
-      signedInAt.AddDays(1),
+      signedInAt.AddDays(14),
       signedInAt).Value;
   }
 }

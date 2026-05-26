@@ -1,0 +1,56 @@
+<app-auth-page
+  [title]="authMessages.twoFactorVerificationTitle"
+  [subtitle]="authMessages.twoFactorVerificationSubtitle"
+>
+  <a
+    routerLink="/login"
+    class="text-primary mb-4 inline-flex items-center gap-2 text-sm font-medium"
+    (click)="clearChallenge()"
+  >
+    <i class="pi pi-arrow-left" aria-hidden="true"></i>
+    Back to sign in
+  </a>
+
+  <form class="p-fluid flex flex-col gap-4" [formGroup]="form" (ngSubmit)="onSubmit()">
+    <div class="flex flex-col gap-1.5">
+      <label class="text-color text-sm font-medium" for="verificationCode">
+        Verification code
+      </label>
+      <input
+        id="verificationCode"
+        type="text"
+        pInputText
+        autocomplete="one-time-code"
+        inputmode="text"
+        [formControl]="form.controls.verificationCode"
+        [invalid]="
+          form.controls.verificationCode.touched &&
+          form.controls.verificationCode.errors
+        "
+      />
+      @if (
+        form.controls.verificationCode.touched &&
+        form.controls.verificationCode.errors?.['required']
+      ) {
+        <p-message severity="error" variant="simple">
+          Verification code is required.
+        </p-message>
+      }
+      <p class="text-muted-color m-0 text-sm">
+        {{ authMessages.twoFactorUseRecoveryCodeHint }}
+      </p>
+    </div>
+
+    @if (errorMessage()) {
+      <p-message severity="error">{{ errorMessage() }}</p-message>
+    }
+
+    <p-button
+      type="submit"
+      [label]="isSubmitting() ? 'Verifying...' : 'Verify'"
+      icon="pi pi-shield"
+      [loading]="isSubmitting()"
+      styleClass="w-full"
+    />
+  </form>
+</app-auth-page>

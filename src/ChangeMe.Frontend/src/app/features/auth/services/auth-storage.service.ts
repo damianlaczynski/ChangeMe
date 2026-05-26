@@ -8,9 +8,7 @@ const AUTH_STORAGE_KEY = 'auth_session';
 })
 export class AuthStorageService {
   getSession(): AuthResponse | null {
-    const rawValue =
-      localStorage.getItem(AUTH_STORAGE_KEY) ??
-      sessionStorage.getItem(AUTH_STORAGE_KEY);
+    const rawValue = localStorage.getItem(AUTH_STORAGE_KEY);
 
     if (!rawValue) {
       return null;
@@ -22,7 +20,11 @@ export class AuthStorageService {
         ...parsed,
         passwordChangeRequired: parsed.passwordChangeRequired === true,
         passwordChangeStrict: parsed.passwordChangeStrict === true,
-        passwordExpiresAtUtc: parsed.passwordExpiresAtUtc ?? null
+        passwordExpiresAtUtc: parsed.passwordExpiresAtUtc ?? null,
+        twoFactorSetupRequired: parsed.twoFactorSetupRequired === true,
+        twoFactorSetupStrict: parsed.twoFactorSetupStrict === true,
+        passkeySetupRequired: parsed.passkeySetupRequired === true,
+        passkeySetupStrict: parsed.passkeySetupStrict === true
       };
     } catch {
       this.clearSession();
@@ -31,9 +33,7 @@ export class AuthStorageService {
   }
 
   setSession(session: AuthResponse): void {
-    this.clearSession();
-    const storage = session.isPersistent ? localStorage : sessionStorage;
-    storage.setItem(AUTH_STORAGE_KEY, JSON.stringify(session));
+    localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(session));
   }
 
   clearSession(): void {

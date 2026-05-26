@@ -8,5 +8,13 @@ public sealed record MyAccountDto(
   string LastName,
   string Email,
   DateTime MemberSince,
+  bool HasPasswordSet,
+  bool TwoFactorEnabled,
+  DateTime? TwoFactorEnabledAt,
+  bool ExternalStepUpFresh,
   IReadOnlyList<UserRoleSummaryDto> Roles,
-  IReadOnlyList<EffectivePermissionDto> EffectivePermissions);
+  IReadOnlyList<EffectivePermissionDto> EffectivePermissions,
+  IReadOnlyList<MyAccountExternalLoginDto> ExternalLogins,
+  IReadOnlyList<ExternalProviderSettingsDto> LinkableProviders,
+  IReadOnlyList<MyAccountPasskeyDto> Passkeys,
+  bool PasskeyStepUpFresh);

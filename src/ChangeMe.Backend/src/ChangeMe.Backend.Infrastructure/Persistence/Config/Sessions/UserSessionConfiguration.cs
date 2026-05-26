@@ -23,11 +23,12 @@ public class UserSessionConfiguration : BaseEntityTypeConfiguration<UserSession>
       .IsRequired()
       .HasMaxLength(SessionConstraints.DEVICE_LABEL_MAX_LENGTH);
 
+    builder.Property(x => x.SignInMethod)
+      .IsRequired()
+      .HasMaxLength(SessionConstraints.SIGN_IN_METHOD_MAX_LENGTH);
+
     builder.Property(x => x.IpAddress)
       .HasMaxLength(SessionConstraints.IP_ADDRESS_MAX_LENGTH);
-
-    builder.Property(x => x.IsPersistent)
-      .IsRequired();
 
     builder.Property(x => x.RefreshTokenHash)
       .IsRequired()

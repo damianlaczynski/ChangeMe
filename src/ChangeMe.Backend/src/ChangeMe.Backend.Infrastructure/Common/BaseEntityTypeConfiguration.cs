@@ -12,6 +12,9 @@ public abstract class BaseEntityTypeConfiguration<TEntity> : IEntityTypeConfigur
 
     builder.HasKey(e => e.Id);
 
+    builder.Property(e => e.Id)
+      .ValueGeneratedNever();
+
     builder.Property(e => e.CreatedAt)
         .IsRequired();
 
