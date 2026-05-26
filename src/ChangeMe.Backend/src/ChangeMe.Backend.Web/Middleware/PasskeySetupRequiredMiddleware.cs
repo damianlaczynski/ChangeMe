@@ -1,4 +1,4 @@
-using ChangeMe.Backend.Infrastructure.Persistence;
+﻿using ChangeMe.Backend.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
 namespace ChangeMe.Backend.Web.Middleware;

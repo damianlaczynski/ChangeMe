@@ -1,9 +1,9 @@
+import angularPlugin from '@angular-eslint/eslint-plugin';
+import angularTemplatePlugin from '@angular-eslint/eslint-plugin-template';
+import angularTemplateParser from '@angular-eslint/template-parser';
 import eslint from '@eslint/js';
 import { defineConfig } from 'eslint/config';
 import tseslint from 'typescript-eslint';
-import angularPlugin from '@angular-eslint/eslint-plugin';
-import angularTemplateParser from '@angular-eslint/template-parser';
-import angularTemplatePlugin from '@angular-eslint/eslint-plugin-template';
 
 export default defineConfig(
   {
@@ -43,6 +43,15 @@ export default defineConfig(
         'error',
         { type: 'element', prefix: 'app', style: 'kebab-case' }
       ]
+    }
+  },
+  {
+    files: ['**/*.spec.ts'],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.spec.json'],
+        tsconfigRootDir: import.meta.dirname
+      }
     }
   },
   {

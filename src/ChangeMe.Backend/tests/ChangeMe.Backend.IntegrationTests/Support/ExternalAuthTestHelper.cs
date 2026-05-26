@@ -1,4 +1,4 @@
-using System.Net.Http.Json;
+﻿using System.Net.Http.Json;
 using ChangeMe.Backend.Infrastructure.Persistence;
 using ChangeMe.Backend.IntegrationTests.Fixtures;
 using ChangeMe.Backend.IntegrationTests.Support.Fakes;

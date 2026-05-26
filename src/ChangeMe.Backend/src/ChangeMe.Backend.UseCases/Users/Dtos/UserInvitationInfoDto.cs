@@ -1,4 +1,4 @@
-namespace ChangeMe.Backend.UseCases.Users.Dtos;
+﻿namespace ChangeMe.Backend.UseCases.Users.Dtos;
 
 public sealed record UserInvitationInfoDto(
   DateTime LastSentAtUtc,

@@ -93,6 +93,10 @@ TestResults/
 .artifacts/
 .coverage/
 
+# Test coverage output
+coverage/
+vulnerable.json
+
 # Database
 *.db
 *.sqlite

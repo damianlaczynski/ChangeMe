@@ -1,4 +1,4 @@
-using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+﻿using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 
 namespace ChangeMe.Backend.Infrastructure.Auth;

@@ -1,0 +1,128 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  frontend:
+    name: Frontend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: src/ChangeMe.Frontend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: src/ChangeMe.Frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check formatting
+        run: npm run format:check
+
+      - name: Audit npm dependencies
+        run: npm audit --audit-level=high
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test with coverage
+        run: npm test -- --watch=false --coverage
+
+      - name: Upload frontend coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-coverage
+          path: src/ChangeMe.Frontend/coverage/
+          if-no-files-found: ignore
+
+      - name: Build
+        run: npm run build
+
+  backend:
+    name: Backend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore
+        run: dotnet restore src/ChangeMe.Backend/ChangeMe.Backend.sln
+
+      - name: Check formatting
+        run: dotnet format src/ChangeMe.Backend/ChangeMe.Backend.sln --verify-no-changes --exclude "**/Persistence/Migrations/**"
+
+      - name: Audit NuGet dependencies
+        shell: bash
+        run: |
+          dotnet list src/ChangeMe.Backend/ChangeMe.Backend.sln package --vulnerable --include-transitive --format json > vulnerable.json
+          if jq -e '[.projects[] | .frameworks[]? | (.transitivePackages // []) + (.topLevelPackages // []) | .[] | select(.vulnerabilities[]? | .severity == "High" or .severity == "Critical")] | length > 0' vulnerable.json >/dev/null; then
+            echo "High or Critical vulnerable NuGet packages found:"
+            jq '[.projects[] | {project: .path, packages: [.frameworks[]? | (.transitivePackages // []) + (.topLevelPackages // []) | .[] | select(.vulnerabilities[]? | .severity == "High" or .severity == "Critical") | {id, resolvedVersion, vulnerabilities}]} | select(.packages | length > 0)]' vulnerable.json
+            exit 1
+          fi
+
+      # Migrations are not committed in the template repo (see CONTRIBUTING.md).
+      # Generated apps commit their own migrations; skip when files already exist.
+      - name: Create EF migrations for integration tests
+        shell: bash
+        run: |
+          migrations_dir="src/ChangeMe.Backend/src/ChangeMe.Backend.Infrastructure/Persistence/Migrations"
+          if compgen -G "${migrations_dir}/*.cs" > /dev/null; then
+            echo "Migrations already present; skipping dotnet ef migrations add."
+            exit 0
+          fi
+
+          dotnet tool install --global dotnet-ef --version 10.0.7
+          dotnet ef migrations add InitialCreate \
+            --project src/ChangeMe.Backend/src/ChangeMe.Backend.Infrastructure/ChangeMe.Backend.Infrastructure.csproj \
+            --startup-project src/ChangeMe.Backend/src/ChangeMe.Backend.Web/ChangeMe.Backend.Web.csproj \
+            --output-dir Persistence/Migrations
+
+      - name: Test with coverage
+        run: dotnet test src/ChangeMe.Backend/ChangeMe.Backend.sln -c Release --no-restore --results-directory coverage/backend --collect:"XPlat Code Coverage"
+
+      - name: Generate backend coverage report
+        if: always()
+        uses: danielpalme/ReportGenerator-GitHub-Action@5.4.16
+        with:
+          reports: coverage/backend/**/coverage.cobertura.xml
+          targetdir: coverage/backend/report
+          reporttypes: MarkdownSummaryGithub
+
+      - name: Upload backend coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-coverage
+          path: |
+            coverage/backend/**/coverage.cobertura.xml
+            coverage/backend/report
+          if-no-files-found: ignore
+
+      - name: Build
+        run: dotnet build src/ChangeMe.Backend/ChangeMe.Backend.sln -c Release --no-restore

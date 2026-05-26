@@ -1,4 +1,4 @@
-using ChangeMe.Backend.Domain.Aggregates.Users.Entities;
+﻿using ChangeMe.Backend.Domain.Aggregates.Users.Entities;
 
 namespace ChangeMe.Backend.Infrastructure.Persistence.Config.Users;
 
