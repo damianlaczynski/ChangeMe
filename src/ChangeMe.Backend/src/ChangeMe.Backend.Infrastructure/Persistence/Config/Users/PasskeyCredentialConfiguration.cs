@@ -1,4 +1,3 @@
-using ChangeMe.Backend.Domain.Aggregates.Users;
 using ChangeMe.Backend.Domain.Aggregates.Users.Entities;
 
 namespace ChangeMe.Backend.Infrastructure.Persistence.Config.Users;
@@ -14,18 +13,18 @@ public class PasskeyCredentialConfiguration : IEntityTypeConfiguration<PasskeyCr
     builder.Property(x => x.UserId).IsRequired();
     builder.Property(x => x.Name)
       .IsRequired()
-      .HasMaxLength(PasskeyConstraints.NAME_MAX_LENGTH);
+      .HasMaxLength(PasskeyCredentialConstraints.NAME_MAX_LENGTH);
     builder.Property(x => x.CredentialId)
       .IsRequired()
-      .HasMaxLength(PasskeyConstraints.CREDENTIAL_ID_MAX_LENGTH);
+      .HasMaxLength(PasskeyCredentialConstraints.CREDENTIAL_ID_MAX_LENGTH);
     builder.Property(x => x.PublicKey)
       .IsRequired()
-      .HasMaxLength(PasskeyConstraints.PUBLIC_KEY_MAX_LENGTH);
+      .HasMaxLength(PasskeyCredentialConstraints.PUBLIC_KEY_MAX_LENGTH);
     builder.Property(x => x.SignCount).IsRequired();
     builder.Property(x => x.Aaguid).IsRequired();
     builder.Property(x => x.AuthenticatorType)
       .IsRequired()
-      .HasMaxLength(PasskeyConstraints.AUTHENTICATOR_TYPE_MAX_LENGTH);
+      .HasMaxLength(PasskeyCredentialConstraints.AUTHENTICATOR_TYPE_MAX_LENGTH);
     builder.Property(x => x.BackupEligible).IsRequired();
     builder.Property(x => x.BackupState).IsRequired();
     builder.Property(x => x.CreatedAtUtc).IsRequired();

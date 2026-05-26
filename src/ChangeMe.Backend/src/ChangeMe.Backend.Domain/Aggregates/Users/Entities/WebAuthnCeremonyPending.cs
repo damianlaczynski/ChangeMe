@@ -32,7 +32,7 @@ public class WebAuthnCeremonyPending
 
     if (string.IsNullOrWhiteSpace(optionsJson))
       validationErrors.Add(new ValidationError(nameof(OptionsJson), "cannot be null or empty"));
-    else if (optionsJson.Length > PasskeyConstraints.CEREMONY_OPTIONS_JSON_MAX_LENGTH)
+    else if (optionsJson.Length > WebAuthnCeremonyPendingConstraints.OPTIONS_JSON_MAX_LENGTH)
       validationErrors.Add(new ValidationError(nameof(OptionsJson), "is too long"));
 
     if (validationErrors.Count > 0)
@@ -49,4 +49,9 @@ public class WebAuthnCeremonyPending
   }
 
   public void RecordFailedAttempt() => FailedAttemptCount++;
+}
+
+public static class WebAuthnCeremonyPendingConstraints
+{
+  public const int OPTIONS_JSON_MAX_LENGTH = 64_000;
 }

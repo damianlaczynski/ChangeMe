@@ -39,17 +39,17 @@ public class PasskeyCredential
 
     if (credentialId.Length == 0)
       validationErrors.Add(new ValidationError(nameof(CredentialId), "cannot be empty"));
-    else if (credentialId.Length > PasskeyConstraints.CREDENTIAL_ID_MAX_LENGTH)
+    else if (credentialId.Length > PasskeyCredentialConstraints.CREDENTIAL_ID_MAX_LENGTH)
       validationErrors.Add(new ValidationError(nameof(CredentialId), "is too long"));
 
     if (publicKey.Length == 0)
       validationErrors.Add(new ValidationError(nameof(PublicKey), "cannot be empty"));
-    else if (publicKey.Length > PasskeyConstraints.PUBLIC_KEY_MAX_LENGTH)
+    else if (publicKey.Length > PasskeyCredentialConstraints.PUBLIC_KEY_MAX_LENGTH)
       validationErrors.Add(new ValidationError(nameof(PublicKey), "is too long"));
 
     if (string.IsNullOrWhiteSpace(authenticatorType))
       validationErrors.Add(new ValidationError(nameof(AuthenticatorType), "cannot be null or empty"));
-    else if (authenticatorType.Length > PasskeyConstraints.AUTHENTICATOR_TYPE_MAX_LENGTH)
+    else if (authenticatorType.Length > PasskeyCredentialConstraints.AUTHENTICATOR_TYPE_MAX_LENGTH)
       validationErrors.Add(new ValidationError(nameof(AuthenticatorType), "is too long"));
 
     if (validationErrors.Count > 0)
@@ -90,7 +90,15 @@ public class PasskeyCredential
   {
     if (string.IsNullOrWhiteSpace(name))
       validationErrors.Add(new ValidationError(nameof(Name), "cannot be null or empty"));
-    else if (name.Trim().Length > PasskeyConstraints.NAME_MAX_LENGTH)
-      validationErrors.Add(new ValidationError(nameof(Name), $"cannot be longer than {PasskeyConstraints.NAME_MAX_LENGTH} characters"));
+    else if (name.Trim().Length > PasskeyCredentialConstraints.NAME_MAX_LENGTH)
+      validationErrors.Add(new ValidationError(nameof(Name), $"cannot be longer than {PasskeyCredentialConstraints.NAME_MAX_LENGTH} characters"));
   }
+}
+
+public static class PasskeyCredentialConstraints
+{
+  public const int NAME_MAX_LENGTH = 100;
+  public const int CREDENTIAL_ID_MAX_LENGTH = 1024;
+  public const int PUBLIC_KEY_MAX_LENGTH = 4096;
+  public const int AUTHENTICATOR_TYPE_MAX_LENGTH = 32;
 }

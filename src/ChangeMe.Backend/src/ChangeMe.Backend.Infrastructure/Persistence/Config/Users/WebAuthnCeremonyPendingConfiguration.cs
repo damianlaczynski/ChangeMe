@@ -16,7 +16,7 @@ public class WebAuthnCeremonyPendingConfiguration : IEntityTypeConfiguration<Web
     builder.Property(x => x.CeremonyType).IsRequired();
     builder.Property(x => x.OptionsJson)
       .IsRequired()
-      .HasMaxLength(PasskeyConstraints.CEREMONY_OPTIONS_JSON_MAX_LENGTH);
+      .HasMaxLength(WebAuthnCeremonyPendingConstraints.OPTIONS_JSON_MAX_LENGTH);
     builder.Property(x => x.FailedAttemptCount).IsRequired();
     builder.Property(x => x.ExpiresAtUtc).IsRequired();
 
