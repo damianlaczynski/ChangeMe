@@ -22,7 +22,13 @@ public class RequestEmailVerificationHandler(
       cancellationToken);
 
     if (user is not null)
-      await emailVerificationService.SendVerificationAsync(user, cancellationToken);
+    {
+      var verificationResult = await emailVerificationService.SendVerificationAsync(user, cancellationToken);
+      if (!verificationResult.IsSuccess)
+        return verificationResult.Map();
+
+      await context.SaveChangesAsync(cancellationToken);
+    }
 
     return Result.Success(new EmailVerificationAckDto
     {

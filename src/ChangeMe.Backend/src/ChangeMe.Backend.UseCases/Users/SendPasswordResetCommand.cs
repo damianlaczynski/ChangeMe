@@ -31,6 +31,8 @@ public class SendPasswordResetHandler(
     if (!resetResult.IsSuccess)
       return resetResult.Map();
 
+    await context.SaveChangesAsync(cancellationToken);
+
     return await mediator.Send(new GetUserByIdQuery(user.Id), cancellationToken);
   }
 }

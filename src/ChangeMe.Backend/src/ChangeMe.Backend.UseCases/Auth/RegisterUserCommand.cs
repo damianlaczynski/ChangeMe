@@ -74,6 +74,8 @@ public class RegisterUserHandler(
       if (!verificationResult.IsSuccess)
         return verificationResult.Map();
 
+      await context.SaveChangesAsync(cancellationToken);
+
       return Result<RegisterUserResponseDto>.Created(
         new RegisterUserResponseDto { RequiresEmailVerification = true },
         $"/users/{user.Id}");
@@ -105,6 +107,8 @@ public class RegisterUserHandler(
       var verificationResult = await emailVerificationService.SendVerificationAsync(user, cancellationToken);
       if (!verificationResult.IsSuccess)
         return verificationResult.Map();
+
+      await context.SaveChangesAsync(cancellationToken);
 
       return Result<RegisterUserResponseDto>.Created(
         new RegisterUserResponseDto { RequiresEmailVerification = true },
