@@ -36,8 +36,9 @@ public sealed class ExternalAuthUtilsTests
   [Fact]
   public void IsInvitationPending_WhenInvitationWasSent_ShouldReturnTrue()
   {
+    var utcNow = DateTime.UtcNow;
     var user = User.CreateInvited("invited@example.com").Value;
-    user.RecordInvitationSent();
+    user.RecordInvitationIssued(utcNow, utcNow.AddHours(72));
 
     Assert.True(ExternalAuthUtils.IsInvitationPending(user));
     Assert.False(ExternalAuthUtils.IsExternalOnlyAccount(user));
@@ -73,9 +74,12 @@ public sealed class ExternalAuthUtilsTests
 
     var auth = Options.Create(new AuthOptions
     {
-      TwoFactorAuthenticationEnabled = true,
-      TwoFactorAuthenticationRequired = true,
-      TrustIdentityProviderMfa = true
+      TwoFactor = new TwoFactorOptions
+      {
+        Enabled = true,
+        Required = true,
+        TrustIdentityProviderMfa = true
+      }
     }).Value;
 
     Assert.False(ExternalAuthUtils.IsTwoFactorSetupRequired(user, auth, identityProviderMfaAsserted: true));

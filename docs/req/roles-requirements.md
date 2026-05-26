@@ -5,7 +5,7 @@ permission catalog, roles list, role create and edit flow, role details, role an
 
 Permissions are **fixed** in REQ-ROL-001 and are **not editable** from the application UI. Roles are **managed in the application** by selecting permissions from that catalog.
 
-Role assignments are managed on **Create user** and **Edit user** (REQ-USR-003). From **Roles** administration, administrators can view assigned users and **Remove from role** on **Role details** (REQ-ROL-005).
+Role assignments are managed on **Invite user** (REQ-INV-001) and **Edit user** (REQ-USR-003). From **Roles** administration, administrators can view assigned users and **Remove from role** on **Role details** (REQ-ROL-005).
 
 ---
 
@@ -184,7 +184,7 @@ An authorized administrator must be able to create custom roles and edit their n
 
 ### States and business rules
 
-- Creating or editing a role does **not** change user assignments; assignments are managed on **Create user** / **Edit user** and **Remove from role** on **Role details** (REQ-ROL-005).
+- Creating or editing a role does **not** change user assignments; assignments are managed on **Invite user** / **Edit user** and **Remove from role** on **Role details** (REQ-ROL-005).
 - Permission changes on a role take effect for assigned users after their next credential renewal or sign-in.
 
 ### Permissions and visibility
@@ -277,18 +277,18 @@ An authorized administrator must be able to review a role's metadata, permission
 
 ## Goal
 
-An authorized administrator must be able to assign roles to users from **Create user** and **Edit user**, and remove a user from a role from **Role details**, using consistent rules in both places.
+An authorized administrator must be able to assign roles to users from **Invite user** and **Edit user**, and remove a user from a role from **Role details**, using consistent rules in both places.
 
 ## Features
 
 ### Entry point — Users administration
 
-- Role assignment for a user is performed on **Create user** and **Edit user** (REQ-USR-003); there is no separate role-assignment screen under **Users**.
+- Role assignment for a user is performed on **Invite user** (REQ-INV-001) and **Edit user** (REQ-USR-003); there is no separate role-assignment screen under **Users**.
 - **Roles** multi-select lists all roles sorted by **name** ascending; each option shows role **name** and **System** badge when applicable.
 - At least **one** role must be selected before save.
-- Saving **Create user** or **Edit user** replaces the user's entire role set with the selected set.
+- Saving **Invite user** or **Edit user** replaces the user's entire role set with the selected set.
 - The **Roles** field is visible and editable only with permission **Roles.Manage**.
-- Without **Roles.Manage**, **Create user** is **not available** (every new user must receive role assignment at creation).
+- Without **Roles.Manage**, **Invite user** is **not available** (every new user must receive role assignment at invite).
 - **Permissions** preview on create/edit follows REQ-USR-003.
 
 - **User details** (REQ-USR-004) shows assigned roles and effective permissions read-only; role badges link to **Role details**.
@@ -301,7 +301,7 @@ An authorized administrator must be able to assign roles to users from **Create 
 
 ### Validation
 
-- **Roles** (on **Create user** and **Edit user**): at least one role selected; error: **`At least one role is required.`**
+- **Roles** (on **Invite user** and **Edit user**): at least one role selected; error: **`At least one role is required.`**
 - **Remove from role** (on **Role details**): must not leave the user with zero roles; error: **`Each user must have at least one role. Assign another role before removing this one.`**
 
 ### Self-service restrictions
@@ -319,7 +319,7 @@ An authorized administrator must be able to assign roles to users from **Create 
 
 ### Permissions and visibility
 
-- **Roles.Manage**: required for the **Roles** field on **Create user** / **Edit user** and for **Remove from role** on **Role details**.
+- **Roles.Manage**: required for the **Roles** field on **Invite user** / **Edit user** and for **Remove from role** on **Role details**.
 - **Roles.View**: allows read-only **Roles** and **Permissions** on **User details** and read-only **Assigned users** on **Role details** when the user lacks **Roles.Manage**.
 
 ---

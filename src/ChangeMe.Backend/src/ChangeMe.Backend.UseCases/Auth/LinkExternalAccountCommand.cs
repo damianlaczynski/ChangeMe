@@ -27,7 +27,7 @@ public class LinkExternalAccountHandler(
     CancellationToken cancellationToken)
   {
     var auth = authOptions.Value;
-    if (!auth.ExternalProvidersEnabled)
+    if (!auth.External.Enabled)
       return Result<ExternalSignInResponseDto>.Forbidden(ExternalAuthUtils.ExternalProvidersDisabledMessage);
 
     var utcNow = DateTime.UtcNow;

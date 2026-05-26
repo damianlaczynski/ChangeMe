@@ -43,7 +43,6 @@ public class UserConfiguration : BaseEntityTypeConfiguration<User>
 
     builder.Property(x => x.EmailVerifiedAt);
     builder.Property(x => x.PasswordLastChangedAt);
-    builder.Property(x => x.InvitationSentAt);
 
     builder.Property(x => x.TwoFactorEnabled)
       .IsRequired();
@@ -79,6 +78,14 @@ public class UserConfiguration : BaseEntityTypeConfiguration<User>
       .OnDelete(DeleteBehavior.Cascade);
 
     builder.Navigation(x => x.RecoveryCodes)
+      .UsePropertyAccessMode(PropertyAccessMode.Field);
+
+    builder.HasMany(x => x.AccountInvitations)
+      .WithOne()
+      .HasForeignKey(x => x.UserId)
+      .OnDelete(DeleteBehavior.Cascade);
+
+    builder.Navigation(x => x.AccountInvitations)
       .UsePropertyAccessMode(PropertyAccessMode.Field);
   }
 }

@@ -1,5 +1,7 @@
 ﻿using Ardalis.Result;
 using ChangeMe.Backend.Domain.Aggregates.Users;
+using ChangeMe.Backend.Domain.Aggregates.Users.Enums;
+using ChangeMe.Backend.Domain.Aggregates.Users.Interfaces;
 using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.Infrastructure.Persistence;
 using ChangeMe.Backend.UnitTests.Support;
@@ -14,6 +16,7 @@ public sealed class ConfirmUserEmailHandlerTests
   [Fact]
   public async Task Handle_WhenUserIsUnverified_ShouldMarkEmailVerified()
   {
+    var cancellationToken = TestContext.Current.CancellationToken;
     await using var context = UseCasesTestDb.Create(nameof(Handle_WhenUserIsUnverified_ShouldMarkEmailVerified));
     var passwordHasher = new PasswordHasherAdapter();
     var user = User.CreateWithPassword(
@@ -23,16 +26,16 @@ public sealed class ConfirmUserEmailHandlerTests
       passwordHasher.HashPassword("StrongPass123!"),
       emailVerified: false).Value;
 
-    await context.Users.AddAsync(user);
-    await context.SaveChangesAsync();
+    await context.Users.AddAsync(user, cancellationToken);
+    await context.SaveChangesAsync(cancellationToken);
 
     var handler = new ConfirmUserEmailHandler(context, new StubMediator(context));
-    var result = await handler.Handle(new ConfirmUserEmailCommand(user.Id), CancellationToken.None);
+    var result = await handler.Handle(new ConfirmUserEmailCommand(user.Id), cancellationToken);
 
     Assert.True(result.IsSuccess);
     Assert.True(result.Value.EmailVerified);
 
-    var updated = await context.Users.FindAsync(user.Id);
+    var updated = await context.Users.FindAsync([user.Id], cancellationToken);
     Assert.True(updated!.EmailVerified);
     Assert.NotNull(updated.EmailVerifiedAt);
   }
@@ -40,6 +43,7 @@ public sealed class ConfirmUserEmailHandlerTests
   [Fact]
   public async Task Handle_WhenEmailAlreadyVerified_ShouldReturnConflict()
   {
+    var cancellationToken = TestContext.Current.CancellationToken;
     await using var context = UseCasesTestDb.Create(nameof(Handle_WhenEmailAlreadyVerified_ShouldReturnConflict));
     var passwordHasher = new PasswordHasherAdapter();
     var user = User.CreateWithPassword(
@@ -48,14 +52,45 @@ public sealed class ConfirmUserEmailHandlerTests
       "verified@example.com",
       passwordHasher.HashPassword("StrongPass123!")).Value;
 
-    await context.Users.AddAsync(user);
-    await context.SaveChangesAsync();
+    await context.Users.AddAsync(user, cancellationToken);
+    await context.SaveChangesAsync(cancellationToken);
 
     var handler = new ConfirmUserEmailHandler(context, new StubMediator(context));
-    var result = await handler.Handle(new ConfirmUserEmailCommand(user.Id), CancellationToken.None);
+    var result = await handler.Handle(new ConfirmUserEmailCommand(user.Id), cancellationToken);
 
     Assert.Equal(ResultStatus.Conflict, result.Status);
     Assert.Contains(UsersUtils.EmailAlreadyVerifiedMessage, result.Errors.First());
+  }
+
+  private sealed class StubUserAuthTokenService : IUserAuthTokenService
+  {
+    public Task<DateTime?> GetActiveUnusedTokenExpiresAtUtcAsync(
+      Guid userId,
+      UserAuthTokenType type,
+      CancellationToken cancellationToken = default) =>
+      Task.FromResult<DateTime?>(null);
+
+    public Task<Result<string>> IssueTokenAsync(
+      Guid userId,
+      UserAuthTokenType type,
+      DateTime? issuedAtUtc = null,
+      CancellationToken cancellationToken = default) =>
+      throw new NotSupportedException();
+
+    public Task<Result<Guid>> ValidateTokenAsync(
+      string plainToken,
+      UserAuthTokenType type,
+      CancellationToken cancellationToken = default) =>
+      throw new NotSupportedException();
+
+    public Task MarkTokenUsedAsync(string plainToken, CancellationToken cancellationToken = default) =>
+      throw new NotSupportedException();
+
+    public Task InvalidateUnusedTokensAsync(
+      Guid userId,
+      UserAuthTokenType type,
+      CancellationToken cancellationToken = default) =>
+      throw new NotSupportedException();
   }
 
   private sealed class StubMediator(ApplicationDbContext context) : IMediator, IPublisher
@@ -69,7 +104,9 @@ public sealed class ConfirmUserEmailHandlerTests
         var handler = new GetUserByIdHandler(
           context,
           new PasswordExpirationEvaluator(TestAuthOptions.Create()),
-          TestAuthOptions.Create());
+          new StubUserAuthTokenService(),
+          TestAuthOptions.Create(),
+          TimeProvider.System);
         var result = await handler.Handle(getUserQuery, cancellationToken);
         return (TResponse)(object)result;
       }

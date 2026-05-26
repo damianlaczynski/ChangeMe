@@ -7,6 +7,7 @@ public interface IUserAuthTokenService
   Task<Result<string>> IssueTokenAsync(
     Guid userId,
     UserAuthTokenType type,
+    DateTime? issuedAtUtc = null,
     CancellationToken cancellationToken = default);
 
   Task<Result<Guid>> ValidateTokenAsync(
@@ -19,6 +20,11 @@ public interface IUserAuthTokenService
     CancellationToken cancellationToken = default);
 
   Task InvalidateUnusedTokensAsync(
+    Guid userId,
+    UserAuthTokenType type,
+    CancellationToken cancellationToken = default);
+
+  Task<DateTime?> GetActiveUnusedTokenExpiresAtUtcAsync(
     Guid userId,
     UserAuthTokenType type,
     CancellationToken cancellationToken = default);

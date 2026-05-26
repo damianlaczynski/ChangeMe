@@ -97,8 +97,8 @@ public class BackendWebApplicationFactory : WebApplicationFactory<Program>, IAsy
     environmentOverrides["Email__EnableSsl"] = "false";
     environmentOverrides["Email__FromEmail"] = "tests@example.local";
     environmentOverrides["Email__FromName"] = "Integration Tests";
-    environmentOverrides["Auth__EmailVerificationEnabled"] = "false";
-    environmentOverrides["Auth__PasswordExpirationEnabled"] = "false";
+    environmentOverrides["Auth__EmailVerification__Enabled"] = "false";
+    environmentOverrides["Auth__PasswordExpiration__Enabled"] = "false";
     environmentOverrides["Auth__PasswordPolicy__RequireSpecialCharacter"] = "false";
 
     ConfigureAuthEnvironmentOverrides(environmentOverrides);

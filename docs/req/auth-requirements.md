@@ -5,7 +5,7 @@ login and registration with tracked sessions, staying signed in, logout, own ses
 
 Screens **Login**, **Forgot password**, **Reset password**, **Accept invitation**, **Two-factor verification**, and **External sign-in callback** are available to guests when applicable. **Link external account** is available to guests during external sign-in when linking an existing password account. **Register** and **Verify email** are available to guests only when the corresponding deployment settings allow them (REQ-AUTH-012, REQ-AUTH-011). All other application screens require an authenticated user whose account is **not deactivated** and whose email is **verified** when email verification is enabled (REQ-AUTH-011).
 
-Account lifecycle terms (**awaiting invitation acceptance**, **external-only account**, **local password**) are defined in `docs/req/users-requirements.md` (**Business terms**).
+Account lifecycle terms (**awaiting invitation acceptance**, **account invitation**, **external-only account**, **local password**) are defined in `docs/req/invitations-requirements.md` and `docs/req/users-requirements.md` (**Business terms**).
 
 ---
 
@@ -53,7 +53,7 @@ The user must be able to sign in with email and password and begin an authentica
 
 - When **Email verification enabled** is **false** (REQ-AUTH-011), successful registration creates a user with **Deactivated** false, **Email verified** true, assigns the default **User** role (REQ-ROL-006), sets **password last changed at**, creates a session, and opens **Issues list**.
 - When **Email verification enabled** is **true**, successful registration creates a user with **Deactivated** false, **Email verified** false, assigns the **User** role, sets **password last changed at**, sends **Verify your email**, does **not** create a session, and opens **Verify email** with message **`Account created. Check your email to verify your address before signing in.`**
-- Duplicate email shows form-level error: **`An account with this email already exists.`**
+- Duplicate email shows form-level error: **`An account with this email already exists.`**, **except** when the email belongs to an existing account that may be completed via public registration (**Invitation canceled** path — REQ-INV-005): no local password, not **awaiting invitation acceptance**, not **deactivated**. In that case registration **sets the password** and profile on the existing row (does not create a second user).
 
 ### Validation
 
@@ -307,19 +307,19 @@ The system must notify users by email about important account security events.
 
 ### Notification types
 
-| Event                         | When sent                                                             | Subject (example)                          |
-| ----------------------------- | --------------------------------------------------------------------- | ------------------------------------------ |
-| **Account invitation**        | Admin **Create user** or **Resend invitation** (REQ-USR-008) succeeds | `You're invited to ChangeMe`               |
-| **Password reset requested**  | Self-service forgot password or admin send reset                      | `Reset your ChangeMe password`             |
-| **Password reset completed**  | Reset password or accept invite succeeds                              | `Your password was changed`                |
-| **Password changed**          | Signed-in **Change password** succeeds                                | `Your password was changed`                |
-| **Verify your email**         | Registration when verification enabled; **Resend verification email** | `Verify your ChangeMe email`               |
-| **Two-factor enabled**        | User enables two-factor on **My account**                             | `Two-factor authentication enabled`        |
-| **Two-factor disabled**       | User disables two-factor on **My account**                            | `Two-factor authentication disabled`       |
-| **Two-factor reset by admin** | Administrator **Reset two-factor** on **User details** (REQ-USR-004)  | `Two-factor authentication was reset`      |
-| **External account linked**   | User links an external provider on **My account** (REQ-AUTH-014)      | `External sign-in method linked`           |
-| **External account unlinked** | User or administrator removes an external provider link               | `External sign-in method removed`          |
-| **Recovery code used**        | A recovery code succeeds at sign-in or step-up authentication         | `A recovery code was used on your account` |
+| Event                         | When sent                                                                                                | Subject (example)                          |
+| ----------------------------- | -------------------------------------------------------------------------------------------------------- | ------------------------------------------ |
+| **Account invitation**        | Admin **Invite user**, **Resend invitation**, or **Send invitation** (REQ-INV-001, REQ-INV-003) succeeds | `You're invited to ChangeMe`               |
+| **Password reset requested**  | Self-service forgot password or admin send reset                                                         | `Reset your ChangeMe password`             |
+| **Password reset completed**  | Reset password or accept invite succeeds                                                                 | `Your password was changed`                |
+| **Password changed**          | Signed-in **Change password** succeeds                                                                   | `Your password was changed`                |
+| **Verify your email**         | Registration when verification enabled; **Resend verification email**                                    | `Verify your ChangeMe email`               |
+| **Two-factor enabled**        | User enables two-factor on **My account**                                                                | `Two-factor authentication enabled`        |
+| **Two-factor disabled**       | User disables two-factor on **My account**                                                               | `Two-factor authentication disabled`       |
+| **Two-factor reset by admin** | Administrator **Reset two-factor** on **User details** (REQ-USR-004)                                     | `Two-factor authentication was reset`      |
+| **External account linked**   | User links an external provider on **My account** (REQ-AUTH-014)                                         | `External sign-in method linked`           |
+| **External account unlinked** | User or administrator removes an external provider link                                                  | `External sign-in method removed`          |
+| **Recovery code used**        | A recovery code succeeds at sign-in or step-up authentication                                            | `A recovery code was used on your account` |
 
 - Each email contains a short summary and, where applicable, a button link to the frontend (invitation, reset, verify email, or sign-in).
 - Email delivery uses the configured mail server (same as issue notifications).
@@ -440,6 +440,7 @@ A user created by an administrator must complete onboarding before using the app
 ### Accept invitation screen (email link)
 
 - Screen: **Accept invitation**; available to guests with valid token in the link.
+- When invitation preview is **valid**, show read-only line above the form: **`Activating account for {email}`** (REQ-INV-007).
 - Invalid or expired token shows: **`This invitation link is invalid or has expired. Contact your administrator.`**
 
 | Field                    | Behavior                                                                                                                                   |
@@ -449,9 +450,9 @@ A user created by an administrator must complete onboarding before using the app
 | **New password**         | **Required**; **Password policy** (REQ-AUTH-008).                                                                                          |
 | **Confirm new password** | **Required**; must match **New password**.                                                                                                 |
 
-- **Activate account** button: on success stores the submitted **First name** and **Last name** (replacing any admin-entered values), establishes a **local password**, sets **password last changed at**, completes invitation acceptance, redirects to **Login** with message **`Account activated. Sign in with your new password.`**
+- **Activate account** button: on success stores the submitted **First name** and **Last name** (replacing any admin-entered values), establishes a **local password**, sets **password last changed at**, marks the pending **account invitation** as accepted (invitation utilized; clears **Pending invitation** on **User details**; **accepted** row kept for history; **revoked** rows removed by retention — REQ-INV-006), redirects to **Login** with message **`Account activated. Sign in with your new password.`**
 - When **external providers enabled** is **true**, the screen also shows **Continue with {Display name}** actions (same layout as **Login** and **Register**): an **or** divider and one button per enabled provider. These start the same OIDC flow as guest external sign-in (REQ-AUTH-014); they do not require the invitation token. External sign-in actions are shown only when the invitation link preview is **valid**; invalid or expired links show the error message only.
-- If **Email verified** is not already true, sets **Email verified** true and **Email verified at** (mailbox proof via invitation link). Admin-invited users are already verified when the invitation was sent (REQ-USR-003).
+- If **Email verified** is not already true, sets **Email verified** true and **Email verified at** (mailbox proof via invitation link). Admin-invited users are already verified when the invitation was sent (REQ-INV-001).
 - Sends **Password reset completed** email (same template as password set confirmation).
 
 ### Accept invitation via external sign-in
@@ -462,7 +463,7 @@ When **external providers enabled** is **true** and the user is **awaiting invit
 - When the provider returns a **verified email** that matches the invited account, the system **completes the invitation** in one step:
   - links the external provider to the account;
   - does **not** require a local password — the account becomes **external-only**;
-  - clears **awaiting invitation acceptance**;
+  - marks the pending **account invitation** as accepted and clears **Pending invitation** (**accepted** row kept for history; **revoked** rows removed by retention — REQ-INV-006);
   - invalidates unused invitation tokens for that user;
   - applies **First name** and **Last name** from the provider when the administrator left both empty and the provider supplies both; otherwise keeps administrator-entered values;
   - signs the user in (subject to deactivation, two-factor, and other gates per REQ-AUTH-013 and REQ-AUTH-014).
@@ -519,7 +520,7 @@ When email verification is enabled in deployment settings, users must prove cont
 | --------------------------------------- | ----------------------------------------------------------------------------------------- |
 | **Register** (REQ-AUTH-001)             | No session; **Verify email** screen; verification email sent                              |
 | **Accept invitation** (REQ-AUTH-010)    | **Email verified** on success (email link or external sign-in)                            |
-| **Admin create user** (REQ-USR-003)     | **Email verified** true when invitation is sent to the user's email                       |
+| **Admin invite user** (REQ-INV-001)     | **Email verified** true when invitation is sent to the user's email                       |
 | **Initial administrator** (REQ-ROL-006) | **Email verified** true at creation                                                       |
 | **Password expiration** (REQ-AUTH-009)  | Evaluated only after a successful sign-in; sign-in requires **Email verified** true first |
 | **Deactivated** (REQ-USR-005)           | **Deactivated** true blocks sign-in regardless of verification                            |
@@ -544,7 +545,7 @@ Deployments must be able to turn off self-service account registration so new us
 
 - Deployment settings include **Public registration enabled**; default **true**.
 - When **Public registration enabled** is **true**, behavior matches REQ-AUTH-001 (**Register** screen, **Create an account** link, registration API).
-- When **Public registration enabled** is **false**, guests cannot create accounts; administrators onboard users via **Create user** (REQ-USR-003).
+- When **Public registration enabled** is **false**, guests cannot create accounts; administrators onboard users via **Invite user** (REQ-INV-001).
 
 ### Login screen
 
@@ -902,16 +903,16 @@ The system maintains **at most one user account per normalized email** (REQ-USR-
 
 Evaluate rows **in table order** (first match wins). **Allowed email domains** and unverified provider email are evaluated before account matching.
 
-| Condition                                                                 | Outcome                                                                                                                                                                                                                                                                                                                |
-| ------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Provider email not allowed by domain allowlist (when configured)          | **`Sign-in with this account is not allowed.`** on **Login**.                                                                                                                                                                                                                                                          |
-| Provider email missing or not treated as verified                         | Do not match or auto-register by email; an existing link for this provider subject may still sign the user in (next row).                                                                                                                                                                                              |
-| Provider already linked to this user                                      | Sign in that user (subject to deactivation, email verification, two-factor, and password expiration below).                                                                                                                                                                                                            |
-| Verified provider email matches an existing user; provider not yet linked | If **awaiting invitation acceptance** → complete invitation via external sign-in (link provider, no password). If the user **has a local password** → guest **Link external account**. If **external-only** → auto-link provider and sign in.                                                                          |
-| No matching user; **public registration** is **enabled**                  | Create a new user with **User** role (REQ-ROL-006), mark email verified when the provider asserts verification (otherwise REQ-AUTH-011), create as **external-only**, link the provider; then issue a full session, enrollment bootstrap session, or pending two-factor challenge per **Trust identity provider MFA**. |
-| No matching user; **public registration** is **disabled**                 | Redirect to **Login** with **`No account exists for this email. Contact an administrator.`**                                                                                                                                                                                                                           |
-| Matched user’s account is **deactivated**                                 | **`This account has been deactivated. Contact an administrator.`** on **Login**.                                                                                                                                                                                                                                       |
-| Email verification **enabled**; matched user’s mailbox **not verified**   | **`Verify your email before signing in.`** on **Login** (verified provider email alone does not override an unverified local registration).                                                                                                                                                                            |
+| Condition                                                                 | Outcome                                                                                                                                                                                                                                                                                                                                                                                                       |
+| ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Provider email not allowed by domain allowlist (when configured)          | **`Sign-in with this account is not allowed.`** on **Login**.                                                                                                                                                                                                                                                                                                                                                 |
+| Provider email missing or not treated as verified                         | Do not match or auto-register by email; an existing link for this provider subject may still sign the user in (next row).                                                                                                                                                                                                                                                                                     |
+| Provider already linked to this user                                      | Sign in that user (subject to deactivation, email verification, two-factor, and password expiration below).                                                                                                                                                                                                                                                                                                   |
+| Verified provider email matches an existing user; provider not yet linked | If **awaiting invitation acceptance** → complete invitation via external sign-in (link provider, no password). If the user **has a local password** → guest **Link external account**. If **external-only** → auto-link provider and sign in. If **no local password** and **not** awaiting invitation (**Invitation canceled**, REQ-INV-005) → link provider and sign in (same as external-only completion). |
+| No matching user; **public registration** is **enabled**                  | Create a new user with **User** role (REQ-ROL-006), mark email verified when the provider asserts verification (otherwise REQ-AUTH-011), create as **external-only**, link the provider; then issue a full session, enrollment bootstrap session, or pending two-factor challenge per **Trust identity provider MFA**.                                                                                        |
+| No matching user; **public registration** is **disabled**                 | Redirect to **Login** with **`No account exists for this email. Contact an administrator.`**                                                                                                                                                                                                                                                                                                                  |
+| Matched user’s account is **deactivated**                                 | **`This account has been deactivated. Contact an administrator.`** on **Login**.                                                                                                                                                                                                                                                                                                                              |
+| Email verification **enabled**; matched user’s mailbox **not verified**   | **`Verify your email before signing in.`** on **Login** (verified provider email alone does not override an unverified local registration).                                                                                                                                                                                                                                                                   |
 
 - New users created via external sign-in receive **First name** and **Last name** from provider claims when present; otherwise empty (user may complete profile on **Edit profile**).
 - External sign-in never bypasses app TOTP when **Trust identity provider MFA** is **disabled**, or when the IdP does not assert MFA. When **Trust identity provider MFA** is **enabled** and MFA is asserted, external sign-in may bypass **Two-factor verification** and **strict two-factor setup** per REQ-AUTH-013.
@@ -969,9 +970,9 @@ Evaluate rows **in table order** (first match wins). **Allowed email domains** a
 
 - When **External providers enabled** is **true**, **User details** shows section **External sign-in methods**: linked **Provider** display names, **Linked at**, and per-row **Unlink** for administrators (REQ-USR-004).
 
-### Admin create user and invitation
+### Admin invite user and invitation
 
-- **Create user** (REQ-USR-003) is unchanged: administrators onboard by email invitation.
+- **Invite user** (REQ-INV-001): administrators onboard by email invitation.
 - A user **awaiting invitation acceptance** may complete onboarding via **Accept invitation** (email link) or via **external sign-in** when providers are enabled and the verified provider email matches (REQ-AUTH-010).
 
 ### Interaction with other auth flows

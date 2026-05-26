@@ -25,10 +25,13 @@ public sealed class AuthOptionsTests
   {
     var options = Options.Create(new AuthOptions
     {
-      PublicRegistrationEnabled = false,
-      EmailVerificationEnabled = true,
-      PasswordExpirationEnabled = true,
-      MaximumPasswordAgeDays = 60,
+      Registration = new RegistrationOptions { PublicEnabled = false },
+      EmailVerification = new EmailVerificationOptions { Enabled = true },
+      PasswordExpiration = new PasswordExpirationOptions
+      {
+        Enabled = true,
+        MaximumPasswordAgeDays = 60
+      },
       PasswordPolicy = new PasswordPolicyOptions
       {
         MinimumLength = 10,
@@ -41,7 +44,9 @@ public sealed class AuthOptionsTests
     });
 
     var handler = new GetAuthSettingsHandler(options);
-    var result = await handler.Handle(new GetAuthSettingsQuery(), CancellationToken.None);
+    var result = await handler.Handle(
+      new GetAuthSettingsQuery(),
+      TestContext.Current.CancellationToken);
 
     Assert.True(result.IsSuccess);
     Assert.False(result.Value.PublicRegistrationEnabled);
@@ -71,17 +76,19 @@ public sealed class AuthOptionsTests
   {
     var options = Options.Create(new AuthOptions
     {
-      TwoFactorAuthenticationEnabled = true,
-      TwoFactorAuthenticationRequired = true,
-      TrustIdentityProviderMfa = true,
-      ExternalProvidersEnabled = true,
       TwoFactor = new TwoFactorOptions
       {
+        Enabled = true,
+        Required = true,
+        TrustIdentityProviderMfa = true,
         VerificationCodeLength = 6,
         RecoveryCodeCount = 10,
         TotpTimeStepSeconds = 30
       },
-      ExternalProviders =
+      External = new ExternalAuthOptions
+      {
+        Enabled = true,
+        Providers =
       [
         new ExternalProviderOptions
         {
@@ -92,10 +99,13 @@ public sealed class AuthOptionsTests
           ClientSecret = "secret"
         }
       ]
+      }
     });
 
     var handler = new GetAuthSettingsHandler(options);
-    var result = await handler.Handle(new GetAuthSettingsQuery(), CancellationToken.None);
+    var result = await handler.Handle(
+      new GetAuthSettingsQuery(),
+      TestContext.Current.CancellationToken);
 
     Assert.True(result.IsSuccess);
     Assert.True(result.Value.TwoFactorAuthenticationEnabled);

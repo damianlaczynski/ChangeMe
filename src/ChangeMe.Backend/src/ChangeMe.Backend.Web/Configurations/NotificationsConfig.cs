@@ -33,7 +33,7 @@ public static class NotificationsConfig
 
     RecurringJob.AddOrUpdate<NotificationRetentionCleanupJob>(
       "notifications-retention-cleanup",
-      job => job.ExecuteAsync(CancellationToken.None),
+      job => job.ExecuteAsync(JobCancellationToken.Null),
       cleanupCronExpression);
 
     return app;

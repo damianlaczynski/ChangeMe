@@ -20,21 +20,21 @@ public class ExternalProvidersWebApplicationFactoryBase : BackendWebApplicationF
 
   protected virtual void ApplyExternalProviderOverrides(Dictionary<string, string?> overrides)
   {
-    overrides["Auth__ExternalProvidersEnabled"] = "true";
-    overrides["Auth__ExternalProviders__0__ProviderKey"] = FakeOidcExternalAuthService.ProviderKey;
-    overrides["Auth__ExternalProviders__0__DisplayName"] = "Test";
-    overrides["Auth__ExternalProviders__0__Authority"] = "https://login.test";
-    overrides["Auth__ExternalProviders__0__ClientId"] = "test-client";
-    overrides["Auth__ExternalProviders__0__ClientSecret"] = "test-secret";
+    overrides["Auth__External__Enabled"] = "true";
+    overrides["Auth__External__Providers__0__ProviderKey"] = FakeOidcExternalAuthService.ProviderKey;
+    overrides["Auth__External__Providers__0__DisplayName"] = "Test";
+    overrides["Auth__External__Providers__0__Authority"] = "https://login.test";
+    overrides["Auth__External__Providers__0__ClientId"] = "test-client";
+    overrides["Auth__External__Providers__0__ClientSecret"] = "test-secret";
   }
 
   protected static void ApplyCommonAuthOverrides(Dictionary<string, string?> overrides)
   {
-    overrides["Auth__EmailVerificationEnabled"] = "false";
-    overrides["Auth__PublicRegistrationEnabled"] = "true";
-    overrides["Auth__TwoFactorAuthenticationEnabled"] = "false";
-    overrides["Auth__TwoFactorAuthenticationRequired"] = "false";
-    overrides["Auth__TrustIdentityProviderMfa"] = "false";
+    overrides["Auth__EmailVerification__Enabled"] = "false";
+    overrides["Auth__Registration__PublicEnabled"] = "true";
+    overrides["Auth__TwoFactor__Enabled"] = "false";
+    overrides["Auth__TwoFactor__Required"] = "false";
+    overrides["Auth__TwoFactor__TrustIdentityProviderMfa"] = "false";
   }
 
   protected override void ConfigureWebHost(Microsoft.AspNetCore.Hosting.IWebHostBuilder builder)
@@ -56,7 +56,7 @@ public sealed class ExternalProvidersRestrictedDomainWebApplicationFactory
   protected override void ApplyExternalProviderOverrides(Dictionary<string, string?> overrides)
   {
     base.ApplyExternalProviderOverrides(overrides);
-    overrides["Auth__ExternalProviders__0__AllowedEmailDomains__0"] = "allowed.test";
+    overrides["Auth__External__Providers__0__AllowedEmailDomains__0"] = "allowed.test";
   }
 }
 
@@ -65,8 +65,8 @@ public class ExternalProvidersTwoFactorRequiredWebApplicationFactory
 {
   protected override void ApplyFactorySpecificAuthOverrides(Dictionary<string, string?> overrides)
   {
-    overrides["Auth__TwoFactorAuthenticationEnabled"] = "true";
-    overrides["Auth__TwoFactorAuthenticationRequired"] = "true";
+    overrides["Auth__TwoFactor__Enabled"] = "true";
+    overrides["Auth__TwoFactor__Required"] = "true";
   }
 }
 
@@ -75,8 +75,8 @@ public sealed class ExternalProvidersTwoFactorWebApplicationFactory
 {
   protected override void ApplyFactorySpecificAuthOverrides(Dictionary<string, string?> overrides)
   {
-    overrides["Auth__TwoFactorAuthenticationEnabled"] = "true";
-    overrides["Auth__TwoFactorAuthenticationRequired"] = "false";
+    overrides["Auth__TwoFactor__Enabled"] = "true";
+    overrides["Auth__TwoFactor__Required"] = "false";
   }
 }
 
@@ -86,7 +86,7 @@ public sealed class ExternalProvidersTwoFactorTrustMfaWebApplicationFactory
   protected override void ApplyFactorySpecificAuthOverrides(Dictionary<string, string?> overrides)
   {
     base.ApplyFactorySpecificAuthOverrides(overrides);
-    overrides["Auth__TrustIdentityProviderMfa"] = "true";
+    overrides["Auth__TwoFactor__TrustIdentityProviderMfa"] = "true";
   }
 }
 

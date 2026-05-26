@@ -27,7 +27,7 @@ public class DisableTwoFactorHandler(
     if (!twoFactorPolicyEvaluator.IsTwoFactorEnabledForDeployment())
       return Result<bool>.Forbidden(AuthSessionUtils.PermissionDeniedMessage);
 
-    if (authOptions.Value.TwoFactorAuthenticationRequired)
+    if (authOptions.Value.TwoFactor.Required)
       return Result<bool>.Error("Two-factor authentication is required and cannot be disabled.");
 
     var user = await context.Users

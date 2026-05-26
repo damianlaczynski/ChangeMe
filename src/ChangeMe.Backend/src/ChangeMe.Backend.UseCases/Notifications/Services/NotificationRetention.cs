@@ -1,4 +1,5 @@
 ﻿using ChangeMe.Backend.Domain.Aggregates.Notifications;
+using Hangfire;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -64,6 +65,12 @@ public sealed class NotificationRetentionCleanupJob(
   NotificationRetentionPolicy retentionPolicy,
   ILogger<NotificationRetentionCleanupJob> logger)
 {
+  public Task ExecuteAsync(IJobCancellationToken jobCancellationToken)
+  {
+    jobCancellationToken.ThrowIfCancellationRequested();
+    return ExecuteAsync(jobCancellationToken.ShutdownToken);
+  }
+
   public async Task ExecuteAsync(CancellationToken cancellationToken)
   {
     var deletedCount = await context.Notifications

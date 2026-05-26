@@ -22,14 +22,15 @@ public class CompleteExternalSignInHandler(
   IHttpContextAccessor httpContextAccessor,
   IAuthEmailService authEmailService,
   IUserAuthTokenService userAuthTokenService,
-  IOptions<AuthOptions> authOptions) : ICommandHandler<CompleteExternalSignInCommand, ExternalSignInResponseDto>
+  IOptions<AuthOptions> authOptions,
+  TimeProvider timeProvider) : ICommandHandler<CompleteExternalSignInCommand, ExternalSignInResponseDto>
 {
   public async Task<Result<ExternalSignInResponseDto>> Handle(
     CompleteExternalSignInCommand command,
     CancellationToken cancellationToken)
   {
     var auth = authOptions.Value;
-    if (!auth.ExternalProvidersEnabled)
+    if (!auth.External.Enabled)
       return Result<ExternalSignInResponseDto>.Forbidden(ExternalAuthUtils.ExternalProvidersDisabledMessage);
 
     var utcNow = DateTime.UtcNow;
@@ -118,6 +119,7 @@ public class CompleteExternalSignInHandler(
       var normalizedEmail = User.NormalizeEmail(assertion.Email);
       var matchedUser = await context.Users
         .Include(x => x.ExternalLogins)
+        .Include(x => x.AccountInvitations)
         .FirstOrDefaultAsync(x => x.NormalizedEmail == normalizedEmail, cancellationToken);
 
       if (matchedUser is not null)
@@ -130,7 +132,7 @@ public class CompleteExternalSignInHandler(
           cancellationToken);
     }
 
-    if (!auth.PublicRegistrationEnabled)
+    if (!auth.Registration.PublicEnabled)
     {
       await ExternalAuthUtils.DeletePendingAsync(context, pending, cancellationToken);
       return Result<ExternalSignInResponseDto>.Unauthorized(ExternalAuthUtils.NoAccountExistsMessage);
@@ -195,7 +197,8 @@ public class CompleteExternalSignInHandler(
 
       var invitationResult = matchedUser.CompleteInvitationViaExternalSignIn(
         assertion.FirstName,
-        assertion.LastName);
+        assertion.LastName,
+        timeProvider.GetUtcNow().UtcDateTime);
       if (!invitationResult.IsSuccess)
         return invitationResult.Map();
 
@@ -276,7 +279,7 @@ public class CompleteExternalSignInHandler(
     if (defaultRole is null)
       return Result<ExternalSignInResponseDto>.CriticalError("Default user role is not configured.");
 
-    var emailVerified = !auth.EmailVerificationEnabled || assertion.EmailVerified;
+    var emailVerified = !auth.EmailVerification.Enabled || assertion.EmailVerified;
     var createUserResult = User.CreateInvited(
       assertion.Email,
       assertion.FirstName,
@@ -412,7 +415,7 @@ public class CompleteExternalSignInHandler(
       return Result<ExternalSignInResponseDto>.Unauthorized(AuthSessionUtils.DeactivatedAccountMessage);
     }
 
-    if (auth.EmailVerificationEnabled && !user.EmailVerified)
+    if (auth.EmailVerification.Enabled && !user.EmailVerified)
     {
       await ExternalAuthUtils.DeletePendingAsync(context, pending, cancellationToken);
       return Result<ExternalSignInResponseDto>.Unauthorized(AuthSessionUtils.EmailNotVerifiedMessage);

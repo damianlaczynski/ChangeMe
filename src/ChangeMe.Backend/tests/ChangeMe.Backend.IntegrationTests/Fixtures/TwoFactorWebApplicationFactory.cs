@@ -7,10 +7,10 @@ public sealed class TwoFactorWebApplicationFactory : BackendWebApplicationFactor
 {
   protected override void ConfigureAuthEnvironmentOverrides(Dictionary<string, string?> overrides)
   {
-    overrides["Auth__EmailVerificationEnabled"] = "false";
-    overrides["Auth__TwoFactorAuthenticationEnabled"] = "true";
-    overrides["Auth__TwoFactorAuthenticationRequired"] = "false";
-    overrides["Auth__PublicRegistrationEnabled"] = "true";
+    overrides["Auth__EmailVerification__Enabled"] = "false";
+    overrides["Auth__TwoFactor__Enabled"] = "true";
+    overrides["Auth__TwoFactor__Required"] = "false";
+    overrides["Auth__Registration__PublicEnabled"] = "true";
   }
 }
 
@@ -18,10 +18,10 @@ public sealed class TwoFactorRequiredWebApplicationFactory : BackendWebApplicati
 {
   protected override void ConfigureAuthEnvironmentOverrides(Dictionary<string, string?> overrides)
   {
-    overrides["Auth__EmailVerificationEnabled"] = "false";
-    overrides["Auth__TwoFactorAuthenticationEnabled"] = "true";
-    overrides["Auth__TwoFactorAuthenticationRequired"] = "true";
-    overrides["Auth__PublicRegistrationEnabled"] = "true";
+    overrides["Auth__EmailVerification__Enabled"] = "false";
+    overrides["Auth__TwoFactor__Enabled"] = "true";
+    overrides["Auth__TwoFactor__Required"] = "true";
+    overrides["Auth__Registration__PublicEnabled"] = "true";
   }
 }
 

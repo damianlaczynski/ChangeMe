@@ -394,10 +394,11 @@ public sealed class ExternalSignInEndpointTests(ExternalProvidersWebApplicationF
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     var user = await db.Users
       .Include(x => x.ExternalLogins)
+      .Include(x => x.AccountInvitations)
       .SingleAsync(x => x.Email == email, cancellationToken);
 
     Assert.False(user.HasPasswordSet);
-    Assert.Null(user.InvitationSentAt);
+    Assert.False(user.HasPendingInvitation);
     Assert.Single(user.ExternalLogins);
     Assert.Equal("Oidc", user.FirstName);
     Assert.Equal("User", user.LastName);
@@ -445,8 +446,10 @@ public sealed class ExternalSignInEndpointTests(ExternalProvidersWebApplicationF
 
     await using var scope = factory.Services.CreateAsyncScope();
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    var user = await db.Users.SingleAsync(x => x.Email == email, cancellationToken);
-    Assert.NotNull(user.InvitationSentAt);
+    var user = await db.Users
+      .Include(x => x.AccountInvitations)
+      .SingleAsync(x => x.Email == email, cancellationToken);
+    Assert.True(user.HasPendingInvitation);
     Assert.Empty(await db.ExternalLogins.Where(x => x.UserId == user.Id).ToListAsync(cancellationToken));
   }
 

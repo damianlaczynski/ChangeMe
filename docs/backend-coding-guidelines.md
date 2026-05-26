@@ -71,6 +71,12 @@ For build, run, and test commands from `src/ChangeMe.Backend` or from the reposi
 - Migrations live under `Infrastructure/Persistence/Migrations`.
 - Database startup and migration behavior are configured through `Database` options and startup configuration.
 
+### Unit of work
+
+Infrastructure services (e.g. `UserAuthTokenService`) **stage** EF changes only — **no** `SaveChangesAsync`. The handler or feature orchestrator commits **once** per operation, after the full flow succeeds (including email send when a token must not outlive a failed delivery).
+
+`IUserAuthTokenService`: `IssueTokenAsync`, `MarkTokenUsedAsync`, and `InvalidateUnusedTokensAsync` never save; `ValidateTokenAsync` and previews are read-only. Do not save in both the token service and the caller for the same change.
+
 ## Auth and cross-cutting concerns
 
 - JWT configuration lives in `Web/Configurations/AuthConfig.cs` and environment settings.
@@ -90,3 +96,4 @@ For build, run, and test commands from `src/ChangeMe.Backend` or from the reposi
 - Do not access the database directly from endpoint classes.
 - Do not return ad hoc response envelopes; reuse the existing `Result<T>` flow.
 - Before adding a new abstraction, inspect the closest feature in `Issues` or `Auth` and extend that pattern first.
+- Infrastructure helpers stage EF changes; handlers/orchestrators own `SaveChangesAsync` (see **Unit of work** above).

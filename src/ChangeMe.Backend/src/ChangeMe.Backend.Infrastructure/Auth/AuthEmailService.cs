@@ -179,7 +179,10 @@ public sealed class AuthEmailService(
     var result = await emailService.SendEmailAsync(to, subject, body);
 
     if (!result.IsSuccess)
+    {
       logger.LogWarning("Auth email delivery failed for {Subject} to {Recipient}", subject, to);
+      return Result.Error("The email could not be sent. Please try again.");
+    }
 
     return result;
   }

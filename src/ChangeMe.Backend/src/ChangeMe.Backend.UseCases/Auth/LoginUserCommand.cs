@@ -25,7 +25,9 @@ public class LoginUserHandler(
   public async Task<Result<LoginResponseDto>> Handle(LoginUserCommand command, CancellationToken cancellationToken)
   {
     var normalizedEmail = User.NormalizeEmail(command.Email);
-    var user = await context.Users.FirstOrDefaultAsync(x => x.NormalizedEmail == normalizedEmail, cancellationToken);
+    var user = await context.Users
+      .Include(x => x.AccountInvitations)
+      .FirstOrDefaultAsync(x => x.NormalizedEmail == normalizedEmail, cancellationToken);
     if (user is null)
       return Result<LoginResponseDto>.Unauthorized(AuthSessionUtils.InvalidCredentialsMessage);
 
@@ -40,7 +42,7 @@ public class LoginUserHandler(
       return Result<LoginResponseDto>.Unauthorized(AuthSessionUtils.InvalidCredentialsMessage);
     }
 
-    if (authOptions.Value.EmailVerificationEnabled && !user.EmailVerified)
+    if (authOptions.Value.EmailVerification.Enabled && !user.EmailVerified)
       return Result<LoginResponseDto>.Unauthorized(AuthSessionUtils.EmailNotVerifiedMessage);
 
     if (!passwordHasher.VerifyPassword(user.PasswordHash, command.Password))

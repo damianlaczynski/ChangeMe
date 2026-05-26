@@ -35,11 +35,10 @@ public static class ExternalAuthUtils
   public const string ExternalProviderEmailMismatchMessage =
     "The external account email does not match your account email.";
 
-  public static bool IsInvitationPending(User user) =>
-    !user.HasPasswordSet && user.InvitationSentAt is not null;
+  public static bool IsInvitationPending(User user) => user.HasPendingInvitation;
 
   public static bool IsExternalOnlyAccount(User user) =>
-    !user.HasPasswordSet && user.InvitationSentAt is null && user.ExternalLogins.Count > 0;
+    !user.HasPasswordSet && !user.HasPendingInvitation && user.ExternalLogins.Count > 0;
 
   public static bool IsExternalStepUpFresh(User user, AuthOptions auth, DateTime utcNow)
   {
@@ -51,11 +50,11 @@ public static class ExternalAuthUtils
   }
 
   public static string BuildRedirectUri(AuthOptions auth) =>
-    $"{auth.FrontendBaseUrl.TrimEnd('/')}{auth.ExternalSignInCallbackPath}";
+    $"{auth.FrontendBaseUrl.TrimEnd('/')}{auth.External.SignInCallbackPath}";
 
   public static ExternalProviderConfiguration? ResolveProvider(AuthOptions auth, string providerKey)
   {
-    var provider = auth.ExternalProviders
+    var provider = auth.External.Providers
       .FirstOrDefault(x =>
         x.IsConfigured
         && x.ProviderKey.Equals(providerKey.Trim(), StringComparison.OrdinalIgnoreCase));
@@ -100,22 +99,22 @@ public static class ExternalAuthUtils
     User user,
     AuthOptions auth,
     bool identityProviderMfaAsserted) =>
-    auth.TwoFactorAuthenticationEnabled
+    auth.TwoFactor.Enabled
     && user.TwoFactorEnabled
-    && !(auth.TrustIdentityProviderMfa && identityProviderMfaAsserted);
+    && !(auth.TwoFactor.TrustIdentityProviderMfa && identityProviderMfaAsserted);
 
   public static bool IsTwoFactorSetupRequired(
     User user,
     AuthOptions auth,
     bool identityProviderMfaAsserted)
   {
-    if (!auth.TwoFactorAuthenticationEnabled || !auth.TwoFactorAuthenticationRequired)
+    if (!auth.TwoFactor.Enabled || !auth.TwoFactor.Required)
       return false;
 
     if (user.TwoFactorEnabled)
       return false;
 
-    if (auth.TrustIdentityProviderMfa && identityProviderMfaAsserted)
+    if (auth.TwoFactor.TrustIdentityProviderMfa && identityProviderMfaAsserted)
       return false;
 
     return true;
@@ -135,7 +134,7 @@ public static class ExternalAuthUtils
   }
 
   public static string ResolveProviderDisplayName(AuthOptions auth, string providerKey) =>
-    auth.ExternalProviders
+    auth.External.Providers
       .FirstOrDefault(x =>
         x.ProviderKey.Equals(providerKey, StringComparison.OrdinalIgnoreCase))
       ?.DisplayName

@@ -27,7 +27,7 @@ public class UnlinkExternalAccountHandler(
       return Result<bool>.Unauthorized();
 
     var auth = authOptions.Value;
-    if (!auth.ExternalProvidersEnabled)
+    if (!auth.External.Enabled)
       return Result<bool>.Forbidden(ExternalAuthUtils.ExternalProvidersDisabledMessage);
 
     var user = await context.Users

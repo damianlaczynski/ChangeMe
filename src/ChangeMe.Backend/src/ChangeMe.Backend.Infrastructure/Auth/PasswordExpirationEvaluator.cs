@@ -8,22 +8,22 @@ public sealed class PasswordExpirationEvaluator(IOptions<AuthOptions> authOption
   public bool IsPasswordChangeRequired(User user, DateTime utcNow)
   {
     var options = authOptions.Value;
-    if (!options.PasswordExpirationEnabled || !user.HasPasswordSet)
+    if (!options.PasswordExpiration.Enabled || !user.HasPasswordSet)
       return false;
 
     if (user.PasswordLastChangedAt is null)
       return false;
 
     var ageDays = (utcNow - user.PasswordLastChangedAt.Value).TotalDays;
-    return ageDays > options.MaximumPasswordAgeDays;
+    return ageDays > options.PasswordExpiration.MaximumPasswordAgeDays;
   }
 
   public DateTime? GetPasswordExpiresAtUtc(User user)
   {
     var options = authOptions.Value;
-    if (!options.PasswordExpirationEnabled || !user.HasPasswordSet || user.PasswordLastChangedAt is null)
+    if (!options.PasswordExpiration.Enabled || !user.HasPasswordSet || user.PasswordLastChangedAt is null)
       return null;
 
-    return user.PasswordLastChangedAt.Value.AddDays(options.MaximumPasswordAgeDays);
+    return user.PasswordLastChangedAt.Value.AddDays(options.PasswordExpiration.MaximumPasswordAgeDays);
   }
 }
