@@ -37,6 +37,7 @@ public sealed class TotpService(IOptions<AuthOptions> authOptions) : ITotpServic
       totpSize: options.VerificationCodeLength);
 
     return totp.VerifyTotp(
+      utcNow,
       normalizedCode,
       out _,
       new VerificationWindow(options.TotpValidationWindowSteps, options.TotpValidationWindowSteps));
