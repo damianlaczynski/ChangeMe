@@ -128,6 +128,8 @@ public class CompletePasskeySignInHandler(
     var stored = await context.PasskeyCredentials
       .Include(x => x.User)
       .ThenInclude(x => x.ExternalLogins)
+      .Include(x => x.User)
+      .ThenInclude(x => x.AccountInvitations)
       .FirstOrDefaultAsync(x => x.CredentialId == credentialId, cancellationToken);
 
     if (stored is null)
