@@ -2,7 +2,6 @@ import { DatePipe } from '@angular/common';
 import {
   Component,
   DestroyRef,
-  effect,
   inject,
   input,
   OnInit,
@@ -10,22 +9,15 @@ import {
   signal
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import {
-  FormControl,
-  FormGroup,
-  ReactiveFormsModule,
-  Validators
-} from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { ToastService } from '@core/toast/services/toast.service';
+import { IdentityStepUpDialogComponent } from '@features/auth/components/identity-step-up-dialog/identity-step-up-dialog.component';
 import { MyAccountDto } from '@features/auth/models/auth.model';
+import { StepUpVerificationResult } from '@features/auth/models/step-up.model';
 import { AuthService } from '@features/auth/services/auth.service';
+import { ExternalStepUpReturnService } from '@features/auth/services/external-step-up-return.service';
 import { AuthMessages } from '@features/auth/utils/auth.utils';
-import {
-  buildExternalReauthRequiredDetail,
-  needsExternalReauth
-} from '@features/auth/utils/external-step-up.utils';
-import { canOfferPasskeyStepUp } from '@features/auth/utils/passkey-step-up.utils';
+import { needsExternalReauth } from '@features/auth/utils/external-step-up.utils';
 import {
   clearPendingUnlinkProvider,
   readPendingUnlinkProvider,
@@ -33,24 +25,11 @@ import {
 } from '@features/auth/utils/pending-unlink.storage';
 import { ConfirmationService } from 'primeng/api';
 import { Button } from 'primeng/button';
-import { Dialog } from 'primeng/dialog';
-import { InputText } from 'primeng/inputtext';
-import { Message } from 'primeng/message';
 import { Panel } from 'primeng/panel';
-import { Password } from 'primeng/password';
 
 @Component({
   selector: 'app-my-account-external-methods',
-  imports: [
-    DatePipe,
-    ReactiveFormsModule,
-    Panel,
-    Button,
-    Message,
-    Dialog,
-    Password,
-    InputText
-  ],
+  imports: [DatePipe, Panel, Button, IdentityStepUpDialogComponent],
   templateUrl: './my-account-external-methods.component.html'
 })
 export class MyAccountExternalMethodsComponent implements OnInit {
@@ -64,90 +43,53 @@ export class MyAccountExternalMethodsComponent implements OnInit {
   private readonly toastService = inject(ToastService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
-  private readonly router = inject(Router);
+  private readonly externalStepUpReturn = inject(ExternalStepUpReturnService);
 
-  private externalStepUpHandled = false;
-  private readonly resumeUnlinkAfterExternalReturn = signal<string | null>(null);
+  private readonly resumeUnlinkAfterExternalReturn = signal(false);
 
   readonly stepUpVisible = signal(false);
   readonly pendingUnlinkProviderKey = signal<string | null>(null);
   readonly stepUpError = signal('');
   readonly isStepUpSubmitting = signal(false);
-  readonly isPasskeyStepUpSubmitting = signal(false);
   readonly providerLoadingKey = signal<string | null>(null);
-  private readonly passkeyStepUpVerified = signal(false);
-
-  readonly stepUpForm = new FormGroup({
-    currentPassword: new FormControl('', { nonNullable: true }),
-    verificationCode: new FormControl('', {
-      nonNullable: true,
-      validators: [Validators.maxLength(64)]
-    })
-  });
 
   readonly authMessages = AuthMessages;
 
   readonly linkedProviders = () => this.account().externalLogins ?? [];
   readonly linkableProviders = () => this.account().linkableProviders ?? [];
-  readonly requiresVerificationCode = () => this.account().twoFactorEnabled;
-  readonly requiresPasswordStepUp = () => this.account().hasPasswordSet;
-  readonly requiresExternalStepUp = () =>
-    !this.account().hasPasswordSet && this.linkedProviders().length > 0;
-  readonly needsExternalReauth = () => needsExternalReauth(this.account());
-  readonly externalReauthDetail = () =>
-    buildExternalReauthRequiredDetail(this.stepUpValidityMinutes());
-  readonly canOfferPasskeyStepUp = () =>
-    canOfferPasskeyStepUp(this.account(), this.passkeysEnabled());
 
   constructor() {
-    effect(() => {
-      const providerKey = this.resumeUnlinkAfterExternalReturn();
-      if (!providerKey || needsExternalReauth(this.account())) {
-        return;
-      }
-
-      this.resumeUnlinkAfterExternalReturn.set(null);
-      this.openStepUp();
+    this.externalStepUpReturn.resumeWhenExternalReauthFresh(this.destroyRef, {
+      isResumePending: () => this.resumeUnlinkAfterExternalReturn(),
+      clearResumePending: () => this.resumeUnlinkAfterExternalReturn.set(false),
+      account: this.account,
+      onReady: () => this.openStepUp()
     });
   }
 
   ngOnInit(): void {
-    this.route.queryParamMap
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((params) => {
-        if (params.get('externalStepUp') !== '1' || this.externalStepUpHandled) {
-          return;
-        }
+    this.externalStepUpReturn.watchQueryParamReturn(this.destroyRef, this.route, () => {
+      const providerKey = readPendingUnlinkProvider();
+      if (!providerKey) {
+        return;
+      }
 
-        this.externalStepUpHandled = true;
-        void this.router.navigate([], {
-          relativeTo: this.route,
-          queryParams: { externalStepUp: null },
-          queryParamsHandling: 'merge',
-          replaceUrl: true
-        });
+      this.pendingUnlinkProviderKey.set(providerKey);
 
-        const providerKey = readPendingUnlinkProvider();
-        if (!providerKey) {
-          return;
-        }
-
-        this.pendingUnlinkProviderKey.set(providerKey);
-
-        if (!this.account().twoFactorEnabled) {
-          clearPendingUnlinkProvider();
-          this.unlinkAfterExternalStepUp(providerKey);
-          return;
-        }
-
-        if (needsExternalReauth(this.account())) {
-          this.resumeUnlinkAfterExternalReturn.set(providerKey);
-          return;
-        }
-
+      if (!this.account().twoFactorEnabled) {
         clearPendingUnlinkProvider();
-        this.openStepUp();
-      });
+        this.unlinkAfterExternalStepUp(providerKey);
+        return;
+      }
+
+      if (needsExternalReauth(this.account())) {
+        this.resumeUnlinkAfterExternalReturn.set(true);
+        return;
+      }
+
+      clearPendingUnlinkProvider();
+      this.openStepUp();
+    });
   }
 
   confirmUnlink(providerKey: string, displayName: string): void {
@@ -189,35 +131,8 @@ export class MyAccountExternalMethodsComponent implements OnInit {
       });
   }
 
-  startExternalStepUp(providerKey: string): void {
-    if (this.providerLoadingKey()) {
-      return;
-    }
-
-    const pendingUnlink = this.pendingUnlinkProviderKey();
-    if (pendingUnlink) {
-      storePendingUnlinkProvider(pendingUnlink);
-    }
-
-    this.providerLoadingKey.set(providerKey);
-    this.authService
-      .beginExternalProviderStepUp(providerKey)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (response) => window.location.assign(response.authorizationUrl),
-        error: (error) => {
-          this.providerLoadingKey.set(null);
-          this.toastService.error(
-            error instanceof Error ? error.message : AuthMessages.externalSignInFailed
-          );
-        }
-      });
-  }
-
   openStepUp(): void {
     this.stepUpError.set('');
-    this.stepUpForm.reset();
-    this.passkeyStepUpVerified.set(false);
     this.stepUpVisible.set(true);
   }
 
@@ -225,82 +140,11 @@ export class MyAccountExternalMethodsComponent implements OnInit {
     this.stepUpVisible.set(false);
     this.pendingUnlinkProviderKey.set(null);
     this.stepUpError.set('');
-    this.stepUpForm.reset();
-    this.passkeyStepUpVerified.set(false);
   }
 
-  private unlinkAfterExternalStepUp(providerKey: string): void {
-    this.authService
-      .unlinkExternalAccount(providerKey, {})
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: () => {
-          this.toastService.success(AuthMessages.externalAccountUnlinked);
-          this.accountChanged.emit();
-        },
-        error: (error) => {
-          this.toastService.error(
-            error instanceof Error ? error.message : AuthMessages.externalSignInFailed
-          );
-        }
-      });
-  }
-
-  verifyWithPasskeyStepUp(): void {
-    if (this.isPasskeyStepUpSubmitting()) {
-      return;
-    }
-
-    if (
-      this.requiresVerificationCode() &&
-      !this.stepUpForm.controls.verificationCode.value.trim()
-    ) {
-      this.stepUpForm.controls.verificationCode.markAsTouched();
-      return;
-    }
-
-    this.isPasskeyStepUpSubmitting.set(true);
-    this.stepUpError.set('');
-
-    this.authService
-      .verifyWithPasskey()
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: () => {
-          this.isPasskeyStepUpSubmitting.set(false);
-          this.toastService.success(AuthMessages.passkeyStepUpCompleted);
-          this.passkeyStepUpVerified.set(true);
-          this.submitStepUp();
-        },
-        error: (error: unknown) => {
-          this.stepUpError.set(
-            error instanceof Error ? error.message : AuthMessages.passkeySignInFailed
-          );
-          this.isPasskeyStepUpSubmitting.set(false);
-        }
-      });
-  }
-
-  submitStepUp(): void {
+  onStepUpVerified(result: StepUpVerificationResult): void {
     const providerKey = this.pendingUnlinkProviderKey();
     if (!providerKey || this.isStepUpSubmitting()) {
-      return;
-    }
-
-    if (
-      this.requiresPasswordStepUp() &&
-      !this.passkeyStepUpVerified() &&
-      this.stepUpForm.controls.currentPassword.invalid
-    ) {
-      this.stepUpForm.markAllAsTouched();
-      return;
-    }
-
-    if (
-      this.requiresVerificationCode() &&
-      !this.stepUpForm.controls.verificationCode.value.trim()
-    ) {
-      this.stepUpForm.controls.verificationCode.markAsTouched();
       return;
     }
 
@@ -309,10 +153,8 @@ export class MyAccountExternalMethodsComponent implements OnInit {
 
     this.authService
       .unlinkExternalAccount(providerKey, {
-        currentPassword: this.passkeyStepUpVerified()
-          ? null
-          : this.stepUpForm.controls.currentPassword.value || null,
-        verificationCode: this.stepUpForm.controls.verificationCode.value.trim() || null
+        currentPassword: result.currentPassword,
+        verificationCode: result.verificationCode
       })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
@@ -330,6 +172,31 @@ export class MyAccountExternalMethodsComponent implements OnInit {
         },
         complete: () => {
           this.isStepUpSubmitting.set(false);
+        }
+      });
+  }
+
+  readonly prepareExternalRedirect = (): boolean => {
+    const pendingUnlink = this.pendingUnlinkProviderKey();
+    if (pendingUnlink) {
+      storePendingUnlinkProvider(pendingUnlink);
+    }
+    return true;
+  };
+
+  private unlinkAfterExternalStepUp(providerKey: string): void {
+    this.authService
+      .unlinkExternalAccount(providerKey, {})
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.toastService.success(AuthMessages.externalAccountUnlinked);
+          this.accountChanged.emit();
+        },
+        error: (error) => {
+          this.toastService.error(
+            error instanceof Error ? error.message : AuthMessages.externalSignInFailed
+          );
         }
       });
   }

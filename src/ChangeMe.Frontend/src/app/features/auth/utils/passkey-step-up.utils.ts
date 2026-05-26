@@ -6,7 +6,3 @@ export function canOfferPasskeyStepUp(
 ): boolean {
   return passkeysEnabled && account.passkeys.length > 0;
 }
-
-export function requiresVerificationCodeStepUp(account: MyAccountDto): boolean {
-  return account.twoFactorEnabled;
-}

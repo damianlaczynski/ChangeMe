@@ -2,7 +2,6 @@ import { DatePipe } from '@angular/common';
 import {
   Component,
   DestroyRef,
-  effect,
   inject,
   input,
   OnInit,
@@ -18,17 +17,12 @@ import {
 } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ToastService } from '@core/toast/services/toast.service';
+import { IdentityStepUpDialogComponent } from '@features/auth/components/identity-step-up-dialog/identity-step-up-dialog.component';
 import { MyAccountDto, TwoFactorStepUpRequest } from '@features/auth/models/auth.model';
+import { StepUpVerificationResult } from '@features/auth/models/step-up.model';
 import { AuthService } from '@features/auth/services/auth.service';
+import { ExternalStepUpReturnService } from '@features/auth/services/external-step-up-return.service';
 import { AuthConstraints, AuthMessages } from '@features/auth/utils/auth.utils';
-import {
-  buildExternalReauthRequiredDetail,
-  needsExternalReauth
-} from '@features/auth/utils/external-step-up.utils';
-import {
-  canOfferPasskeyStepUp,
-  requiresVerificationCodeStepUp
-} from '@features/auth/utils/passkey-step-up.utils';
 import {
   getPasskeyCeremonyErrorMessage,
   isPasskeySupported
@@ -45,7 +39,6 @@ import { Dialog } from 'primeng/dialog';
 import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
 import { Panel } from 'primeng/panel';
-import { Password } from 'primeng/password';
 import { Tag } from 'primeng/tag';
 
 type PasskeyStepUpAction = PendingPasskeyStepUpAction;
@@ -61,7 +54,7 @@ type PasskeyStepUpAction = PendingPasskeyStepUpAction;
     Message,
     Dialog,
     InputText,
-    Password
+    IdentityStepUpDialogComponent
   ],
   templateUrl: './my-account-passkeys.component.html'
 })
@@ -83,8 +76,8 @@ export class MyAccountPasskeysComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly externalStepUpReturn = inject(ExternalStepUpReturnService);
 
-  private externalStepUpHandled = false;
   private readonly resumeStepUpAfterExternalReturn = signal(false);
 
   readonly passkeySupported = signal(isPasskeySupported());
@@ -95,18 +88,7 @@ export class MyAccountPasskeysComponent implements OnInit {
   readonly stepUpError = signal('');
   readonly isSaving = signal(false);
   readonly isRegisteringCeremony = signal(false);
-  readonly isStepUpSubmitting = signal(false);
-  readonly isPasskeyStepUpSubmitting = signal(false);
-  readonly providerLoadingKey = signal<string | null>(null);
   readonly errorMessage = signal('');
-
-  readonly stepUpForm = new FormGroup({
-    currentPassword: new FormControl('', { nonNullable: true }),
-    verificationCode: new FormControl('', {
-      nonNullable: true,
-      validators: [Validators.maxLength(64)]
-    })
-  });
 
   readonly addForm = new FormGroup({
     name: new FormControl('', {
@@ -151,72 +133,44 @@ export class MyAccountPasskeysComponent implements OnInit {
   readonly skipPasskeyStepUp = () =>
     this.passkeysRequired() && this.account().passkeys.length === 0;
 
-  readonly linkedProviders = () => this.account().externalLogins ?? [];
-  readonly requiresPasswordStepUp = () => this.account().hasPasswordSet;
-  readonly requiresVerificationCode = () =>
-    requiresVerificationCodeStepUp(this.account());
-  readonly needsExternalReauth = () => needsExternalReauth(this.account());
-  readonly canOfferPasskeyStepUp = () =>
-    canOfferPasskeyStepUp(this.account(), this.passkeysEnabled());
-  readonly externalReauthDetail = () =>
-    buildExternalReauthRequiredDetail(this.stepUpValidityMinutes());
-
   constructor() {
-    effect(() => {
-      if (!this.resumeStepUpAfterExternalReturn()) {
-        return;
-      }
-
-      if (needsExternalReauth(this.account())) {
-        return;
-      }
-
-      this.resumeStepUpAfterExternalReturn.set(false);
-      const action = this.stepUpAction();
-      if (action) {
-        this.completeStepUp(action);
+    this.externalStepUpReturn.resumeWhenExternalReauthFresh(this.destroyRef, {
+      isResumePending: () => this.resumeStepUpAfterExternalReturn(),
+      clearResumePending: () => this.resumeStepUpAfterExternalReturn.set(false),
+      account: this.account,
+      onReady: () => {
+        const action = this.stepUpAction();
+        if (action) {
+          this.completeStepUp(action);
+        }
       }
     });
   }
 
   ngOnInit(): void {
-    this.route.queryParamMap
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((params) => {
-        if (params.get('externalStepUp') !== '1' || this.externalStepUpHandled) {
-          return;
-        }
+    this.externalStepUpReturn.watchQueryParamReturn(this.destroyRef, this.route, () => {
+      const pending = readPendingPasskeyStepUp();
+      if (!pending) {
+        return;
+      }
 
-        this.externalStepUpHandled = true;
-        void this.router.navigate([], {
-          relativeTo: this.route,
-          queryParams: { externalStepUp: null },
-          queryParamsHandling: 'merge',
-          replaceUrl: true
-        });
-
-        const pending = readPendingPasskeyStepUp();
-        if (!pending) {
-          return;
+      clearPendingPasskeyStepUp();
+      this.stepUpAction.set(pending.action);
+      if (pending.passkeyId) {
+        this.renamingPasskeyId = pending.passkeyId;
+        if (pending.passkeyName) {
+          this.renameForm.controls.name.setValue(pending.passkeyName);
         }
-
-        clearPendingPasskeyStepUp();
-        this.stepUpAction.set(pending.action);
-        if (pending.passkeyId) {
-          this.renamingPasskeyId = pending.passkeyId;
-          if (pending.passkeyName) {
-            this.renameForm.controls.name.setValue(pending.passkeyName);
-          }
-        }
-        if (pending.action === 'remove' && pending.passkeyId) {
-          this.pendingRemovePasskeyId = pending.passkeyId;
-        }
-        this.stepUpCredentials = {
-          currentPassword: null,
-          verificationCode: pending.verificationCode || null
-        };
-        this.resumeStepUpAfterExternalReturn.set(true);
-      });
+      }
+      if (pending.action === 'remove' && pending.passkeyId) {
+        this.pendingRemovePasskeyId = pending.passkeyId;
+      }
+      this.stepUpCredentials = {
+        currentPassword: null,
+        verificationCode: pending.verificationCode || null
+      };
+      this.resumeStepUpAfterExternalReturn.set(true);
+    });
   }
 
   openAddDialog(): void {
@@ -338,136 +292,45 @@ export class MyAccountPasskeysComponent implements OnInit {
     this.stepUpVisible.set(false);
     this.stepUpAction.set(null);
     this.stepUpError.set('');
-    this.stepUpForm.reset();
     this.pendingRemovePasskeyId = null;
-    this.providerLoadingKey.set(null);
   }
 
-  startExternalStepUp(providerKey: string): void {
+  onStepUpVerified(result: StepUpVerificationResult): void {
     const action = this.stepUpAction();
-    if (!action || this.providerLoadingKey()) {
-      return;
-    }
-
-    if (
-      this.requiresVerificationCode() &&
-      !this.stepUpForm.controls.verificationCode.value.trim()
-    ) {
-      this.stepUpForm.controls.verificationCode.markAsTouched();
-      return;
-    }
-
-    storePendingPasskeyStepUp({
-      action,
-      verificationCode: this.stepUpForm.controls.verificationCode.value.trim(),
-      passkeyId: this.renamingPasskeyId ?? this.pendingRemovePasskeyId ?? undefined,
-      passkeyName: this.renameForm.controls.name.value.trim() || undefined
-    });
-
-    this.providerLoadingKey.set(providerKey);
-    this.authService
-      .beginExternalProviderStepUp(providerKey)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (response) => window.location.assign(response.authorizationUrl),
-        error: (error) => {
-          clearPendingPasskeyStepUp();
-          this.providerLoadingKey.set(null);
-          this.stepUpError.set(
-            error instanceof Error ? error.message : AuthMessages.externalSignInFailed
-          );
-        }
-      });
-  }
-
-  submitStepUp(): void {
-    const action = this.stepUpAction();
-    if (!action || this.isStepUpSubmitting()) {
-      return;
-    }
-
-    if (
-      this.requiresPasswordStepUp() &&
-      !this.stepUpForm.controls.currentPassword.value.trim()
-    ) {
-      this.stepUpForm.controls.currentPassword.markAsTouched();
-      return;
-    }
-
-    if (
-      this.requiresVerificationCode() &&
-      !this.stepUpForm.controls.verificationCode.value.trim()
-    ) {
-      this.stepUpForm.controls.verificationCode.markAsTouched();
+    if (!action) {
       return;
     }
 
     this.stepUpCredentials = {
-      currentPassword: this.requiresPasswordStepUp()
-        ? this.stepUpForm.controls.currentPassword.value.trim()
-        : null,
-      verificationCode: this.requiresVerificationCode()
-        ? this.stepUpForm.controls.verificationCode.value.trim()
-        : null
+      currentPassword: result.currentPassword,
+      verificationCode: result.verificationCode
     };
-
-    this.isStepUpSubmitting.set(true);
-    this.stepUpError.set('');
     this.completeStepUp(action);
-    this.isStepUpSubmitting.set(false);
   }
 
-  verifyWithPasskeyStepUp(): void {
+  readonly prepareExternalRedirect = (context: {
+    verificationCode: string;
+  }): boolean => {
     const action = this.stepUpAction();
-    if (!action || this.isPasskeyStepUpSubmitting()) {
-      return;
+    if (!action) {
+      return false;
     }
 
-    if (
-      this.requiresVerificationCode() &&
-      !this.stepUpForm.controls.verificationCode.value.trim()
-    ) {
-      this.stepUpForm.controls.verificationCode.markAsTouched();
-      return;
-    }
+    storePendingPasskeyStepUp({
+      action,
+      verificationCode: context.verificationCode,
+      passkeyId: this.renamingPasskeyId ?? this.pendingRemovePasskeyId ?? undefined,
+      passkeyName: this.renameForm.controls.name.value.trim() || undefined
+    });
+    return true;
+  };
 
-    this.isPasskeyStepUpSubmitting.set(true);
-    this.stepUpError.set('');
-
-    this.authService
-      .verifyWithPasskey()
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: () => {
-          this.isPasskeyStepUpSubmitting.set(false);
-          this.toastService.success(AuthMessages.passkeyStepUpCompleted);
-          this.stepUpCredentials = {
-            currentPassword: null,
-            verificationCode: this.requiresVerificationCode()
-              ? this.stepUpForm.controls.verificationCode.value.trim()
-              : null
-          };
-          this.completeStepUp(action);
-        },
-        error: (error: unknown) => {
-          this.isPasskeyStepUpSubmitting.set(false);
-          const message = getPasskeyCeremonyErrorMessage(
-            error,
-            AuthMessages.passkeySignInFailed
-          );
-          if (message) {
-            this.stepUpError.set(message);
-          }
-        },
-        complete: () => {
-          this.isPasskeyStepUpSubmitting.set(false);
-        }
-      });
+  onExternalRedirectFailed(): void {
+    clearPendingPasskeyStepUp();
   }
 
   private openStepUp(action: PasskeyStepUpAction): void {
     this.stepUpAction.set(action);
-    this.stepUpForm.reset();
     this.stepUpError.set('');
     this.stepUpVisible.set(true);
   }
@@ -476,7 +339,6 @@ export class MyAccountPasskeysComponent implements OnInit {
     this.stepUpVisible.set(false);
     this.stepUpAction.set(null);
     this.stepUpError.set('');
-    this.stepUpForm.reset();
 
     switch (action) {
       case 'add':

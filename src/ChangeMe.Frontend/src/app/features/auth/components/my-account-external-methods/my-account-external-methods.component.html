@@ -49,109 +49,16 @@
   }
 </p-panel>
 
-<p-dialog
-  header="Confirm your identity"
+<app-identity-step-up-dialog
+  [account]="account()"
   [visible]="stepUpVisible()"
-  [modal]="true"
-  [closable]="true"
-  [style]="{ width: '28rem', maxWidth: '95vw' }"
-  (visibleChange)="stepUpVisible() ? null : closeStepUp()"
->
-  <form
-    class="p-fluid flex flex-col gap-4"
-    [formGroup]="stepUpForm"
-    (ngSubmit)="submitStepUp()"
-  >
-    @if (needsExternalReauth()) {
-      <p-message severity="warn" variant="simple">
-        {{ externalReauthDetail() }}
-      </p-message>
-      <div class="flex flex-col gap-2">
-        @for (login of linkedProviders(); track login.providerKey) {
-          <p-button
-            type="button"
-            [label]="authMessages.verifyWithProvider + ': ' + login.displayName"
-            icon="pi pi-external-link"
-            severity="secondary"
-            styleClass="w-full"
-            [loading]="providerLoadingKey() === login.providerKey"
-            [disabled]="providerLoadingKey() !== null"
-            (onClick)="startExternalStepUp(login.providerKey)"
-          />
-        }
-        @if (canOfferPasskeyStepUp()) {
-          <p-button
-            type="button"
-            [label]="authMessages.passkeyVerifyWithPasskey"
-            icon="pi pi-key"
-            severity="secondary"
-            styleClass="w-full"
-            [loading]="isPasskeyStepUpSubmitting()"
-            [disabled]="providerLoadingKey() !== null"
-            (onClick)="verifyWithPasskeyStepUp()"
-          />
-        }
-      </div>
-    } @else {
-      @if (requiresPasswordStepUp()) {
-        <div class="flex flex-col gap-1.5">
-          <label class="text-color text-sm font-medium" for="stepUpPassword">
-            Current password
-          </label>
-          <p-password
-            inputId="stepUpPassword"
-            autocomplete="current-password"
-            [formControl]="stepUpForm.controls.currentPassword"
-            [feedback]="false"
-            [toggleMask]="true"
-            fluid
-          />
-        </div>
-      }
-
-      @if (requiresVerificationCode()) {
-        <div class="flex flex-col gap-1.5">
-          <label class="text-color text-sm font-medium" for="stepUpCode">
-            Verification code
-          </label>
-          <input
-            id="stepUpCode"
-            pInputText
-            autocomplete="one-time-code"
-            [formControl]="stepUpForm.controls.verificationCode"
-          />
-        </div>
-      }
-
-      @if (canOfferPasskeyStepUp()) {
-        <p-button
-          type="button"
-          [label]="authMessages.passkeyVerifyWithPasskey"
-          icon="pi pi-key"
-          severity="secondary"
-          styleClass="w-full"
-          [loading]="isPasskeyStepUpSubmitting()"
-          [disabled]="isStepUpSubmitting()"
-          (onClick)="verifyWithPasskeyStepUp()"
-        />
-      }
-    }
-
-    @if (stepUpError()) {
-      <p-message severity="error">{{ stepUpError() }}</p-message>
-    }
-
-    <div class="flex justify-end gap-2">
-      <p-button
-        type="button"
-        label="Cancel"
-        severity="secondary"
-        [text]="true"
-        (onClick)="closeStepUp()"
-      />
-      @if (!needsExternalReauth()) {
-        <p-button type="submit" label="Continue" [loading]="isStepUpSubmitting()" />
-      }
-    </div>
-  </form>
-</p-dialog>
+  [passkeysEnabled]="passkeysEnabled()"
+  [stepUpValidityMinutes]="stepUpValidityMinutes()"
+  [submitting]="isStepUpSubmitting()"
+  [errorMessage]="stepUpError()"
+  fieldIdPrefix="externalMethodsStepUp"
+  (visibleChange)="stepUpVisible.set($event)"
+  (cancelled)="closeStepUp()"
+  (verified)="onStepUpVerified($event)"
+  [beforeExternalRedirect]="prepareExternalRedirect"
+/>
