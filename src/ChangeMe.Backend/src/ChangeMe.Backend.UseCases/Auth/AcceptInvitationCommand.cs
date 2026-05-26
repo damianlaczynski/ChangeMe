@@ -12,7 +12,8 @@ public class AcceptInvitationHandler(
   ApplicationDbContext context,
   IPasswordHasher passwordHasher,
   IUserAuthTokenService tokenService,
-  IAuthEmailService authEmailService) : ICommandHandler<AcceptInvitationCommand, bool>
+  IAuthEmailService authEmailService,
+  TimeProvider timeProvider) : ICommandHandler<AcceptInvitationCommand, bool>
 {
   public async Task<Result<bool>> Handle(AcceptInvitationCommand command, CancellationToken cancellationToken)
   {
@@ -44,7 +45,7 @@ public class AcceptInvitationHandler(
 
     user.MarkEmailVerified();
 
-    var acceptInvitationResult = user.AcceptPendingInvitation(DateTime.UtcNow);
+    var acceptInvitationResult = user.AcceptPendingInvitation(timeProvider.GetUtcNow().UtcDateTime);
     if (!acceptInvitationResult.IsSuccess)
       return Result<bool>.Conflict(acceptInvitationResult.Errors.First());
 
