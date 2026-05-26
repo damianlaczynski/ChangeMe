@@ -73,7 +73,7 @@ public sealed class SendPasswordResetHandlerTests
     return new SendPasswordResetHandler(
       new StubMediator(context),
       context,
-      new UserPasswordResetService(context, tokenService, new FakeAuthEmailService()));
+      new UserPasswordResetService(tokenService, new FakeAuthEmailService()));
   }
 
   private sealed class StubUserAuthTokenService : IUserAuthTokenService
