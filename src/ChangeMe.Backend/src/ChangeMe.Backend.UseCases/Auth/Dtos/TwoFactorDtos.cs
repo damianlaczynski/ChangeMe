@@ -9,9 +9,5 @@ public sealed record BeginTwoFactorSetupResponseDto(
   string ProvisioningUri,
   string IssuerName);
 
-public sealed record ConfirmTwoFactorSetupCommandDto(
-  string VerificationCode,
-  string? CurrentPassword);
-
 public sealed record TwoFactorSetupCompletedDto(
   IReadOnlyList<string> RecoveryCodes);
