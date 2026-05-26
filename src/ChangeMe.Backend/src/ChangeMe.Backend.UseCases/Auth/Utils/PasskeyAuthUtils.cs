@@ -1,7 +1,6 @@
 using ChangeMe.Backend.Domain.Aggregates.Sessions;
 using ChangeMe.Backend.Domain.Aggregates.Users;
 using ChangeMe.Backend.Domain.Aggregates.Users.Entities;
-using ChangeMe.Backend.Domain.Aggregates.Users.Interfaces;
 using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UseCases.Auth.Dtos;
 using Microsoft.AspNetCore.Http;
@@ -11,8 +10,6 @@ namespace ChangeMe.Backend.UseCases.Auth.Utils;
 
 public static class PasskeyAuthUtils
 {
-  public const string NotSupportedMessage =
-    "Passkeys are not supported in this browser. Use email and password or try another browser.";
   public const string TimedOutMessage = "Passkey sign-in timed out. Try again.";
   public const string NoMatchMessage =
     "No passkey matched. Sign in with email and password or use a different passkey.";
@@ -73,7 +70,6 @@ public static class PasskeyAuthUtils
     IJwtTokenGenerator jwtTokenGenerator,
     ISessionLifetimeService sessionLifetime,
     IPasswordExpirationEvaluator passwordExpirationEvaluator,
-    ITwoFactorPolicyEvaluator twoFactorPolicyEvaluator,
     IPasskeyPolicyEvaluator passkeyPolicyEvaluator,
     IHttpContextAccessor httpContextAccessor,
     IOptions<AuthOptions> authOptions,

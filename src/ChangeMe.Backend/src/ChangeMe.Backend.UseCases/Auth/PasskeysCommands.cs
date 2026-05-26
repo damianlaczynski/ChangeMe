@@ -96,7 +96,6 @@ public class CompletePasskeySignInHandler(
   IJwtTokenGenerator jwtTokenGenerator,
   ISessionLifetimeService sessionLifetime,
   IPasswordExpirationEvaluator passwordExpirationEvaluator,
-  ITwoFactorPolicyEvaluator twoFactorPolicyEvaluator,
   IHttpContextAccessor httpContextAccessor,
   IOptions<AuthOptions> authOptions) : ICommandHandler<CompletePasskeySignInCommand, LoginResponseDto>
 {
@@ -181,7 +180,6 @@ public class CompletePasskeySignInHandler(
         jwtTokenGenerator,
         sessionLifetime,
         passwordExpirationEvaluator,
-        twoFactorPolicyEvaluator,
         passkeyPolicy,
         httpContextAccessor,
         authOptions,
