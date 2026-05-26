@@ -24,7 +24,6 @@ import {
   buildExternalReauthRequiredDetail,
   needsExternalReauth
 } from '@features/auth/utils/external-step-up.utils';
-import { canOfferPasskeyStepUp } from '@features/auth/utils/passkey-step-up.utils';
 import { getPasskeyCeremonyErrorMessage } from '@features/auth/utils/passkey.utils';
 import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
@@ -78,8 +77,8 @@ export class IdentityStepUpDialogComponent {
   readonly requiresPassword = computed(() => this.account().hasPasswordSet);
   readonly requiresVerificationCode = computed(() => this.account().twoFactorEnabled);
   readonly needsExternalReauth = computed(() => needsExternalReauth(this.account()));
-  readonly canOfferPasskey = computed(() =>
-    canOfferPasskeyStepUp(this.account(), this.passkeysEnabled())
+  readonly canOfferPasskey = computed(
+    () => this.passkeysEnabled() && this.account().passkeys.length > 0
   );
   readonly externalReauthDetail = computed(() =>
     buildExternalReauthRequiredDetail(this.stepUpValidityMinutes())
