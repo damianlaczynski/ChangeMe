@@ -157,13 +157,6 @@ public class CompletePasskeySignInHandler(
         stored.CredentialId,
         cancellationToken);
 
-      if (auth.Passkeys.PasskeySatisfiesTwoFactor
-          && auth.TwoFactor.Enabled
-          && !PasskeyWebAuthnUtils.HasUserVerification(command.AssertionResponse))
-      {
-        return Result<LoginResponseDto>.Unauthorized(PasskeyAuthUtils.UvRequiredMessage);
-      }
-
       stored.RecordUse(verify.SignCount, utcNow);
 
       if (!user.IsActive)

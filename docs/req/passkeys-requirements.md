@@ -56,7 +56,7 @@ A user may use passkey sign-in when **Passkeys authentication enabled** is **tru
 - When **Passkey satisfies two-factor** is **true** and the passkey assertion includes **user verification**:
   - Skip **Two-factor verification** for that sign-in when **Two-factor enabled** is **true**.
   - Skip **strict two-factor setup** when **Two-factor authentication required** is **true** and **Two-factor enabled** is **false**.
-- When **Passkey satisfies two-factor** is **true** but the assertion does **not** include user verification, normal two-factor rules apply; show form-level error **`Passkey verification did not meet security requirements. Use your device PIN or biometrics and try again.`**
+- When **Passkey satisfies two-factor** is **true** but the assertion does **not** include user verification, passkey sign-in counts as **primary authentication** only and **normal two-factor rules apply** (proceed to **Two-factor verification** when **Two-factor enabled** is **true** on the account, same as when **Passkey satisfies two-factor** is **false**).
 - **Passkey satisfies two-factor** never disables stored TOTP enrollment; password sign-in continues to require app TOTP when **Two-factor enabled** is **true** (REQ-AUTH-013).
 
 ### Deployment policy changes

@@ -21,8 +21,6 @@ public static class PasskeyAuthUtils
     "Set a password or use external sign-in before using passkeys on this account.";
   public const string TooManyAttemptsMessage = "Too many passkey attempts. Try again.";
   public const string VerificationFailedMessage = "Passkey verification failed. Try again.";
-  public const string UvRequiredMessage =
-    "Passkey verification did not meet security requirements. Use your device PIN or biometrics and try again.";
   public const string MaximumPasskeysMessage =
     "Maximum number of passkeys reached. Remove one before adding another.";
   public const string RemoveOnlySignInMethodMessage =

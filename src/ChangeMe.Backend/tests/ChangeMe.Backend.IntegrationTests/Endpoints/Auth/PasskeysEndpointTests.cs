@@ -549,7 +549,7 @@ public sealed class PasskeysPasskeyOnlyEndpointTests(PasskeysPasskeyOnlyAllowedW
 public sealed class PasskeysSatisfiesTwoFactorEndpointTests(PasskeysSatisfiesTwoFactorWebApplicationFactory factory)
 {
   [Fact]
-  public async Task PostPasskeySignInComplete_WhenUserVerificationMissing_ShouldReturnUvRequiredMessage()
+  public async Task PostPasskeySignInComplete_WhenUserVerificationMissing_ShouldReturnTwoFactorChallenge()
   {
     var cancellationToken = TestContext.Current.CancellationToken;
     var testUser = await PasskeyTestHelper.CreateUserWithPasskeyAsync(factory, cancellationToken: cancellationToken);
@@ -567,10 +567,15 @@ public sealed class PasskeysSatisfiesTwoFactorEndpointTests(PasskeysSatisfiesTwo
       userVerification: false,
       cancellationToken: cancellationToken);
 
-    Assert.Equal(HttpStatusCode.Unauthorized, completeResponse.StatusCode);
+    completeResponse.EnsureSuccessStatusCode();
 
-    var responseBody = await completeResponse.Content.ReadAsStringAsync(cancellationToken);
-    Assert.Contains(PasskeyAuthUtils.UvRequiredMessage, responseBody, StringComparison.OrdinalIgnoreCase);
+    var login = await IntegrationApiJson.ReadValueAsync<LoginResponseDto>(
+      completeResponse.Content,
+      cancellationToken);
+
+    Assert.NotNull(login);
+    Assert.Null(login!.AuthSession);
+    Assert.NotNull(login.TwoFactorChallenge);
   }
 
   [Fact]

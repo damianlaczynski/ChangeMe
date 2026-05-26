@@ -4,9 +4,6 @@ using Fido2NetLib.Objects;
 
 namespace ChangeMe.Backend.Infrastructure.Auth.Json;
 
-/// <summary>
-/// WebAuthn sends <c>type: "public-key"</c>; <see cref="JsonStringEnumConverter"/> expects C# enum member names.
-/// </summary>
 public sealed class PublicKeyCredentialTypeJsonConverter : JsonConverter<PublicKeyCredentialType>
 {
   public override PublicKeyCredentialType Read(
