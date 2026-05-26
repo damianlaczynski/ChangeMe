@@ -116,6 +116,7 @@ export class UserDetailsComponent {
   readonly externalProvidersEnabled = signal(false);
 
   readonly UserMessages = UserMessages;
+  readonly AuthMessages = AuthMessages;
   readonly formatIpAddress = formatIpAddress;
   readonly getUserStatusLabel = getUserStatusLabel;
   readonly getUserStatusSeverity = getUserStatusSeverity;
@@ -257,6 +258,17 @@ export class UserDetailsComponent {
       acceptButtonProps: { label: 'Reset', severity: 'danger' },
       rejectButtonProps: { label: 'Cancel', severity: 'secondary', outlined: true },
       accept: () => this.resetPasskeys()
+    });
+  }
+
+  confirmRemovePasskey(passkeyId: string, passkeyName: string): void {
+    this.confirmationService.confirm({
+      header: UserMessages.removePasskeyTitle,
+      message: UserMessages.removePasskeyMessage(passkeyName),
+      icon: 'pi pi-exclamation-triangle',
+      acceptButtonProps: { label: 'Remove', severity: 'danger' },
+      rejectButtonProps: { label: 'Cancel', severity: 'secondary', outlined: true },
+      accept: () => this.removePasskey(passkeyId)
     });
   }
 
@@ -459,6 +471,19 @@ export class UserDetailsComponent {
         next: (user) => {
           this.user.set(user);
           this.toastService.success(UserMessages.passkeysReset);
+        },
+        error: (error: Error) => this.errorMessage.set(error.message)
+      });
+  }
+
+  private removePasskey(passkeyId: string): void {
+    this.usersService
+      .removePasskey(this.id(), passkeyId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (user) => {
+          this.user.set(user);
+          this.toastService.success(UserMessages.passkeyRemoved);
         },
         error: (error: Error) => this.errorMessage.set(error.message)
       });

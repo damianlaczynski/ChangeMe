@@ -43,6 +43,7 @@ public class RegenerateRecoveryCodesHandler(
       return Result<TwoFactorSetupCompletedDto>.Error("Two-factor authentication is not enabled.");
 
     var utcNow = DateTime.UtcNow;
+    var passkeyCount = await context.PasskeyCredentials.CountAsync(x => x.UserId == userId, cancellationToken);
     var stepUpResult = TwoFactorStepUpUtils.ValidateStepUp(
       user,
       command.CurrentPassword,
@@ -52,6 +53,8 @@ public class RegenerateRecoveryCodesHandler(
       secretProtector,
       recoveryCodeHasher,
       authOptions,
+      authOptions.Value.Passkeys.PasskeysAuthenticationEnabled,
+      passkeyCount,
       utcNow,
       out var consumedRecoveryCode);
     if (!stepUpResult.IsSuccess)

@@ -107,7 +107,7 @@ export interface PasskeyCeremonyBeginResponse {
   options: unknown;
 }
 
-export interface PasskeyRegisterCompleteRequest {
+export interface PasskeyRegisterCompleteRequest extends TwoFactorStepUpRequest {
   ceremonyId: string;
   attestationResponse: unknown;
   name: string;
@@ -118,8 +118,16 @@ export interface PasskeySignInCompleteRequest {
   assertionResponse: unknown;
 }
 
-export interface PasskeyRenameRequest {
+export interface PasskeyRenameRequest extends TwoFactorStepUpRequest {
   name: string;
+}
+
+export interface PasskeyRegisterBeginRequest extends TwoFactorStepUpRequest {
+  unused?: unknown;
+}
+
+export interface PasskeyRemoveRequest extends TwoFactorStepUpRequest {
+  unused?: unknown;
 }
 
 export interface MyAccountPasskey {
@@ -137,6 +145,7 @@ export interface PasskeySettings {
   passkeysAuthenticationRequired: boolean;
   passkeySatisfiesTwoFactor: boolean;
   discoverablePasskeySignInOnLogin: boolean;
+  offerPasskeyEnrollmentPrompt: boolean;
   relyingPartyId: string;
   relyingPartyDisplayName: string;
   maximumPasskeysPerUser: number;

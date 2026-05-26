@@ -30,7 +30,9 @@ public class RefreshSessionHandler(
     if (session is null || !sessionLifetime.IsActive(session, utcNow))
       return Result<AuthResponseDto>.Unauthorized();
 
-    var user = await context.Users.FirstOrDefaultAsync(x => x.Id == session.UserId, cancellationToken);
+    var user = await context.Users
+      .Include(x => x.AccountInvitations)
+      .FirstOrDefaultAsync(x => x.Id == session.UserId, cancellationToken);
     if (user is null || !user.IsActive)
       return Result<AuthResponseDto>.Unauthorized();
 

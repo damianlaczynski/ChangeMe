@@ -173,46 +173,63 @@ public sealed class AuthEmailService(
   public Task<Result> SendPasskeyAddedAsync(
     User user,
     string passkeyName,
-    CancellationToken cancellationToken = default) =>
-    SendAsync(
+    CancellationToken cancellationToken = default)
+  {
+    var eventTimeUtc = DateTime.UtcNow;
+    return SendAsync(
       user.Email,
       "Passkey added to your account",
-      BrandedEmailTemplates.BuildActionEmail(
+      BrandedEmailTemplates.BuildAuthEventEmail(
         "Passkey added",
         $"A passkey named \"{passkeyName}\" was added to your ChangeMe account.",
+        user.Email,
+        eventTimeUtc,
         "If you did not perform this action, contact your administrator immediately.",
         BuildLink("/account", null),
-        "My account"),
+        "My account",
+        passkeyName),
       cancellationToken);
+  }
 
   public Task<Result> SendPasskeyRemovedAsync(
     User user,
     string passkeyName,
-    CancellationToken cancellationToken = default) =>
-    SendAsync(
+    CancellationToken cancellationToken = default)
+  {
+    var eventTimeUtc = DateTime.UtcNow;
+    return SendAsync(
       user.Email,
       "Passkey removed from your account",
-      BrandedEmailTemplates.BuildActionEmail(
+      BrandedEmailTemplates.BuildAuthEventEmail(
         "Passkey removed",
         $"Passkey \"{passkeyName}\" was removed from your ChangeMe account.",
+        user.Email,
+        eventTimeUtc,
         "If you did not perform this action, contact your administrator immediately.",
         BuildLink("/account", null),
-        "My account"),
+        "My account",
+        passkeyName),
       cancellationToken);
+  }
 
   public Task<Result> SendPasskeysResetByAdminAsync(
     User user,
-    CancellationToken cancellationToken = default) =>
-    SendAsync(
+    CancellationToken cancellationToken = default)
+  {
+    var eventTimeUtc = DateTime.UtcNow;
+    return SendAsync(
       user.Email,
       "Passkeys reset on your account",
-      BrandedEmailTemplates.BuildActionEmail(
+      BrandedEmailTemplates.BuildAuthEventEmail(
         "Passkeys reset",
         "An administrator removed all passkeys from your ChangeMe account.",
+        user.Email,
+        eventTimeUtc,
         "If you did not expect this, contact your administrator immediately.",
         BuildLink("/login", null),
         "Sign in"),
       cancellationToken);
+  }
 
   private async Task<Result> SendAsync(
     string to,

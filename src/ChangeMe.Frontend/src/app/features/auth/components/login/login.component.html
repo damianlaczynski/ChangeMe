@@ -107,9 +107,14 @@
         severity="secondary"
         styleClass="w-full"
         [loading]="isPasskeySigningIn()"
-        [disabled]="isSubmitting() || isPasskeySigningIn()"
+        [disabled]="isSubmitting() || isPasskeySigningIn() || !canSignInWithPasskey()"
         (onClick)="signInWithPasskey()"
       />
+      @if (passkeySignInHint()) {
+        <p-message severity="secondary" variant="simple">
+          {{ passkeySignInHint() }}
+        </p-message>
+      }
     }
 
     @if (externalProvidersEnabled() && externalProviders().length > 0) {

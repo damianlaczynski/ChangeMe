@@ -12,7 +12,10 @@ import { ExternalProviderSettings } from '@features/auth/models/auth.model';
 import { AuthService } from '@features/auth/services/auth.service';
 import { AuthConstraints, AuthMessages } from '@features/auth/utils/auth.utils';
 import { clearExternalAccountFlow } from '@features/auth/utils/external-account-flow.storage';
-import { readTwoFactorChallenge } from '@features/auth/utils/two-factor-challenge.storage';
+import {
+  getPasskeyCeremonyErrorMessage,
+  isPasskeySupported
+} from '@features/auth/utils/passkey.utils';
 import { Button } from 'primeng/button';
 import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
@@ -50,6 +53,35 @@ export class LoginComponent {
   readonly passkeysAuthenticationEnabled = signal(false);
   readonly discoverablePasskeySignInOnLogin = signal(false);
   readonly isPasskeySigningIn = signal(false);
+
+  readonly passkeyEmailRequired = () =>
+    this.passkeysAuthenticationEnabled() && !this.discoverablePasskeySignInOnLogin();
+
+  readonly canSignInWithPasskey = () => {
+    if (!this.passkeysAuthenticationEnabled()) {
+      return false;
+    }
+
+    if (this.discoverablePasskeySignInOnLogin()) {
+      return true;
+    }
+
+    const email = this.form.controls.email;
+    return email.valid && !!email.value.trim();
+  };
+
+  readonly passkeySignInHint = () => {
+    if (!this.passkeyEmailRequired()) {
+      return '';
+    }
+
+    const email = this.form.controls.email;
+    if (!email.value.trim() || email.invalid) {
+      return AuthMessages.passkeyEnterEmailHint;
+    }
+
+    return '';
+  };
 
   readonly form = new FormGroup({
     email: new FormControl('', {
@@ -107,10 +139,15 @@ export class LoginComponent {
       return;
     }
 
+    if (!isPasskeySupported()) {
+      this.errorMessage.set(AuthMessages.passkeyNotSupportedSignIn);
+      return;
+    }
+
     const emailTrim = this.form.controls.email.value.trim();
     const discoverable = this.discoverablePasskeySignInOnLogin() && !emailTrim;
-    if (!discoverable && !emailTrim) {
-      this.errorMessage.set('Enter your email to sign in with a passkey.');
+    if (!discoverable && !this.canSignInWithPasskey()) {
+      this.errorMessage.set(AuthMessages.passkeyEnterEmailHint);
       this.form.controls.email.markAsTouched();
       return;
     }
@@ -124,9 +161,13 @@ export class LoginComponent {
         this.navigateAfterSuccessfulLogin();
       },
       error: (error) => {
-        this.errorMessage.set(
-          error instanceof Error ? error.message : AuthMessages.passkeySignInFailed
+        const message = getPasskeyCeremonyErrorMessage(
+          error,
+          AuthMessages.passkeySignInFailed
         );
+        if (message) {
+          this.errorMessage.set(message);
+        }
         this.isPasskeySigningIn.set(false);
       },
       complete: () => {
@@ -199,32 +240,14 @@ export class LoginComponent {
   }
 
   private navigateAfterSuccessfulLogin(): void {
-    if (this.authService.passwordChangeRequired()) {
-      this.authService.enablePasswordChangeScreen();
-      void this.router.navigateByUrl('/required-password-change');
-      return;
-    }
-
-    const challenge = readTwoFactorChallenge();
-    if (challenge) {
-      void this.router.navigateByUrl('/two-factor-verification');
-      return;
-    }
-
-    if (this.authService.twoFactorSetupRequired()) {
-      this.authService.enableTwoFactorSetupScreen();
-      void this.router.navigateByUrl('/required-two-factor-setup');
-      return;
-    }
-
-    if (this.authService.passkeySetupRequired()) {
-      this.authService.enablePasskeySetupScreen();
-      void this.router.navigateByUrl('/required-passkey-setup');
-      return;
-    }
-
     const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') ?? '/issues';
-    void this.router.navigateByUrl(returnUrl);
+    const offerPasskeyEnrollment =
+      this.route.snapshot.queryParamMap.get('emailVerified') === '1';
+
+    this.authService.continueAfterPrimaryAuthentication({
+      returnUrl,
+      offerPasskeyEnrollment
+    });
   }
 
   private readLoginQueryMessages(params: { get(name: string): string | null }): {

@@ -149,6 +149,8 @@ public sealed class PasskeyOptions
 
   public bool DiscoverablePasskeySignInOnLogin { get; set; } = true;
 
+  public bool OfferPasskeyEnrollmentPrompt { get; set; }
+
   public string? RelyingPartyId { get; set; }
 
   public string RelyingPartyDisplayName { get; set; } = "ChangeMe";

@@ -43,6 +43,7 @@ public sealed class PasskeySetupRequiredMiddleware(RequestDelegate next)
 
     var user = await db.Users
       .AsNoTracking()
+      .Include(x => x.AccountInvitations)
       .FirstOrDefaultAsync(x => x.Id == userId, context.RequestAborted);
     if (user is null)
     {

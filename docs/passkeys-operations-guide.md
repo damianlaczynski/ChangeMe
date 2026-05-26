@@ -62,13 +62,13 @@ flowchart LR
 
 ## 2. Where passkeys are configured
 
-| Location                                                         | Purpose                                                                                            |
-| ---------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| `src/ChangeMe.Backend/src/ChangeMe.Backend.Web/appsettings.json` | Production defaults (planned `Auth:Passkeys` section).                                             |
-| `appsettings.Development.json`                                   | Local overrides.                                                                                   |
-| Environment variables                                            | `Auth__Passkeys__PasskeysAuthenticationEnabled`, etc.                                              |
-| `Auth:FrontendBaseUrl`                                           | Used to derive default **RP ID** when not overridden.                                              |
-| `Cors:AllowedOrigins`                                            | Must include frontend origin; WebAuthn also requires **HTTPS** in production (except `localhost`). |
+| Location                                                         | Purpose                                                                                               |
+| ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `src/ChangeMe.Backend/src/ChangeMe.Backend.Web/appsettings.json` | Production defaults (planned `Auth:Passkeys` section).                                                |
+| `appsettings.Development.json`                                   | Local overrides.                                                                                      |
+| Environment variables                                            | `Auth__Passkeys__PasskeysAuthenticationEnabled`, `Auth__Passkeys__OfferPasskeyEnrollmentPrompt`, etc. |
+| `Auth:FrontendBaseUrl`                                           | Used to derive default **RP ID** when not overridden.                                                 |
+| `Cors:AllowedOrigins`                                            | Must include frontend origin; WebAuthn also requires **HTTPS** in production (except `localhost`).    |
 
 **Restart required:** passkey policy is evaluated like other `Auth` flags (on startup and per request for compliance).
 
@@ -80,22 +80,23 @@ flowchart LR
 
 Section **`Auth:Passkeys`** (names align with REQ-PKY-001 business terms):
 
-| Setting                            | Default                       | What it does                                 | Impact                                                               |
-| ---------------------------------- | ----------------------------- | -------------------------------------------- | -------------------------------------------------------------------- |
-| `PasskeysAuthenticationEnabled`    | `false`                       | Master switch.                               | Hides Login / My account passkey UI; ceremonies return forbidden.    |
-| `PasskeysAuthenticationRequired`   | `false`                       | Every user must register ≥1 passkey.         | **`passkeySetupRequired`** strict setup after sign-in (REQ-PKY-006). |
-| `PasskeySatisfiesTwoFactor`        | `false`                       | UV passkey sign-in counts as 2FA.            | Skips TOTP challenge when assertion has user verification.           |
-| `AllowPasskeyOnlyAccounts`         | `false`                       | Users with only passkeys (no password/OIDC). | When `false`, passkey sign-in requires password or linked IdP too.   |
-| `DiscoverablePasskeySignInOnLogin` | `true`                        | Email-less **Sign in with a passkey**.       | When `false`, user must enter email first.                           |
-| `RelyingPartyId`                   | (host from `FrontendBaseUrl`) | WebAuthn `rp.id`.                            | **Must** match browser origin host; mismatch breaks all ceremonies.  |
-| `RelyingPartyDisplayName`          | `ChangeMe`                    | Shown in platform UI during registration.    | Branding only.                                                       |
-| `MaximumPasskeysPerUser`           | `10`                          | Cap per account.                             | Blocks **Add passkey** when reached.                                 |
-| `ChallengeLifetimeMinutes`         | `5`                           | Registration / auth / step-up challenge TTL. | Expired → user must restart ceremony.                                |
-| `UserVerificationRequired`         | `true`                        | Require UV in ceremonies.                    | Maps to WebAuthn `userVerification: required`.                       |
-| `AllowedAuthenticatorAttachment`   | `Any`                         | `Platform`, `CrossPlatform`, or `Any`.       | Restrict to security keys only if needed.                            |
-| `AttestationConveyance`            | `None`                        | `None`, `Indirect`, `Direct`.                | Enterprise attestation inventory vs privacy.                         |
-| `PasskeyStepUpValidityMinutes`     | `15`                          | Recent passkey step-up window.               | Same idea as OIDC step-up (REQ-AUTH-013).                            |
-| `MaxFailedPasskeyAttempts`         | `5`                           | Per challenge / step-up.                     | Invalidates challenge; user retries sign-in.                         |
+| Setting                            | Default                       | What it does                                                                       | Impact                                                                                        |
+| ---------------------------------- | ----------------------------- | ---------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `PasskeysAuthenticationEnabled`    | `false`                       | Master switch.                                                                     | Hides Login / My account passkey UI; ceremonies return forbidden.                             |
+| `PasskeysAuthenticationRequired`   | `false`                       | Every user must register ≥1 passkey.                                               | **`passkeySetupRequired`** strict setup after sign-in (REQ-PKY-006).                          |
+| `PasskeySatisfiesTwoFactor`        | `false`                       | UV passkey sign-in counts as 2FA.                                                  | Skips TOTP challenge when assertion has user verification.                                    |
+| `AllowPasskeyOnlyAccounts`         | `false`                       | Users with only passkeys (no password/OIDC).                                       | When `false`, passkey sign-in requires password or linked IdP too.                            |
+| `DiscoverablePasskeySignInOnLogin` | `true`                        | Email-less **Sign in with a passkey**.                                             | When `false`, user must enter email first.                                                    |
+| `OfferPasskeyEnrollmentPrompt`     | `false`                       | Optional **Add passkey** prompt after register / first sign-in after email verify. | When `false`, users enroll only via **My account**. Requires `PasskeysAuthenticationEnabled`. |
+| `RelyingPartyId`                   | (host from `FrontendBaseUrl`) | WebAuthn `rp.id`.                                                                  | **Must** match browser origin host; mismatch breaks all ceremonies.                           |
+| `RelyingPartyDisplayName`          | `ChangeMe`                    | Shown in platform UI during registration.                                          | Branding only.                                                                                |
+| `MaximumPasskeysPerUser`           | `10`                          | Cap per account.                                                                   | Blocks **Add passkey** when reached.                                                          |
+| `ChallengeLifetimeMinutes`         | `5`                           | Registration / auth / step-up challenge TTL.                                       | Expired → user must restart ceremony.                                                         |
+| `UserVerificationRequired`         | `true`                        | Require UV in ceremonies.                                                          | Maps to WebAuthn `userVerification: required`.                                                |
+| `AllowedAuthenticatorAttachment`   | `Any`                         | `Platform`, `CrossPlatform`, or `Any`.                                             | Restrict to security keys only if needed.                                                     |
+| `AttestationConveyance`            | `None`                        | `None`, `Indirect`, `Direct`.                                                      | Enterprise attestation inventory vs privacy.                                                  |
+| `PasskeyStepUpValidityMinutes`     | `15`                          | Recent passkey step-up window.                                                     | Same idea as OIDC step-up (REQ-AUTH-013).                                                     |
+| `MaxFailedPasskeyAttempts`         | `5`                           | Per challenge / step-up.                                                           | Invalidates challenge; user retries sign-in.                                                  |
 
 ---
 

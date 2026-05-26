@@ -88,6 +88,7 @@
       <app-my-account-external-methods
         [account]="profile"
         [stepUpValidityMinutes]="stepUpExternalSignInValidityMinutes()"
+        [passkeysEnabled]="passkeysAuthenticationEnabled()"
         (accountChanged)="reload()"
       />
     }
@@ -97,6 +98,7 @@
         [account]="profile"
         [twoFactorRequired]="twoFactorAuthenticationRequired()"
         [stepUpValidityMinutes]="stepUpExternalSignInValidityMinutes()"
+        [passkeysEnabled]="passkeysAuthenticationEnabled()"
         (accountChanged)="reload()"
       />
     }
@@ -106,7 +108,9 @@
         [account]="profile"
         [passkeysEnabled]="passkeysAuthenticationEnabled()"
         [passkeysRequired]="passkeysAuthenticationRequired()"
+        [externalProvidersEnabled]="externalProvidersEnabled()"
         [maximumPasskeys]="maximumPasskeysPerUser()"
+        [stepUpValidityMinutes]="stepUpExternalSignInValidityMinutes()"
         (accountChanged)="reload()"
       />
     }

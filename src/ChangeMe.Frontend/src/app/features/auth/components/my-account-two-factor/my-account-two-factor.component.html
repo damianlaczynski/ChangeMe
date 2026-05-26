@@ -80,6 +80,18 @@
             (onClick)="startExternalStepUp(login.providerKey)"
           />
         }
+        @if (canOfferPasskeyStepUp()) {
+          <p-button
+            type="button"
+            [label]="AuthMessages.passkeyVerifyWithPasskey"
+            icon="pi pi-key"
+            severity="secondary"
+            styleClass="w-full"
+            [loading]="isPasskeyStepUpSubmitting()"
+            [disabled]="providerLoadingKey() !== null"
+            (onClick)="verifyWithPasskeyStepUp()"
+          />
+        }
       </div>
     } @else {
       @if (requiresPasswordStepUp()) {
@@ -118,6 +130,19 @@
           </p-message>
         }
       </div>
+
+      @if (canOfferPasskeyStepUp()) {
+        <p-button
+          type="button"
+          [label]="AuthMessages.passkeyVerifyWithPasskey"
+          icon="pi pi-key"
+          severity="secondary"
+          styleClass="w-full"
+          [loading]="isPasskeyStepUpSubmitting()"
+          [disabled]="isStepUpSubmitting()"
+          (onClick)="verifyWithPasskeyStepUp()"
+        />
+      }
     }
 
     @if (stepUpError()) {

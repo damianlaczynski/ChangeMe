@@ -1,4 +1,4 @@
-<p-panel header="Passkeys" [toggleable]="true" class="mb-4">
+<p-panel header="Passkeys" [toggleable]="true" [collapsed]="true" class="mb-4">
   @if (!passkeysEnabled()) {
     <p class="text-muted-color m-0 text-sm">Passkey sign-in is not enabled.</p>
   } @else if (!passkeySupported()) {
@@ -13,6 +13,8 @@
       label="Add a passkey"
       icon="pi pi-plus"
       size="small"
+      [loading]="isRegisteringCeremony()"
+      [disabled]="isRegisteringCeremony()"
       (onClick)="openAddDialog()"
     />
   } @else {
@@ -26,12 +28,21 @@
         severity="secondary"
         [outlined]="true"
         size="small"
-        [disabled]="!canAddPasskey()"
+        [disabled]="!canAddPasskey() || isRegisteringCeremony()"
+        [loading]="isRegisteringCeremony()"
         (onClick)="openAddDialog()"
       />
     </div>
+    @if (isAtMaxPasskeys()) {
+      <p-message severity="warn" variant="simple" class="mb-4">
+        {{ AuthMessages.passkeyMaximumReached }}
+      </p-message>
+    }
     @if (account().passkeys.length === 0) {
-      <p class="text-muted-color m-0 text-sm">No passkeys registered yet.</p>
+      <p class="text-muted-color m-0 text-sm">{{ AuthMessages.passkeyEmptyState }}</p>
+      <p class="text-muted-color m-0 mt-2 text-sm">
+        {{ AuthMessages.passkeyEmptyStateDescription }}
+      </p>
     } @else {
       <div class="flex flex-col gap-3">
         @for (pk of account().passkeys; track pk.id) {
@@ -49,7 +60,15 @@
               <div class="flex flex-wrap gap-2 pt-1">
                 <p-tag [value]="pk.authenticatorType" severity="secondary" />
                 @if (pk.backupEligible) {
-                  <p-tag value="Syncable" severity="info" />
+                  <p-tag [value]="AuthMessages.passkeyBackupEligible" severity="info" />
+                  <p-tag
+                    [value]="
+                      pk.backupState
+                        ? AuthMessages.passkeyBackedUp
+                        : AuthMessages.passkeyNotBackedUp
+                    "
+                    [severity]="pk.backupState ? 'success' : 'secondary'"
+                  />
                 }
               </div>
             </div>
@@ -79,7 +98,7 @@
 </p-panel>
 
 <p-dialog
-  header="Add a passkey"
+  [header]="AuthMessages.nameYourPasskeyTitle"
   [modal]="true"
   [draggable]="false"
   [resizable]="false"
@@ -93,16 +112,20 @@
     (ngSubmit)="confirmAddPasskey()"
   >
     <div class="flex flex-col gap-1.5">
-      <label class="text-color text-sm font-medium" for="newPasskeyName">
-        Display name (optional)
-      </label>
+      <label class="text-color text-sm font-medium" for="newPasskeyName">Name</label>
       <input
         id="newPasskeyName"
         type="text"
         pInputText
         autocomplete="off"
         [formControl]="addForm.controls.name"
+        [invalid]="addForm.controls.name.touched && addForm.controls.name.errors"
       />
+      @if (
+        addForm.controls.name.touched && addForm.controls.name.errors?.['required']
+      ) {
+        <p-message severity="error" variant="simple">Name is required.</p-message>
+      }
     </div>
     @if (errorMessage()) {
       <p-message severity="error">{{ errorMessage() }}</p-message>
@@ -116,12 +139,7 @@
         [disabled]="isSaving()"
         (onClick)="closeAddDialog()"
       />
-      <p-button
-        type="submit"
-        label="Continue"
-        icon="pi pi-key"
-        [loading]="isSaving()"
-      />
+      <p-button type="submit" label="Save" icon="pi pi-check" [loading]="isSaving()" />
     </div>
   </form>
 </p-dialog>
@@ -170,6 +188,134 @@
         (onClick)="closeRenameDialog()"
       />
       <p-button type="submit" label="Save" [loading]="isSaving()" />
+    </div>
+  </form>
+</p-dialog>
+
+<p-dialog
+  header="Confirm your identity"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [visible]="stepUpVisible()"
+  (visibleChange)="!$event && closeStepUp()"
+  styleClass="w-full max-w-md"
+>
+  <form
+    class="p-fluid flex flex-col gap-4"
+    [formGroup]="stepUpForm"
+    (ngSubmit)="submitStepUp()"
+  >
+    @if (needsExternalReauth()) {
+      <p-message severity="warn" variant="simple">
+        {{ externalReauthDetail() }}
+      </p-message>
+      <div class="flex flex-col gap-2">
+        @for (login of linkedProviders(); track login.providerKey) {
+          <p-button
+            type="button"
+            [label]="AuthMessages.verifyWithProvider + ': ' + login.displayName"
+            icon="pi pi-external-link"
+            severity="secondary"
+            styleClass="w-full"
+            [loading]="providerLoadingKey() === login.providerKey"
+            [disabled]="providerLoadingKey() !== null"
+            (onClick)="startExternalStepUp(login.providerKey)"
+          />
+        }
+        @if (canOfferPasskeyStepUp()) {
+          <p-button
+            type="button"
+            [label]="AuthMessages.passkeyVerifyWithPasskey"
+            icon="pi pi-key"
+            severity="secondary"
+            styleClass="w-full"
+            [loading]="isPasskeyStepUpSubmitting()"
+            [disabled]="providerLoadingKey() !== null"
+            (onClick)="verifyWithPasskeyStepUp()"
+          />
+        }
+      </div>
+      @if (requiresVerificationCode()) {
+        <div class="flex flex-col gap-1.5">
+          <label class="text-color text-sm font-medium" for="passkeyStepUpCode">
+            Verification code
+          </label>
+          <input
+            id="passkeyStepUpCode"
+            type="text"
+            pInputText
+            autocomplete="one-time-code"
+            [formControl]="stepUpForm.controls.verificationCode"
+          />
+        </div>
+      }
+    } @else {
+      @if (requiresPasswordStepUp()) {
+        <div class="flex flex-col gap-1.5">
+          <label class="text-color text-sm font-medium" for="passkeyStepUpPassword">
+            Current password
+          </label>
+          <p-password
+            inputId="passkeyStepUpPassword"
+            autocomplete="current-password"
+            [formControl]="stepUpForm.controls.currentPassword"
+            [feedback]="false"
+            [toggleMask]="true"
+            fluid
+          />
+        </div>
+      }
+
+      @if (requiresVerificationCode()) {
+        <div class="flex flex-col gap-1.5">
+          <label class="text-color text-sm font-medium" for="passkeyStepUpCodeAlt">
+            Verification code
+          </label>
+          <input
+            id="passkeyStepUpCodeAlt"
+            type="text"
+            pInputText
+            autocomplete="one-time-code"
+            [formControl]="stepUpForm.controls.verificationCode"
+          />
+        </div>
+      }
+
+      @if (canOfferPasskeyStepUp()) {
+        <p-button
+          type="button"
+          [label]="AuthMessages.passkeyVerifyWithPasskey"
+          icon="pi pi-key"
+          severity="secondary"
+          styleClass="w-full"
+          [loading]="isPasskeyStepUpSubmitting()"
+          [disabled]="isStepUpSubmitting()"
+          (onClick)="verifyWithPasskeyStepUp()"
+        />
+      }
+    }
+
+    @if (stepUpError()) {
+      <p-message severity="error">{{ stepUpError() }}</p-message>
+    }
+
+    <div class="flex flex-wrap justify-end gap-2">
+      <p-button
+        type="button"
+        label="Cancel"
+        severity="secondary"
+        [outlined]="true"
+        (onClick)="closeStepUp()"
+      />
+      @if (!needsExternalReauth()) {
+        <p-button
+          type="submit"
+          label="Continue"
+          icon="pi pi-check"
+          [loading]="isStepUpSubmitting()"
+        />
+      }
     </div>
   </form>
 </p-dialog>

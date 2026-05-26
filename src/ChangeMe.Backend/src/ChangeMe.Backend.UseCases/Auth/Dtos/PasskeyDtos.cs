@@ -30,6 +30,7 @@ public sealed record PasskeySettingsDto
   public bool PasskeysAuthenticationRequired { get; init; }
   public bool PasskeySatisfiesTwoFactor { get; init; }
   public bool DiscoverablePasskeySignInOnLogin { get; init; }
+  public bool OfferPasskeyEnrollmentPrompt { get; init; }
   public string RelyingPartyId { get; init; } = string.Empty;
   public string RelyingPartyDisplayName { get; init; } = "ChangeMe";
   public int MaximumPasskeysPerUser { get; init; } = 10;

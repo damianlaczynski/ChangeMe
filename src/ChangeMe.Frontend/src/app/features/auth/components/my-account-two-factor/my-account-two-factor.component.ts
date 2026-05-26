@@ -26,6 +26,7 @@ import {
   buildExternalReauthRequiredDetail,
   needsExternalReauth
 } from '@features/auth/utils/external-step-up.utils';
+import { canOfferPasskeyStepUp } from '@features/auth/utils/passkey-step-up.utils';
 import {
   clearPendingTwoFactorStepUp,
   PendingTwoFactorStepUpAction,
@@ -62,6 +63,7 @@ export class MyAccountTwoFactorComponent implements OnInit {
   readonly account = input.required<MyAccountDto>();
   readonly twoFactorRequired = input(false);
   readonly stepUpValidityMinutes = input(15);
+  readonly passkeysEnabled = input(false);
   readonly accountChanged = output<void>();
 
   private readonly authService = inject(AuthService);
@@ -74,11 +76,13 @@ export class MyAccountTwoFactorComponent implements OnInit {
 
   private externalStepUpHandled = false;
   private readonly resumeStepUpAfterExternalReturn = signal(false);
+  private readonly passkeyStepUpVerified = signal(false);
 
   readonly stepUpVisible = signal(false);
   readonly stepUpAction = signal<PendingTwoFactorStepUpAction | null>(null);
   readonly stepUpError = signal('');
   readonly isStepUpSubmitting = signal(false);
+  readonly isPasskeyStepUpSubmitting = signal(false);
   readonly providerLoadingKey = signal<string | null>(null);
   readonly recoveryCodes = signal<string[]>([]);
   readonly recoveryCodesSaved = new FormControl(false, {
@@ -103,6 +107,8 @@ export class MyAccountTwoFactorComponent implements OnInit {
   readonly needsExternalReauth = () => needsExternalReauth(this.account());
   readonly externalReauthDetail = () =>
     buildExternalReauthRequiredDetail(this.stepUpValidityMinutes());
+  readonly canOfferPasskeyStepUp = () =>
+    canOfferPasskeyStepUp(this.account(), this.passkeysEnabled());
 
   constructor() {
     effect(() => {
@@ -178,15 +184,12 @@ export class MyAccountTwoFactorComponent implements OnInit {
     this.stepUpAction.set(null);
     this.stepUpError.set('');
     this.stepUpForm.reset();
+    this.passkeyStepUpVerified.set(false);
   }
 
   startExternalStepUp(providerKey: string): void {
     const action = this.stepUpAction();
     if (!action || this.providerLoadingKey()) {
-      return;
-    }
-
-    if (this.providerLoadingKey()) {
       return;
     }
 
@@ -219,6 +222,44 @@ export class MyAccountTwoFactorComponent implements OnInit {
       });
   }
 
+  verifyWithPasskeyStepUp(): void {
+    const action = this.stepUpAction();
+    if (!action || this.isPasskeyStepUpSubmitting()) {
+      return;
+    }
+
+    if (this.stepUpForm.controls.verificationCode.invalid) {
+      this.stepUpForm.controls.verificationCode.markAsTouched();
+      return;
+    }
+
+    this.isPasskeyStepUpSubmitting.set(true);
+    this.stepUpError.set('');
+
+    this.authService
+      .verifyWithPasskey()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.isPasskeyStepUpSubmitting.set(false);
+          this.toastService.success(AuthMessages.passkeyStepUpCompleted);
+          this.passkeyStepUpVerified.set(true);
+          this.submitStepUpAfterPasskey();
+        },
+        error: (error: unknown) => {
+          this.stepUpError.set(
+            error instanceof Error ? error.message : AuthMessages.passkeySignInFailed
+          );
+          this.isPasskeyStepUpSubmitting.set(false);
+        }
+      });
+  }
+
+  private submitStepUpAfterPasskey(): void {
+    this.stepUpForm.controls.currentPassword.setValue('');
+    void this.submitStepUp();
+  }
+
   submitStepUp(): void {
     const action = this.stepUpAction();
     if (!action || this.isStepUpSubmitting()) {
@@ -231,6 +272,7 @@ export class MyAccountTwoFactorComponent implements OnInit {
 
     if (
       this.requiresPasswordStepUp() &&
+      !this.passkeyStepUpVerified() &&
       !this.stepUpForm.controls.currentPassword.value.trim()
     ) {
       this.stepUpForm.controls.currentPassword.markAsTouched();
@@ -243,7 +285,9 @@ export class MyAccountTwoFactorComponent implements OnInit {
     }
 
     const request = {
-      currentPassword: this.stepUpForm.controls.currentPassword.value || null,
+      currentPassword: this.passkeyStepUpVerified()
+        ? null
+        : this.stepUpForm.controls.currentPassword.value || null,
       verificationCode: this.stepUpForm.controls.verificationCode.value.trim() || null
     };
 
@@ -311,6 +355,7 @@ export class MyAccountTwoFactorComponent implements OnInit {
     this.stepUpForm.reset();
     this.stepUpError.set('');
     this.providerLoadingKey.set(null);
+    this.passkeyStepUpVerified.set(false);
     this.stepUpVisible.set(true);
   }
 }

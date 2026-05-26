@@ -25,6 +25,16 @@ public static class PasskeyAuthUtils
     "Passkey verification did not meet security requirements. Use your device PIN or biometrics and try again.";
   public const string MaximumPasskeysMessage =
     "Maximum number of passkeys reached. Remove one before adding another.";
+  public const string RemoveOnlySignInMethodMessage =
+    "Add a password or external sign-in before removing your only sign-in method.";
+  public const string RemoveRequiredPasskeyMessage =
+    "At least one passkey is required. Add another passkey before removing this one.";
+  public const string PasskeyStepUpRequiredMessage =
+    "Verify your identity with a passkey to continue.";
+
+  public static bool DoesCeremonyEmailMatchUser(WebAuthnCeremonyPending ceremony, User user) =>
+    string.IsNullOrEmpty(ceremony.NormalizedEmail)
+    || user.NormalizedEmail == ceremony.NormalizedEmail;
 
   public static bool CanUsePasskeySignIn(
     User user,

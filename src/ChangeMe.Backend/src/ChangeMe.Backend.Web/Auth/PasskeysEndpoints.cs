@@ -98,10 +98,30 @@ public class ResetUserPasskeys(IMediator mediator)
   }
 }
 
+public class RemoveUserPasskey(IMediator mediator)
+  : BaseEndpoint<RemoveUserPasskeyCommand, UserDetailsDto>(mediator)
+{
+  protected override void ConfigureEndpoint()
+  {
+    RequirePermission(PermissionCodes.UsersManage);
+    Post("/users/{Id}/passkeys/{PasskeyId}/remove");
+    Summary(s => s.Summary = "Remove a single passkey from a user account");
+  }
+}
+
 public sealed class ResetUserPasskeysCommandValidator : Validator<ResetUserPasskeysCommand>
 {
   public ResetUserPasskeysCommandValidator()
   {
     RuleFor(x => x.Id).NotEmpty();
+  }
+}
+
+public sealed class RemoveUserPasskeyCommandValidator : Validator<RemoveUserPasskeyCommand>
+{
+  public RemoveUserPasskeyCommandValidator()
+  {
+    RuleFor(x => x.Id).NotEmpty();
+    RuleFor(x => x.PasskeyId).NotEmpty();
   }
 }

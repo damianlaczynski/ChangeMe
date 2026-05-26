@@ -17,6 +17,7 @@ import {
   buildExternalReauthRequiredDetail,
   needsExternalReauth
 } from '@features/auth/utils/external-step-up.utils';
+import { canOfferPasskeyStepUp } from '@features/auth/utils/passkey-step-up.utils';
 import {
   buildPasswordPolicyValidators,
   defaultPasswordPolicySettings
@@ -72,8 +73,12 @@ export class SetPasswordComponent implements OnInit {
   readonly stepUpVisible = signal(false);
   readonly stepUpError = signal('');
   readonly providerLoadingKey = signal<string | null>(null);
+  readonly isPasskeyStepUpSubmitting = signal(false);
+  readonly passkeysEnabled = signal(false);
   readonly stepUpValidityMinutes = signal(15);
   readonly authMessages = AuthMessages;
+
+  private readonly passkeyStepUpVerified = signal(false);
 
   readonly form = new FormGroup(
     {
@@ -107,6 +112,9 @@ export class SetPasswordComponent implements OnInit {
           this.stepUpValidityMinutes.set(
             settings.twoFactor.stepUpExternalSignInValidityMinutes
           );
+          this.passkeysEnabled.set(
+            settings.passkeys?.passkeysAuthenticationEnabled ?? false
+          );
         }
       });
 
@@ -139,6 +147,7 @@ export class SetPasswordComponent implements OnInit {
       return;
     }
     this.stepUpError.set('');
+    this.passkeyStepUpVerified.set(false);
     this.stepUpVisible.set(true);
   }
 
@@ -146,7 +155,49 @@ export class SetPasswordComponent implements OnInit {
     this.stepUpVisible.set(false);
     this.stepUpError.set('');
     this.stepUpForm.reset();
+    this.passkeyStepUpVerified.set(false);
     clearPendingSetPassword();
+  }
+
+  canOfferPasskeyStepUp(): boolean {
+    const account = this.account();
+    return !!account && canOfferPasskeyStepUp(account, this.passkeysEnabled());
+  }
+
+  verifyWithPasskeyStepUp(): void {
+    const account = this.account();
+    if (!account || this.isPasskeyStepUpSubmitting()) {
+      return;
+    }
+
+    if (
+      account.twoFactorEnabled &&
+      !this.stepUpForm.controls.verificationCode.value.trim()
+    ) {
+      this.stepUpForm.controls.verificationCode.markAsTouched();
+      return;
+    }
+
+    this.isPasskeyStepUpSubmitting.set(true);
+    this.stepUpError.set('');
+
+    this.authService
+      .verifyWithPasskey()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.isPasskeyStepUpSubmitting.set(false);
+          this.toastService.success(AuthMessages.passkeyStepUpCompleted);
+          this.passkeyStepUpVerified.set(true);
+          this.submitWithStepUp();
+        },
+        error: (error: unknown) => {
+          this.stepUpError.set(
+            error instanceof Error ? error.message : AuthMessages.passkeySignInFailed
+          );
+          this.isPasskeyStepUpSubmitting.set(false);
+        }
+      });
   }
 
   submitWithStepUp(): void {

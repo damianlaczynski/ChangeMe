@@ -132,11 +132,17 @@ public class CompletePasskeySignInHandler(
 
     if (stored is null)
     {
-      await RecordFailedAttemptAsync(ceremony, cancellationToken);
+      await PasskeyCeremonyUtils.RecordFailedAttemptAsync(context, ceremony, cancellationToken);
       return Result<LoginResponseDto>.Unauthorized(PasskeyAuthUtils.NoMatchMessage);
     }
 
     var user = stored.User;
+
+    if (!PasskeyAuthUtils.DoesCeremonyEmailMatchUser(ceremony, user))
+    {
+      await PasskeyCeremonyUtils.RecordFailedAttemptAsync(context, ceremony, cancellationToken);
+      return Result<LoginResponseDto>.Unauthorized(PasskeyAuthUtils.NoMatchMessage);
+    }
 
     try
     {
@@ -189,15 +195,9 @@ public class CompletePasskeySignInHandler(
     }
     catch (Fido2VerificationException)
     {
-      await RecordFailedAttemptAsync(ceremony, cancellationToken);
+      await PasskeyCeremonyUtils.RecordFailedAttemptAsync(context, ceremony, cancellationToken);
       return Result<LoginResponseDto>.Unauthorized(PasskeyAuthUtils.NoMatchMessage);
     }
-  }
-
-  private async Task RecordFailedAttemptAsync(WebAuthnCeremonyPending ceremony, CancellationToken cancellationToken)
-  {
-    ceremony.RecordFailedAttempt();
-    await context.SaveChangesAsync(cancellationToken);
   }
 }
 
@@ -205,6 +205,8 @@ public sealed record BeginPasskeyRegistrationCommand : ICommand<PasskeyCeremonyB
 {
   /// <summary>Not read; required for FastEndpoints request binding (POST <c>{{}}</c>).</summary>
   public object? Unused { get; init; }
+  public string? CurrentPassword { get; init; }
+  public string? VerificationCode { get; init; }
 }
 
 public class BeginPasskeyRegistrationHandler(
@@ -212,6 +214,10 @@ public class BeginPasskeyRegistrationHandler(
   IUserAccessor userAccessor,
   IPasskeyFido2Service passkeyFido2,
   IPasskeyPolicyEvaluator passkeyPolicy,
+  IPasswordHasher passwordHasher,
+  ITotpService totpService,
+  ITwoFactorSecretProtector secretProtector,
+  IRecoveryCodeHasher recoveryCodeHasher,
   IOptions<AuthOptions> authOptions) : ICommandHandler<BeginPasskeyRegistrationCommand, PasskeyCeremonyBeginResponseDto>
 {
   public async Task<Result<PasskeyCeremonyBeginResponseDto>> Handle(
@@ -224,12 +230,39 @@ public class BeginPasskeyRegistrationHandler(
     if (userAccessor.UserId is not Guid userId)
       return Result<PasskeyCeremonyBeginResponseDto>.Unauthorized();
 
-    var user = await context.Users.FirstOrDefaultAsync(x => x.Id == userId, cancellationToken);
+    var user = await context.Users
+      .Include(x => x.ExternalLogins)
+      .Include(x => x.RecoveryCodes)
+      .FirstOrDefaultAsync(x => x.Id == userId, cancellationToken);
     if (user is null || !user.IsActive)
       return Result<PasskeyCeremonyBeginResponseDto>.Unauthorized();
 
     var auth = authOptions.Value;
     var count = await context.PasskeyCredentials.CountAsync(x => x.UserId == userId, cancellationToken);
+    if (!passkeyPolicy.IsPasskeySetupRequired(user, count))
+    {
+      var (stepUpResult, consumedRecoveryCode) = await TwoFactorStepUpUtils.ValidateSignedInStepUpAsync(
+        context,
+        user,
+        userId,
+        command.CurrentPassword,
+        command.VerificationCode,
+        passwordHasher,
+        totpService,
+        secretProtector,
+        recoveryCodeHasher,
+        authOptions,
+        cancellationToken);
+      if (!stepUpResult.IsSuccess)
+        return stepUpResult.Map();
+
+      if (consumedRecoveryCode is not null)
+      {
+        consumedRecoveryCode.MarkUsed(DateTime.UtcNow);
+        await context.SaveChangesAsync(cancellationToken);
+      }
+    }
+
     if (count >= auth.Passkeys.MaximumPasskeysPerUser)
       return Result<PasskeyCeremonyBeginResponseDto>.Error(PasskeyAuthUtils.MaximumPasskeysMessage);
 
@@ -260,14 +293,21 @@ public class BeginPasskeyRegistrationHandler(
 public sealed record CompletePasskeyRegistrationCommand(
   Guid CeremonyId,
   AuthenticatorAttestationRawResponse AttestationResponse,
-  string Name) : ICommand<MyAccountPasskeyDto>;
+  string Name,
+  string? CurrentPassword,
+  string? VerificationCode) : ICommand<MyAccountPasskeyDto>;
 
 public class CompletePasskeyRegistrationHandler(
   ApplicationDbContext context,
   IUserAccessor userAccessor,
   IPasskeyFido2Service passkeyFido2,
   IPasskeyPolicyEvaluator passkeyPolicy,
-  IAuthEmailService authEmailService) : ICommandHandler<CompletePasskeyRegistrationCommand, MyAccountPasskeyDto>
+  IPasswordHasher passwordHasher,
+  ITotpService totpService,
+  ITwoFactorSecretProtector secretProtector,
+  IRecoveryCodeHasher recoveryCodeHasher,
+  IAuthEmailService authEmailService,
+  IOptions<AuthOptions> authOptions) : ICommandHandler<CompletePasskeyRegistrationCommand, MyAccountPasskeyDto>
 {
   public async Task<Result<MyAccountPasskeyDto>> Handle(
     CompletePasskeyRegistrationCommand command,
@@ -278,6 +318,35 @@ public class CompletePasskeyRegistrationHandler(
 
     if (userAccessor.UserId is not Guid userId)
       return Result<MyAccountPasskeyDto>.Unauthorized();
+
+    var user = await context.Users
+      .Include(x => x.ExternalLogins)
+      .Include(x => x.RecoveryCodes)
+      .FirstOrDefaultAsync(x => x.Id == userId, cancellationToken);
+    if (user is null || !user.IsActive)
+      return Result<MyAccountPasskeyDto>.Unauthorized();
+
+    var existingCount = await context.PasskeyCredentials.CountAsync(x => x.UserId == userId, cancellationToken);
+    if (!passkeyPolicy.IsPasskeySetupRequired(user, existingCount))
+    {
+      var (stepUpResult, consumedRecoveryCode) = await TwoFactorStepUpUtils.ValidateSignedInStepUpAsync(
+        context,
+        user,
+        userId,
+        command.CurrentPassword,
+        command.VerificationCode,
+        passwordHasher,
+        totpService,
+        secretProtector,
+        recoveryCodeHasher,
+        authOptions,
+        cancellationToken);
+      if (!stepUpResult.IsSuccess)
+        return stepUpResult.Map();
+
+      if (consumedRecoveryCode is not null)
+        consumedRecoveryCode.MarkUsed(DateTime.UtcNow);
+    }
 
     var utcNow = DateTime.UtcNow;
     var ceremony = await PasskeyCeremonyUtils.LoadCeremonyAsync(
@@ -321,7 +390,6 @@ public class CompletePasskeyRegistrationHandler(
       context.WebAuthnCeremonyPending.Remove(ceremony);
       await context.SaveChangesAsync(cancellationToken);
 
-      var user = await context.Users.FirstAsync(x => x.Id == userId, cancellationToken);
       await authEmailService.SendPasskeyAddedAsync(user, name, cancellationToken);
 
       return Result.Success(Map(credential.Value));
@@ -345,12 +413,20 @@ public sealed record RenamePasskeyCommand : ICommand<MyAccountPasskeyDto>
 {
   public Guid PasskeyId { get; init; }
   public string Name { get; init; } = string.Empty;
+  public string? CurrentPassword { get; init; }
+  public string? VerificationCode { get; init; }
 }
 
 public class RenamePasskeyHandler(
   ApplicationDbContext context,
   IUserAccessor userAccessor,
-  IPasskeyPolicyEvaluator passkeyPolicy) : ICommandHandler<RenamePasskeyCommand, MyAccountPasskeyDto>
+  IPasskeyPolicyEvaluator passkeyPolicy,
+  IPasswordHasher passwordHasher,
+  ITotpService totpService,
+  ITwoFactorSecretProtector secretProtector,
+  IRecoveryCodeHasher recoveryCodeHasher,
+  IAuthEmailService authEmailService,
+  IOptions<AuthOptions> authOptions) : ICommandHandler<RenamePasskeyCommand, MyAccountPasskeyDto>
 {
   public async Task<Result<MyAccountPasskeyDto>> Handle(
     RenamePasskeyCommand command,
@@ -361,6 +437,34 @@ public class RenamePasskeyHandler(
 
     if (userAccessor.UserId is not Guid userId)
       return Result<MyAccountPasskeyDto>.Unauthorized();
+
+    var user = await context.Users
+      .Include(x => x.ExternalLogins)
+      .Include(x => x.RecoveryCodes)
+      .FirstOrDefaultAsync(x => x.Id == userId, cancellationToken);
+    if (user is null || !user.IsActive)
+      return Result<MyAccountPasskeyDto>.Unauthorized();
+
+    var (stepUpResult, consumedRecoveryCode) = await TwoFactorStepUpUtils.ValidateSignedInStepUpAsync(
+      context,
+      user,
+      userId,
+      command.CurrentPassword,
+      command.VerificationCode,
+      passwordHasher,
+      totpService,
+      secretProtector,
+      recoveryCodeHasher,
+      authOptions,
+      cancellationToken);
+    if (!stepUpResult.IsSuccess)
+      return stepUpResult.Map();
+
+    if (consumedRecoveryCode is not null)
+    {
+      consumedRecoveryCode.MarkUsed(DateTime.UtcNow);
+      await authEmailService.SendRecoveryCodeUsedAsync(user, cancellationToken);
+    }
 
     var credential = await context.PasskeyCredentials
       .FirstOrDefaultAsync(x => x.Id == command.PasskeyId && x.UserId == userId, cancellationToken);
@@ -377,12 +481,18 @@ public class RenamePasskeyHandler(
 public sealed record RemovePasskeyCommand : ICommand<bool>
 {
   public Guid PasskeyId { get; init; }
+  public string? CurrentPassword { get; init; }
+  public string? VerificationCode { get; init; }
 }
 
 public class RemovePasskeyHandler(
   ApplicationDbContext context,
   IUserAccessor userAccessor,
   IPasskeyPolicyEvaluator passkeyPolicy,
+  IPasswordHasher passwordHasher,
+  ITotpService totpService,
+  ITwoFactorSecretProtector secretProtector,
+  IRecoveryCodeHasher recoveryCodeHasher,
   IAuthEmailService authEmailService,
   IOptions<AuthOptions> authOptions) : ICommandHandler<RemovePasskeyCommand, bool>
 {
@@ -396,9 +506,31 @@ public class RemovePasskeyHandler(
 
     var user = await context.Users
       .Include(x => x.ExternalLogins)
+      .Include(x => x.RecoveryCodes)
       .FirstOrDefaultAsync(x => x.Id == userId, cancellationToken);
     if (user is null)
       return Result<bool>.Unauthorized();
+
+    var (stepUpResult, consumedRecoveryCode) = await TwoFactorStepUpUtils.ValidateSignedInStepUpAsync(
+      context,
+      user,
+      userId,
+      command.CurrentPassword,
+      command.VerificationCode,
+      passwordHasher,
+      totpService,
+      secretProtector,
+      recoveryCodeHasher,
+      authOptions,
+      cancellationToken);
+    if (!stepUpResult.IsSuccess)
+      return stepUpResult.Map();
+
+    if (consumedRecoveryCode is not null)
+    {
+      consumedRecoveryCode.MarkUsed(DateTime.UtcNow);
+      await authEmailService.SendRecoveryCodeUsedAsync(user, cancellationToken);
+    }
 
     var credential = await context.PasskeyCredentials
       .FirstOrDefaultAsync(x => x.Id == command.PasskeyId && x.UserId == userId, cancellationToken);
@@ -409,10 +541,10 @@ public class RemovePasskeyHandler(
     var auth = authOptions.Value;
 
     if (count == 1 && !user.HasPasswordSet && user.ExternalLogins.Count == 0)
-      return Result<bool>.Error("Add a password or external sign-in before removing your only sign-in method.");
+      return Result<bool>.Error(PasskeyAuthUtils.RemoveOnlySignInMethodMessage);
 
     if (count == 1 && auth.Passkeys.PasskeysAuthenticationRequired)
-      return Result<bool>.Error("At least one passkey is required. Add another passkey before removing this one.");
+      return Result<bool>.Error(PasskeyAuthUtils.RemoveRequiredPasskeyMessage);
 
     var name = credential.Name;
     context.PasskeyCredentials.Remove(credential);
@@ -480,7 +612,8 @@ public class CompletePasskeyStepUpHandler(
   ApplicationDbContext context,
   IUserAccessor userAccessor,
   IPasskeyFido2Service passkeyFido2,
-  IPasskeyPolicyEvaluator passkeyPolicy) : ICommandHandler<CompletePasskeyStepUpCommand, bool>
+  IPasskeyPolicyEvaluator passkeyPolicy,
+  IOptions<AuthOptions> authOptions) : ICommandHandler<CompletePasskeyStepUpCommand, bool>
 {
   public async Task<Result<bool>> Handle(CompletePasskeyStepUpCommand command, CancellationToken cancellationToken)
   {
@@ -490,6 +623,8 @@ public class CompletePasskeyStepUpHandler(
     if (userAccessor.UserId is not Guid userId)
       return Result<bool>.Unauthorized();
 
+    var auth = authOptions.Value;
+    var maxAttempts = auth.Passkeys.MaxFailedPasskeyAttempts;
     var utcNow = DateTime.UtcNow;
     var ceremony = await PasskeyCeremonyUtils.LoadCeremonyAsync(
       context,
@@ -500,6 +635,9 @@ public class CompletePasskeyStepUpHandler(
     if (ceremony is null || ceremony.UserId != userId || ceremony.IsExpired(utcNow))
       return Result<bool>.Unauthorized(PasskeyAuthUtils.TimedOutMessage);
 
+    if (PasskeyCeremonyUtils.IsAttemptLimitReached(ceremony, maxAttempts))
+      return Result<bool>.Unauthorized(PasskeyAuthUtils.TooManyAttemptsMessage);
+
     var options = PasskeyCeremonyUtils.DeserializeAssertionOptions(ceremony.OptionsJson);
     var credentialId = command.AssertionResponse.RawId;
 
@@ -507,7 +645,13 @@ public class CompletePasskeyStepUpHandler(
       .FirstOrDefaultAsync(x => x.UserId == userId && x.CredentialId == credentialId, cancellationToken);
 
     if (stored is null)
+    {
+      await PasskeyCeremonyUtils.RecordFailedAttemptAsync(context, ceremony, cancellationToken);
+      if (PasskeyCeremonyUtils.IsAttemptLimitReached(ceremony, maxAttempts))
+        return Result<bool>.Unauthorized(PasskeyAuthUtils.TooManyAttemptsMessage);
+
       return Result<bool>.Unauthorized(PasskeyAuthUtils.VerificationFailedMessage);
+    }
 
     try
     {
@@ -528,6 +672,10 @@ public class CompletePasskeyStepUpHandler(
     }
     catch (Fido2VerificationException)
     {
+      await PasskeyCeremonyUtils.RecordFailedAttemptAsync(context, ceremony, cancellationToken);
+      if (PasskeyCeremonyUtils.IsAttemptLimitReached(ceremony, maxAttempts))
+        return Result<bool>.Unauthorized(PasskeyAuthUtils.TooManyAttemptsMessage);
+
       return Result<bool>.Unauthorized(PasskeyAuthUtils.VerificationFailedMessage);
     }
   }

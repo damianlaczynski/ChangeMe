@@ -61,6 +61,8 @@ public class GetAuthSettingsHandler(IOptions<AuthOptions> options)
         PasskeySatisfiesTwoFactor = auth.Passkeys.PasskeySatisfiesTwoFactor
           && auth.TwoFactor.Enabled,
         DiscoverablePasskeySignInOnLogin = auth.Passkeys.DiscoverablePasskeySignInOnLogin,
+        OfferPasskeyEnrollmentPrompt = auth.Passkeys.PasskeysAuthenticationEnabled
+          && auth.Passkeys.OfferPasskeyEnrollmentPrompt,
         RelyingPartyId = PasskeyFido2Service.ResolveRpId(auth),
         RelyingPartyDisplayName = auth.Passkeys.RelyingPartyDisplayName,
         MaximumPasskeysPerUser = auth.Passkeys.MaximumPasskeysPerUser

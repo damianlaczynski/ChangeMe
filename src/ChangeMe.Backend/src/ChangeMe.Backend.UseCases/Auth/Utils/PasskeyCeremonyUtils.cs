@@ -56,4 +56,16 @@ public static class PasskeyCeremonyUtils
 
     return ceremony;
   }
+
+  public static async Task RecordFailedAttemptAsync(
+    ApplicationDbContext context,
+    WebAuthnCeremonyPending ceremony,
+    CancellationToken cancellationToken)
+  {
+    ceremony.RecordFailedAttempt();
+    await context.SaveChangesAsync(cancellationToken);
+  }
+
+  public static bool IsAttemptLimitReached(WebAuthnCeremonyPending ceremony, int maxAttempts) =>
+    ceremony.FailedAttemptCount >= maxAttempts;
 }

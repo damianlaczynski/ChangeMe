@@ -35,6 +35,7 @@ public class SetPasswordHandler(
       return Result<bool>.Error("A password is already set. Use change password instead.");
 
     var utcNow = DateTime.UtcNow;
+    var passkeyCount = await context.PasskeyCredentials.CountAsync(x => x.UserId == userId, cancellationToken);
     var stepUpResult = TwoFactorStepUpUtils.ValidateStepUp(
       user,
       command.CurrentPassword,
@@ -44,6 +45,8 @@ public class SetPasswordHandler(
       secretProtector,
       recoveryCodeHasher,
       authOptions,
+      authOptions.Value.Passkeys.PasskeysAuthenticationEnabled,
+      passkeyCount,
       utcNow,
       out var consumedRecoveryCode);
     if (!stepUpResult.IsSuccess)

@@ -4,6 +4,7 @@ import { Result } from '@shared/api/models/api-response.model';
 import { throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { AuthService } from '../services/auth.service';
+import { isPasskeySetupRequiredApiError } from '../utils/passkey.utils';
 import { isPasswordExpiredApiError } from '../utils/password-expiration.utils';
 import { isTwoFactorSetupRequiredApiError } from '../utils/two-factor.utils';
 
@@ -59,6 +60,11 @@ export const authTokenInterceptor: HttpInterceptorFn = (req, next) => {
           isTwoFactorSetupRequiredApiError(new Error(apiMessage))
         ) {
           authService.markTwoFactorSetupRequired();
+        } else if (
+          apiMessage &&
+          isPasskeySetupRequiredApiError(new Error(apiMessage))
+        ) {
+          authService.markPasskeySetupRequired();
         }
       }
 

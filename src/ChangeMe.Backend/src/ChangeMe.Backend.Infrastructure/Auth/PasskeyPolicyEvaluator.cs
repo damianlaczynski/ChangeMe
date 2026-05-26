@@ -18,6 +18,9 @@ public sealed class PasskeyPolicyEvaluator(IOptions<AuthOptions> authOptions) : 
     if (!user.IsActive)
       return false;
 
+    if (user.HasPendingInvitation)
+      return false;
+
     return passkeyCount == 0;
   }
 

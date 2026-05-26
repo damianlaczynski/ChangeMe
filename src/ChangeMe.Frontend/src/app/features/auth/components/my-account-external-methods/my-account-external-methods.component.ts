@@ -25,6 +25,7 @@ import {
   buildExternalReauthRequiredDetail,
   needsExternalReauth
 } from '@features/auth/utils/external-step-up.utils';
+import { canOfferPasskeyStepUp } from '@features/auth/utils/passkey-step-up.utils';
 import {
   clearPendingUnlinkProvider,
   readPendingUnlinkProvider,
@@ -55,6 +56,7 @@ import { Password } from 'primeng/password';
 export class MyAccountExternalMethodsComponent implements OnInit {
   readonly account = input.required<MyAccountDto>();
   readonly stepUpValidityMinutes = input(15);
+  readonly passkeysEnabled = input(false);
   readonly accountChanged = output<void>();
 
   private readonly authService = inject(AuthService);
@@ -71,7 +73,9 @@ export class MyAccountExternalMethodsComponent implements OnInit {
   readonly pendingUnlinkProviderKey = signal<string | null>(null);
   readonly stepUpError = signal('');
   readonly isStepUpSubmitting = signal(false);
+  readonly isPasskeyStepUpSubmitting = signal(false);
   readonly providerLoadingKey = signal<string | null>(null);
+  private readonly passkeyStepUpVerified = signal(false);
 
   readonly stepUpForm = new FormGroup({
     currentPassword: new FormControl('', { nonNullable: true }),
@@ -92,6 +96,8 @@ export class MyAccountExternalMethodsComponent implements OnInit {
   readonly needsExternalReauth = () => needsExternalReauth(this.account());
   readonly externalReauthDetail = () =>
     buildExternalReauthRequiredDetail(this.stepUpValidityMinutes());
+  readonly canOfferPasskeyStepUp = () =>
+    canOfferPasskeyStepUp(this.account(), this.passkeysEnabled());
 
   constructor() {
     effect(() => {
@@ -211,6 +217,7 @@ export class MyAccountExternalMethodsComponent implements OnInit {
   openStepUp(): void {
     this.stepUpError.set('');
     this.stepUpForm.reset();
+    this.passkeyStepUpVerified.set(false);
     this.stepUpVisible.set(true);
   }
 
@@ -219,6 +226,7 @@ export class MyAccountExternalMethodsComponent implements OnInit {
     this.pendingUnlinkProviderKey.set(null);
     this.stepUpError.set('');
     this.stepUpForm.reset();
+    this.passkeyStepUpVerified.set(false);
   }
 
   private unlinkAfterExternalStepUp(providerKey: string): void {
@@ -238,6 +246,41 @@ export class MyAccountExternalMethodsComponent implements OnInit {
       });
   }
 
+  verifyWithPasskeyStepUp(): void {
+    if (this.isPasskeyStepUpSubmitting()) {
+      return;
+    }
+
+    if (
+      this.requiresVerificationCode() &&
+      !this.stepUpForm.controls.verificationCode.value.trim()
+    ) {
+      this.stepUpForm.controls.verificationCode.markAsTouched();
+      return;
+    }
+
+    this.isPasskeyStepUpSubmitting.set(true);
+    this.stepUpError.set('');
+
+    this.authService
+      .verifyWithPasskey()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.isPasskeyStepUpSubmitting.set(false);
+          this.toastService.success(AuthMessages.passkeyStepUpCompleted);
+          this.passkeyStepUpVerified.set(true);
+          this.submitStepUp();
+        },
+        error: (error: unknown) => {
+          this.stepUpError.set(
+            error instanceof Error ? error.message : AuthMessages.passkeySignInFailed
+          );
+          this.isPasskeyStepUpSubmitting.set(false);
+        }
+      });
+  }
+
   submitStepUp(): void {
     const providerKey = this.pendingUnlinkProviderKey();
     if (!providerKey || this.isStepUpSubmitting()) {
@@ -246,6 +289,7 @@ export class MyAccountExternalMethodsComponent implements OnInit {
 
     if (
       this.requiresPasswordStepUp() &&
+      !this.passkeyStepUpVerified() &&
       this.stepUpForm.controls.currentPassword.invalid
     ) {
       this.stepUpForm.markAllAsTouched();
@@ -265,7 +309,9 @@ export class MyAccountExternalMethodsComponent implements OnInit {
 
     this.authService
       .unlinkExternalAccount(providerKey, {
-        currentPassword: this.stepUpForm.controls.currentPassword.value || null,
+        currentPassword: this.passkeyStepUpVerified()
+          ? null
+          : this.stepUpForm.controls.currentPassword.value || null,
         verificationCode: this.stepUpForm.controls.verificationCode.value.trim() || null
       })
       .pipe(takeUntilDestroyed(this.destroyRef))
