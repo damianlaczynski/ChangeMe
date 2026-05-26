@@ -677,6 +677,42 @@ public sealed class PasskeysRequiredEndpointTests(PasskeysRequiredWebApplication
   }
 
   [Fact]
+  public async Task GetAuthSettings_WhenPasskeySetupRequired_ShouldAllowSettingsForSetupFlow()
+  {
+    var cancellationToken = TestContext.Current.CancellationToken;
+    var email = $"passkey-settings-{Guid.NewGuid():N}@example.com";
+    const string password = "StrongPass123!";
+
+    using var client = factory.CreateClient(new WebApplicationFactoryClientOptions
+    {
+      BaseAddress = new Uri("https://localhost")
+    });
+
+    await client.PostAsJsonAsync("/api/auth/register", new
+    {
+      FirstName = "Settings",
+      LastName = "User",
+      Email = email,
+      Password = password
+    }, cancellationToken);
+
+    var loginResponse = await client.PostAsJsonAsync("/api/auth/login", new
+    {
+      Email = email,
+      Password = password
+    }, cancellationToken);
+    loginResponse.EnsureSuccessStatusCode();
+
+    var login = await IntegrationApiJson.ReadValueAsync<LoginResponseDto>(loginResponse.Content, cancellationToken);
+    client.DefaultRequestHeaders.Authorization =
+      new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", login!.AuthSession!.Token);
+
+    var settingsResponse = await client.GetAsync("/api/auth/settings", cancellationToken);
+
+    Assert.Equal(HttpStatusCode.OK, settingsResponse.StatusCode);
+  }
+
+  [Fact]
   public async Task PostPasskeyRemove_WhenOnlyPasskeyAndPasskeysRequired_ShouldReturnError()
   {
     var cancellationToken = TestContext.Current.CancellationToken;

@@ -7,6 +7,7 @@ public sealed class PasswordChangeRequiredMiddleware(RequestDelegate next)
 {
   private static readonly string[] AllowedPathPrefixes =
   [
+    "/api/auth/settings",
     "/api/auth/required-change-password",
     "/api/auth/logout",
     "/api/auth/refresh"

@@ -7,6 +7,7 @@ public sealed class PasskeySetupRequiredMiddleware(RequestDelegate next)
 {
   private static readonly string[] AllowedPathPrefixes =
   [
+    "/api/auth/settings",
     "/api/auth/passkeys/register/begin",
     "/api/auth/passkeys/register/complete",
     "/api/auth/passkeys/step-up/begin",

@@ -7,12 +7,10 @@ public sealed class TwoFactorSetupRequiredMiddleware(RequestDelegate next)
 {
   private static readonly string[] AllowedPathPrefixes =
   [
+    "/api/auth/account",
+    "/api/auth/required-change-password",
     "/api/auth/two-factor/setup/begin",
     "/api/auth/two-factor/setup/confirm",
-    "/api/auth/passkeys/register/begin",
-    "/api/auth/passkeys/register/complete",
-    "/api/auth/passkeys/step-up/begin",
-    "/api/auth/passkeys/step-up/complete",
     "/api/auth/external/",
     "/api/auth/logout",
     "/api/auth/refresh"

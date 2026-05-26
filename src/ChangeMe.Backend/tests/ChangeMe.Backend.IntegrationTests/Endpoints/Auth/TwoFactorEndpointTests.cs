@@ -47,6 +47,84 @@ public sealed class TwoFactorRequiredEndpointTests(TwoFactorRequiredWebApplicati
     Assert.NotNull(login?.AuthSession);
     Assert.True(login.AuthSession!.TwoFactorSetupRequired);
   }
+
+  [Fact]
+  public async Task GetIssues_WhenTwoFactorSetupRequired_ShouldReturnForbidden()
+  {
+    var cancellationToken = TestContext.Current.CancellationToken;
+    var email = $"2fa-blocked-{Guid.NewGuid():N}@example.com";
+    const string password = "StrongPass123!";
+
+    using var client = factory.CreateClient(new WebApplicationFactoryClientOptions
+    {
+      BaseAddress = new Uri("https://localhost")
+    });
+
+    await client.PostAsJsonAsync("/api/auth/register", new
+    {
+      FirstName = "Blocked",
+      LastName = "User",
+      Email = email,
+      Password = password
+    }, cancellationToken);
+
+    var loginResponse = await client.PostAsJsonAsync("/api/auth/login", new
+    {
+      Email = email,
+      Password = password,
+    }, cancellationToken);
+    loginResponse.EnsureSuccessStatusCode();
+
+    var login = await IntegrationApiJson.ReadValueAsync<LoginResponseDto>(loginResponse.Content, cancellationToken);
+    client.DefaultRequestHeaders.Authorization =
+      new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", login!.AuthSession!.Token);
+
+    var issuesResponse = await client.GetAsync("/api/issues?pageNumber=1&pageSize=10", cancellationToken);
+
+    Assert.Equal(HttpStatusCode.Forbidden, issuesResponse.StatusCode);
+
+    var responseBody = await issuesResponse.Content.ReadAsStringAsync(cancellationToken);
+    Assert.Contains(
+      "Two-factor authentication setup is required to continue.",
+      responseBody,
+      StringComparison.OrdinalIgnoreCase);
+  }
+
+  [Fact]
+  public async Task GetAccount_WhenTwoFactorSetupRequired_ShouldAllowAccountForSetupFlow()
+  {
+    var cancellationToken = TestContext.Current.CancellationToken;
+    var email = $"2fa-account-{Guid.NewGuid():N}@example.com";
+    const string password = "StrongPass123!";
+
+    using var client = factory.CreateClient(new WebApplicationFactoryClientOptions
+    {
+      BaseAddress = new Uri("https://localhost")
+    });
+
+    await client.PostAsJsonAsync("/api/auth/register", new
+    {
+      FirstName = "Account",
+      LastName = "User",
+      Email = email,
+      Password = password
+    }, cancellationToken);
+
+    var loginResponse = await client.PostAsJsonAsync("/api/auth/login", new
+    {
+      Email = email,
+      Password = password,
+    }, cancellationToken);
+    loginResponse.EnsureSuccessStatusCode();
+
+    var login = await IntegrationApiJson.ReadValueAsync<LoginResponseDto>(loginResponse.Content, cancellationToken);
+    client.DefaultRequestHeaders.Authorization =
+      new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", login!.AuthSession!.Token);
+
+    var accountResponse = await client.GetAsync("/api/auth/account", cancellationToken);
+
+    Assert.Equal(HttpStatusCode.OK, accountResponse.StatusCode);
+  }
 }
 
 [Collection(TwoFactorIntegrationTestCollection.Name)]

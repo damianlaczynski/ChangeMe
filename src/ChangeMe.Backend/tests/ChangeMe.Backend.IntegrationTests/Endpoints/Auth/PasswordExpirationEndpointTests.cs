@@ -99,6 +99,102 @@ public sealed class PasswordExpirationEndpointTests(AuthFeaturesWebApplicationFa
   }
 
   [Fact]
+  public async Task GetIssues_WhenPasswordChangeRequired_ShouldReturnForbidden()
+  {
+    var cancellationToken = TestContext.Current.CancellationToken;
+    var email = $"expired-blocked-{Guid.NewGuid():N}@example.com";
+    const string password = "StrongPass123!";
+
+    using var client = factory.CreateClient(new WebApplicationFactoryClientOptions
+    {
+      BaseAddress = new Uri("https://localhost")
+    });
+
+    await client.PostAsJsonAsync("/api/auth/register", new
+    {
+      FirstName = "Blocked",
+      LastName = "User",
+      Email = email,
+      Password = password
+    }, cancellationToken);
+
+    await using var scope = factory.Services.CreateAsyncScope();
+    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    var user = await dbContext.Users.SingleAsync(x => x.Email == email, cancellationToken);
+    user.MarkEmailVerified();
+    typeof(ChangeMe.Backend.Domain.Aggregates.Users.User)
+      .GetProperty("PasswordLastChangedAt")!
+      .SetValue(user, DateTime.UtcNow.AddDays(-91));
+    await dbContext.SaveChangesAsync(cancellationToken);
+
+    var loginResponse = await client.PostAsJsonAsync("/api/auth/login", new
+    {
+      Email = email,
+      Password = password,
+    }, cancellationToken);
+    loginResponse.EnsureSuccessStatusCode();
+
+    var login = await IntegrationApiJson.ReadValueAsync<LoginResponseDto>(loginResponse.Content, cancellationToken);
+    client.DefaultRequestHeaders.Authorization =
+      new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", login!.AuthSession!.Token);
+
+    var issuesResponse = await client.GetAsync("/api/issues?pageNumber=1&pageSize=10", cancellationToken);
+
+    Assert.Equal(HttpStatusCode.Forbidden, issuesResponse.StatusCode);
+
+    var responseBody = await issuesResponse.Content.ReadAsStringAsync(cancellationToken);
+    Assert.Contains(
+      "Your password has expired. Set a new password to continue.",
+      responseBody,
+      StringComparison.OrdinalIgnoreCase);
+  }
+
+  [Fact]
+  public async Task GetAuthSettings_WhenPasswordChangeRequired_ShouldAllowSettingsForSetupFlow()
+  {
+    var cancellationToken = TestContext.Current.CancellationToken;
+    var email = $"expired-settings-{Guid.NewGuid():N}@example.com";
+    const string password = "StrongPass123!";
+
+    using var client = factory.CreateClient(new WebApplicationFactoryClientOptions
+    {
+      BaseAddress = new Uri("https://localhost")
+    });
+
+    await client.PostAsJsonAsync("/api/auth/register", new
+    {
+      FirstName = "Settings",
+      LastName = "User",
+      Email = email,
+      Password = password
+    }, cancellationToken);
+
+    await using var scope = factory.Services.CreateAsyncScope();
+    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    var user = await dbContext.Users.SingleAsync(x => x.Email == email, cancellationToken);
+    user.MarkEmailVerified();
+    typeof(ChangeMe.Backend.Domain.Aggregates.Users.User)
+      .GetProperty("PasswordLastChangedAt")!
+      .SetValue(user, DateTime.UtcNow.AddDays(-91));
+    await dbContext.SaveChangesAsync(cancellationToken);
+
+    var loginResponse = await client.PostAsJsonAsync("/api/auth/login", new
+    {
+      Email = email,
+      Password = password,
+    }, cancellationToken);
+    loginResponse.EnsureSuccessStatusCode();
+
+    var login = await IntegrationApiJson.ReadValueAsync<LoginResponseDto>(loginResponse.Content, cancellationToken);
+    client.DefaultRequestHeaders.Authorization =
+      new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", login!.AuthSession!.Token);
+
+    var settingsResponse = await client.GetAsync("/api/auth/settings", cancellationToken);
+
+    Assert.Equal(HttpStatusCode.OK, settingsResponse.StatusCode);
+  }
+
+  [Fact]
   public async Task RequiredChangePassword_WhenAuthenticatedWithExpiredPassword_ShouldAllowIssuesAccess()
   {
     var cancellationToken = TestContext.Current.CancellationToken;
