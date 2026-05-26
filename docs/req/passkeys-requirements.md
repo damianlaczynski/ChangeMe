@@ -7,8 +7,6 @@ deployment policy for WebAuthn passkeys, guest sign-in with passkeys, signed-in 
 
 Account lifecycle terms (**local password**, **external-only account**, **awaiting invitation acceptance**, **two-factor enrolled**) are defined in `docs/req/users-requirements.md` (**Business terms**) and `docs/req/invitations-requirements.md`.
 
-Operational configuration, process diagrams, and implementation orientation: `docs/passkeys-operations-guide.md`.
-
 ---
 
 # REQ-PKY-001: Passkeys Policy and Deployment

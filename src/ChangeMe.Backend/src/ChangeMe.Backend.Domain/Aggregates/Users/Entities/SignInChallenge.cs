@@ -11,10 +11,6 @@ public class SignInChallenge
   public User User { get; private set; } = null!;
   public int FailedAttemptCount { get; private set; }
   public DateTime ExpiresAtUtc { get; private set; }
-
-  /// <summary>
-  /// Sign-in method to apply when the challenge completes (password, passkey, external provider, etc.).
-  /// </summary>
   public string? PendingSignInMethod { get; private set; }
 
   public bool IsExpired(DateTime utcNow) => utcNow >= ExpiresAtUtc;
