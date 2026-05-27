@@ -1,4 +1,4 @@
-using ChangeMe.Backend.Infrastructure.Auth.Passkey;
+﻿using ChangeMe.Backend.Infrastructure.Auth.Passkey;
 using ChangeMe.Backend.IntegrationTests.Support.Fakes;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;

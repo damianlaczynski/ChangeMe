@@ -1,4 +1,4 @@
-using ChangeMe.Backend.Infrastructure.Persistence;
+﻿using ChangeMe.Backend.Infrastructure.Persistence;
 using Fido2NetLib;
 using Fido2NetLib.Objects;
 using Microsoft.Extensions.Options;

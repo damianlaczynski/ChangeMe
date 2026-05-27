@@ -1,4 +1,4 @@
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using ChangeMe.Backend.Infrastructure.Auth;
 
 namespace ChangeMe.Backend.UnitTests.Infrastructure.Auth;

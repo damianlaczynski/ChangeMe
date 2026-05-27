@@ -1,9 +1,9 @@
-using ChangeMe.Backend.Domain.Aggregates.Sessions;
+﻿using ChangeMe.Backend.Domain.Aggregates.Sessions;
 using ChangeMe.Backend.Domain.Aggregates.Users;
-using SignInMethodConstants = ChangeMe.Backend.Domain.Aggregates.Sessions.SignInMethods;
 using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UseCases.Auth.Utils;
 using Microsoft.AspNetCore.Http;
+using SignInMethodConstants = ChangeMe.Backend.Domain.Aggregates.Sessions.SignInMethods;
 
 namespace ChangeMe.Backend.UseCases.Auth;
 

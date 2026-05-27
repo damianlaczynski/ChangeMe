@@ -1,25 +1,38 @@
+import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { AppShellComponent } from '@core/layout/components/app-shell/app-shell.component';
+import { ConfirmationService, MessageService } from 'primeng/api';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { AppComponent } from './app.component';
-import { RouterTestingModule } from '@angular/router/testing';
+
+@Component({
+  selector: 'app-shell',
+  template: ''
+})
+class AppShellStubComponent {}
 
 describe('AppComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AppComponent, RouterTestingModule],
-      providers: []
-    }).compileComponents();
+      imports: [AppComponent],
+      providers: [MessageService, ConfirmationService]
+    })
+      .overrideComponent(AppComponent, {
+        remove: { imports: [AppShellComponent] },
+        add: { imports: [AppShellStubComponent] }
+      })
+      .compileComponents();
   });
 
   it('should create the app', () => {
     const fixture = TestBed.createComponent(AppComponent);
-    const app = fixture.componentInstance;
-    expect(app).toBeTruthy();
+    expect(fixture.componentInstance).toBeTruthy();
   });
 
-  it('should use router outlet', () => {
+  it('should render app shell', () => {
     const fixture = TestBed.createComponent(AppComponent);
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('router-outlet')).toBeTruthy();
+    expect(compiled.querySelector('app-shell')).toBeTruthy();
   });
 });

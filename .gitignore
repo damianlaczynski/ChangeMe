@@ -93,6 +93,9 @@ TestResults/
 .artifacts/
 .coverage/
 
+# Test coverage output
+coverage/
+
 # Database
 *.db
 *.sqlite

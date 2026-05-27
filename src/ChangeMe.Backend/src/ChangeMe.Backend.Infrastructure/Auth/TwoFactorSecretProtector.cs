@@ -1,4 +1,4 @@
-using ChangeMe.Backend.Domain.Aggregates.Users.Interfaces;
+﻿using ChangeMe.Backend.Domain.Aggregates.Users.Interfaces;
 using Microsoft.AspNetCore.DataProtection;
 
 namespace ChangeMe.Backend.Infrastructure.Auth;

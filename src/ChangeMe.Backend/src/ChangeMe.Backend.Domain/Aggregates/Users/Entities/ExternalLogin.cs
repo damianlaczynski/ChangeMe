@@ -1,4 +1,4 @@
-namespace ChangeMe.Backend.Domain.Aggregates.Users.Entities;
+﻿namespace ChangeMe.Backend.Domain.Aggregates.Users.Entities;
 
 public class ExternalLogin
 {

@@ -1,4 +1,4 @@
-namespace ChangeMe.Backend.Domain.Aggregates.Sessions;
+﻿namespace ChangeMe.Backend.Domain.Aggregates.Sessions;
 
 public static class SignInMethods
 {

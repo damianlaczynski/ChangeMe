@@ -1,4 +1,4 @@
-namespace ChangeMe.Backend.Domain.Aggregates.Users;
+﻿namespace ChangeMe.Backend.Domain.Aggregates.Users;
 
 public static class TwoFactorConstraints
 {

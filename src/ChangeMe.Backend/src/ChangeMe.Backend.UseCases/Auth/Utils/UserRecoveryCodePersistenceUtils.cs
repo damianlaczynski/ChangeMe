@@ -1,4 +1,4 @@
-using ChangeMe.Backend.Domain.Aggregates.Users.Entities;
+﻿using ChangeMe.Backend.Domain.Aggregates.Users.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace ChangeMe.Backend.UseCases.Auth.Utils;

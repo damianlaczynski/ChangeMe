@@ -1,4 +1,4 @@
-using ChangeMe.Backend.Domain.Aggregates.Sessions;
+﻿using ChangeMe.Backend.Domain.Aggregates.Sessions;
 using ChangeMe.Backend.Infrastructure.Auth;
 
 namespace ChangeMe.Backend.UseCases.Auth.Utils;

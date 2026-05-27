@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 
 namespace ChangeMe.Backend.IntegrationTests.Support;
 

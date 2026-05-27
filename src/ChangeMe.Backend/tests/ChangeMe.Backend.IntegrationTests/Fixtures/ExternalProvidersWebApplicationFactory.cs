@@ -1,4 +1,4 @@
-using ChangeMe.Backend.Domain.Aggregates.Users.Interfaces;
+﻿using ChangeMe.Backend.Domain.Aggregates.Users.Interfaces;
 using ChangeMe.Backend.IntegrationTests.Support.Fakes;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;

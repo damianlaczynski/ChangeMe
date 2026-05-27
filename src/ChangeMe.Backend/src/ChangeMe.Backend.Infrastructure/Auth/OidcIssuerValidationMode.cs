@@ -1,4 +1,4 @@
-namespace ChangeMe.Backend.Infrastructure.Auth;
+﻿namespace ChangeMe.Backend.Infrastructure.Auth;
 
 public enum OidcIssuerValidationMode
 {

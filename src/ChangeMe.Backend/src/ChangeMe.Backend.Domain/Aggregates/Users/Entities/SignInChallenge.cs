@@ -1,4 +1,4 @@
-using ChangeMe.Backend.Domain.Aggregates.Sessions;
+﻿using ChangeMe.Backend.Domain.Aggregates.Sessions;
 
 namespace ChangeMe.Backend.Domain.Aggregates.Users.Entities;
 

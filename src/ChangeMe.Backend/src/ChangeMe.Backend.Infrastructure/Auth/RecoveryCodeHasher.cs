@@ -1,4 +1,4 @@
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using System.Text;
 using ChangeMe.Backend.Domain.Aggregates.Users.Interfaces;
 
