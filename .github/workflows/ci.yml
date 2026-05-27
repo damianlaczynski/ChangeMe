@@ -19,8 +19,49 @@ permissions:
   pull-requests: write
 
 jobs:
+  changes:
+    name: Detect changes
+    runs-on: ubuntu-latest
+    outputs:
+      frontend: ${{ steps.filter.outputs.frontend }}
+      backend: ${{ steps.filter.outputs.backend }}
+      shared: ${{ steps.filter.outputs.shared }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Detect changed paths
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            frontend:
+              - 'src/ChangeMe.Frontend/**'
+            backend:
+              - 'src/ChangeMe.Backend/**'
+            shared:
+              - '.github/**'
+              - 'package.json'
+              - 'docker-compose.yml'
+
+  skip:
+    name: CI skipped
+    needs: changes
+    if: |
+      needs.changes.outputs.frontend != 'true' &&
+      needs.changes.outputs.backend != 'true' &&
+      needs.changes.outputs.shared != 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: No relevant changes
+        run: echo "No frontend or backend changes detected; test jobs were skipped."
+
   frontend:
     name: Frontend
+    needs: changes
+    if: |
+      needs.changes.outputs.frontend == 'true' ||
+      needs.changes.outputs.shared == 'true'
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -73,6 +114,10 @@ jobs:
 
   backend:
     name: Backend
+    needs: changes
+    if: |
+      needs.changes.outputs.backend == 'true' ||
+      needs.changes.outputs.shared == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
