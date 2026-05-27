@@ -133,6 +133,14 @@ jobs:
           output: both
           thresholds: "60 80"
 
+      - name: Add backend coverage PR comment
+        if: github.event_name == 'pull_request'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: backend-coverage
+          recreate: true
+          path: code-coverage-results.md
+
       - name: Generate backend coverage report
         if: always()
         uses: danielpalme/ReportGenerator-GitHub-Action@5.4.16
