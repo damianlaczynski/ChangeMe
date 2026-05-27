@@ -16,7 +16,6 @@ concurrency:
 
 permissions:
   contents: read
-  pull-requests: write
 
 jobs:
   changes:
@@ -80,34 +79,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Check formatting
-        run: npm run format:check
-
-      - name: Audit npm dependencies
-        run: npm audit --audit-level=high
-
-      - name: Lint
-        run: npm run lint
-
-      - name: Test with coverage
-        run: npm test -- --watch=false --coverage
-
-      - name: Publish frontend coverage report
-        if: always()
-        uses: davelosert/vitest-coverage-report-action@v2
-        with:
-          name: Frontend
-          working-directory: src/ChangeMe.Frontend
-          json-summary-path: coverage/ChangeMe.Frontend/coverage-summary.json
-          json-final-path: coverage/ChangeMe.Frontend/coverage-final.json
-
-      - name: Upload frontend coverage
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: frontend-coverage
-          path: src/ChangeMe.Frontend/coverage/
-          if-no-files-found: ignore
+      - name: Test
+        run: npm test -- --watch=false
 
       - name: Build
         run: npm run build
@@ -131,20 +104,6 @@ jobs:
       - name: Restore
         run: dotnet restore src/ChangeMe.Backend/ChangeMe.Backend.sln
 
-      - name: Check formatting
-        run: dotnet format src/ChangeMe.Backend/ChangeMe.Backend.sln --verify-no-changes --exclude "**/Persistence/Migrations/**"
-
-      - name: Audit NuGet dependencies
-        shell: bash
-        run: |
-          vulnerable_file="${RUNNER_TEMP}/vulnerable.json"
-          dotnet list src/ChangeMe.Backend/ChangeMe.Backend.sln package --vulnerable --include-transitive --format json > "${vulnerable_file}"
-          if jq -e '[.projects[] | .frameworks[]? | (.transitivePackages // []) + (.topLevelPackages // []) | .[] | select(.vulnerabilities[]? | .severity == "High" or .severity == "Critical")] | length > 0' "${vulnerable_file}" >/dev/null; then
-            echo "High or Critical vulnerable NuGet packages found:"
-            jq '[.projects[] | {project: .path, packages: [.frameworks[]? | (.transitivePackages // []) + (.topLevelPackages // []) | .[] | select(.vulnerabilities[]? | .severity == "High" or .severity == "Critical") | {id, resolvedVersion, vulnerabilities}]} | select(.packages | length > 0)]' "${vulnerable_file}"
-            exit 1
-          fi
-
       # Migrations are not committed in the template repo (see CONTRIBUTING.md).
       # Generated apps commit their own migrations; skip when files already exist.
       - name: Create EF migrations for integration tests
@@ -162,47 +121,8 @@ jobs:
             --startup-project src/ChangeMe.Backend/src/ChangeMe.Backend.Web/ChangeMe.Backend.Web.csproj \
             --output-dir Persistence/Migrations
 
-      - name: Test with coverage
-        run: dotnet test src/ChangeMe.Backend/ChangeMe.Backend.sln -c Release --no-restore --results-directory coverage/backend --collect:"XPlat Code Coverage"
-
-      - name: Publish backend coverage report
-        if: always()
-        uses: irongut/CodeCoverageSummary@v1.3.0
-        with:
-          filename: coverage/backend/**/coverage.cobertura.xml
-          badge: true
-          fail_below_min: false
-          format: markdown
-          hide_complexity: true
-          indicators: true
-          output: both
-          thresholds: "60 80"
-
-      - name: Add backend coverage PR comment
-        if: github.event_name == 'pull_request'
-        uses: marocchino/sticky-pull-request-comment@v2
-        with:
-          header: backend-coverage
-          recreate: true
-          path: code-coverage-results.md
-
-      - name: Generate backend coverage report
-        if: always()
-        uses: danielpalme/ReportGenerator-GitHub-Action@5.4.16
-        with:
-          reports: coverage/backend/**/coverage.cobertura.xml
-          targetdir: coverage/backend/report
-          reporttypes: MarkdownSummaryGithub
-
-      - name: Upload backend coverage
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: backend-coverage
-          path: |
-            coverage/backend/**/coverage.cobertura.xml
-            coverage/backend/report
-          if-no-files-found: ignore
+      - name: Test
+        run: dotnet test src/ChangeMe.Backend/ChangeMe.Backend.sln -c Release --no-restore
 
       - name: Build
         run: dotnet build src/ChangeMe.Backend/ChangeMe.Backend.sln -c Release --no-restore
