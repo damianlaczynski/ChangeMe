@@ -2,6 +2,7 @@
 using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.Infrastructure.Auth.Passkey;
 using ChangeMe.Backend.Infrastructure.Email;
+using ChangeMe.Backend.Infrastructure.FileStorage;
 
 namespace ChangeMe.Backend.Infrastructure.Configurations;
 
@@ -10,6 +11,7 @@ public static class ServicesConfig
   public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration, ILogger logger)
   {
     services.Configure<EmailOptions>(configuration.GetSection(EmailOptions.SectionName));
+    services.Configure<FileStorageOptions>(configuration.GetSection(FileStorageOptions.SectionName));
 
     services.AddScoped<IEmailService, EmailService>();
     services.AddScoped<IUserAuthTokenService, UserAuthTokenService>();
@@ -32,6 +34,10 @@ public static class ServicesConfig
     services.AddHttpClient(nameof(OidcExternalAuthService));
     services.AddScoped<IOidcExternalAuthService, OidcExternalAuthService>();
     services.AddScoped<IUserAccessor, UserAccessor>();
+    services.AddSingleton<FileContentInspectorProvider>();
+    services.AddSingleton<IFileContentValidator, FileContentValidator>();
+    services.AddScoped<AttachmentUploadCoordinator>();
+    services.AddScoped<IFileStorageService, LocalFileStorageService>();
     logger.LogInformation("{Project} services configured", "Infrastructure");
     return services;
   }

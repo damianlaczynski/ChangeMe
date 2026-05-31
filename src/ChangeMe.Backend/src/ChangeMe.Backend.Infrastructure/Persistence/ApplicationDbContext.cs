@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using ChangeMe.Backend.Domain.Aggregates.Issue;
 using ChangeMe.Backend.Domain.Aggregates.Issue.Entities;
+using ChangeMe.Backend.Domain.Common.Attachments;
 using ChangeMe.Backend.Domain.Aggregates.Notifications;
 using ChangeMe.Backend.Domain.Aggregates.Roles;
 using ChangeMe.Backend.Domain.Aggregates.Sessions;
@@ -17,6 +18,8 @@ public class ApplicationDbContext(
   public DbSet<Issue> Issues => Set<Issue>();
   public DbSet<IssueAcceptanceCriterion> IssueAcceptanceCriteria => Set<IssueAcceptanceCriterion>();
   public DbSet<IssueComment> IssueComments => Set<IssueComment>();
+  public DbSet<Attachment> Attachments => Set<Attachment>();
+  public DbSet<IssueAttachment> IssueAttachments => Set<IssueAttachment>();
   public DbSet<IssueHistoryEntry> IssueHistoryEntries => Set<IssueHistoryEntry>();
   public DbSet<IssueWatcher> IssueWatchers => Set<IssueWatcher>();
   public DbSet<Notification> Notifications => Set<Notification>();

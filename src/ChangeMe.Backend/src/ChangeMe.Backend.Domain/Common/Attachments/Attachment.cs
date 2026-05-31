@@ -1,0 +1,69 @@
+namespace ChangeMe.Backend.Domain.Common.Attachments;
+
+public abstract class Attachment : Entity
+{
+  public string StorageContainer { get; protected set; } = string.Empty;
+  public Guid OwnerId { get; protected set; }
+  public string OriginalFileName { get; protected set; } = string.Empty;
+  public string ContentType { get; protected set; } = string.Empty;
+  public long SizeBytes { get; protected set; }
+  public string StorageKey { get; protected set; } = string.Empty;
+  public AttachmentStatus Status { get; protected set; } = AttachmentStatus.PENDING;
+
+  public Result<TAttachment> Activate<TAttachment>()
+    where TAttachment : Attachment
+  {
+    if (Status == AttachmentStatus.ACTIVE)
+      return Result.Success((TAttachment)this);
+
+    if (Status != AttachmentStatus.PENDING)
+      return Result.Invalid([new ValidationError(nameof(Status), "invalid attachment status")]);
+
+    Status = AttachmentStatus.ACTIVE;
+    return Result.Success((TAttachment)this);
+  }
+
+  public bool OccupiesAttachmentSlot =>
+    Status is AttachmentStatus.PENDING or AttachmentStatus.ACTIVE;
+
+  protected static List<ValidationError> ValidateMetadata(
+    string storageContainer,
+    Guid ownerId,
+    string originalFileName,
+    string contentType,
+    long sizeBytes,
+    string storageKey)
+  {
+    var validationErrors = new List<ValidationError>();
+
+    if (string.IsNullOrWhiteSpace(storageContainer))
+      validationErrors.Add(new ValidationError(nameof(StorageContainer), "cannot be empty"));
+    else if (storageContainer.Trim().Length > AttachmentConstraints.STORAGE_CONTAINER_MAX_LENGTH)
+      validationErrors.Add(new ValidationError(nameof(StorageContainer), $"cannot be longer than {AttachmentConstraints.STORAGE_CONTAINER_MAX_LENGTH} characters"));
+
+    if (ownerId == Guid.Empty)
+      validationErrors.Add(new ValidationError(nameof(OwnerId), "cannot be empty"));
+
+    if (string.IsNullOrWhiteSpace(originalFileName))
+      validationErrors.Add(new ValidationError(nameof(OriginalFileName), "cannot be empty"));
+    else if (originalFileName.Trim().Length > AttachmentConstraints.ORIGINAL_FILE_NAME_MAX_LENGTH)
+      validationErrors.Add(new ValidationError(nameof(OriginalFileName), $"cannot be longer than {AttachmentConstraints.ORIGINAL_FILE_NAME_MAX_LENGTH} characters"));
+
+    if (string.IsNullOrWhiteSpace(contentType))
+      validationErrors.Add(new ValidationError(nameof(ContentType), "cannot be empty"));
+    else if (contentType.Trim().Length > AttachmentConstraints.CONTENT_TYPE_MAX_LENGTH)
+      validationErrors.Add(new ValidationError(nameof(ContentType), $"cannot be longer than {AttachmentConstraints.CONTENT_TYPE_MAX_LENGTH} characters"));
+
+    if (sizeBytes <= 0)
+      validationErrors.Add(new ValidationError(nameof(SizeBytes), "must be greater than zero"));
+    else if (sizeBytes > AttachmentConstraints.MAX_FILE_SIZE_BYTES)
+      validationErrors.Add(new ValidationError(nameof(SizeBytes), $"cannot exceed {AttachmentConstraints.MAX_FILE_SIZE_BYTES} bytes"));
+
+    if (string.IsNullOrWhiteSpace(storageKey))
+      validationErrors.Add(new ValidationError(nameof(StorageKey), "cannot be empty"));
+    else if (storageKey.Trim().Length > AttachmentConstraints.STORAGE_KEY_MAX_LENGTH)
+      validationErrors.Add(new ValidationError(nameof(StorageKey), $"cannot be longer than {AttachmentConstraints.STORAGE_KEY_MAX_LENGTH} characters"));
+
+    return validationErrors;
+  }
+}

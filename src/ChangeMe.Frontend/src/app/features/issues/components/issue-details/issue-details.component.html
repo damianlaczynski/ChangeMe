@@ -1,7 +1,7 @@
 <p-card
   class="mb-4"
   [header]="pageTitle()"
-  subheader="Review issue data, comments and history"
+  subheader="Review issue data, comments, attachments, and history"
 >
   <div class="mb-4 flex flex-wrap items-center gap-2">
     <app-back-button label="Back to issues list" [route]="['/issues']" />
@@ -124,12 +124,19 @@
       <p-tabs [value]="activeTab()" (valueChange)="onTabChange($event)">
         <p-tablist>
           <p-tab value="comments">Comments</p-tab>
+          <p-tab value="attachments">Attachments</p-tab>
           <p-tab value="history">History</p-tab>
         </p-tablist>
         <p-tabpanels>
           <p-tabpanel value="comments">
             @if (activeTab() === 'comments') {
               <app-issue-comments-tab [issueId]="currentIssue.id" />
+            }
+          </p-tabpanel>
+
+          <p-tabpanel value="attachments">
+            @if (activeTab() === 'attachments') {
+              <app-issue-attachments-tab [issueId]="currentIssue.id" />
             }
           </p-tabpanel>
 

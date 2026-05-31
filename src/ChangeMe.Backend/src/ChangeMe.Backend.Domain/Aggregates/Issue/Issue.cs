@@ -1,5 +1,6 @@
 ﻿using ChangeMe.Backend.Domain.Aggregates.Issue.Entities;
 using ChangeMe.Backend.Domain.Aggregates.Issue.Enums;
+using ChangeMe.Backend.Domain.Common.Attachments;
 
 namespace ChangeMe.Backend.Domain.Aggregates.Issue;
 
@@ -7,6 +8,7 @@ public class Issue : Entity, IAggregateRoot
 {
   private readonly List<IssueAcceptanceCriterion> acceptanceCriteria = new();
   private readonly List<IssueComment> comments = new();
+  private readonly List<IssueAttachment> attachments = new();
   private readonly List<IssueHistoryEntry> historyEntries = new();
   private readonly List<IssueWatcher> watchers = new();
 
@@ -21,6 +23,7 @@ public class Issue : Entity, IAggregateRoot
 
   public IReadOnlyCollection<IssueAcceptanceCriterion> AcceptanceCriteria => acceptanceCriteria.AsReadOnly();
   public IReadOnlyCollection<IssueComment> Comments => comments.AsReadOnly();
+  public IReadOnlyCollection<IssueAttachment> Attachments => attachments.AsReadOnly();
   public IReadOnlyCollection<IssueHistoryEntry> HistoryEntries => historyEntries.AsReadOnly();
   public IReadOnlyCollection<IssueWatcher> Watchers => watchers.AsReadOnly();
 
@@ -268,6 +271,79 @@ public class Issue : Entity, IAggregateRoot
     LastActivityAt = DateTime.UtcNow;
 
     return Result.Success(commentResult.Value);
+  }
+
+  public Result<IssueAttachment> AddPendingAttachment(
+    string originalFileName,
+    string contentType,
+    long sizeBytes,
+    string storageKey)
+  {
+    if (attachments.Count(a => a.OccupiesAttachmentSlot) >= AttachmentConstraints.MAX_ATTACHMENTS_PER_ISSUE)
+      return Result.Invalid([new ValidationError(nameof(Attachments), $"cannot exceed {AttachmentConstraints.MAX_ATTACHMENTS_PER_ISSUE} attachments per issue")]);
+
+    var attachmentResult = IssueAttachment.CreatePending(
+      Id,
+      originalFileName,
+      contentType,
+      sizeBytes,
+      storageKey);
+
+    if (!attachmentResult.IsSuccess)
+      return attachmentResult.Map();
+
+    attachments.Add(attachmentResult.Value);
+    return Result.Success(attachmentResult.Value);
+  }
+
+  public Result<IssueAttachment> ActivateAttachment(Guid attachmentId, Guid actorUserId)
+  {
+    var attachment = attachments.FirstOrDefault(a => a.Id == attachmentId);
+    if (attachment is null || !attachment.OccupiesAttachmentSlot)
+      return Result.NotFound();
+
+    if (attachment.Status == AttachmentStatus.ACTIVE)
+      return Result.Success(attachment);
+
+    var activateResult = attachment.Activate<IssueAttachment>();
+    if (!activateResult.IsSuccess)
+      return activateResult.Map();
+
+    var historyResult = AddHistoryEntry(
+      IssueHistoryEventType.ATTACHMENT_ADDED,
+      actorUserId,
+      "Attachment added.",
+      null,
+      attachment.OriginalFileName);
+    if (!historyResult.IsSuccess)
+      return historyResult.Map();
+
+    LastActivityAt = DateTime.UtcNow;
+    return Result.Success(attachment);
+  }
+
+  public Result<IssueAttachment> RemoveAttachment(Guid attachmentId, Guid actorUserId)
+  {
+    var attachment = attachments.FirstOrDefault(a => a.Id == attachmentId);
+    if (attachment is null || attachment.Status != AttachmentStatus.ACTIVE)
+      return Result.NotFound();
+
+    if (attachment.CreatedBy != actorUserId)
+      return Result.Forbidden();
+
+    var historyResult = AddHistoryEntry(
+      IssueHistoryEventType.ATTACHMENT_REMOVED,
+      actorUserId,
+      "Attachment removed.",
+      attachment.OriginalFileName,
+      null);
+    if (!historyResult.IsSuccess)
+      return historyResult.Map();
+
+    attachments.Remove(attachment);
+    LastActivityAt = DateTime.UtcNow;
+
+    return Result.Success(attachment);
   }
 
   public Result<IssueWatcher> StartWatching(Guid userId)

@@ -40,6 +40,22 @@ export interface IssueDetailsDto {
   acceptanceCriteria: AcceptanceCriterionDto[];
 }
 
+export interface IssueAttachmentDto {
+  id: string;
+  originalFileName: string;
+  contentType: string;
+  sizeBytes: number;
+  uploadedByUserId: string;
+  uploadedByName?: string | null;
+  createdAt: string;
+  canDelete: boolean;
+}
+
+export interface IssueAttachmentsSearchParameters extends PaginationParameters {
+  sortField?: string;
+  ascending?: boolean;
+}
+
 export interface IssueCommentsSearchParameters extends PaginationParameters {
   sortField?: string;
   ascending?: boolean;
@@ -147,5 +163,7 @@ export enum IssueHistoryEventType {
   DESCRIPTION_CHANGED = 'DESCRIPTION_CHANGED',
   ACCEPTANCE_CRITERION_ADDED = 'ACCEPTANCE_CRITERION_ADDED',
   ACCEPTANCE_CRITERION_UPDATED = 'ACCEPTANCE_CRITERION_UPDATED',
-  ACCEPTANCE_CRITERION_REMOVED = 'ACCEPTANCE_CRITERION_REMOVED'
+  ACCEPTANCE_CRITERION_REMOVED = 'ACCEPTANCE_CRITERION_REMOVED',
+  ATTACHMENT_ADDED = 'ATTACHMENT_ADDED',
+  ATTACHMENT_REMOVED = 'ATTACHMENT_REMOVED'
 }

@@ -20,6 +20,25 @@ export const IssueCommentConstraints = {
   CONTENT_MAX_LENGTH: 4000
 };
 
+export const IssueAttachmentConstraints = {
+  MAX_FILE_SIZE_BYTES: 5 * 1024 * 1024,
+  MAX_ATTACHMENTS_PER_ISSUE: 10,
+  ALLOWED_EXTENSIONS: [
+    '.pdf',
+    '.png',
+    '.jpg',
+    '.jpeg',
+    '.gif',
+    '.txt',
+    '.csv',
+    '.docx',
+    '.xlsx'
+  ] as const
+};
+
+export const issueAttachmentAccept =
+  IssueAttachmentConstraints.ALLOWED_EXTENSIONS.join(',');
+
 export type IssueBadgeSeverity = 'secondary' | 'success' | 'info' | 'warn' | 'danger';
 
 export type IssueLabeledOption<T> = { value: T; label: string };
@@ -74,6 +93,22 @@ export function getIssuePrioritySeverity(priority: IssuePriority): IssueBadgeSev
 
 export function getDeleteIssueConfirmMessage(title: string): string {
   return `Delete ${highlightDialogValue(title)}? This cannot be undone.`;
+}
+
+export function getDeleteAttachmentConfirmMessage(fileName: string): string {
+  return `Delete ${highlightDialogValue(fileName)}? This action cannot be undone.`;
+}
+
+export function formatAttachmentSize(sizeBytes: number): string {
+  if (sizeBytes < 1024) {
+    return `${sizeBytes} B`;
+  }
+
+  if (sizeBytes < 1024 * 1024) {
+    return `${(sizeBytes / 1024).toFixed(1)} KB`;
+  }
+
+  return `${(sizeBytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 export const issueDeleteMenuItemDangerClasses = {
@@ -133,6 +168,16 @@ const ISSUE_HISTORY_EVENT_VISUALS: Record<
   },
   ACCEPTANCE_CRITERION_REMOVED: {
     icon: 'pi pi-times-circle',
+    markerClass: 'bg-red-600 text-white dark:bg-red-500',
+    tagSeverity: 'danger'
+  },
+  ATTACHMENT_ADDED: {
+    icon: 'pi pi-paperclip',
+    markerClass: 'bg-indigo-600 text-white dark:bg-indigo-500',
+    tagSeverity: 'info'
+  },
+  ATTACHMENT_REMOVED: {
+    icon: 'pi pi-trash',
     markerClass: 'bg-red-600 text-white dark:bg-red-500',
     tagSeverity: 'danger'
   }

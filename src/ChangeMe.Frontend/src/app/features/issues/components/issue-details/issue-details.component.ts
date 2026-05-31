@@ -11,6 +11,7 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ToastService } from '@core/toast/services/toast.service';
+import { IssueAttachmentsTabComponent } from '@features/issues/components/issue-attachments-tab/issue-attachments-tab.component';
 import { IssueCommentsTabComponent } from '@features/issues/components/issue-comments-tab/issue-comments-tab.component';
 import { IssueHistoryTabComponent } from '@features/issues/components/issue-history-tab/issue-history-tab.component';
 import { IssueDetailsDto } from '@features/issues/models/issue.model';
@@ -33,7 +34,7 @@ import { Tab, TabList, TabPanel, TabPanels, Tabs } from 'primeng/tabs';
 import { Tag } from 'primeng/tag';
 import { Tooltip } from 'primeng/tooltip';
 
-type IssueDetailsTab = 'comments' | 'history';
+type IssueDetailsTab = 'comments' | 'attachments' | 'history';
 
 @Component({
   selector: 'app-issue-details',
@@ -54,6 +55,7 @@ type IssueDetailsTab = 'comments' | 'history';
     Tooltip,
     BackButtonComponent,
     IssueCommentsTabComponent,
+    IssueAttachmentsTabComponent,
     IssueHistoryTabComponent
   ],
   templateUrl: './issue-details.component.html'
@@ -88,7 +90,13 @@ export class IssueDetailsComponent {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((params) => {
         const tab = params.get('tab');
-        this.activeTab.set(tab === 'history' ? 'history' : 'comments');
+        this.activeTab.set(
+          tab === 'history'
+            ? 'history'
+            : tab === 'attachments'
+              ? 'attachments'
+              : 'comments'
+        );
       });
 
     effect(() => {
@@ -106,7 +114,12 @@ export class IssueDetailsComponent {
   }
 
   onTabChange(tab: string | number | undefined): void {
-    const value: IssueDetailsTab = tab === 'history' ? 'history' : 'comments';
+    const value: IssueDetailsTab =
+      tab === 'history'
+        ? 'history'
+        : tab === 'attachments'
+          ? 'attachments'
+          : 'comments';
     if (this.activeTab() === value) {
       return;
     }
@@ -115,7 +128,9 @@ export class IssueDetailsComponent {
 
     void this.router.navigate([], {
       relativeTo: this.route,
-      queryParams: { tab: value === 'comments' ? null : value },
+      queryParams: {
+        tab: value === 'comments' ? null : value
+      },
       queryParamsHandling: 'merge',
       replaceUrl: true
     });

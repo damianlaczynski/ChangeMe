@@ -2,6 +2,7 @@
   <ItemGroup>
     <!--#if (PostgreSQL) -->
     <PackageVersion Include="AspNetCore.HealthChecks.Npgsql" Version="9.0.0" />
+    <PackageVersion Include="Mime-Detective" Version="25.8.1" />
     <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.1" />
     <PackageVersion Include="Hangfire.PostgreSql" Version="1.21.1" />
     <PackageVersion Include="Testcontainers.PostgreSql" Version="4.11.0" />

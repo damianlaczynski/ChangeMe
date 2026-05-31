@@ -19,6 +19,7 @@ builder.Services.AddHangfire(builder, logger);
 builder.Services.AddInfrastructureServices(builder.Configuration, logger);
 builder.Services.AddMediator();
 builder.Services.AddNotifications(builder, logger);
+builder.Services.AddFileStorage(builder, logger);
 
 logger.LogInformation("Starting web host");
 
@@ -41,6 +42,7 @@ app.UseHangfireDashboard();
 app.MapHealthChecks("/health");
 app.UseNotifications();
 app.UseInvitationRetention();
+app.UseFileStorageCleanup();
 
 await app.UseDatabase();
 

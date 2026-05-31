@@ -1,9 +1,9 @@
 # Requirements - Issues
 
-This document covers five REQs for the **Issues** area:
-issue list, issue create/edit flow, issue details page, watching and notifications, and the in-app notification dropdown in the top bar.
+This document covers six REQs for the **Issues** area:
+issue list, issue create/edit flow, issue details page, issue attachments, watching and notifications, and the in-app notification dropdown in the top bar.
 
-The scope includes comments, change history, issue deletion, push notifications in real time, and email notifications.
+The scope includes comments, attachments, change history, issue deletion, push notifications in real time, and email notifications.
 
 ---
 
@@ -178,9 +178,9 @@ The user must be able to create a new issue and edit an existing one by providin
 - Lists all **acceptance criteria** for the issue.
 - Empty state: `**No acceptance criteria defined`\*\*
 
-### Comments and history tabs
+### Comments, attachments, and history tabs
 
-- Separate tabs: **Comments** and **History**.
+- Separate tabs: **Comments**, **Attachments**, and **History**.
 
 ### Comments section
 
@@ -206,7 +206,7 @@ The user must be able to create a new issue and edit an existing one by providin
 ### Change history section
 
 - **History** tab shows an activity timeline.
-- History includes: issue creation, status change, priority change, assignee change, title edit, description edit, acceptance-criterion add, update, and remove.
+- History includes: issue creation, status change, priority change, assignee change, title edit, description edit, acceptance-criterion add, update, and remove, attachment add, and attachment remove.
 - Each entry: **summary** (event type), **acting user**, **date and time**, and **Before** / **After** when values apply.
 - **Description** changes show summary only (no before/after inline).
 - History is read-only.
@@ -236,6 +236,102 @@ The user must be able to create a new issue and edit an existing one by providin
 
 ---
 
+# REQ-ISS-006: Issue Attachments
+
+## Goal
+
+Authenticated users must be able to attach files to an issue, review them on **Issue details**, download them securely, and remove attachments they uploaded. This REQ is the **reference implementation** for file handling in the application; later features should reuse the same storage, validation, and API patterns.
+
+## Features
+
+### Access
+
+- Screen: **Issue details** — **Attachments** tab
+- Available only to authenticated users (same as REQ-ISS-003).
+
+### Attachments tab layout
+
+- Layout order (top to bottom): **Upload file** control, then the attachments list, then **Show more** when more attachments exist.
+- The upload control is **always above** the list, including when the list is empty or loading.
+
+### Upload
+
+- User selects **one file** at a time and uploads it to the current issue.
+- **Upload** button starts the upload; while uploading, the control shows a loading state.
+- On success: **Last activity** updates, the list reloads from the first page, and the new attachment appears without leaving the screen.
+- On failure: inline error near the upload control; already uploaded files remain visible.
+
+### Attachments list
+
+- Each row shows: **file name**, **file size** (human-readable), **uploaded by**, **upload date and time**, and actions.
+- Attachments are loaded **server-paginated**, sorted by **upload date and time** descending (**newest first**).
+- The first page shows up to **10** most recent attachments.
+- When older attachments exist beyond the loaded pages, a **Show more** control appears below the list; each activation loads the next page of **older** attachments and **appends** them.
+- **Show more** is hidden when all attachments are loaded.
+- While the first page loads, a loading indicator is shown in the list area; the upload control stays visible.
+- While **Show more** is loading, the button shows a loading state; already loaded attachments remain visible.
+- Empty state: **`No attachments yet`**
+
+### Download
+
+- **Download** action fetches the file through the authenticated API and saves it locally under the **original file name** shown in the list.
+- While downloading, the row action shows a loading state.
+
+### Delete
+
+- **Delete** is available only to the user who **uploaded** the attachment.
+- Confirmation: **`Delete "{file name}"? This action cannot be undone.`**
+- On confirm: remove the attachment from the issue, delete stored content, write change history, update **Last activity**, and refresh the list from the first page.
+- Other users do not see **Delete** on attachments they did not upload.
+
+### Security policy (enforced server-side)
+
+Deployment settings under **`FileStorage`** (see backend configuration) define limits; defaults below apply when not overridden.
+
+| Rule                       | Default / behavior                                                                                                                                                                                                                                                                                                                                                                       |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Max file size**          | **5 MB** per file                                                                                                                                                                                                                                                                                                                                                                        |
+| **Max attachments**        | **10** per issue                                                                                                                                                                                                                                                                                                                                                                         |
+| **Allowed extensions**     | **`.pdf`**, **`.png`**, **`.jpg`**, **`.jpeg`**, **`.gif`**, **`.txt`**, **`.csv`**, **`.docx`**, **`.xlsx`**                                                                                                                                                                                                                                                                            |
+| **Content validation**     | Declared type and file extension must match an allowed type; content is verified with **[Mime-Detective](https://www.nuget.org/packages/Mime-Detective)** signature detection (scoped to allowed extensions). For **`.txt`** / **`.csv`**, plain-text rules apply and binary signatures that conflict with the declared extension are rejected. Mismatch or unknown content is rejected. |
+| **File name sanitization** | Original name is stored for display only; path segments, control characters, and unsafe characters are stripped; max **255** characters.                                                                                                                                                                                                                                                 |
+| **Storage key**            | Opaque server-generated identifier; user-supplied names are **never** used as storage paths.                                                                                                                                                                                                                                                                                             |
+| **Storage location**       | Files live **outside** the web root in a configured root directory (subfolder per issue).                                                                                                                                                                                                                                                                                                |
+| **Download response**      | **`Content-Disposition: attachment`**, validated **`Content-Type`**, and **`X-Content-Type-Options: nosniff`**.                                                                                                                                                                                                                                                                          |
+| **Authorization**          | Upload, list, and download require authentication. Delete requires authentication **and** uploader identity.                                                                                                                                                                                                                                                                             |
+
+### Upload consistency (DB-first)
+
+- Upload uses attachment statuses **`Pending`** then **`Active`**:
+  1. reserve metadata and an opaque **`StorageKey`** in the database as **`Pending`**,
+  2. write file content to storage under that key,
+  3. mark the attachment **`Active`**, update **Last activity**, and write history/notifications.
+- If storage write or activation fails after the pending row exists, the server removes the pending row and deletes any partial stored file.
+- **`Pending`** rows older than **`FileStorage:PendingRetentionMinutes`** (default **30**) are removed by automatic cleanup; orphaned files on disk with no matching metadata row are deleted by the same job.
+- List, download, and delete operate only on **`Active`** attachments; **`Pending`** rows do not appear in the UI.
+
+### Change history
+
+- Adding an attachment writes an **attachment added** history entry (summary includes file name).
+- Removing an attachment writes an **attachment removed** history entry (summary includes file name).
+- History entries show **Before** / **After** when values apply (file name).
+
+### Issue deletion
+
+- Deleting an issue (REQ-ISS-003) removes all attachment metadata and **deletes stored files** for that issue.
+
+### Notifications
+
+- Attachment add and remove trigger watcher notifications per REQ-ISS-004 (excluding the acting user).
+
+### Out of scope
+
+- Attachment upload on **Create issue** / **Edit issue** screens (attachments are managed only on **Issue details**).
+- Virus scanning, image thumbnails, or inline preview in the browser.
+- Replacing an existing attachment in place (upload always adds a new row).
+
+---
+
 # REQ-ISS-004: Watching Issues and Push / Email Notifications
 
 ## Goal
@@ -261,7 +357,8 @@ Notifications are sent to watchers (excluding the acting user) for:
 - assignee change,
 - title edit,
 - description edit,
-- acceptance-criterion add, update, and remove.
+- acceptance-criterion add, update, and remove,
+- attachment add and remove (REQ-ISS-006).
 - Watch and unwatch update watcher counts on the screen where the action was taken; they do **not** create in-app notifications.
 
 ### Push notifications (real time)

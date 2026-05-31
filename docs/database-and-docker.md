@@ -61,3 +61,53 @@ npm run data:generate -- --reset
 ```
 
 See [data-generator.md](data-generator.md) for architecture, configuration, and troubleshooting.
+
+## File storage (issue attachments)
+
+Issue attachments are stored on disk under **`FileStorage:RootPath`**, not in the database. Metadata (file name, size, content type, opaque storage key) lives in the **`issue_attachments`** table.
+
+### Layout
+
+```
+{FileStorage:RootPath}/
+  {container}/
+    {ownerId}/
+      {storageKey}
+```
+
+Shared attachment metadata lives in the **`attachments`** table (TPH inheritance). **`IssueAttachment`** is the current derived type; new owners add another subclass and container name.
+
+Example for issues:
+
+```
+{FileStorage:RootPath}/issues/{issueId}/{storageKey}
+```
+
+- **`storageKey`** is server-generated (GUID); user file names are never used as paths.
+- Default local dev path: **`../../storage`** (relative to the Web project working directory).
+- **Docker Compose** mounts a named volume at **`/app/storage`** and sets **`FileStorage__RootPath=/app/storage`** on the `backend` service so attachments survive container restarts.
+
+### Configuration
+
+Settings live under **`FileStorage`** in `appsettings.json` / environment variables:
+
+| Setting                   | Default           | Purpose                                                   |
+| ------------------------- | ----------------- | --------------------------------------------------------- |
+| `RootPath`                | `../../storage`   | Root directory for all stored files                       |
+| `MaxFileSizeBytes`        | `5242880` (5 MB)  | Per-file upload limit                                     |
+| `MaxAttachmentsPerIssue`  | `10`              | Attachment count limit per issue                          |
+| `AllowedExtensions`       | `.pdf`, `.png`, … | Whitelist enforced with Mime-Detective content inspection |
+| `PendingRetentionMinutes` | `30`              | Stale `Pending` rows removed by Hangfire cleanup          |
+| `CleanupCronExpression`   | `0 * * * *`       | Schedule for pending/orphan reconciliation                |
+
+### Retention and cleanup
+
+- **`Active`** files are kept until the attachment is deleted or the owning issue is deleted.
+- **`Pending`** rows (failed or interrupted uploads) are removed after **`PendingRetentionMinutes`** by **`IssueAttachmentStorageCleanupJob`**; matching partial files and orphaned disk files are deleted in the same job.
+- Deleting an issue cascades attachment metadata and deletes all stored files for that issue.
+
+### Backup (production)
+
+Include **`{FileStorage:RootPath}/issues/`** in your backup plan **together with the application database**. Restoring only the database without files leaves broken download links; restoring files without matching metadata leaves orphaned blobs (cleaned up eventually by the cleanup job, but downloads will fail until then).
+
+For cloud deployments, consider moving **`IFileStorageService`** to object storage (S3, Azure Blob) with server-side encryption and lifecycle policies; the Issues slice is the reference pattern for metadata + opaque keys.

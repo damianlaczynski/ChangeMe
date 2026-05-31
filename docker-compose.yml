@@ -37,6 +37,9 @@ services:
 #else
       - ConnectionStrings__DefaultConnection=Server=sqlserver,1433;Database=ChangeMe;User Id=sa;Password=LocalDev_Sql1!;TrustServerCertificate=True
 #endif
+      - FileStorage__RootPath=/app/storage
+    volumes:
+      - file-storage-data:/app/storage
     networks:
       - app-network
     restart: unless-stopped
@@ -130,3 +133,4 @@ volumes:
 #else
   sqlserver-data:
 #endif
+  file-storage-data:

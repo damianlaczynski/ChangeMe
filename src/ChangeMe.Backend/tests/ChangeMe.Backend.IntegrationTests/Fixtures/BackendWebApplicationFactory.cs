@@ -100,6 +100,7 @@ public class BackendWebApplicationFactory : WebApplicationFactory<Program>, IAsy
     environmentOverrides["Auth__EmailVerification__Enabled"] = "false";
     environmentOverrides["Auth__PasswordExpiration__Enabled"] = "false";
     environmentOverrides["Auth__PasswordPolicy__RequireSpecialCharacter"] = "false";
+    environmentOverrides["FileStorage__RootPath"] = Path.Combine(Path.GetTempPath(), "changeme-tests-storage");
 
     ConfigureAuthEnvironmentOverrides(environmentOverrides);
 
