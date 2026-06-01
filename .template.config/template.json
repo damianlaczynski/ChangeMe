@@ -35,6 +35,17 @@
     "SqlServer": {
       "type": "computed",
       "value": "(Database == \"SqlServer\")"
+    },
+    "ProjectNameCamelCase": {
+      "type": "derived",
+      "valueSource": "name",
+      "valueTransform": "projectNameCamelCase",
+      "replaces": "changeMe"
+    }
+  },
+  "forms": {
+    "projectNameCamelCase": {
+      "identifier": "firstLowerCaseInvariant"
     }
   },
   "primaryOutputs": [{ "path": "src/ChangeMe.Backend/ChangeMe.Backend.sln" }],
