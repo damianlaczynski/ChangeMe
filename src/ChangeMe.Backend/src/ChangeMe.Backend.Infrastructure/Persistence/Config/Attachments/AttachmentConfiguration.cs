@@ -59,13 +59,8 @@ public class AttachmentConfiguration : IEntityTypeConfiguration<Attachment>
       .IsRequired()
       .HasMaxLength(AttachmentConstraints.STORAGE_KEY_MAX_LENGTH);
 
-    builder.Property(a => a.Status)
-      .IsRequired()
-      .HasConversion<string>();
-
     builder.HasIndex(a => a.OwnerId);
     builder.HasIndex(a => new { a.StorageContainer, a.OwnerId, a.StorageKey }).IsUnique();
-    builder.HasIndex(a => new { a.Status, a.CreatedAt });
   }
 }
 

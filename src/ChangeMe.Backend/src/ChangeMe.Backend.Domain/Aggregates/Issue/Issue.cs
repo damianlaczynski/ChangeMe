@@ -273,15 +273,16 @@ public class Issue : Entity, IAggregateRoot
     return Result.Success(commentResult.Value);
   }
 
-  public Result<IssueAttachment> AddPendingAttachment(
+  public Result<IssueAttachment> AddAttachment(
     string originalFileName,
     string contentType,
-    long sizeBytes)
+    long sizeBytes,
+    Guid actorUserId)
   {
-    if (attachments.Count(a => a.OccupiesAttachmentSlot) >= AttachmentConstraints.MAX_ATTACHMENTS_PER_ISSUE)
+    if (attachments.Count >= AttachmentConstraints.MAX_ATTACHMENTS_PER_ISSUE)
       return Result.Invalid([new ValidationError(nameof(Attachments), $"cannot exceed {AttachmentConstraints.MAX_ATTACHMENTS_PER_ISSUE} attachments per issue")]);
 
-    var attachmentResult = IssueAttachment.CreatePending(
+    var attachmentResult = IssueAttachment.Create(
       Id,
       originalFileName,
       contentType,
@@ -290,22 +291,8 @@ public class Issue : Entity, IAggregateRoot
     if (!attachmentResult.IsSuccess)
       return attachmentResult.Map();
 
-    attachments.Add(attachmentResult.Value);
-    return Result.Success(attachmentResult.Value);
-  }
-
-  public Result<IssueAttachment> ActivateAttachment(Guid attachmentId, Guid actorUserId)
-  {
-    var attachment = attachments.FirstOrDefault(a => a.Id == attachmentId);
-    if (attachment is null || !attachment.OccupiesAttachmentSlot)
-      return Result.NotFound();
-
-    if (attachment.Status == AttachmentStatus.ACTIVE)
-      return Result.Success(attachment);
-
-    var activateResult = attachment.Activate<IssueAttachment>();
-    if (!activateResult.IsSuccess)
-      return activateResult.Map();
+    var attachment = attachmentResult.Value;
+    attachments.Add(attachment);
 
     var historyResult = AddHistoryEntry(
       IssueHistoryEventType.ATTACHMENT_ADDED,
@@ -323,7 +310,7 @@ public class Issue : Entity, IAggregateRoot
   public Result<IssueAttachment> RemoveAttachment(Guid attachmentId, Guid actorUserId)
   {
     var attachment = attachments.FirstOrDefault(a => a.Id == attachmentId);
-    if (attachment is null || attachment.Status != AttachmentStatus.ACTIVE)
+    if (attachment is null)
       return Result.NotFound();
 
     if (attachment.CreatedBy != actorUserId)

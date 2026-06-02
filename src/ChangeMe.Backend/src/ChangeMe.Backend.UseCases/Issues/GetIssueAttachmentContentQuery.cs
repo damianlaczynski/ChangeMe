@@ -1,4 +1,3 @@
-using ChangeMe.Backend.Domain.Common.Attachments;
 using ChangeMe.Backend.Infrastructure.FileStorage;
 using ChangeMe.Backend.UseCases.Issues.Dtos;
 
@@ -22,8 +21,7 @@ public class GetIssueAttachmentContentHandler(
       .AsNoTracking()
       .FirstOrDefaultAsync(
         a => a.OwnerId == query.IssueId
-          && a.Id == query.AttachmentId
-          && a.Status == AttachmentStatus.ACTIVE,
+          && a.Id == query.AttachmentId,
         cancellationToken);
 
     if (attachment is null)

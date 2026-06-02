@@ -36,7 +36,6 @@ public static class ServicesConfig
     services.AddScoped<IUserAccessor, UserAccessor>();
     services.AddSingleton<FileContentInspectorProvider>();
     services.AddSingleton<IFileContentValidator, FileContentValidator>();
-    services.AddScoped<AttachmentUploadCoordinator>();
     services.AddScoped<IFileStorageService, LocalFileStorageService>();
     logger.LogInformation("{Project} services configured", "Infrastructure");
     return services;

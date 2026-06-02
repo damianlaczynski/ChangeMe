@@ -1,4 +1,3 @@
-using ChangeMe.Backend.Domain.Common.Attachments;
 using ChangeMe.Backend.UseCases.Issues.Dtos;
 using ChangeMe.Backend.UseCases.Issues.Utils;
 
@@ -26,7 +25,7 @@ public class GetIssueAttachmentsHandler(
 
     var projected = context.IssueAttachments
       .AsNoTracking()
-      .Where(a => a.OwnerId == query.IssueId && a.Status == AttachmentStatus.ACTIVE)
+      .Where(a => a.OwnerId == query.IssueId)
       .Select(a => new IssueAttachmentDto
       {
         Id = a.Id,

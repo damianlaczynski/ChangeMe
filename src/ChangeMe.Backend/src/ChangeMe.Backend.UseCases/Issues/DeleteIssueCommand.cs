@@ -19,7 +19,6 @@ public class DeleteIssueHandler(
       return Result.NotFound();
 
     var storageKeysByContainer = issue.Attachments
-      .Where(a => a.OccupiesAttachmentSlot)
       .GroupBy(a => a.StorageContainer)
       .ToList();
 

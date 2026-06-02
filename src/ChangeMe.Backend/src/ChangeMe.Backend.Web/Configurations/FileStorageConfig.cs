@@ -21,6 +21,13 @@ public static class FileStorageConfig
       ? "0 * * * *"
       : fileStorageOptions.CleanupCronExpression;
 
+    var cleanupConcurrentExecutionTimeoutSeconds = fileStorageOptions.CleanupConcurrentExecutionTimeoutSeconds;
+    if (cleanupConcurrentExecutionTimeoutSeconds <= 0)
+      cleanupConcurrentExecutionTimeoutSeconds = 3600;
+
+    GlobalJobFilters.Filters.Add(
+      new AttachmentStorageCleanupConcurrentExecutionFilter(cleanupConcurrentExecutionTimeoutSeconds));
+
     RecurringJob.AddOrUpdate<AttachmentStorageCleanupJob>(
       "attachment-storage-cleanup",
       job => job.ExecuteAsync(JobCancellationToken.Null),

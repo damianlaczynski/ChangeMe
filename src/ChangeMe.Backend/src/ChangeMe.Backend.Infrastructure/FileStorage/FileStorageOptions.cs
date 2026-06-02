@@ -23,7 +23,7 @@ public class FileStorageOptions
     ".xlsx"
   ];
 
-  public int PendingRetentionMinutes { get; set; } = 30;
-
   public string CleanupCronExpression { get; set; } = "0 * * * *";
+
+  public int CleanupConcurrentExecutionTimeoutSeconds { get; set; } = 3600;
 }

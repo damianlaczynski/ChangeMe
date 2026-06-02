@@ -6,7 +6,7 @@ public sealed class IssueAttachment : Attachment
 {
   private IssueAttachment() { }
 
-  public static Result<IssueAttachment> CreatePending(
+  public static Result<IssueAttachment> Create(
     Guid issueId,
     string originalFileName,
     string contentType,
@@ -30,7 +30,6 @@ public sealed class IssueAttachment : Attachment
       ContentType = contentType.Trim(),
       SizeBytes = sizeBytes,
       StorageKey = GenerateStorageKey(),
-      Status = AttachmentStatus.PENDING,
     });
   }
 }

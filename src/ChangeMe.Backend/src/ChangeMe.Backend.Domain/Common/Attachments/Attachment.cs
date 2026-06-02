@@ -8,23 +8,6 @@ public abstract class Attachment : Entity
   public string ContentType { get; protected set; } = string.Empty;
   public long SizeBytes { get; protected set; }
   public string StorageKey { get; protected set; } = string.Empty;
-  public AttachmentStatus Status { get; protected set; } = AttachmentStatus.PENDING;
-
-  public Result<TAttachment> Activate<TAttachment>()
-    where TAttachment : Attachment
-  {
-    if (Status == AttachmentStatus.ACTIVE)
-      return Result.Success((TAttachment)this);
-
-    if (Status != AttachmentStatus.PENDING)
-      return Result.Invalid([new ValidationError(nameof(Status), "invalid attachment status")]);
-
-    Status = AttachmentStatus.ACTIVE;
-    return Result.Success((TAttachment)this);
-  }
-
-  public bool OccupiesAttachmentSlot =>
-    Status is AttachmentStatus.PENDING or AttachmentStatus.ACTIVE;
 
   protected static string GenerateStorageKey() => Guid.CreateVersion7().ToString("N");
 

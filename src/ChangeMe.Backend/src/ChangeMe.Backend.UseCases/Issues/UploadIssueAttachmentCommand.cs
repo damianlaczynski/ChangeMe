@@ -15,7 +15,8 @@ public record UploadIssueAttachmentCommand(
 public class UploadIssueAttachmentHandler(
   ApplicationDbContext context,
   IUserAccessor userAccessor,
-  AttachmentUploadCoordinator attachmentUploadCoordinator,
+  IFileContentValidator fileContentValidator,
+  IFileStorageService fileStorageService,
   IssueNotificationService issueNotificationService) : ICommandHandler<UploadIssueAttachmentCommand, IssueAttachmentDto>
 {
   public async Task<Result<IssueAttachmentDto>> Handle(
@@ -25,7 +26,7 @@ public class UploadIssueAttachmentHandler(
     if (userAccessor.UserId is not Guid actorUserId)
       return Result<IssueAttachmentDto>.Unauthorized();
 
-    var validationResult = attachmentUploadCoordinator.ValidateUpload(
+    var validationResult = fileContentValidator.Validate(
       command.OriginalFileName,
       command.DeclaredContentType,
       command.Content,
@@ -43,57 +44,43 @@ public class UploadIssueAttachmentHandler(
     if (issue is null)
       return Result<IssueAttachmentDto>.NotFound();
 
-    var pendingResult = issue.AddPendingAttachment(
+    var historyCountBeforeAdd = issue.HistoryEntries.Count;
+
+    var addResult = issue.AddAttachment(
       validationResult.Value.SanitizedFileName,
       validationResult.Value.ContentType,
-      command.Content.LongLength);
+      command.Content.LongLength,
+      actorUserId);
 
-    if (!pendingResult.IsSuccess)
-      return pendingResult.Map();
+    if (!addResult.IsSuccess)
+      return addResult.Map();
 
-    var pendingAttachment = pendingResult.Value;
+    var attachment = addResult.Value;
+    context.Attachments.Add(attachment);
 
-    var reserveResult = await attachmentUploadCoordinator.ReservePendingAsync(pendingAttachment, cancellationToken);
-    if (!reserveResult.IsSuccess)
-      return reserveResult.Map();
+    var newHistoryEntries = issue.HistoryEntries
+      .Skip(historyCountBeforeAdd)
+      .ToList();
 
     await using var contentStream = new MemoryStream(command.Content, writable: false);
-    var storageResult = await attachmentUploadCoordinator.WriteContentAsync(
-      pendingAttachment,
+    var storageResult = await fileStorageService.SaveAsync(
+      attachment.StorageContainer,
+      attachment.OwnerId,
+      attachment.StorageKey,
       contentStream,
       cancellationToken);
 
     if (!storageResult.IsSuccess)
     {
-      await attachmentUploadCoordinator.RollbackPendingAsync(pendingAttachment, cancellationToken);
+      await fileStorageService.DeleteAsync(
+        attachment.StorageContainer,
+        attachment.OwnerId,
+        attachment.StorageKey,
+        cancellationToken);
       return storageResult.Map();
     }
 
-    var historyCountBeforeActivation = issue.HistoryEntries.Count;
-
-    var activateResult = issue.ActivateAttachment(pendingAttachment.Id, actorUserId);
-    if (!activateResult.IsSuccess)
-    {
-      await attachmentUploadCoordinator.RollbackPendingAsync(pendingAttachment, cancellationToken);
-      return activateResult.Map();
-    }
-
-    var newHistoryEntries = issue.HistoryEntries
-      .Skip(historyCountBeforeActivation)
-      .ToList();
-
-    if (newHistoryEntries.Count > 0)
-      await context.IssueHistoryEntries.AddRangeAsync(newHistoryEntries, cancellationToken);
-
-    try
-    {
-      await context.SaveChangesAsync(cancellationToken);
-    }
-    catch
-    {
-      await attachmentUploadCoordinator.RollbackPendingAsync(pendingAttachment, cancellationToken);
-      throw;
-    }
+    await context.SaveChangesAsync(cancellationToken);
 
     foreach (var historyEntryId in newHistoryEntries
                .Where(h => IssuesUtils.IsNotificationEligible(h.EventType))
@@ -107,14 +94,14 @@ public class UploadIssueAttachmentHandler(
 
     return Result.Created(new IssueAttachmentDto
     {
-      Id = pendingAttachment.Id,
-      OriginalFileName = pendingAttachment.OriginalFileName,
-      ContentType = pendingAttachment.ContentType,
-      SizeBytes = pendingAttachment.SizeBytes,
+      Id = attachment.Id,
+      OriginalFileName = attachment.OriginalFileName,
+      ContentType = attachment.ContentType,
+      SizeBytes = attachment.SizeBytes,
       UploadedByUserId = actorUserId,
       UploadedByName = userLookup.GetValueOrDefault(actorUserId),
-      CreatedAt = pendingAttachment.CreatedAt,
+      CreatedAt = attachment.CreatedAt,
       CanDelete = true
-    }, $"/issues/{issue.Id}/attachments/{pendingAttachment.Id}");
+    }, $"/issues/{issue.Id}/attachments/{attachment.Id}");
   }
 }

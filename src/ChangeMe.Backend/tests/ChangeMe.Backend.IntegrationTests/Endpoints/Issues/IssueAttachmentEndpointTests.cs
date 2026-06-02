@@ -47,7 +47,6 @@ public sealed class IssueAttachmentEndpointTests(BackendWebApplicationFactory fa
 
     Assert.Single(issue.Attachments);
     Assert.Equal("notes.txt", issue.Attachments.Single().OriginalFileName);
-    Assert.Equal(AttachmentStatus.ACTIVE, issue.Attachments.Single().Status);
     Assert.Contains(
       issue.HistoryEntries,
       entry => entry.EventType == IssueHistoryEventType.ATTACHMENT_ADDED);

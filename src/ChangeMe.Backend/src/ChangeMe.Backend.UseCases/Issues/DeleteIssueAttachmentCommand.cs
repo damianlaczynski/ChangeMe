@@ -1,4 +1,3 @@
-using ChangeMe.Backend.Domain.Common.Attachments;
 using ChangeMe.Backend.Infrastructure.FileStorage;
 using ChangeMe.Backend.UseCases.Issues.Services;
 using ChangeMe.Backend.UseCases.Issues.Utils;
@@ -30,7 +29,7 @@ public class DeleteIssueAttachmentHandler(
       return Result<Guid>.NotFound();
 
     var attachment = issue.Attachments.FirstOrDefault(a => a.Id == command.AttachmentId);
-    if (attachment is null || attachment.Status != AttachmentStatus.ACTIVE)
+    if (attachment is null)
       return Result<Guid>.NotFound();
 
     if (attachment.CreatedBy != actorUserId)

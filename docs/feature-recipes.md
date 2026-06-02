@@ -41,18 +41,18 @@ Use the **Issues attachments** slice as the template for new file features. Shar
 
 1. Add a derived attachment entity (for example `IssueAttachment : Attachment`) and aggregate methods for owner-specific rules.
 2. Reuse `Infrastructure/FileStorage/`:
-   - `AttachmentConstraints`, `FileStorageContainers`, `AttachmentUploadCoordinator`
+   - `AttachmentConstraints`, `FileStorageContainers`
    - `IFileContentValidator` + Mime-Detective content inspection
    - `IFileStorageService` + `LocalFileStorageService` (`container` + `ownerId` paths)
-3. Use **DB-first upload** with `Pending` → `Active` via `AttachmentUploadCoordinator`:
-   - reserve metadata row (`Pending`) and `StorageKey` in DB first
-   - write file to storage using the reserved key
-   - activate row (`Active`), write feature-specific side effects (history, notify)
-   - on failure after the pending row exists, call `RollbackPendingAsync`
-4. Reuse `AttachmentStorageCleanupJob` (Hangfire): stale `Pending` rows and orphaned files for all attachment types.
+3. Use **file-first upload with a single DB commit** (see Issues `UploadIssueAttachmentCommand`):
+   - validate content, then create attachment metadata and side effects in memory
+   - write file to storage using the generated opaque key
+   - `SaveChanges` once (metadata + history/notifications)
+   - on failure before `SaveChanges`, delete the stored file only; on `SaveChanges` failure, rely on EF rollback and delete the file best-effort
+4. Reuse `AttachmentStorageCleanupJob` (Hangfire): orphaned stored files with no matching metadata row for all attachment types.
 5. Add list/upload/download/delete use cases in `UseCases/<Feature>/`.
 6. Add endpoints in `Web/<Feature>/`:
-   - JSON list/delete via `BaseEndpoint` (list/download only `Active`)
+   - JSON list/delete via `BaseEndpoint`
    - multipart upload via `Endpoint` + `AllowFileUploads()`
    - binary download via custom endpoint with `Content-Disposition: attachment` and `X-Content-Type-Options: nosniff`
 7. Cascade-delete stored files when the owning aggregate is removed.

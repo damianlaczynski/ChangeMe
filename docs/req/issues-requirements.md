@@ -300,15 +300,18 @@ Deployment settings under **`FileStorage`** (see backend configuration) define u
 | **Download response**      | **`Content-Disposition: attachment`**, validated **`Content-Type`**, and **`X-Content-Type-Options: nosniff`**.                                                                                                                                                                                                                                                                          |
 | **Authorization**          | Upload, list, and download require authentication. Delete requires authentication **and** uploader identity.                                                                                                                                                                                                                                                                             |
 
-### Upload consistency (DB-first)
+### Upload consistency (file-first, single transaction)
 
-- Upload uses attachment statuses **`Pending`** then **`Active`**:
-  1. reserve metadata and an opaque **`StorageKey`** in the database as **`Pending`**,
-  2. write file content to storage under that key,
-  3. mark the attachment **`Active`**, update **Last activity**, and write history/notifications.
-- If storage write or activation fails after the pending row exists, the server removes the pending row and deletes any partial stored file.
-- **`Pending`** rows older than **`FileStorage:PendingRetentionMinutes`** (default **30**) are removed by automatic cleanup; orphaned files on disk with no matching metadata row are deleted by the same job.
-- List, download, and delete operate only on **`Active`** attachments; **`Pending`** rows do not appear in the UI.
+- Upload does **not** use intermediate attachment statuses; a row in **`attachments`** means the file is fully committed.
+- Flow:
+  1. validate file name, extension, and content (Mime-Detective),
+  2. build attachment metadata and history in memory (opaque **`StorageKey`**, not saved yet),
+  3. write file content to storage under that key,
+  4. persist metadata, history, and **Last activity** in a **single** `SaveChanges` (one DB transaction).
+- If storage write fails before `SaveChanges`, no database row is created; any partial file is deleted best-effort.
+- If `SaveChanges` fails after a successful storage write, EF rolls back the DB transaction and the handler deletes the stored file best-effort.
+- **`AttachmentStorageCleanupJob`** (Hangfire) removes **orphaned files** on disk that have no matching metadata row (for example after a crash between storage write and DB commit).
+- List, download, and delete operate on persisted attachment rows only.
 
 ### Change history
 

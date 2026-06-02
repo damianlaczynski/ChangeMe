@@ -89,18 +89,18 @@ Example for issues:
 
 Settings live under **`FileStorage`** in `appsettings.json` / environment variables:
 
-| Setting                   | Default           | Purpose                                                   |
-| ------------------------- | ----------------- | --------------------------------------------------------- |
-| `RootPath`                | `../../storage`   | Root directory for all stored files                       |
-| `MaxFileSizeBytes`        | `5242880` (5 MB)  | Per-file upload limit                                     |
-| `AllowedExtensions`       | `.pdf`, `.png`, … | Whitelist enforced with Mime-Detective content inspection |
-| `PendingRetentionMinutes` | `30`              | Stale `Pending` rows removed by Hangfire cleanup          |
-| `CleanupCronExpression`   | `0 * * * *`       | Schedule for pending/orphan reconciliation                |
+| Setting                                    | Default           | Purpose                                                   |
+| ------------------------------------------ | ----------------- | --------------------------------------------------------- |
+| `RootPath`                                 | `../../storage`   | Root directory for all stored files                       |
+| `MaxFileSizeBytes`                         | `5242880` (5 MB)  | Per-file upload limit                                     |
+| `AllowedExtensions`                        | `.pdf`, `.png`, … | Whitelist enforced with Mime-Detective content inspection |
+| `CleanupCronExpression`                    | `0 * * * *`       | Schedule for orphaned-file reconciliation                 |
+| `CleanupConcurrentExecutionTimeoutSeconds` | `3600`            | Hangfire lock timeout for cleanup job (avoid overlap)     |
 
 ### Retention and cleanup
 
-- **`Active`** files are kept until the attachment is deleted or the owning issue is deleted.
-- **`Pending`** rows (failed or interrupted uploads) are removed after **`PendingRetentionMinutes`** by **`AttachmentStorageCleanupJob`**; matching partial files and orphaned disk files are deleted in the same job.
+- Attachment metadata and stored files are kept until the attachment is deleted or the owning issue is deleted.
+- **`AttachmentStorageCleanupJob`** (Hangfire) deletes **orphaned files** on disk that have no matching row in **`attachments`** (for example after a failed upload or process crash between storage write and DB commit).
 - Deleting an issue cascades attachment metadata and deletes all stored files for that issue.
 
 ### Backup (production)
