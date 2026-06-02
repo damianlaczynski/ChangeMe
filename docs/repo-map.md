@@ -60,7 +60,7 @@ Each current feature follows a simple slice structure:
   - ASP.NET host startup in `Program.cs`
   - endpoint definitions
   - transport-level configuration
-  - common endpoint base types and pipeline behavior
+  - common endpoint base types and pipeline behavior (`BaseEndpoint`, `BaseEndpointWithoutRequest`, `ResultHttpMapper`, `HttpContextResultExtensions`)
 - `src/ChangeMe.Backend.UseCases`
   - top level of each feature folder contains only command and query files
   - handlers stay in the same files as their commands and queries

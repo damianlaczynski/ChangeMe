@@ -5,10 +5,7 @@ using Microsoft.Extensions.Options;
 
 namespace ChangeMe.Backend.UseCases.Auth;
 
-public sealed class GetMySessionsQuery : PaginationQuery<UserSessionDto>
-{
-  public bool DoNothing { get; set; }
-}
+public sealed class GetMySessionsQuery : PaginationQuery<UserSessionDto> { }
 
 public class GetMySessionsHandler(
   ApplicationDbContext context,

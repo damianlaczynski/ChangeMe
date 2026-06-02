@@ -2,8 +2,7 @@
 
 namespace ChangeMe.Backend.UseCases.Users;
 
-public sealed record GetRolesForAssignmentQuery(bool doNothing = false)
-  : IQuery<IReadOnlyList<RoleAssignmentOptionDto>>;
+public sealed record GetRolesForAssignmentQuery() : IQuery<IReadOnlyList<RoleAssignmentOptionDto>>;
 
 public class GetRolesForAssignmentHandler(ApplicationDbContext context)
   : IQueryHandler<GetRolesForAssignmentQuery, IReadOnlyList<RoleAssignmentOptionDto>>

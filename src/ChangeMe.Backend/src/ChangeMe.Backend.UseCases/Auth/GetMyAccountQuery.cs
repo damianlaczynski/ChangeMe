@@ -7,7 +7,7 @@ using Microsoft.Extensions.Options;
 
 namespace ChangeMe.Backend.UseCases.Auth;
 
-public sealed record GetMyAccountQuery(bool doNothing = false) : IQuery<MyAccountDto>;
+public sealed record GetMyAccountQuery() : IQuery<MyAccountDto>;
 
 public class GetMyAccountHandler(
   ApplicationDbContext context,

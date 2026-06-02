@@ -5,10 +5,14 @@
 ## Add a backend endpoint
 
 1. Create or update the endpoint in `src/ChangeMe.Backend.Web/<Feature>/`.
-2. Add or update the validator in the same file.
-3. Add the request contract and handler in `src/ChangeMe.Backend.UseCases/<Feature>/`.
-4. Reuse domain behavior or add it in `Domain` if new invariants are introduced.
-5. Add integration tests under `tests/ChangeMe.Backend.IntegrationTests/Endpoints/<Feature>/`.
+2. Pick the endpoint base type (see **Endpoint conventions** in [backend-coding-guidelines.md](backend-coding-guidelines.md)):
+   - `BaseEndpoint<TRequest, TResponse>` when FastEndpoints should bind body, query, or route into `TRequest`
+   - `BaseEndpointWithoutRequest<TRequest, TResponse>` when there is no HTTP payload (use a parameterless `record` for `TRequest`)
+   - a custom `Endpoint` / `EndpointWithoutRequest` only for multipart upload, binary download, or other non-standard responses
+3. Add or update the validator in the same file when the request DTO needs validation.
+4. Add the request contract and handler in `src/ChangeMe.Backend.UseCases/<Feature>/`.
+5. Reuse domain behavior or add it in `Domain` if new invariants are introduced.
+6. Add integration tests under `tests/ChangeMe.Backend.IntegrationTests/Endpoints/<Feature>/`.
 
 ## Add a persisted field
 
@@ -28,7 +32,7 @@
 
 ## Change auth-sensitive behavior
 
-1. Check backend endpoint auth defaults in `BaseEndpoint`.
+1. Check backend endpoint auth defaults in `BaseEndpoint` / `BaseEndpointWithoutRequest`.
 2. Check route guards under `features/auth/guards`.
 3. Check token/session handling in `features/auth/services/auth.service.ts`.
 4. Add or update integration coverage for authenticated and anonymous flows.
@@ -51,9 +55,10 @@ Use the **Issues attachments** slice as the template for new file features. Shar
 4. Reuse `AttachmentStorageCleanupJob` (Hangfire): orphaned stored files with no matching metadata row for all attachment types.
 5. Add list/upload/download/delete use cases in `UseCases/<Feature>/`.
 6. Add endpoints in `Web/<Feature>/`:
-   - JSON list/delete via `BaseEndpoint`
-   - multipart upload via `Endpoint` + `AllowFileUploads()`
-   - binary download via custom endpoint with `Content-Disposition: attachment` and `X-Content-Type-Options: nosniff`
+   - JSON list/delete via `BaseEndpoint` (route/query/body binding as needed)
+   - parameterless JSON actions via `BaseEndpointWithoutRequest` (e.g. logout, mark-all-read)
+   - multipart upload via `Endpoint` + `AllowFileUploads()`; send the handler `Result<T>` with `HttpContext.SendResultAsync`
+   - binary download via `EndpointWithoutRequest`; set `Content-Disposition: attachment` and `X-Content-Type-Options: nosniff`, stream bytes to `Response.Body`; use `HttpContext.SendResultAsync` only for error `Result<T>` responses
 7. Cascade-delete stored files when the owning aggregate is removed.
 8. Add integration tests for happy path, validation failure, auth, and delete authorization.
 9. Document deployment storage (volume, backup, retention) in [database-and-docker.md](database-and-docker.md).

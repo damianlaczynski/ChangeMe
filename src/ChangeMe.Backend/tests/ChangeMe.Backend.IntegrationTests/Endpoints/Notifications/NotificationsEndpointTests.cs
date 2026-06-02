@@ -392,10 +392,7 @@ public sealed class NotificationsEndpointTests(BackendWebApplicationFactory fact
       readAt: DateTime.UtcNow.AddMinutes(-2),
       cancellationToken);
 
-    var response = await client.PutAsJsonAsync("/api/notifications/read-all", new
-    {
-      doNothing = true
-    }, cancellationToken);
+    var response = await client.PutAsync("/api/notifications/read-all", null, cancellationToken);
 
     var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
 

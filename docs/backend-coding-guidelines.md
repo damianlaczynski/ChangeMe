@@ -16,7 +16,7 @@ For build, run, and test commands from `src/ChangeMe.Backend` or from the reposi
 - Startup registrations and middleware for one concern should be grouped in `Web/Configurations/*Config.cs` extension methods rather than added inline in `Program.cs`.
 - Owns HTTP endpoint declarations.
 - Owns API-facing validation classes placed next to endpoint definitions.
-- Owns endpoint base behavior such as auth scheme and `Result<T>` to HTTP status mapping through `Common/BaseEndpoint.cs`.
+- Owns endpoint base behavior: JWT auth defaults, `Result<T>` serialization, and HTTP status mapping through `Web/Common/` (`BaseEndpoint.cs`, `BaseEndpointWithoutRequest.cs`, `ResultHttpMapper.cs`, `HttpContextResultExtensions.cs`).
 
 ### UseCases
 
@@ -51,10 +51,23 @@ For build, run, and test commands from `src/ChangeMe.Backend` or from the reposi
 
 ## Endpoint conventions
 
-- Derive endpoints from `BaseEndpoint<TRequest, TResponse>`.
-- Configure route and summary in `ConfigureEndpoint()`.
-- Let the base endpoint handle `Result<T>` serialization and status codes.
-- Validators should stay close to the endpoint they protect.
+Choose the endpoint base type by how the HTTP request is shaped:
+
+| Shape                                                          | Base type                                                               | Example                                                       |
+| -------------------------------------------------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------- |
+| Body, query string, and/or route params bound to a request DTO | `BaseEndpoint<TRequest, TResponse>`                                     | `UpdateIssue`, `DeleteIssueAttachment`, `GetIssueAttachments` |
+| No request payload (GET/POST/PUT with empty body)              | `BaseEndpointWithoutRequest<TRequest, TResponse>`                       | `GetMyAccount`, `Logout`, `MarkAllNotificationsAsRead`        |
+| Multipart upload or other custom request handling              | `Endpoint<TRequest, Result<TResponse>>` + `HttpContext.SendResultAsync` | `UploadIssueAttachment`                                       |
+| Binary stream or non-JSON response                             | `EndpointWithoutRequest` (custom `HandleAsync`)                         | `DownloadIssueAttachment`                                     |
+
+Shared rules:
+
+- Configure route, permissions, and summary in `ConfigureEndpoint()`.
+- Let the base types handle `Result<T>` serialization and status codes; custom endpoints call `HttpContext.SendResultAsync` for JSON `Result<T>` responses.
+- Validators stay close to the endpoint they protect (`Validator<TRequest>` in the same file). `BaseEndpoint` runs them automatically via FastEndpoints; custom endpoints must validate explicitly when needed.
+- Use **parameterless** command/query records for no-payload endpoints — e.g. `record LogoutCommand() : ICommand<bool>`. Do **not** add dummy properties such as `doNothing` to satisfy binding.
+- When an endpoint has **route parameters only** (no body), keep using `BaseEndpoint<TRequest, TResponse>` — FastEndpoints binds route segments to matching property names on the request DTO.
+- When an endpoint has **no payload but needs route values** and you prefer `BaseEndpointWithoutRequest`, override `CreateRequest()` to read `Route<T>(...)`.
 
 ## Handler conventions
 
@@ -81,7 +94,7 @@ Infrastructure services (e.g. `UserAuthTokenService`) **stage** EF changes only 
 
 - JWT configuration lives in `Web/Configurations/AuthConfig.cs` and environment settings.
 - The notifications SignalR hub (push notifications only) and its DI registration should be configured through dedicated `Web/Configurations/*Config.cs` files, not inline in `Program.cs`.
-- Endpoint auth defaults come from `BaseEndpoint`.
+- Endpoint auth defaults come from `BaseEndpoint` and `BaseEndpointWithoutRequest`.
 - Email is abstracted behind `IEmailService`.
 
 ## Test expectations

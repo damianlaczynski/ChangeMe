@@ -1,6 +1,6 @@
 ﻿namespace ChangeMe.Backend.UseCases.Auth;
 
-public sealed record LogoutAllSessionsCommand(bool doNothing = false) : ICommand<bool>;
+public sealed record LogoutAllSessionsCommand() : ICommand<bool>;
 
 public class LogoutAllSessionsHandler(
   ApplicationDbContext context,
