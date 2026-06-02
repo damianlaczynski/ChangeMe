@@ -1,4 +1,5 @@
 using ChangeMe.Backend.Domain.Aggregates.Issue;
+using ChangeMe.Backend.Domain.Common.Attachments;
 using ChangeMe.Backend.Infrastructure.FileStorage;
 
 namespace ChangeMe.Backend.UnitTests.Infrastructure.FileStorage;
@@ -86,6 +87,26 @@ public sealed class FileContentValidatorTests
       IssueConstraints.ATTACHMENT_ALLOWED_EXTENSIONS);
 
     Assert.False(result.IsSuccess);
+  }
+
+  [Fact]
+  public void Validate_WhenFileNameExceedsMaxLength_ShouldPreserveExtensionForContentValidation()
+  {
+    var content = "%PDF-1.7 sample"u8.ToArray();
+    var fileName = $"{new string('a', 300)}.pdf";
+
+    var result = validator.Validate(
+      fileName,
+      "application/pdf",
+      content,
+      content.LongLength,
+      IssueConstraints.ATTACHMENT_MAX_FILE_SIZE_BYTES,
+      IssueConstraints.ATTACHMENT_ALLOWED_EXTENSIONS);
+
+    Assert.True(result.IsSuccess);
+    Assert.Equal(".pdf", Path.GetExtension(result.Value.SanitizedFileName));
+    Assert.True(result.Value.SanitizedFileName.Length <= AttachmentConstraints.ORIGINAL_FILE_NAME_MAX_LENGTH);
+    Assert.Equal("application/pdf", result.Value.ContentType);
   }
 
   [Fact]

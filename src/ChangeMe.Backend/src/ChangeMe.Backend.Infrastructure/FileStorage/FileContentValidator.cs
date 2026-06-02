@@ -120,10 +120,22 @@ public sealed class FileContentValidator(
     }
 
     var sanitized = builder.ToString().Trim();
-    if (sanitized.Length > AttachmentConstraints.ORIGINAL_FILE_NAME_MAX_LENGTH)
-      sanitized = sanitized[..AttachmentConstraints.ORIGINAL_FILE_NAME_MAX_LENGTH];
+    if (sanitized.Length <= AttachmentConstraints.ORIGINAL_FILE_NAME_MAX_LENGTH)
+      return sanitized;
 
-    return sanitized;
+    var extension = Path.GetExtension(sanitized);
+    if (string.IsNullOrEmpty(extension))
+      return sanitized[..AttachmentConstraints.ORIGINAL_FILE_NAME_MAX_LENGTH];
+
+    var baseName = Path.GetFileNameWithoutExtension(sanitized);
+    var maxBaseLength = AttachmentConstraints.ORIGINAL_FILE_NAME_MAX_LENGTH - extension.Length;
+    if (maxBaseLength <= 0)
+      return extension[..AttachmentConstraints.ORIGINAL_FILE_NAME_MAX_LENGTH];
+
+    if (baseName.Length > maxBaseLength)
+      baseName = baseName[..maxBaseLength];
+
+    return baseName + extension;
   }
 
   private static bool IsTextContent(ReadOnlySpan<byte> contentPreview)
