@@ -95,7 +95,6 @@ Settings live under **`FileStorage`** in `appsettings.json` / environment variab
 | ------------------------- | ----------------- | --------------------------------------------------------- |
 | `RootPath`                | `../../storage`   | Root directory for all stored files                       |
 | `MaxFileSizeBytes`        | `5242880` (5 MB)  | Per-file upload limit                                     |
-| `MaxAttachmentsPerIssue`  | `10`              | Attachment count limit per issue                          |
 | `AllowedExtensions`       | `.pdf`, `.png`, … | Whitelist enforced with Mime-Detective content inspection |
 | `PendingRetentionMinutes` | `30`              | Stale `Pending` rows removed by Hangfire cleanup          |
 | `CleanupCronExpression`   | `0 * * * *`       | Schedule for pending/orphan reconciliation                |
