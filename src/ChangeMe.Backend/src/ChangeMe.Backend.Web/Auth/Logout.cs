@@ -2,7 +2,7 @@
 
 namespace ChangeMe.Backend.Web.Auth;
 
-public class Logout(IMediator mediator) : BaseEndpoint<LogoutCommand, bool>(mediator)
+public class Logout(IMediator mediator) : BaseEndpointWithoutRequest<LogoutCommand, bool>(mediator)
 {
   protected override void ConfigureEndpoint()
   {

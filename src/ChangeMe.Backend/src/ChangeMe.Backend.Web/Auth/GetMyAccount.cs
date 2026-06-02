@@ -3,7 +3,7 @@ using ChangeMe.Backend.UseCases.Auth.Dtos;
 
 namespace ChangeMe.Backend.Web.Auth;
 
-public class GetMyAccount(IMediator mediator) : BaseEndpoint<GetMyAccountQuery, MyAccountDto>(mediator)
+public class GetMyAccount(IMediator mediator) : BaseEndpointWithoutRequest<GetMyAccountQuery, MyAccountDto>(mediator)
 {
   protected override void ConfigureEndpoint()
   {

@@ -4,7 +4,7 @@ using Microsoft.Extensions.Options;
 
 namespace ChangeMe.Backend.UseCases.Issues;
 
-public record GetAssignableUsersQuery(bool doNothing = false) : IQuery<List<IssueAssignableUserDto>>;
+public sealed record GetAssignableUsersQuery() : IQuery<List<IssueAssignableUserDto>>;
 
 public class GetAssignableUsersHandler(
   ApplicationDbContext context,

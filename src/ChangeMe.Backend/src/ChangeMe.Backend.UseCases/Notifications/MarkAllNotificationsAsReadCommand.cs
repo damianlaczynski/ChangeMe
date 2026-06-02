@@ -2,7 +2,7 @@
 
 namespace ChangeMe.Backend.UseCases.Notifications;
 
-public sealed record MarkAllNotificationsAsReadCommand(bool DoNothing = false) : ICommand<bool>;
+public sealed record MarkAllNotificationsAsReadCommand() : ICommand<bool>;
 
 public class MarkAllNotificationsAsReadHandler(
   ApplicationDbContext context,

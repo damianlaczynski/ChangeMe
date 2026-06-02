@@ -1,6 +1,6 @@
 ﻿namespace ChangeMe.Backend.UseCases.Auth;
 
-public sealed record LogoutCommand(bool doNothing = false) : ICommand<bool>;
+public sealed record LogoutCommand() : ICommand<bool>;
 
 public class LogoutHandler(
   ApplicationDbContext context,

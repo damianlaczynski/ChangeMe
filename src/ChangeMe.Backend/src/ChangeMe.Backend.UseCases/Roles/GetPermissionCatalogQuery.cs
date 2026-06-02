@@ -4,10 +4,7 @@ using ChangeMe.Backend.UseCases.Roles.Utils;
 
 namespace ChangeMe.Backend.UseCases.Roles;
 
-public sealed class GetPermissionCatalogQuery : IQuery<IReadOnlyList<PermissionCatalogItemDto>>
-{
-  public bool DoNothing { get; set; }
-}
+public sealed record GetPermissionCatalogQuery() : IQuery<IReadOnlyList<PermissionCatalogItemDto>>;
 
 public class GetPermissionCatalogHandler()
   : IQueryHandler<GetPermissionCatalogQuery, IReadOnlyList<PermissionCatalogItemDto>>

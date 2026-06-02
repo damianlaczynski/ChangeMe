@@ -2,7 +2,8 @@
 
 namespace ChangeMe.Backend.Web.Notifications;
 
-public class MarkAllNotificationsAsRead(IMediator mediator) : BaseEndpoint<MarkAllNotificationsAsReadCommand, bool>(mediator)
+public class MarkAllNotificationsAsRead(IMediator mediator)
+  : BaseEndpointWithoutRequest<MarkAllNotificationsAsReadCommand, bool>(mediator)
 {
   protected override void ConfigureEndpoint()
   {

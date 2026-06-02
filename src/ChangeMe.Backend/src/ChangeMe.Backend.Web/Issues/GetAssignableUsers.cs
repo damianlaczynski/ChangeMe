@@ -4,7 +4,7 @@ using ChangeMe.Backend.UseCases.Issues.Dtos;
 namespace ChangeMe.Backend.Web.Issues;
 
 public class GetAssignableUsers(IMediator mediator)
-  : BaseEndpoint<GetAssignableUsersQuery, List<IssueAssignableUserDto>>(mediator)
+  : BaseEndpointWithoutRequest<GetAssignableUsersQuery, List<IssueAssignableUserDto>>(mediator)
 {
   protected override void ConfigureEndpoint()
   {

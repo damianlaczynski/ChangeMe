@@ -5,7 +5,7 @@ using Microsoft.Extensions.Options;
 
 namespace ChangeMe.Backend.UseCases.Auth;
 
-public sealed record GetAuthSettingsQuery(bool DoNothing = false) : IQuery<AuthSettingsDto>;
+public sealed record GetAuthSettingsQuery() : IQuery<AuthSettingsDto>;
 
 public class GetAuthSettingsHandler(IOptions<AuthOptions> options)
   : IQueryHandler<GetAuthSettingsQuery, AuthSettingsDto>

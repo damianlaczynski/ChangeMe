@@ -4,7 +4,7 @@ using ChangeMe.Backend.UseCases.Roles.Dtos;
 namespace ChangeMe.Backend.Web.Roles;
 
 public class GetPermissionCatalog(IMediator mediator)
-  : BaseEndpoint<GetPermissionCatalogQuery, IReadOnlyList<PermissionCatalogItemDto>>(mediator)
+  : BaseEndpointWithoutRequest<GetPermissionCatalogQuery, IReadOnlyList<PermissionCatalogItemDto>>(mediator)
 {
   protected override void ConfigureEndpoint()
   {
