@@ -240,7 +240,7 @@ The user must be able to create a new issue and edit an existing one by providin
 
 ## Goal
 
-Authenticated users must be able to attach files to an issue, review them on **Issue details**, download them securely, and remove attachments they uploaded. This REQ is the **reference implementation** for file handling in the application; later features should reuse the same storage, validation, and API patterns.
+Authenticated users must be able to attach files to an issue, review them on **Issue details**, download them securely, and remove attachments they uploaded.
 
 ## Features
 
@@ -274,7 +274,7 @@ Authenticated users must be able to attach files to an issue, review them on **I
 
 ### Download
 
-- **Download** action fetches the file through the authenticated API and saves it locally under the **original file name** shown in the list.
+- **Download** saves the file to the user's device under the **original file name** shown in the list; the user must be signed in.
 - While downloading, the row action shows a loading state.
 
 ### Delete
@@ -284,34 +284,42 @@ Authenticated users must be able to attach files to an issue, review them on **I
 - On confirm: remove the attachment from the issue, delete stored content, write change history, update **Last activity**, and refresh the list from the first page.
 - Other users do not see **Delete** on attachments they did not upload.
 
-### Security policy (enforced server-side)
+### Upload constraints
 
-Deployment settings under **`FileStorage`** (see backend configuration) define upload limits for file size and allowed types. The per-issue attachment count is a fixed domain rule (not configurable).
+| Rule                   | Limit                                                                                                         |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------- |
+| **Max file size**      | **5 MB** per file                                                                                             |
+| **Max attachments**    | **10** per issue                                                                                              |
+| **Allowed file types** | **`.pdf`**, **`.png`**, **`.jpg`**, **`.jpeg`**, **`.gif`**, **`.txt`**, **`.csv`**, **`.docx`**, **`.xlsx`** |
 
-| Rule                       | Default / behavior                                                                                                                                                                                                                                                                                                                                                                       |
-| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Max file size**          | **5 MB** per file                                                                                                                                                                                                                                                                                                                                                                        |
-| **Max attachments**        | **10** per issue (fixed domain invariant)                                                                                                                                                                                                                                                                                                                                                |
-| **Allowed extensions**     | **`.pdf`**, **`.png`**, **`.jpg`**, **`.jpeg`**, **`.gif`**, **`.txt`**, **`.csv`**, **`.docx`**, **`.xlsx`**                                                                                                                                                                                                                                                                            |
-| **Content validation**     | Declared type and file extension must match an allowed type; content is verified with **[Mime-Detective](https://www.nuget.org/packages/Mime-Detective)** signature detection (scoped to allowed extensions). For **`.txt`** / **`.csv`**, plain-text rules apply and binary signatures that conflict with the declared extension are rejected. Mismatch or unknown content is rejected. |
-| **File name sanitization** | Original name is stored for display only; path segments, control characters, and unsafe characters are stripped; max **255** characters.                                                                                                                                                                                                                                                 |
-| **Storage key**            | Opaque server-generated identifier; user-supplied names are **never** used as storage paths.                                                                                                                                                                                                                                                                                             |
-| **Storage location**       | Files live **outside** the web root in a configured root directory (subfolder per issue).                                                                                                                                                                                                                                                                                                |
-| **Download response**      | **`Content-Disposition: attachment`**, validated **`Content-Type`**, and **`X-Content-Type-Options: nosniff`**.                                                                                                                                                                                                                                                                          |
-| **Authorization**          | Upload, list, and download require authentication. Delete requires authentication **and** uploader identity.                                                                                                                                                                                                                                                                             |
+### Validation
 
-### Upload consistency (file-first, single transaction)
+- Upload, list, and download require a signed-in user.
+- Empty files are rejected.
+- Files exceeding **5 MB** are rejected; inline error: **`File cannot exceed 5.0 MB.`**
+- When the issue already has **10** attachments, further uploads are rejected.
+- Files without a file extension are rejected.
+- Files whose extension is not in the allowed list are rejected.
+- File content must match the declared file type; content that does not match the file extension is rejected.
+- **`.txt`** and **`.csv`** files must be plain text; binary content in a text file is rejected.
+- The file name shown in the list is derived from the name supplied by the user; path segments, control characters, and unsafe characters are removed; the displayed name cannot exceed **255** characters.
+- Invalid or empty file names after sanitization are rejected.
+- Validation errors from the server are shown inline near the upload control.
 
-- Upload does **not** use intermediate attachment statuses; a row in **`attachments`** means the file is fully committed.
-- Flow:
-  1. validate file name, extension, and content (Mime-Detective),
-  2. build attachment metadata and history in memory (opaque **`StorageKey`**, not saved yet),
-  3. write file content to storage under that key,
-  4. persist metadata, history, and **Last activity** in a **single** `SaveChanges` (one DB transaction).
-- If storage write fails before `SaveChanges`, no database row is created; any partial file is deleted best-effort.
-- If `SaveChanges` fails after a successful storage write, EF rolls back the DB transaction and the handler deletes the stored file best-effort.
-- **`AttachmentStorageCleanupJob`** (Hangfire) removes **orphaned files** on disk that have no matching metadata row (for example after a crash between storage write and DB commit).
-- List, download, and delete operate on persisted attachment rows only.
+### Secure storage and download
+
+- Stored files are not directly accessible by guessing a URL from the file name.
+- The system stores each file under an internal identifier; the user-supplied file name is used for display and download only.
+- **Download** saves the file to the user's device; the browser does not open the file inline on the **Attachments** tab.
+- Downloaded files use the **original file name** shown in the list and the correct file type for the saved file.
+
+### Upload outcome
+
+- An upload succeeds only when the attachment is fully stored and recorded on the issue; on success the attachment appears in the list.
+- A failed upload does not add an entry to the attachments list.
+- The user never sees partial or in-progress attachments in the list.
+- **List**, **Download**, and **Delete** apply only to attachments that completed upload successfully.
+- If the system cannot complete an upload, no attachment record remains visible to the user for that attempt.
 
 ### Change history
 
