@@ -30,8 +30,7 @@ public sealed class AttachmentStorageCleanupJobTests
       issueId,
       "stale.txt",
       "text/plain",
-      5,
-      Guid.CreateVersion7().ToString("N")).Value;
+      5).Value;
     stalePending.CreatedAt = timeProvider.GetUtcNow().UtcDateTime.AddHours(-2);
     stalePending.CreatedBy = Guid.CreateVersion7();
 
@@ -39,8 +38,7 @@ public sealed class AttachmentStorageCleanupJobTests
       issueId,
       "active.txt",
       "text/plain",
-      5,
-      Guid.CreateVersion7().ToString("N")).Value;
+      5).Value;
     activeAttachment.Activate<IssueAttachment>();
     activeAttachment.CreatedAt = timeProvider.GetUtcNow().UtcDateTime;
     activeAttachment.CreatedBy = Guid.CreateVersion7();
@@ -58,7 +56,7 @@ public sealed class AttachmentStorageCleanupJobTests
       await storage.SaveAsync(FileStorageContainers.Issues, issueId, activeAttachment.StorageKey, activeStream, CancellationToken.None);
 
     var orphanOwnerId = Guid.CreateVersion7();
-    var orphanKey = Guid.CreateVersion7().ToString("N");
+    var orphanKey = IssueAttachment.CreatePending(orphanOwnerId, "orphan.txt", "text/plain", 1).Value.StorageKey;
     await using (var orphanStream = new MemoryStream("orphan"u8.ToArray()))
       await storage.SaveAsync(FileStorageContainers.Issues, orphanOwnerId, orphanKey, orphanStream, CancellationToken.None);
 

@@ -276,8 +276,7 @@ public class Issue : Entity, IAggregateRoot
   public Result<IssueAttachment> AddPendingAttachment(
     string originalFileName,
     string contentType,
-    long sizeBytes,
-    string storageKey)
+    long sizeBytes)
   {
     if (attachments.Count(a => a.OccupiesAttachmentSlot) >= AttachmentConstraints.MAX_ATTACHMENTS_PER_ISSUE)
       return Result.Invalid([new ValidationError(nameof(Attachments), $"cannot exceed {AttachmentConstraints.MAX_ATTACHMENTS_PER_ISSUE} attachments per issue")]);
@@ -286,8 +285,7 @@ public class Issue : Entity, IAggregateRoot
       Id,
       originalFileName,
       contentType,
-      sizeBytes,
-      storageKey);
+      sizeBytes);
 
     if (!attachmentResult.IsSuccess)
       return attachmentResult.Map();

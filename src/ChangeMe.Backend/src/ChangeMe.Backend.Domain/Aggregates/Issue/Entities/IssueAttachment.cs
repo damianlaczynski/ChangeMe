@@ -10,16 +10,14 @@ public sealed class IssueAttachment : Attachment
     Guid issueId,
     string originalFileName,
     string contentType,
-    long sizeBytes,
-    string storageKey)
+    long sizeBytes)
   {
     var validationErrors = ValidateMetadata(
       FileStorageContainers.Issues,
       issueId,
       originalFileName,
       contentType,
-      sizeBytes,
-      storageKey);
+      sizeBytes);
 
     if (validationErrors.Count > 0)
       return Result.Invalid(validationErrors);
@@ -31,7 +29,7 @@ public sealed class IssueAttachment : Attachment
       OriginalFileName = originalFileName.Trim(),
       ContentType = contentType.Trim(),
       SizeBytes = sizeBytes,
-      StorageKey = storageKey.Trim(),
+      StorageKey = GenerateStorageKey(),
       Status = AttachmentStatus.PENDING,
     });
   }

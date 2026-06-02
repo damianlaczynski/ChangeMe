@@ -43,13 +43,10 @@ public class UploadIssueAttachmentHandler(
     if (issue is null)
       return Result<IssueAttachmentDto>.NotFound();
 
-    var storageKey = Guid.CreateVersion7().ToString("N");
-
     var pendingResult = issue.AddPendingAttachment(
       validationResult.Value.SanitizedFileName,
       validationResult.Value.ContentType,
-      command.Content.LongLength,
-      storageKey);
+      command.Content.LongLength);
 
     if (!pendingResult.IsSuccess)
       return pendingResult.Map();

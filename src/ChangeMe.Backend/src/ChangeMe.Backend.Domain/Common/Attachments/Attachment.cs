@@ -26,13 +26,14 @@ public abstract class Attachment : Entity
   public bool OccupiesAttachmentSlot =>
     Status is AttachmentStatus.PENDING or AttachmentStatus.ACTIVE;
 
+  protected static string GenerateStorageKey() => Guid.CreateVersion7().ToString("N");
+
   protected static List<ValidationError> ValidateMetadata(
     string storageContainer,
     Guid ownerId,
     string originalFileName,
     string contentType,
-    long sizeBytes,
-    string storageKey)
+    long sizeBytes)
   {
     var validationErrors = new List<ValidationError>();
 
@@ -58,11 +59,6 @@ public abstract class Attachment : Entity
       validationErrors.Add(new ValidationError(nameof(SizeBytes), "must be greater than zero"));
     else if (sizeBytes > AttachmentConstraints.MAX_FILE_SIZE_BYTES)
       validationErrors.Add(new ValidationError(nameof(SizeBytes), $"cannot exceed {AttachmentConstraints.MAX_FILE_SIZE_BYTES} bytes"));
-
-    if (string.IsNullOrWhiteSpace(storageKey))
-      validationErrors.Add(new ValidationError(nameof(StorageKey), "cannot be empty"));
-    else if (storageKey.Trim().Length > AttachmentConstraints.STORAGE_KEY_MAX_LENGTH)
-      validationErrors.Add(new ValidationError(nameof(StorageKey), $"cannot be longer than {AttachmentConstraints.STORAGE_KEY_MAX_LENGTH} characters"));
 
     return validationErrors;
   }
