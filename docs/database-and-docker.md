@@ -64,7 +64,7 @@ See [data-generator.md](data-generator.md) for architecture, configuration, and 
 
 ## File storage (issue attachments)
 
-Issue attachments are stored on disk under **`FileStorage:RootPath`**, not in the database. Metadata (file name, size, content type, opaque storage key) lives in the **`issue_attachments`** table.
+Issue attachment **file bytes** are stored on disk under **`FileStorage:RootPath`**, not in the database. **Metadata** (file name, size, content type, opaque storage key, status) lives in the shared **`attachments`** table using **TPH** inheritance: the **`AttachmentType`** discriminator distinguishes types; **`IssueAttachment`** (`AttachmentType` = `Issue`) is the current derived type. New attachment owners add another subclass and storage container name.
 
 ### Layout
 
@@ -74,8 +74,6 @@ Issue attachments are stored on disk under **`FileStorage:RootPath`**, not in th
     {ownerId}/
       {storageKey}
 ```
-
-Shared attachment metadata lives in the **`attachments`** table (TPH inheritance). **`IssueAttachment`** is the current derived type; new owners add another subclass and container name.
 
 Example for issues:
 
