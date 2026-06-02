@@ -1,8 +1,7 @@
-using ChangeMe.Backend.Infrastructure.FileStorage;
+using ChangeMe.Backend.Domain.Aggregates.Issue;
 using ChangeMe.Backend.UseCases.Issues;
 using ChangeMe.Backend.UseCases.Issues.Dtos;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.Extensions.Options;
 
 namespace ChangeMe.Backend.Web.Issues;
 
@@ -12,9 +11,7 @@ public sealed class UploadIssueAttachmentRequest
   public IFormFile File { get; set; } = default!;
 }
 
-public class UploadIssueAttachment(
-  IMediator mediator,
-  IOptions<FileStorageOptions> fileStorageOptions) : Endpoint<UploadIssueAttachmentRequest, Result<IssueAttachmentDto>>
+public class UploadIssueAttachment(IMediator mediator) : Endpoint<UploadIssueAttachmentRequest, Result<IssueAttachmentDto>>
 {
   public override void Configure()
   {
@@ -34,10 +31,10 @@ public class UploadIssueAttachment(
     {
       response = Result<IssueAttachmentDto>.Invalid([new ValidationError("File", "cannot be empty")]);
     }
-    else if (file.Length > fileStorageOptions.Value.MaxFileSizeBytes)
+    else if (file.Length > IssueAttachmentConstraints.MAX_FILE_SIZE_BYTES)
     {
       response = Result<IssueAttachmentDto>.Invalid([
-        new ValidationError("File", $"cannot exceed {fileStorageOptions.Value.MaxFileSizeBytes} bytes")
+        new ValidationError("File", $"cannot exceed {IssueAttachmentConstraints.MAX_FILE_SIZE_BYTES} bytes")
       ]);
     }
     else

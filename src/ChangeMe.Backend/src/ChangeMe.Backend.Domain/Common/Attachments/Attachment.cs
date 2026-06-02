@@ -16,7 +16,8 @@ public abstract class Attachment : Entity
     Guid ownerId,
     string originalFileName,
     string contentType,
-    long sizeBytes)
+    long sizeBytes,
+    int maxFileSizeBytes)
   {
     var validationErrors = new List<ValidationError>();
 
@@ -40,8 +41,8 @@ public abstract class Attachment : Entity
 
     if (sizeBytes <= 0)
       validationErrors.Add(new ValidationError(nameof(SizeBytes), "must be greater than zero"));
-    else if (sizeBytes > AttachmentConstraints.MAX_FILE_SIZE_BYTES)
-      validationErrors.Add(new ValidationError(nameof(SizeBytes), $"cannot exceed {AttachmentConstraints.MAX_FILE_SIZE_BYTES} bytes"));
+    else if (sizeBytes > maxFileSizeBytes)
+      validationErrors.Add(new ValidationError(nameof(SizeBytes), $"cannot exceed {maxFileSizeBytes} bytes"));
 
     return validationErrors;
   }

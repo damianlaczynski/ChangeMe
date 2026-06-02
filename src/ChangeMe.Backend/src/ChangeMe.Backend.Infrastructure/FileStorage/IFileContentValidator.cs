@@ -6,7 +6,9 @@ public interface IFileContentValidator
     string originalFileName,
     string? declaredContentType,
     ReadOnlySpan<byte> contentPreview,
-    long sizeBytes);
+    long sizeBytes,
+    int maxFileSizeBytes,
+    IReadOnlyCollection<string> allowedExtensions);
 }
 
 public sealed record FileContentValidationResult(

@@ -1,6 +1,5 @@
 ﻿using ChangeMe.Backend.Domain.Aggregates.Issue.Entities;
 using ChangeMe.Backend.Domain.Aggregates.Issue.Enums;
-using ChangeMe.Backend.Domain.Common.Attachments;
 
 namespace ChangeMe.Backend.Domain.Aggregates.Issue;
 
@@ -279,8 +278,8 @@ public class Issue : Entity, IAggregateRoot
     long sizeBytes,
     Guid actorUserId)
   {
-    if (attachments.Count >= AttachmentConstraints.MAX_ATTACHMENTS_PER_ISSUE)
-      return Result.Invalid([new ValidationError(nameof(Attachments), $"cannot exceed {AttachmentConstraints.MAX_ATTACHMENTS_PER_ISSUE} attachments per issue")]);
+    if (attachments.Count >= IssueAttachmentConstraints.MAX_ATTACHMENTS_PER_ISSUE)
+      return Result.Invalid([new ValidationError(nameof(Attachments), $"cannot exceed {IssueAttachmentConstraints.MAX_ATTACHMENTS_PER_ISSUE} attachments per issue")]);
 
     var attachmentResult = IssueAttachment.Create(
       Id,
@@ -424,5 +423,24 @@ public static class IssueConstraints
   public const int TITLE_MIN_LENGTH = 3;
   public const int TITLE_MAX_LENGTH = 255;
   public const int DESCRIPTION_MAX_LENGTH = 2000;
-  public const string STORAGE_CONTAINER = "issues";
+  public const string STORAGE_CONTAINER = nameof(Issue);
+}
+
+public static class IssueAttachmentConstraints
+{
+  public const int MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;
+  public const int MAX_ATTACHMENTS_PER_ISSUE = 10;
+
+  public static readonly string[] AllowedExtensions =
+  [
+    ".pdf",
+    ".png",
+    ".jpg",
+    ".jpeg",
+    ".gif",
+    ".txt",
+    ".csv",
+    ".docx",
+    ".xlsx"
+  ];
 }

@@ -1,21 +1,20 @@
 using System.Text;
 using ChangeMe.Backend.Domain.Common.Attachments;
-using Microsoft.Extensions.Options;
 using MimeDetective;
 
 namespace ChangeMe.Backend.Infrastructure.FileStorage;
 
 public sealed class FileContentValidator(
-  IOptions<FileStorageOptions> options,
   FileContentInspectorProvider inspectorProvider) : IFileContentValidator
 {
   public Result<FileContentValidationResult> Validate(
     string originalFileName,
     string? declaredContentType,
     ReadOnlySpan<byte> contentPreview,
-    long sizeBytes)
+    long sizeBytes,
+    int maxFileSizeBytes,
+    IReadOnlyCollection<string> allowedExtensions)
   {
-    var maxFileSizeBytes = options.Value.MaxFileSizeBytes;
     if (sizeBytes <= 0)
       return Result<FileContentValidationResult>.Invalid([new ValidationError("File", "cannot be empty")]);
 
@@ -31,7 +30,7 @@ public sealed class FileContentValidator(
       return Result<FileContentValidationResult>.Invalid([new ValidationError("File", "file extension is required")]);
 
     extension = extension.ToLowerInvariant();
-    if (!IsExtensionAllowed(extension))
+    if (!IsExtensionAllowed(extension, allowedExtensions))
       return Result<FileContentValidationResult>.Invalid([new ValidationError("File", "file type is not allowed")]);
 
     var profile = FileExtensionProfiles.GetProfile(extension);
@@ -97,8 +96,10 @@ public sealed class FileContentValidator(
     return IsTextContent(content);
   }
 
-  private bool IsExtensionAllowed(string extension) =>
-    options.Value.AllowedExtensions.Any(x => string.Equals(x, extension, StringComparison.OrdinalIgnoreCase))
+  private static bool IsExtensionAllowed(
+    string extension,
+    IReadOnlyCollection<string> allowedExtensions) =>
+    allowedExtensions.Any(x => string.Equals(x, extension, StringComparison.OrdinalIgnoreCase))
     && FileExtensionProfiles.IsConfiguredExtension(extension);
 
   private static string SanitizeFileName(string originalFileName)

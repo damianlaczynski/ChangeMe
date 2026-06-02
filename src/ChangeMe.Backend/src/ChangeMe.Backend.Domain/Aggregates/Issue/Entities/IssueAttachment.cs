@@ -17,7 +17,8 @@ public sealed class IssueAttachment : Attachment
       issueId,
       originalFileName,
       contentType,
-      sizeBytes);
+      sizeBytes,
+      IssueAttachmentConstraints.MAX_FILE_SIZE_BYTES);
 
     if (validationErrors.Count > 0)
       return Result.Invalid(validationErrors);

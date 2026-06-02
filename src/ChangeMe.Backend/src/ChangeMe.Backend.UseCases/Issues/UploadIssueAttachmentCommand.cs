@@ -1,3 +1,4 @@
+using ChangeMe.Backend.Domain.Aggregates.Issue;
 using ChangeMe.Backend.Domain.Aggregates.Issue.Entities;
 using ChangeMe.Backend.Infrastructure.FileStorage;
 using ChangeMe.Backend.UseCases.Issues.Dtos;
@@ -30,7 +31,9 @@ public class UploadIssueAttachmentHandler(
       command.OriginalFileName,
       command.DeclaredContentType,
       command.Content,
-      command.Content.LongLength);
+      command.Content.LongLength,
+      IssueAttachmentConstraints.MAX_FILE_SIZE_BYTES,
+      IssueAttachmentConstraints.AllowedExtensions);
 
     if (!validationResult.IsSuccess)
       return validationResult.Map();
