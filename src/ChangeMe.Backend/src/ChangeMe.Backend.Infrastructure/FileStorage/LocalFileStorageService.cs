@@ -22,11 +22,13 @@ public sealed class LocalFileStorageService(IOptions<FileStorageOptions> options
 
       await using var targetStream = new FileStream(
         targetPath,
-        FileMode.CreateNew,
-        FileAccess.Write,
-        FileShare.None,
-        bufferSize: 81920,
-        useAsync: true);
+        new FileStreamOptions
+        {
+          Mode = FileMode.CreateNew,
+          Access = FileAccess.Write,
+          Share = FileShare.None,
+          Options = FileOptions.Asynchronous,
+        });
 
       await content.CopyToAsync(targetStream, cancellationToken);
 
@@ -56,11 +58,13 @@ public sealed class LocalFileStorageService(IOptions<FileStorageOptions> options
 
     Stream stream = new FileStream(
       filePath,
-      FileMode.Open,
-      FileAccess.Read,
-      FileShare.Read | FileShare.Delete,
-      bufferSize: 81920,
-      useAsync: true);
+      new FileStreamOptions
+      {
+        Mode = FileMode.Open,
+        Access = FileAccess.Read,
+        Share = FileShare.Read | FileShare.Delete,
+        Options = FileOptions.Asynchronous,
+      });
 
     return Task.FromResult(Result.Success(stream));
   }
