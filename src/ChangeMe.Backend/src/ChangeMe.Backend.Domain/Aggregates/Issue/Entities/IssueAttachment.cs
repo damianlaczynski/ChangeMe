@@ -25,6 +25,7 @@ public sealed class IssueAttachment : Attachment
 
     return Result.Success(new IssueAttachment
     {
+      Type = AttachmentType.Issue,
       StorageContainer = IssueConstraints.STORAGE_CONTAINER,
       OwnerId = issueId,
       OriginalFileName = originalFileName.Trim(),

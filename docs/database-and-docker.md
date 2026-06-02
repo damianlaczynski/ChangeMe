@@ -64,7 +64,7 @@ See [data-generator.md](data-generator.md) for architecture, configuration, and 
 
 ## File storage (issue attachments)
 
-Issue attachment **file bytes** are stored on disk under **`FileStorage:RootPath`**, not in the database. **Metadata** (file name, size, content type, opaque storage key, status) lives in the shared **`attachments`** table using **TPH** inheritance: the **`AttachmentType`** discriminator distinguishes types; **`IssueAttachment`** (`AttachmentType` = `Issue`) is the current derived type. New attachment owners add another subclass and storage container name.
+Issue attachment **file bytes** are stored on disk under **`FileStorage:RootPath`**, not in the database. **Metadata** (file name, size, content type, opaque storage key) lives in the shared **`attachments`** table using **TPH** inheritance: the **`Type`** column (EF discriminator, `AttachmentType` enum stored as string) distinguishes types; **`IssueAttachment`** (`Type` = `Issue`) is the current derived type. New attachment owners add another enum value, subclass, and storage container name.
 
 ### Layout
 

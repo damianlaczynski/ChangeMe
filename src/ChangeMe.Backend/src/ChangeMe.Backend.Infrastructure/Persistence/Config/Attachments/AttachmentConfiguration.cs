@@ -1,4 +1,3 @@
-using ChangeMe.Backend.Domain.Aggregates.Issue;
 using ChangeMe.Backend.Domain.Aggregates.Issue.Entities;
 using ChangeMe.Backend.Domain.Common.Attachments;
 using Microsoft.EntityFrameworkCore;
@@ -11,8 +10,13 @@ public class AttachmentConfiguration : IEntityTypeConfiguration<Attachment>
   public void Configure(EntityTypeBuilder<Attachment> builder)
   {
     builder.ToTable("attachments");
-    builder.HasDiscriminator<string>("AttachmentType")
-      .HasValue<IssueAttachment>("Issue");
+    builder.HasDiscriminator(a => a.Type)
+      .HasValue<IssueAttachment>(AttachmentType.Issue);
+
+    builder.Property(a => a.Type)
+      .IsRequired()
+      .HasConversion<string>()
+      .HasMaxLength(AttachmentConstraints.TYPE_MAX_LENGTH);
 
     builder.HasKey(e => e.Id);
 
@@ -61,16 +65,5 @@ public class AttachmentConfiguration : IEntityTypeConfiguration<Attachment>
 
     builder.HasIndex(a => a.OwnerId);
     builder.HasIndex(a => new { a.StorageContainer, a.OwnerId, a.StorageKey }).IsUnique();
-  }
-}
-
-public class IssueAttachmentConfiguration : IEntityTypeConfiguration<IssueAttachment>
-{
-  public void Configure(EntityTypeBuilder<IssueAttachment> builder)
-  {
-    builder.HasOne<Issue>()
-      .WithMany(i => i.Attachments)
-      .HasForeignKey(a => a.OwnerId)
-      .OnDelete(DeleteBehavior.Cascade);
   }
 }

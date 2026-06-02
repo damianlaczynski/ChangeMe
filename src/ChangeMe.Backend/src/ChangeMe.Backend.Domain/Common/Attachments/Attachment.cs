@@ -2,6 +2,8 @@ namespace ChangeMe.Backend.Domain.Common.Attachments;
 
 public abstract class Attachment : Entity
 {
+  public AttachmentType Type { get; protected set; }
+
   public string StorageContainer { get; protected set; } = string.Empty;
   public Guid OwnerId { get; protected set; }
   public string OriginalFileName { get; protected set; } = string.Empty;
