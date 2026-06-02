@@ -103,7 +103,7 @@ Settings live under **`FileStorage`** in `appsettings.json` / environment variab
 ### Retention and cleanup
 
 - **`Active`** files are kept until the attachment is deleted or the owning issue is deleted.
-- **`Pending`** rows (failed or interrupted uploads) are removed after **`PendingRetentionMinutes`** by **`IssueAttachmentStorageCleanupJob`**; matching partial files and orphaned disk files are deleted in the same job.
+- **`Pending`** rows (failed or interrupted uploads) are removed after **`PendingRetentionMinutes`** by **`AttachmentStorageCleanupJob`**; matching partial files and orphaned disk files are deleted in the same job.
 - Deleting an issue cascades attachment metadata and deletes all stored files for that issue.
 
 ### Backup (production)
