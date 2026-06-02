@@ -16,6 +16,10 @@ namespace ChangeMe.Backend.IntegrationTests.Fixtures;
 
 public class BackendWebApplicationFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
+  private readonly string fileStorageRootPath = Path.Combine(
+    Path.GetTempPath(),
+    "changeme-integration-tests",
+    Guid.NewGuid().ToString("N"));
   private readonly Dictionary<string, string?> environmentOverrides = new();
 #if PostgreSQL
   private readonly PostgreSqlContainer postgresContainer = new PostgreSqlBuilder("postgres:15.1")
@@ -62,6 +66,7 @@ public class BackendWebApplicationFactory : WebApplicationFactory<Program>, IAsy
     await msSqlContainer.DisposeAsync().AsTask().WaitAsync(cancellationToken);
 #endif
     await base.DisposeAsync();
+    TryDeleteFileStorageRoot();
   }
 
   protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -100,7 +105,8 @@ public class BackendWebApplicationFactory : WebApplicationFactory<Program>, IAsy
     environmentOverrides["Auth__EmailVerification__Enabled"] = "false";
     environmentOverrides["Auth__PasswordExpiration__Enabled"] = "false";
     environmentOverrides["Auth__PasswordPolicy__RequireSpecialCharacter"] = "false";
-    environmentOverrides["FileStorage__RootPath"] = Path.Combine(Path.GetTempPath(), "changeme-tests-storage");
+    Directory.CreateDirectory(fileStorageRootPath);
+    environmentOverrides["FileStorage__RootPath"] = fileStorageRootPath;
 
     ConfigureAuthEnvironmentOverrides(environmentOverrides);
 
@@ -119,6 +125,26 @@ public class BackendWebApplicationFactory : WebApplicationFactory<Program>, IAsy
     foreach (var pair in environmentOverrides)
     {
       Environment.SetEnvironmentVariable(pair.Key, null);
+    }
+  }
+
+  private void TryDeleteFileStorageRoot()
+  {
+    if (!Directory.Exists(fileStorageRootPath))
+    {
+      return;
+    }
+
+    try
+    {
+      Directory.Delete(fileStorageRootPath, recursive: true);
+    }
+    catch (IOException)
+    {
+      // Best-effort cleanup after host shutdown; orphaned files are preferable to failing teardown.
+    }
+    catch (UnauthorizedAccessException)
+    {
     }
   }
 }
