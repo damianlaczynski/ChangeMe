@@ -41,7 +41,6 @@ Use the **Issues attachments** slice as the template for new file features. Shar
 
 1. Add a derived attachment entity (for example `IssueAttachment : Attachment`) and aggregate methods for owner-specific rules.
 2. Reuse `Infrastructure/FileStorage/`:
-   - `AttachmentConstraints`, `FileStorageContainers`
    - `IFileContentValidator` + Mime-Detective content inspection
    - `IFileStorageService` + `LocalFileStorageService` (`container` + `ownerId` paths)
 3. Use **file-first upload with a single DB commit** (see Issues `UploadIssueAttachmentCommand`):

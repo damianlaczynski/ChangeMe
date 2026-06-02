@@ -1,3 +1,4 @@
+using ChangeMe.Backend.Domain.Aggregates.Issue;
 using ChangeMe.Backend.Domain.Aggregates.Issue.Entities;
 using ChangeMe.Backend.Domain.Common.Attachments;
 using ChangeMe.Backend.Infrastructure.FileStorage;
@@ -38,7 +39,7 @@ public sealed class AttachmentStorageCleanupJobTests
     var storage = new LocalFileStorageService(options);
     await using (var activeStream = new MemoryStream("active"u8.ToArray()))
       await storage.SaveAsync(
-        FileStorageContainers.Issues,
+        IssueConstraints.STORAGE_CONTAINER,
         issueId,
         attachment.StorageKey,
         activeStream,
@@ -48,7 +49,7 @@ public sealed class AttachmentStorageCleanupJobTests
     var orphanKey = IssueAttachment.Create(orphanOwnerId, "orphan.txt", "text/plain", 1).Value.StorageKey;
     await using (var orphanStream = new MemoryStream("orphan"u8.ToArray()))
       await storage.SaveAsync(
-        FileStorageContainers.Issues,
+        IssueConstraints.STORAGE_CONTAINER,
         orphanOwnerId,
         orphanKey,
         orphanStream,

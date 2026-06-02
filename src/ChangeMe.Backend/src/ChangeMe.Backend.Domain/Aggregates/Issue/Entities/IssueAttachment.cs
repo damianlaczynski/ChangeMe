@@ -13,7 +13,7 @@ public sealed class IssueAttachment : Attachment
     long sizeBytes)
   {
     var validationErrors = ValidateMetadata(
-      FileStorageContainers.Issues,
+      IssueConstraints.STORAGE_CONTAINER,
       issueId,
       originalFileName,
       contentType,
@@ -24,7 +24,7 @@ public sealed class IssueAttachment : Attachment
 
     return Result.Success(new IssueAttachment
     {
-      StorageContainer = FileStorageContainers.Issues,
+      StorageContainer = IssueConstraints.STORAGE_CONTAINER,
       OwnerId = issueId,
       OriginalFileName = originalFileName.Trim(),
       ContentType = contentType.Trim(),

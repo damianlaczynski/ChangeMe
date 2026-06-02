@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
+using ChangeMe.Backend.Domain.Aggregates.Issue;
 using ChangeMe.Backend.Domain.Aggregates.Issue.Entities;
 using ChangeMe.Backend.Domain.Aggregates.Issue.Enums;
 using ChangeMe.Backend.Domain.Common.Attachments;
@@ -345,7 +346,7 @@ public sealed class IssueAttachmentEndpointTests(BackendWebApplicationFactory fa
     var rootPath = scope.ServiceProvider.GetRequiredService<IOptions<FileStorageOptions>>().Value.RootPath;
     return Path.Combine(
       Path.GetFullPath(rootPath),
-      FileStorageContainers.Issues,
+      IssueConstraints.STORAGE_CONTAINER,
       issueId.ToString("D"),
       storageKey);
   }

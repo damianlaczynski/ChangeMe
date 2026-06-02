@@ -424,4 +424,5 @@ public static class IssueConstraints
   public const int TITLE_MIN_LENGTH = 3;
   public const int TITLE_MAX_LENGTH = 255;
   public const int DESCRIPTION_MAX_LENGTH = 2000;
+  public const string STORAGE_CONTAINER = "issues";
 }
