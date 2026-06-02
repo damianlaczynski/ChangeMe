@@ -33,36 +33,7 @@ public abstract class BaseEndpoint<TRequest, TResponse>(IMediator mediator) : En
       false => await mediator.Send(req, ct) as Result<TResponse> ?? Result<TResponse>.Error("Unknown error")
     };
 
-    var statusCode = response.Status switch
-    {
-      ResultStatus.Ok => StatusCodes.Status200OK,
-      ResultStatus.Created => StatusCodes.Status201Created,
-      ResultStatus.Error => StatusCodes.Status400BadRequest,
-      ResultStatus.Forbidden => StatusCodes.Status403Forbidden,
-      ResultStatus.Unauthorized => StatusCodes.Status401Unauthorized,
-      ResultStatus.Invalid => StatusCodes.Status400BadRequest,
-      ResultStatus.NotFound => StatusCodes.Status404NotFound,
-      ResultStatus.NoContent => StatusCodes.Status204NoContent,
-      ResultStatus.Conflict => StatusCodes.Status409Conflict,
-      ResultStatus.CriticalError => StatusCodes.Status500InternalServerError,
-      ResultStatus.Unavailable => StatusCodes.Status503ServiceUnavailable,
-      _ => StatusCodes.Status500InternalServerError
-    };
-    try
-    {
-      if (statusCode == StatusCodes.Status204NoContent)
-      {
-        await HttpContext.Response.SendNoContentAsync(ct);
-        return;
-      }
-
-      await HttpContext.Response.SendAsync(response, statusCode, cancellation: ct);
-    }
-    catch (OperationCanceledException)
-    {
-      // Client disconnected or request was cancelled - this is expected behavior
-      // No need to log or handle further as the client is no longer listening
-    }
+    await HttpContext.SendResultAsync(response, ct);
     return;
   }
 }

@@ -6,6 +6,8 @@ import {
   AddIssueCommentRequest,
   CreateIssueRequest,
   IssueAssignableUserDto,
+  IssueAttachmentDto,
+  IssueAttachmentsSearchParameters,
   IssueCommentDto,
   IssueCommentsSearchParameters,
   IssueDetailsDto,
@@ -54,6 +56,38 @@ export class IssuesService {
       IssueHistoryEntryDto,
       IssueHistorySearchParameters
     >(`${this.baseEndpoint}/${issueId}/history`, params);
+  }
+
+  getIssueAttachments(
+    issueId: string,
+    params: IssueAttachmentsSearchParameters
+  ): Observable<PaginationResult<IssueAttachmentDto>> {
+    return this.apiService.getPaginated<
+      IssueAttachmentDto,
+      IssueAttachmentsSearchParameters
+    >(`${this.baseEndpoint}/${issueId}/attachments`, params);
+  }
+
+  uploadIssueAttachment(issueId: string, file: File): Observable<IssueAttachmentDto> {
+    const formData = new FormData();
+    formData.append('File', file, file.name);
+
+    return this.apiService.postFormData<IssueAttachmentDto>(
+      `${this.baseEndpoint}/${issueId}/attachments`,
+      formData
+    );
+  }
+
+  downloadIssueAttachment(issueId: string, attachmentId: string): Observable<Blob> {
+    return this.apiService.getBlob(
+      `${this.baseEndpoint}/${issueId}/attachments/${attachmentId}/content`
+    );
+  }
+
+  deleteIssueAttachment(issueId: string, attachmentId: string): Observable<string> {
+    return this.apiService.delete<string>(
+      `${this.baseEndpoint}/${issueId}/attachments/${attachmentId}`
+    );
   }
 
   getAssignableUsers(): Observable<IssueAssignableUserDto[]> {

@@ -9,7 +9,20 @@ import { highlightDialogValue } from '@shared/ui/utils/dialog-message.utils';
 export const IssueConstraints = {
   TITLE_MIN_LENGTH: 3,
   TITLE_MAX_LENGTH: 255,
-  DESCRIPTION_MAX_LENGTH: 2000
+  DESCRIPTION_MAX_LENGTH: 2000,
+  ATTACHMENT_MAX_FILE_SIZE_BYTES: 5 * 1024 * 1024,
+  ATTACHMENT_MAX_ATTACHMENTS_PER_ISSUE: 10,
+  ATTACHMENT_ALLOWED_EXTENSIONS: [
+    '.pdf',
+    '.png',
+    '.jpg',
+    '.jpeg',
+    '.gif',
+    '.txt',
+    '.csv',
+    '.docx',
+    '.xlsx'
+  ] as const
 };
 
 export const IssueAcceptanceCriteriaConstraints = {
@@ -19,6 +32,9 @@ export const IssueAcceptanceCriteriaConstraints = {
 export const IssueCommentConstraints = {
   CONTENT_MAX_LENGTH: 4000
 };
+
+export const issueAttachmentAccept =
+  IssueConstraints.ATTACHMENT_ALLOWED_EXTENSIONS.join(',');
 
 export type IssueBadgeSeverity = 'secondary' | 'success' | 'info' | 'warn' | 'danger';
 
@@ -74,6 +90,10 @@ export function getIssuePrioritySeverity(priority: IssuePriority): IssueBadgeSev
 
 export function getDeleteIssueConfirmMessage(title: string): string {
   return `Delete ${highlightDialogValue(title)}? This cannot be undone.`;
+}
+
+export function getDeleteAttachmentConfirmMessage(fileName: string): string {
+  return `Delete ${highlightDialogValue(fileName)}? This action cannot be undone.`;
 }
 
 export const issueDeleteMenuItemDangerClasses = {
@@ -133,6 +153,16 @@ const ISSUE_HISTORY_EVENT_VISUALS: Record<
   },
   ACCEPTANCE_CRITERION_REMOVED: {
     icon: 'pi pi-times-circle',
+    markerClass: 'bg-red-600 text-white dark:bg-red-500',
+    tagSeverity: 'danger'
+  },
+  ATTACHMENT_ADDED: {
+    icon: 'pi pi-paperclip',
+    markerClass: 'bg-indigo-600 text-white dark:bg-indigo-500',
+    tagSeverity: 'info'
+  },
+  ATTACHMENT_REMOVED: {
+    icon: 'pi pi-trash',
     markerClass: 'bg-red-600 text-white dark:bg-red-500',
     tagSeverity: 'danger'
   }

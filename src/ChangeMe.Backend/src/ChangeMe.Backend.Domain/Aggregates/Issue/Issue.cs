@@ -7,6 +7,7 @@ public class Issue : Entity, IAggregateRoot
 {
   private readonly List<IssueAcceptanceCriterion> acceptanceCriteria = new();
   private readonly List<IssueComment> comments = new();
+  private readonly List<IssueAttachment> attachments = new();
   private readonly List<IssueHistoryEntry> historyEntries = new();
   private readonly List<IssueWatcher> watchers = new();
 
@@ -21,6 +22,7 @@ public class Issue : Entity, IAggregateRoot
 
   public IReadOnlyCollection<IssueAcceptanceCriterion> AcceptanceCriteria => acceptanceCriteria.AsReadOnly();
   public IReadOnlyCollection<IssueComment> Comments => comments.AsReadOnly();
+  public IReadOnlyCollection<IssueAttachment> Attachments => attachments.AsReadOnly();
   public IReadOnlyCollection<IssueHistoryEntry> HistoryEntries => historyEntries.AsReadOnly();
   public IReadOnlyCollection<IssueWatcher> Watchers => watchers.AsReadOnly();
 
@@ -270,6 +272,64 @@ public class Issue : Entity, IAggregateRoot
     return Result.Success(commentResult.Value);
   }
 
+  public Result<IssueAttachment> AddAttachment(
+    string originalFileName,
+    string contentType,
+    long sizeBytes,
+    Guid actorUserId)
+  {
+    if (attachments.Count >= IssueConstraints.ATTACHMENT_MAX_ATTACHMENTS_PER_ISSUE)
+      return Result.Invalid([new ValidationError(nameof(Attachments), $"cannot exceed {IssueConstraints.ATTACHMENT_MAX_ATTACHMENTS_PER_ISSUE} attachments per issue")]);
+
+    var attachmentResult = IssueAttachment.Create(
+      Id,
+      originalFileName,
+      contentType,
+      sizeBytes);
+
+    if (!attachmentResult.IsSuccess)
+      return attachmentResult.Map();
+
+    var attachment = attachmentResult.Value;
+    attachments.Add(attachment);
+
+    var historyResult = AddHistoryEntry(
+      IssueHistoryEventType.ATTACHMENT_ADDED,
+      actorUserId,
+      "Attachment added.",
+      null,
+      attachment.OriginalFileName);
+    if (!historyResult.IsSuccess)
+      return historyResult.Map();
+
+    LastActivityAt = DateTime.UtcNow;
+    return Result.Success(attachment);
+  }
+
+  public Result<IssueAttachment> RemoveAttachment(Guid attachmentId, Guid actorUserId)
+  {
+    var attachment = attachments.FirstOrDefault(a => a.Id == attachmentId);
+    if (attachment is null)
+      return Result.NotFound();
+
+    if (attachment.CreatedBy != actorUserId)
+      return Result.Forbidden();
+
+    var historyResult = AddHistoryEntry(
+      IssueHistoryEventType.ATTACHMENT_REMOVED,
+      actorUserId,
+      "Attachment removed.",
+      attachment.OriginalFileName,
+      null);
+    if (!historyResult.IsSuccess)
+      return historyResult.Map();
+
+    attachments.Remove(attachment);
+    LastActivityAt = DateTime.UtcNow;
+
+    return Result.Success(attachment);
+  }
+
   public Result<IssueWatcher> StartWatching(Guid userId)
   {
     if (watchers.Any(w => w.UserId == userId))
@@ -363,4 +423,19 @@ public static class IssueConstraints
   public const int TITLE_MIN_LENGTH = 3;
   public const int TITLE_MAX_LENGTH = 255;
   public const int DESCRIPTION_MAX_LENGTH = 2000;
+  public const string STORAGE_CONTAINER = nameof(Issue);
+  public const int ATTACHMENT_MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;
+  public const int ATTACHMENT_MAX_ATTACHMENTS_PER_ISSUE = 10;
+  public static readonly string[] ATTACHMENT_ALLOWED_EXTENSIONS =
+  [
+    ".pdf",
+    ".png",
+    ".jpg",
+    ".jpeg",
+    ".gif",
+    ".txt",
+    ".csv",
+    ".docx",
+    ".xlsx"
+  ];
 }

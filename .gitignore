@@ -105,3 +105,6 @@ coverage/
 artifacts/
 .template-test/
 .template-test-output/
+
+# File storage
+src/ChangeMe.Backend/storage/

@@ -12,17 +12,20 @@ public sealed class GetAllIssuesEndpointTests(BackendWebApplicationFactory facto
   public async Task GetAllIssues_WhenIssuesExist_ShouldReturnOkWithSeededItems()
   {
     var cancellationToken = TestContext.Current.CancellationToken;
+    var marker = $"issues-marker-{Guid.NewGuid():N}";
 
-    await IssueTestHelper.SeedIssueAsync(factory, "Issue one", "First", IssuePriority.LOW, null, cancellationToken);
-    await IssueTestHelper.SeedIssueAsync(factory, "Issue two", "Second", IssuePriority.MEDIUM, null, cancellationToken);
+    await IssueTestHelper.SeedIssueAsync(factory, $"{marker} Issue one", "First", IssuePriority.LOW, null, cancellationToken);
+    await IssueTestHelper.SeedIssueAsync(factory, $"{marker} Issue two", "Second", IssuePriority.MEDIUM, null, cancellationToken);
 
     using var client = await TestAuthHelper.CreateAuthenticatedClientAsync(factory, cancellationToken);
 
-    var response = await client.GetAsync("/api/issues?pageNumber=1&pageSize=10", cancellationToken);
+    var response = await client.GetAsync(
+      $"/api/issues?pageNumber=1&pageSize=10&searchText={Uri.EscapeDataString(marker)}",
+      cancellationToken);
     var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
 
     Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-    Assert.Contains("Issue one", responseBody, StringComparison.OrdinalIgnoreCase);
-    Assert.Contains("Issue two", responseBody, StringComparison.OrdinalIgnoreCase);
+    Assert.Contains($"{marker} Issue one", responseBody, StringComparison.OrdinalIgnoreCase);
+    Assert.Contains($"{marker} Issue two", responseBody, StringComparison.OrdinalIgnoreCase);
   }
 }

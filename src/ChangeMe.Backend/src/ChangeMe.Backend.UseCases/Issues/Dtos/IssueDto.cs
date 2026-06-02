@@ -2,6 +2,25 @@
 
 namespace ChangeMe.Backend.UseCases.Issues.Dtos;
 
+public class IssueAttachmentDto
+{
+  public Guid Id { get; set; }
+  public string OriginalFileName { get; set; } = string.Empty;
+  public string ContentType { get; set; } = string.Empty;
+  public long SizeBytes { get; set; }
+  public Guid UploadedByUserId { get; set; }
+  public string? UploadedByName { get; set; }
+  public DateTime CreatedAt { get; set; }
+  public bool CanDelete { get; set; }
+}
+
+public class IssueAttachmentContentDto
+{
+  public Stream Content { get; set; } = Stream.Null;
+  public string OriginalFileName { get; set; } = string.Empty;
+  public string ContentType { get; set; } = string.Empty;
+}
+
 public class IssueDto
 {
   public Guid Id { get; set; }

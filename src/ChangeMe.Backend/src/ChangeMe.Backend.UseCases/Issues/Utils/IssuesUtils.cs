@@ -44,6 +44,9 @@ public static class IssuesUtils
     foreach (var comment in issue.Comments)
       userIds.Add(comment.CreatedBy);
 
+    foreach (var attachment in issue.Attachments)
+      userIds.Add(attachment.CreatedBy);
+
     foreach (var historyEntry in issue.HistoryEntries)
       userIds.Add(historyEntry.ActorUserId);
 
@@ -76,5 +79,7 @@ public static class IssuesUtils
       IssueHistoryEventType.DESCRIPTION_CHANGED or
       IssueHistoryEventType.ACCEPTANCE_CRITERION_ADDED or
       IssueHistoryEventType.ACCEPTANCE_CRITERION_UPDATED or
-      IssueHistoryEventType.ACCEPTANCE_CRITERION_REMOVED;
+      IssueHistoryEventType.ACCEPTANCE_CRITERION_REMOVED or
+      IssueHistoryEventType.ATTACHMENT_ADDED or
+      IssueHistoryEventType.ATTACHMENT_REMOVED;
 }

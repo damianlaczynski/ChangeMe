@@ -61,3 +61,50 @@ npm run data:generate -- --reset
 ```
 
 See [data-generator.md](data-generator.md) for architecture, configuration, and troubleshooting.
+
+## File storage (issue attachments)
+
+Issue attachment **file bytes** are stored on disk under **`FileStorage:RootPath`**, not in the database. **Metadata** (file name, size, content type, opaque storage key) lives in the shared **`attachments`** table using **TPH** inheritance: the **`Type`** column (EF discriminator, `AttachmentType` enum stored as string) distinguishes types; **`IssueAttachment`** (`Type` = `Issue`) is the current derived type. New attachment owners add another enum value, subclass, and storage container name.
+
+### Layout
+
+```
+{FileStorage:RootPath}/
+  {container}/
+    {ownerId}/
+      {storageKey}
+```
+
+Example for issues (`StorageContainer` = `"Issue"` from `IssueConstraints.STORAGE_CONTAINER`):
+
+```
+{FileStorage:RootPath}/Issue/{issueId}/{storageKey}
+```
+
+- **`storageKey`** is server-generated (GUID); user file names are never used as paths.
+- Default local dev path: **`../../storage`** (relative to the Web project working directory).
+- **Docker Compose** mounts a named volume at **`/app/storage`** and sets **`FileStorage__RootPath=/app/storage`** on the `backend` service so attachments survive container restarts.
+
+### Configuration
+
+Settings live under **`FileStorage`** in `appsettings.json` / environment variables:
+
+| Setting                                    | Default         | Purpose                                               |
+| ------------------------------------------ | --------------- | ----------------------------------------------------- |
+| `RootPath`                                 | `../../storage` | Root directory for all stored files                   |
+| `CleanupCronExpression`                    | `0 * * * *`     | Schedule for orphaned-file reconciliation             |
+| `CleanupConcurrentExecutionTimeoutSeconds` | `3600`          | Hangfire lock timeout for cleanup job (avoid overlap) |
+
+Per-feature upload limits (for example issue attachments: **5 MB**, **10** files per issue, allowed extensions) live in domain constraints such as **`IssueConstraints`** in `Domain/Aggregates/Issue/Issue.cs`, not in `FileStorage` options. Content inspection uses **`IFileContentValidator`** (Mime-Detective).
+
+### Retention and cleanup
+
+- Attachment metadata and stored files are kept until the attachment is deleted or the owning issue is deleted.
+- **`AttachmentStorageCleanupJob`** (Hangfire) deletes **orphaned files** on disk that have no matching row in **`attachments`** (for example after a failed upload or process crash between storage write and DB commit).
+- Deleting an issue cascades attachment metadata and deletes all stored files for that issue.
+
+### Backup (production)
+
+Include **`{FileStorage:RootPath}/Issue/`** in your backup plan **together with the application database**. Restoring only the database without files leaves broken download links; restoring files without matching metadata leaves orphaned blobs (cleaned up eventually by the cleanup job, but downloads will fail until then).
+
+For cloud deployments, consider moving **`IFileStorageService`** to object storage (S3, Azure Blob) with server-side encryption and lifecycle policies; the Issues slice is the reference pattern for metadata + opaque keys.

@@ -58,6 +58,18 @@ export class ApiService {
     return this.pipeResult(this.http.delete<Result<T>>(`${this.baseUrl}${endpoint}`));
   }
 
+  public postFormData<T>(endpoint: string, formData: FormData): Observable<T> {
+    return this.pipeResult(
+      this.http.post<Result<T>>(`${this.baseUrl}${endpoint}`, formData)
+    );
+  }
+
+  public getBlob(endpoint: string): Observable<Blob> {
+    return this.http
+      .get(`${this.baseUrl}${endpoint}`, { responseType: 'blob' })
+      .pipe(catchError((error: unknown) => throwError(() => this.toError(error))));
+  }
+
   private pipeResult<T>(source: Observable<Result<T>>): Observable<T> {
     return source.pipe(
       map((response) => this.handleResponse(response)),

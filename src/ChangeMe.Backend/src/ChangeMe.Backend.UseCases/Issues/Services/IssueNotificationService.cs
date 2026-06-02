@@ -220,6 +220,8 @@ public class IssueNotificationService(
       IssueHistoryEventType.ACCEPTANCE_CRITERION_ADDED => NotificationEventType.ACCEPTANCE_CRITERION_ADDED,
       IssueHistoryEventType.ACCEPTANCE_CRITERION_UPDATED => NotificationEventType.ACCEPTANCE_CRITERION_UPDATED,
       IssueHistoryEventType.ACCEPTANCE_CRITERION_REMOVED => NotificationEventType.ACCEPTANCE_CRITERION_REMOVED,
+      IssueHistoryEventType.ATTACHMENT_ADDED => NotificationEventType.ATTACHMENT_ADDED,
+      IssueHistoryEventType.ATTACHMENT_REMOVED => NotificationEventType.ATTACHMENT_REMOVED,
       _ => NotificationEventType.STATUS_CHANGED,
     };
   }
@@ -236,6 +238,8 @@ public class IssueNotificationService(
       IssueHistoryEventType.ACCEPTANCE_CRITERION_ADDED => $"Issue '{issueTitle}' acceptance criterion added.",
       IssueHistoryEventType.ACCEPTANCE_CRITERION_UPDATED => $"Issue '{issueTitle}' acceptance criterion updated.",
       IssueHistoryEventType.ACCEPTANCE_CRITERION_REMOVED => $"Issue '{issueTitle}' acceptance criterion removed.",
+      IssueHistoryEventType.ATTACHMENT_ADDED => $"Issue '{issueTitle}' attachment '{historyEntry.CurrentValue}' added.",
+      IssueHistoryEventType.ATTACHMENT_REMOVED => $"Issue '{issueTitle}' attachment '{historyEntry.PreviousValue}' removed.",
       _ => historyEntry.Summary,
     };
   }

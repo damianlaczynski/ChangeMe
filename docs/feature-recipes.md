@@ -32,3 +32,36 @@
 2. Check route guards under `features/auth/guards`.
 3. Check token/session handling in `features/auth/services/auth.service.ts`.
 4. Add or update integration coverage for authenticated and anonymous flows.
+
+## Add file upload and download (reference: Issues attachments)
+
+Use the **Issues attachments** slice as the template for new file features. Shared infrastructure lives under `Domain/Common/Attachments/`, `Infrastructure/FileStorage/`, and the **`attachments`** table (TPH).
+
+### Backend
+
+1. Add a value to **`AttachmentType`** (`Domain/Common/Attachments/`), a derived entity (for example `IssueAttachment : Attachment`), and aggregate methods for owner-specific rules.
+2. Configure persistence: shared TPH mapping in **`Infrastructure/Persistence/Config/Attachments/AttachmentConfiguration.cs`** (add `.HasValue<…>(AttachmentType.…)`); owner relationship in **`Config/<Feature>/`** (for example **`Config/Issues/IssueAttachmentConfiguration.cs`**).
+3. Reuse `Infrastructure/FileStorage/`:
+   - `IFileContentValidator` + Mime-Detective content inspection
+   - `IFileStorageService` + `LocalFileStorageService` (`container` + `ownerId` paths)
+4. Use **file-first upload with a single DB commit** (see Issues `UploadIssueAttachmentCommand`):
+   - validate content, then create attachment metadata and side effects in memory
+   - write file to storage using the generated opaque key
+   - `SaveChanges` once (metadata + history/notifications)
+   - on failure before `SaveChanges`, delete the stored file only; if `SaveChanges` fails after a successful storage write, EF rolls back metadata and **`AttachmentStorageCleanupJob`** removes the orphaned file on the next run
+5. Reuse `AttachmentStorageCleanupJob` (Hangfire): orphaned stored files with no matching metadata row for all attachment types.
+6. Add list/upload/download/delete use cases in `UseCases/<Feature>/`.
+7. Add endpoints in `Web/<Feature>/`:
+   - JSON list/delete via `BaseEndpoint` (route/query/body binding as needed)
+   - multipart upload via `Endpoint` + `AllowFileUploads()`; send the handler `Result<T>` with `HttpContext.SendResultAsync`
+   - binary download via `EndpointWithoutRequest`; set `Content-Disposition: attachment` and `X-Content-Type-Options: nosniff`, stream bytes to `Response.Body`; use `HttpContext.SendResultAsync` only for error `Result<T>` responses
+8. Cascade-delete stored files when the owning aggregate is removed.
+9. Add integration tests for happy path, validation failure, auth, and delete authorization.
+10. Document deployment storage (volume, backup, retention) in [database-and-docker.md](database-and-docker.md).
+
+### Frontend
+
+1. Extend feature models and `features/<feature>/utils` with size/extension limits.
+2. Add `ApiService.postFormData()` and `getBlob()` helpers; keep endpoint strings in the feature service.
+3. Add a tab or panel component with upload control, paginated list, download, and uploader-only delete.
+4. Reuse PrimeNG `p-fileupload` (basic mode) or equivalent; show inline validation errors and toasts for mutations.
