@@ -1,7 +1,8 @@
-using ChangeMe.Backend.Domain.Common.Attachments;
+using ChangeMe.Backend.Infrastructure.FileStorage;
 using ChangeMe.Backend.UseCases.Issues;
 using ChangeMe.Backend.UseCases.Issues.Dtos;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.Options;
 
 namespace ChangeMe.Backend.Web.Issues;
 
@@ -11,7 +12,9 @@ public sealed class UploadIssueAttachmentRequest
   public IFormFile File { get; set; } = default!;
 }
 
-public class UploadIssueAttachment(IMediator mediator) : Endpoint<UploadIssueAttachmentRequest, Result<IssueAttachmentDto>>
+public class UploadIssueAttachment(
+  IMediator mediator,
+  IOptions<FileStorageOptions> fileStorageOptions) : Endpoint<UploadIssueAttachmentRequest, Result<IssueAttachmentDto>>
 {
   public override void Configure()
   {
@@ -31,10 +34,10 @@ public class UploadIssueAttachment(IMediator mediator) : Endpoint<UploadIssueAtt
     {
       response = Result<IssueAttachmentDto>.Invalid([new ValidationError("File", "cannot be empty")]);
     }
-    else if (file.Length > AttachmentConstraints.MAX_FILE_SIZE_BYTES)
+    else if (file.Length > fileStorageOptions.Value.MaxFileSizeBytes)
     {
       response = Result<IssueAttachmentDto>.Invalid([
-        new ValidationError("File", $"cannot exceed {AttachmentConstraints.MAX_FILE_SIZE_BYTES} bytes")
+        new ValidationError("File", $"cannot exceed {fileStorageOptions.Value.MaxFileSizeBytes} bytes")
       ]);
     }
     else
@@ -49,7 +52,7 @@ public class UploadIssueAttachment(IMediator mediator) : Endpoint<UploadIssueAtt
           file.FileName,
           file.ContentType,
           memoryStream.ToArray()),
-        ct) as Result<IssueAttachmentDto> ?? Result<IssueAttachmentDto>.Error("Unknown error");
+        ct) ?? Result<IssueAttachmentDto>.Error("Unknown error");
     }
 
     var statusCode = MapStatusCode(response.Status);
