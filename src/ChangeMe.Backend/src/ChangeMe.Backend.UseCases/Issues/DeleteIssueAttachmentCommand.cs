@@ -36,14 +36,9 @@ public class DeleteIssueAttachmentHandler(
     if (attachment.CreatedBy != actorUserId)
       return Result<Guid>.Forbidden();
 
-    var deleteFileResult = await fileStorageService.DeleteAsync(
-      attachment.StorageContainer,
-      attachment.OwnerId,
-      attachment.StorageKey,
-      cancellationToken);
-
-    if (!deleteFileResult.IsSuccess)
-      return deleteFileResult.Map();
+    var storageContainer = attachment.StorageContainer;
+    var storageOwnerId = attachment.OwnerId;
+    var storageKey = attachment.StorageKey;
 
     var historyCountBeforeRemove = issue.HistoryEntries.Count;
 
@@ -60,6 +55,12 @@ public class DeleteIssueAttachmentHandler(
       await context.IssueHistoryEntries.AddRangeAsync(newHistoryEntries, cancellationToken);
 
     await context.SaveChangesAsync(cancellationToken);
+
+    await fileStorageService.DeleteAsync(
+      storageContainer,
+      storageOwnerId,
+      storageKey,
+      cancellationToken);
 
     foreach (var historyEntryId in newHistoryEntries
                .Where(h => IssuesUtils.IsNotificationEligible(h.EventType))
