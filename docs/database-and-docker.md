@@ -75,10 +75,10 @@ Issue attachment **file bytes** are stored on disk under **`FileStorage:RootPath
       {storageKey}
 ```
 
-Example for issues:
+Example for issues (`StorageContainer` = `"Issue"` from `IssueConstraints.STORAGE_CONTAINER`):
 
 ```
-{FileStorage:RootPath}/issues/{issueId}/{storageKey}
+{FileStorage:RootPath}/Issue/{issueId}/{storageKey}
 ```
 
 - **`storageKey`** is server-generated (GUID); user file names are never used as paths.
@@ -89,13 +89,13 @@ Example for issues:
 
 Settings live under **`FileStorage`** in `appsettings.json` / environment variables:
 
-| Setting                                    | Default           | Purpose                                                   |
-| ------------------------------------------ | ----------------- | --------------------------------------------------------- |
-| `RootPath`                                 | `../../storage`   | Root directory for all stored files                       |
-| `MaxFileSizeBytes`                         | `5242880` (5 MB)  | Per-file upload limit                                     |
-| `AllowedExtensions`                        | `.pdf`, `.png`, … | Whitelist enforced with Mime-Detective content inspection |
-| `CleanupCronExpression`                    | `0 * * * *`       | Schedule for orphaned-file reconciliation                 |
-| `CleanupConcurrentExecutionTimeoutSeconds` | `3600`            | Hangfire lock timeout for cleanup job (avoid overlap)     |
+| Setting                                    | Default         | Purpose                                               |
+| ------------------------------------------ | --------------- | ----------------------------------------------------- |
+| `RootPath`                                 | `../../storage` | Root directory for all stored files                   |
+| `CleanupCronExpression`                    | `0 * * * *`     | Schedule for orphaned-file reconciliation             |
+| `CleanupConcurrentExecutionTimeoutSeconds` | `3600`          | Hangfire lock timeout for cleanup job (avoid overlap) |
+
+Per-feature upload limits (for example issue attachments: **5 MB**, **10** files per issue, allowed extensions) live in domain constraints such as **`IssueConstraints`** in `Domain/Aggregates/Issue/Issue.cs`, not in `FileStorage` options. Content inspection uses **`IFileContentValidator`** (Mime-Detective).
 
 ### Retention and cleanup
 
@@ -105,6 +105,6 @@ Settings live under **`FileStorage`** in `appsettings.json` / environment variab
 
 ### Backup (production)
 
-Include **`{FileStorage:RootPath}/issues/`** in your backup plan **together with the application database**. Restoring only the database without files leaves broken download links; restoring files without matching metadata leaves orphaned blobs (cleaned up eventually by the cleanup job, but downloads will fail until then).
+Include **`{FileStorage:RootPath}/Issue/`** in your backup plan **together with the application database**. Restoring only the database without files leaves broken download links; restoring files without matching metadata leaves orphaned blobs (cleaned up eventually by the cleanup job, but downloads will fail until then).
 
 For cloud deployments, consider moving **`IFileStorageService`** to object storage (S3, Azure Blob) with server-side encryption and lifecycle policies; the Issues slice is the reference pattern for metadata + opaque keys.
