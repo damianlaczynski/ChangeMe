@@ -1,6 +1,5 @@
 using System.Net.Mime;
 using ChangeMe.Backend.UseCases.Issues;
-using ChangeMe.Backend.UseCases.Issues.Dtos;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace ChangeMe.Backend.Web.Issues;
@@ -16,41 +15,29 @@ public class DownloadIssueAttachment(IMediator mediator) : EndpointWithoutReques
 
   public override async Task HandleAsync(CancellationToken ct)
   {
-    var issueId = Route<Guid>("IssueId");
-    var attachmentId = Route<Guid>("AttachmentId");
-
-    var result = await mediator.Send(new GetIssueAttachmentContentQuery(issueId, attachmentId), ct);
+    var result = await mediator.Send(
+      new GetIssueAttachmentContentQuery(
+        Route<Guid>("IssueId"),
+        Route<Guid>("AttachmentId")),
+      ct);
 
     if (!result.IsSuccess)
     {
-      var statusCode = result.Status switch
-      {
-        ResultStatus.Unauthorized => StatusCodes.Status401Unauthorized,
-        ResultStatus.Forbidden => StatusCodes.Status403Forbidden,
-        ResultStatus.NotFound => StatusCodes.Status404NotFound,
-        ResultStatus.Invalid => StatusCodes.Status400BadRequest,
-        _ => StatusCodes.Status400BadRequest
-      };
-
-      await HttpContext.Response.SendAsync(
-        Result<IssueAttachmentContentDto>.Error(string.Join(' ', result.Errors)),
-        statusCode,
-        cancellation: ct);
+      await HttpContext.SendResultAsync(result, ct);
       return;
     }
 
+    var content = result.Value;
     var response = HttpContext.Response;
     response.Headers["X-Content-Type-Options"] = "nosniff";
-    response.ContentType = result.Value.ContentType;
+    response.ContentType = content.ContentType;
     response.Headers.ContentDisposition = new ContentDisposition
     {
-      FileName = result.Value.OriginalFileName,
+      FileName = content.OriginalFileName,
       DispositionType = DispositionTypeNames.Attachment
     }.ToString();
 
-    await using (result.Value.Content)
-    {
-      await result.Value.Content.CopyToAsync(response.Body, ct);
-    }
+    await using (content.Content)
+      await content.Content.CopyToAsync(response.Body, ct);
   }
 }
