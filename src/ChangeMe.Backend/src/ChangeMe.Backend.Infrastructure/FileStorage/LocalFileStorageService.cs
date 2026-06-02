@@ -15,19 +15,31 @@ public sealed class LocalFileStorageService(IOptions<FileStorageOptions> options
       return Result.Invalid([new ValidationError(nameof(storageKey), "storage key is invalid")]);
 
     var ownerDirectory = Path.GetDirectoryName(targetPath)!;
-    Directory.CreateDirectory(ownerDirectory);
 
-    await using var targetStream = new FileStream(
-      targetPath,
-      FileMode.CreateNew,
-      FileAccess.Write,
-      FileShare.None,
-      bufferSize: 81920,
-      useAsync: true);
+    try
+    {
+      Directory.CreateDirectory(ownerDirectory);
 
-    await content.CopyToAsync(targetStream, cancellationToken);
+      await using var targetStream = new FileStream(
+        targetPath,
+        FileMode.CreateNew,
+        FileAccess.Write,
+        FileShare.None,
+        bufferSize: 81920,
+        useAsync: true);
 
-    return Result.Success();
+      await content.CopyToAsync(targetStream, cancellationToken);
+
+      return Result.Success();
+    }
+    catch (IOException ex)
+    {
+      return Result.Error(ex.Message);
+    }
+    catch (UnauthorizedAccessException ex)
+    {
+      return Result.Error(ex.Message);
+    }
   }
 
   public Task<Result<Stream>> OpenReadStreamAsync(
