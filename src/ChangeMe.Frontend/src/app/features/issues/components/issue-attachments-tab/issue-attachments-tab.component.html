@@ -25,9 +25,9 @@
       />
     </div>
     <p class="text-muted-color m-0 text-sm">
-      Max {{ formatAttachmentSize(issueAttachmentConstraints.MAX_FILE_SIZE_BYTES) }} per
-      file, up to {{ issueAttachmentConstraints.MAX_ATTACHMENTS_PER_ISSUE }} attachments
-      per issue.
+      Max {{ formatFileSize(issueAttachmentConstraints.MAX_FILE_SIZE_BYTES) }} per file,
+      up to {{ issueAttachmentConstraints.MAX_ATTACHMENTS_PER_ISSUE }} attachments per
+      issue.
     </p>
     @if (uploadError()) {
       <p-message severity="error">{{ uploadError() }}</p-message>
@@ -47,7 +47,7 @@
           <div class="min-w-0 flex-1">
             <p class="m-0 truncate font-medium">{{ attachment.originalFileName }}</p>
             <p class="text-muted-color m-0 mt-1 text-sm">
-              {{ formatAttachmentSize(attachment.sizeBytes) }}
+              {{ formatFileSize(attachment.sizeBytes) }}
               ·
               {{ attachment.uploadedByName || attachment.uploadedByUserId }}
               ·

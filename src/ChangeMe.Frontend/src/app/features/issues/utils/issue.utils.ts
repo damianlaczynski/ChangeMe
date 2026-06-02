@@ -99,18 +99,6 @@ export function getDeleteAttachmentConfirmMessage(fileName: string): string {
   return `Delete ${highlightDialogValue(fileName)}? This action cannot be undone.`;
 }
 
-export function formatAttachmentSize(sizeBytes: number): string {
-  if (sizeBytes < 1024) {
-    return `${sizeBytes} B`;
-  }
-
-  if (sizeBytes < 1024 * 1024) {
-    return `${(sizeBytes / 1024).toFixed(1)} KB`;
-  }
-
-  return `${(sizeBytes / (1024 * 1024)).toFixed(1)} MB`;
-}
-
 export const issueDeleteMenuItemDangerClasses = {
   labelClass: 'text-red-600 dark:text-red-400',
   iconClass: 'text-red-600 dark:text-red-400'

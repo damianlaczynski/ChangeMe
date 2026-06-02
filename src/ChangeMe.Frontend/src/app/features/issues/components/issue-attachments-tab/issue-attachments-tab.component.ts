@@ -13,12 +13,12 @@ import { ToastService } from '@core/toast/services/toast.service';
 import { IssueAttachmentDto } from '@features/issues/models/issue.model';
 import { IssuesService } from '@features/issues/services/issues.service';
 import {
-  formatAttachmentSize,
   getDeleteAttachmentConfirmMessage,
   issueAttachmentAccept,
   IssueAttachmentConstraints
 } from '@features/issues/utils/issue.utils';
 import { PaginationResult } from '@shared/data/models/pagination-result.model';
+import { formatFileSize } from '@shared/data/utils/file-size.utils';
 import { ConfirmationService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { FileUpload } from 'primeng/fileupload';
@@ -41,7 +41,7 @@ export class IssueAttachmentsTabComponent {
 
   readonly issueAttachmentConstraints = IssueAttachmentConstraints;
   readonly issueAttachmentAccept = issueAttachmentAccept;
-  readonly formatAttachmentSize = formatAttachmentSize;
+  readonly formatFileSize = formatFileSize;
 
   readonly attachments = signal<IssueAttachmentDto[]>([]);
   readonly attachmentsPagination = signal<PaginationResult<IssueAttachmentDto> | null>(
@@ -98,7 +98,7 @@ export class IssueAttachmentsTabComponent {
 
     if (file.size > IssueAttachmentConstraints.MAX_FILE_SIZE_BYTES) {
       this.uploadError.set(
-        `File cannot exceed ${formatAttachmentSize(IssueAttachmentConstraints.MAX_FILE_SIZE_BYTES)}.`
+        `File cannot exceed ${formatFileSize(IssueAttachmentConstraints.MAX_FILE_SIZE_BYTES)}.`
       );
       return;
     }
