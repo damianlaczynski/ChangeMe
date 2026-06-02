@@ -9,21 +9,10 @@ import { highlightDialogValue } from '@shared/ui/utils/dialog-message.utils';
 export const IssueConstraints = {
   TITLE_MIN_LENGTH: 3,
   TITLE_MAX_LENGTH: 255,
-  DESCRIPTION_MAX_LENGTH: 2000
-};
-
-export const IssueAcceptanceCriteriaConstraints = {
-  CONTENT_MAX_LENGTH: 2000
-};
-
-export const IssueCommentConstraints = {
-  CONTENT_MAX_LENGTH: 4000
-};
-
-export const IssueAttachmentConstraints = {
-  MAX_FILE_SIZE_BYTES: 5 * 1024 * 1024,
-  MAX_ATTACHMENTS_PER_ISSUE: 10,
-  ALLOWED_EXTENSIONS: [
+  DESCRIPTION_MAX_LENGTH: 2000,
+  ATTACHMENT_MAX_FILE_SIZE_BYTES: 5 * 1024 * 1024,
+  ATTACHMENT_MAX_ATTACHMENTS_PER_ISSUE: 10,
+  ATTACHMENT_ALLOWED_EXTENSIONS: [
     '.pdf',
     '.png',
     '.jpg',
@@ -36,8 +25,16 @@ export const IssueAttachmentConstraints = {
   ] as const
 };
 
+export const IssueAcceptanceCriteriaConstraints = {
+  CONTENT_MAX_LENGTH: 2000
+};
+
+export const IssueCommentConstraints = {
+  CONTENT_MAX_LENGTH: 4000
+};
+
 export const issueAttachmentAccept =
-  IssueAttachmentConstraints.ALLOWED_EXTENSIONS.join(',');
+  IssueConstraints.ATTACHMENT_ALLOWED_EXTENSIONS.join(',');
 
 export type IssueBadgeSeverity = 'secondary' | 'success' | 'info' | 'warn' | 'danger';
 

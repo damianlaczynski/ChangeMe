@@ -240,7 +240,7 @@ public sealed class IssueAttachmentEndpointTests(BackendWebApplicationFactory fa
       null,
       cancellationToken);
 
-    for (var index = 0; index < IssueAttachmentConstraints.MAX_ATTACHMENTS_PER_ISSUE; index++)
+    for (var index = 0; index < IssueConstraints.ATTACHMENT_MAX_ATTACHMENTS_PER_ISSUE; index++)
     {
       using var content = CreateTextFileContent($"file-{index}.txt", $"content {index}");
       var response = await client.PostAsync($"/api/issues/{issueId}/attachments", content, cancellationToken);
@@ -260,7 +260,7 @@ public sealed class IssueAttachmentEndpointTests(BackendWebApplicationFactory fa
     await using var scope = factory.Services.CreateAsyncScope();
     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     Assert.Equal(
-      IssueAttachmentConstraints.MAX_ATTACHMENTS_PER_ISSUE,
+      IssueConstraints.ATTACHMENT_MAX_ATTACHMENTS_PER_ISSUE,
       await dbContext.IssueAttachments.CountAsync(a => a.OwnerId == issueId, cancellationToken));
   }
 

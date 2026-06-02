@@ -32,8 +32,8 @@ public class UploadIssueAttachmentHandler(
       command.DeclaredContentType,
       command.Content,
       command.Content.LongLength,
-      IssueAttachmentConstraints.MAX_FILE_SIZE_BYTES,
-      IssueAttachmentConstraints.AllowedExtensions);
+      IssueConstraints.ATTACHMENT_MAX_FILE_SIZE_BYTES,
+      IssueConstraints.ATTACHMENT_ALLOWED_EXTENSIONS);
 
     if (!validationResult.IsSuccess)
       return validationResult.Map();

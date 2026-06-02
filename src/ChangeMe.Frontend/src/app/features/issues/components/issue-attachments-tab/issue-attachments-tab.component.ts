@@ -14,8 +14,7 @@ import { IssueAttachmentDto } from '@features/issues/models/issue.model';
 import { IssuesService } from '@features/issues/services/issues.service';
 import {
   getDeleteAttachmentConfirmMessage,
-  issueAttachmentAccept,
-  IssueAttachmentConstraints
+  issueAttachmentAccept
 } from '@features/issues/utils/issue.utils';
 import { PaginationResult } from '@shared/data/models/pagination-result.model';
 import { formatFileSize } from '@shared/data/utils/file-size.utils';
@@ -24,6 +23,7 @@ import { Button } from 'primeng/button';
 import { FileUpload } from 'primeng/fileupload';
 import { Message } from 'primeng/message';
 import { ProgressSpinner } from 'primeng/progressspinner';
+import { IssueConstraints } from '../../utils/issue.utils';
 
 @Component({
   selector: 'app-issue-attachments-tab',
@@ -39,7 +39,7 @@ export class IssueAttachmentsTabComponent {
   private readonly confirmationService = inject(ConfirmationService);
   private readonly destroyRef = inject(DestroyRef);
 
-  readonly issueAttachmentConstraints = IssueAttachmentConstraints;
+  readonly IssueConstraints = IssueConstraints;
   readonly issueAttachmentAccept = issueAttachmentAccept;
   readonly formatFileSize = formatFileSize;
 
@@ -96,9 +96,9 @@ export class IssueAttachmentsTabComponent {
       return;
     }
 
-    if (file.size > IssueAttachmentConstraints.MAX_FILE_SIZE_BYTES) {
+    if (file.size > IssueConstraints.ATTACHMENT_MAX_FILE_SIZE_BYTES) {
       this.uploadError.set(
-        `File cannot exceed ${formatFileSize(IssueAttachmentConstraints.MAX_FILE_SIZE_BYTES)}.`
+        `File cannot exceed ${formatFileSize(IssueConstraints.ATTACHMENT_MAX_FILE_SIZE_BYTES)}.`
       );
       return;
     }

@@ -17,8 +17,8 @@ public sealed class FileContentValidatorTests
       "application/pdf",
       content,
       content.LongLength,
-      IssueAttachmentConstraints.MAX_FILE_SIZE_BYTES,
-      IssueAttachmentConstraints.AllowedExtensions);
+      IssueConstraints.ATTACHMENT_MAX_FILE_SIZE_BYTES,
+      IssueConstraints.ATTACHMENT_ALLOWED_EXTENSIONS);
 
     Assert.True(result.IsSuccess);
     Assert.Equal("application/pdf", result.Value.ContentType);
@@ -35,8 +35,8 @@ public sealed class FileContentValidatorTests
       "application/pdf",
       content,
       content.LongLength,
-      IssueAttachmentConstraints.MAX_FILE_SIZE_BYTES,
-      IssueAttachmentConstraints.AllowedExtensions);
+      IssueConstraints.ATTACHMENT_MAX_FILE_SIZE_BYTES,
+      IssueConstraints.ATTACHMENT_ALLOWED_EXTENSIONS);
 
     Assert.False(result.IsSuccess);
   }
@@ -48,9 +48,9 @@ public sealed class FileContentValidatorTests
       "notes.txt",
       "text/plain",
       "hello"u8.ToArray(),
-      IssueAttachmentConstraints.MAX_FILE_SIZE_BYTES + 1,
-      IssueAttachmentConstraints.MAX_FILE_SIZE_BYTES,
-      IssueAttachmentConstraints.AllowedExtensions);
+      IssueConstraints.ATTACHMENT_MAX_FILE_SIZE_BYTES + 1,
+      IssueConstraints.ATTACHMENT_MAX_FILE_SIZE_BYTES,
+      IssueConstraints.ATTACHMENT_ALLOWED_EXTENSIONS);
 
     Assert.False(result.IsSuccess);
   }
@@ -65,8 +65,8 @@ public sealed class FileContentValidatorTests
       "text/plain",
       content,
       content.LongLength,
-      IssueAttachmentConstraints.MAX_FILE_SIZE_BYTES,
-      IssueAttachmentConstraints.AllowedExtensions);
+      IssueConstraints.ATTACHMENT_MAX_FILE_SIZE_BYTES,
+      IssueConstraints.ATTACHMENT_ALLOWED_EXTENSIONS);
 
     Assert.True(result.IsSuccess);
     Assert.Equal("notes.txt", result.Value.SanitizedFileName);
@@ -82,8 +82,8 @@ public sealed class FileContentValidatorTests
       "text/plain",
       content,
       content.LongLength,
-      IssueAttachmentConstraints.MAX_FILE_SIZE_BYTES,
-      IssueAttachmentConstraints.AllowedExtensions);
+      IssueConstraints.ATTACHMENT_MAX_FILE_SIZE_BYTES,
+      IssueConstraints.ATTACHMENT_ALLOWED_EXTENSIONS);
 
     Assert.False(result.IsSuccess);
   }
@@ -98,8 +98,8 @@ public sealed class FileContentValidatorTests
       "text/plain",
       content,
       content.LongLength,
-      IssueAttachmentConstraints.MAX_FILE_SIZE_BYTES,
-      IssueAttachmentConstraints.AllowedExtensions);
+      IssueConstraints.ATTACHMENT_MAX_FILE_SIZE_BYTES,
+      IssueConstraints.ATTACHMENT_ALLOWED_EXTENSIONS);
 
     Assert.False(result.IsSuccess);
   }

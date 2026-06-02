@@ -278,8 +278,8 @@ public class Issue : Entity, IAggregateRoot
     long sizeBytes,
     Guid actorUserId)
   {
-    if (attachments.Count >= IssueAttachmentConstraints.MAX_ATTACHMENTS_PER_ISSUE)
-      return Result.Invalid([new ValidationError(nameof(Attachments), $"cannot exceed {IssueAttachmentConstraints.MAX_ATTACHMENTS_PER_ISSUE} attachments per issue")]);
+    if (attachments.Count >= IssueConstraints.ATTACHMENT_MAX_ATTACHMENTS_PER_ISSUE)
+      return Result.Invalid([new ValidationError(nameof(Attachments), $"cannot exceed {IssueConstraints.ATTACHMENT_MAX_ATTACHMENTS_PER_ISSUE} attachments per issue")]);
 
     var attachmentResult = IssueAttachment.Create(
       Id,
@@ -424,14 +424,9 @@ public static class IssueConstraints
   public const int TITLE_MAX_LENGTH = 255;
   public const int DESCRIPTION_MAX_LENGTH = 2000;
   public const string STORAGE_CONTAINER = nameof(Issue);
-}
-
-public static class IssueAttachmentConstraints
-{
-  public const int MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;
-  public const int MAX_ATTACHMENTS_PER_ISSUE = 10;
-
-  public static readonly string[] AllowedExtensions =
+  public const int ATTACHMENT_MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;
+  public const int ATTACHMENT_MAX_ATTACHMENTS_PER_ISSUE = 10;
+  public static readonly string[] ATTACHMENT_ALLOWED_EXTENSIONS =
   [
     ".pdf",
     ".png",
