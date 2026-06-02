@@ -43,25 +43,26 @@ Use the **Issues attachments** slice as the template for new file features. Shar
 
 ### Backend
 
-1. Add a derived attachment entity (for example `IssueAttachment : Attachment`) and aggregate methods for owner-specific rules.
-2. Reuse `Infrastructure/FileStorage/`:
+1. Add a value to **`AttachmentType`** (`Domain/Common/Attachments/`), a derived entity (for example `IssueAttachment : Attachment`), and aggregate methods for owner-specific rules.
+2. Configure persistence: shared TPH mapping in **`Infrastructure/Persistence/Config/Attachments/AttachmentConfiguration.cs`** (add `.HasValue<…>(AttachmentType.…)`); owner relationship in **`Config/<Feature>/`** (for example **`Config/Issues/IssueAttachmentConfiguration.cs`**).
+3. Reuse `Infrastructure/FileStorage/`:
    - `IFileContentValidator` + Mime-Detective content inspection
    - `IFileStorageService` + `LocalFileStorageService` (`container` + `ownerId` paths)
-3. Use **file-first upload with a single DB commit** (see Issues `UploadIssueAttachmentCommand`):
+4. Use **file-first upload with a single DB commit** (see Issues `UploadIssueAttachmentCommand`):
    - validate content, then create attachment metadata and side effects in memory
    - write file to storage using the generated opaque key
    - `SaveChanges` once (metadata + history/notifications)
-   - on failure before `SaveChanges`, delete the stored file only; on `SaveChanges` failure, rely on EF rollback and delete the file best-effort
-4. Reuse `AttachmentStorageCleanupJob` (Hangfire): orphaned stored files with no matching metadata row for all attachment types.
-5. Add list/upload/download/delete use cases in `UseCases/<Feature>/`.
-6. Add endpoints in `Web/<Feature>/`:
+   - on failure before `SaveChanges`, delete the stored file only; if `SaveChanges` fails after a successful storage write, EF rolls back metadata and **`AttachmentStorageCleanupJob`** removes the orphaned file on the next run
+5. Reuse `AttachmentStorageCleanupJob` (Hangfire): orphaned stored files with no matching metadata row for all attachment types.
+6. Add list/upload/download/delete use cases in `UseCases/<Feature>/`.
+7. Add endpoints in `Web/<Feature>/`:
    - JSON list/delete via `BaseEndpoint` (route/query/body binding as needed)
    - parameterless JSON actions via `BaseEndpointWithoutRequest` (e.g. logout, mark-all-read)
    - multipart upload via `Endpoint` + `AllowFileUploads()`; send the handler `Result<T>` with `HttpContext.SendResultAsync`
    - binary download via `EndpointWithoutRequest`; set `Content-Disposition: attachment` and `X-Content-Type-Options: nosniff`, stream bytes to `Response.Body`; use `HttpContext.SendResultAsync` only for error `Result<T>` responses
-7. Cascade-delete stored files when the owning aggregate is removed.
-8. Add integration tests for happy path, validation failure, auth, and delete authorization.
-9. Document deployment storage (volume, backup, retention) in [database-and-docker.md](database-and-docker.md).
+8. Cascade-delete stored files when the owning aggregate is removed.
+9. Add integration tests for happy path, validation failure, auth, and delete authorization.
+10. Document deployment storage (volume, backup, retention) in [database-and-docker.md](database-and-docker.md).
 
 ### Frontend
 
