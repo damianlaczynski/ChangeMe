@@ -51,7 +51,7 @@ Each EF Core provider emits **different DDL** and stores provider-specific metad
 
 ## Demo data (optional)
 
-**System seed** (`ApplicationDataSeeder`) runs when migrations are applied at startup or via the DataGenerator tool: system roles and optional `InitialAdministrator` from configuration.
+**System seed** (`ApplicationDataSeeder`) runs when migrations are applied at startup or via the DataGenerator tool: system roles and optional `InitialAdministratorOptions` from configuration.
 
 **Demo dataset** (sample users, issues, comments, notifications) is separate. Use the DataGenerator console tool after migrations:
 
@@ -83,7 +83,7 @@ Example for issues (`StorageContainer` = `"Issue"` from `IssueConstraints.STORAG
 
 - **`storageKey`** is server-generated (GUID); user file names are never used as paths.
 - Default local dev path: **`../../storage`** (relative to the Web project working directory).
-- **Docker Compose** mounts a named volume at **`/app/storage`** and sets **`FileStorage__RootPath=/app/storage`** on the `backend` service so attachments survive container restarts.
+- **Docker Compose** mounts a named volume at **`/app/storage`** and sets **`FileStorageOptions__RootPath=/app/storage`** on the `backend` service so attachments survive container restarts.
 
 ### Configuration
 

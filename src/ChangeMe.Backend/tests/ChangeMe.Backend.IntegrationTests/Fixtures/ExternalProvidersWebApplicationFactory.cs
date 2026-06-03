@@ -1,4 +1,5 @@
 ﻿using ChangeMe.Backend.Domain.Aggregates.Users.Interfaces;
+using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.IntegrationTests.Support.Fakes;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -20,21 +21,21 @@ public class ExternalProvidersWebApplicationFactoryBase : BackendWebApplicationF
 
   protected virtual void ApplyExternalProviderOverrides(Dictionary<string, string?> overrides)
   {
-    overrides["Auth__External__Enabled"] = "true";
-    overrides["Auth__External__Providers__0__ProviderKey"] = FakeOidcExternalAuthService.ProviderKey;
-    overrides["Auth__External__Providers__0__DisplayName"] = "Test";
-    overrides["Auth__External__Providers__0__Authority"] = "https://login.test";
-    overrides["Auth__External__Providers__0__ClientId"] = "test-client";
-    overrides["Auth__External__Providers__0__ClientSecret"] = "test-secret";
+    overrides[$"{AuthOptions.SectionName}__External__Enabled"] = "true";
+    overrides[$"{AuthOptions.SectionName}__External__Providers__0__ProviderKey"] = FakeOidcExternalAuthService.ProviderKey;
+    overrides[$"{AuthOptions.SectionName}__External__Providers__0__DisplayName"] = "Test";
+    overrides[$"{AuthOptions.SectionName}__External__Providers__0__Authority"] = "https://login.test";
+    overrides[$"{AuthOptions.SectionName}__External__Providers__0__ClientId"] = "test-client";
+    overrides[$"{AuthOptions.SectionName}__External__Providers__0__ClientSecret"] = "test-secret";
   }
 
   protected static void ApplyCommonAuthOverrides(Dictionary<string, string?> overrides)
   {
-    overrides["Auth__EmailVerification__Enabled"] = "false";
-    overrides["Auth__Registration__PublicEnabled"] = "true";
-    overrides["Auth__TwoFactor__Enabled"] = "false";
-    overrides["Auth__TwoFactor__Required"] = "false";
-    overrides["Auth__TwoFactor__TrustIdentityProviderMfa"] = "false";
+    overrides[$"{AuthOptions.SectionName}__EmailVerification__Enabled"] = "false";
+    overrides[$"{AuthOptions.SectionName}__Registration__PublicEnabled"] = "true";
+    overrides[$"{AuthOptions.SectionName}__TwoFactor__Enabled"] = "false";
+    overrides[$"{AuthOptions.SectionName}__TwoFactor__Required"] = "false";
+    overrides[$"{AuthOptions.SectionName}__TwoFactor__TrustIdentityProviderMfa"] = "false";
   }
 
   protected override void ConfigureWebHost(Microsoft.AspNetCore.Hosting.IWebHostBuilder builder)
@@ -56,7 +57,7 @@ public sealed class ExternalProvidersRestrictedDomainWebApplicationFactory
   protected override void ApplyExternalProviderOverrides(Dictionary<string, string?> overrides)
   {
     base.ApplyExternalProviderOverrides(overrides);
-    overrides["Auth__External__Providers__0__AllowedEmailDomains__0"] = "allowed.test";
+    overrides[$"{AuthOptions.SectionName}__External__Providers__0__AllowedEmailDomains__0"] = "allowed.test";
   }
 }
 
@@ -65,8 +66,8 @@ public class ExternalProvidersTwoFactorRequiredWebApplicationFactory
 {
   protected override void ApplyFactorySpecificAuthOverrides(Dictionary<string, string?> overrides)
   {
-    overrides["Auth__TwoFactor__Enabled"] = "true";
-    overrides["Auth__TwoFactor__Required"] = "true";
+    overrides[$"{AuthOptions.SectionName}__TwoFactor__Enabled"] = "true";
+    overrides[$"{AuthOptions.SectionName}__TwoFactor__Required"] = "true";
   }
 }
 
@@ -75,8 +76,8 @@ public sealed class ExternalProvidersTwoFactorWebApplicationFactory
 {
   protected override void ApplyFactorySpecificAuthOverrides(Dictionary<string, string?> overrides)
   {
-    overrides["Auth__TwoFactor__Enabled"] = "true";
-    overrides["Auth__TwoFactor__Required"] = "false";
+    overrides[$"{AuthOptions.SectionName}__TwoFactor__Enabled"] = "true";
+    overrides[$"{AuthOptions.SectionName}__TwoFactor__Required"] = "false";
   }
 }
 
@@ -86,7 +87,7 @@ public sealed class ExternalProvidersTwoFactorTrustMfaWebApplicationFactory
   protected override void ApplyFactorySpecificAuthOverrides(Dictionary<string, string?> overrides)
   {
     base.ApplyFactorySpecificAuthOverrides(overrides);
-    overrides["Auth__TwoFactor__TrustIdentityProviderMfa"] = "true";
+    overrides[$"{AuthOptions.SectionName}__TwoFactor__TrustIdentityProviderMfa"] = "true";
   }
 }
 

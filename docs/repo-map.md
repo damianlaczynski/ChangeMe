@@ -113,4 +113,4 @@ Current issue endpoints illustrate the standard flow:
 
 ## Operations documentation
 
-- `docs/auth-operations-guide.md` — `Auth` configuration, sign-in flows, 2FA, and external OIDC provider setup.
+- `docs/auth-operations-guide.md` — `AuthOptions` configuration, sign-in flows, 2FA, and external OIDC provider setup.

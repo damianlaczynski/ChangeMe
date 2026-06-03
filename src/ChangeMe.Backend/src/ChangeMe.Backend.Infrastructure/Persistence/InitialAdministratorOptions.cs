@@ -2,7 +2,7 @@
 
 public sealed class InitialAdministratorOptions
 {
-  public const string SectionName = "InitialAdministrator";
+  public const string SectionName = nameof(InitialAdministratorOptions);
 
   public string Email { get; set; } = string.Empty;
   public string Password { get; set; } = string.Empty;

@@ -2,7 +2,7 @@
 
 public sealed class DataGeneratorOptions
 {
-  public const string SectionName = "DataGenerator";
+  public const string SectionName = nameof(DataGeneratorOptions);
 
   public int Seed { get; set; } = 20260522;
   public int Users { get; set; } = 8;
