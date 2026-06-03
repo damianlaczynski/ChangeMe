@@ -13,12 +13,18 @@ public static class ApplicationDataSeeder
     ILogger logger,
     CancellationToken cancellationToken)
   {
-    await EnsureSystemRolesAsync(context, cancellationToken);
-    await EnsureInitialAdministratorAsync(context, configuration, passwordHasher, logger, cancellationToken);
+    var administratorRole = await EnsureSystemRolesAsync(context, cancellationToken);
+    await EnsureInitialAdministratorAsync(
+      context,
+      configuration,
+      passwordHasher,
+      logger,
+      administratorRole,
+      cancellationToken);
     await context.SaveChangesAsync(cancellationToken);
   }
 
-  private static async Task EnsureSystemRolesAsync(ApplicationDbContext context, CancellationToken cancellationToken)
+  private static async Task<Role> EnsureSystemRolesAsync(ApplicationDbContext context, CancellationToken cancellationToken)
   {
     var administratorRole = await context.Roles
       .Include(x => x.Permissions)
@@ -48,6 +54,8 @@ public static class ApplicationDataSeeder
       foreach (var permission in PermissionCodes.DefaultUserRole)
         userRole.AddPermissionIfMissing(permission);
     }
+
+    return administratorRole;
   }
 
   private static async Task EnsureInitialAdministratorAsync(
@@ -55,6 +63,7 @@ public static class ApplicationDataSeeder
     IConfiguration configuration,
     IPasswordHasher passwordHasher,
     ILogger logger,
+    Role administratorRole,
     CancellationToken cancellationToken)
   {
     var options = configuration.GetSection(InitialAdministratorOptions.SectionName).Get<InitialAdministratorOptions>();
@@ -72,12 +81,6 @@ public static class ApplicationDataSeeder
       .FirstOrDefaultAsync(x => x.NormalizedEmail == normalizedEmail, cancellationToken);
 
     if (existingUser is not null)
-      return;
-
-    var administratorRole = await context.Roles
-      .FirstOrDefaultAsync(x => x.Name == RoleConstraints.AdministratorRoleName, cancellationToken);
-
-    if (administratorRole is null)
       return;
 
     var passwordHash = passwordHasher.HashPassword(options.Password);
