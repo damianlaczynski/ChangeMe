@@ -44,11 +44,11 @@ Link expiry is stored on `AccountInvitation` as `LinkExpiresAtUtc` for the send 
 
 **Pending invitation** (API: `pendingInvitation` on **User details**): present when the user has at least one account invitation with **pending** lifecycle (`AcceptedAtUtc` and `RevokedAtUtc` both null). When absent (`null`), the user is not **awaiting invitation acceptance** (accepted, cancelled, or never invited). Summary fields:
 
-| Field             | Source                                                                                                                                                                                |
-| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **lastSentAtUtc** | **Sent at** of the current pending invitation (latest pending send).                                                                                                                  |
-| **expiresAtUtc**  | **ExpiresAtUtc** of the current valid unused invitation token when one exists; otherwise **lastSentAtUtc** + current `Auth:Invitations:InvitationLinkLifetimeHours` for display only. |
-| **isLinkExpired** | **`true`** when there is no valid unused invitation token for the user at request time, or that token is past expiry. **`false`** when a valid unused token exists.                   |
+| Field             | Source                                                                                                                                                                                       |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **lastSentAtUtc** | **Sent at** of the current pending invitation (latest pending send).                                                                                                                         |
+| **expiresAtUtc**  | **ExpiresAtUtc** of the current valid unused invitation token when one exists; otherwise **lastSentAtUtc** + current `AuthOptions:Invitations:InvitationLinkLifetimeHours` for display only. |
+| **isLinkExpired** | **`true`** when there is no valid unused invitation token for the user at request time, or that token is past expiry. **`false`** when a valid unused token exists.                          |
 
 **Invitation pending** (API: `invitationPending` on **Users list** and **User details**): **`true`** when the user has a pending account invitation (same lifecycle rule as above). Drives **Status** **`Invited`** when **Deactivated** is false (REQ-INV-005).
 
@@ -301,24 +301,24 @@ When **Public registration enabled** is **true** (REQ-AUTH-012), **Cancel invita
 
 ## Goal
 
-**Revoked** and **cancelled** **account invitation** rows (same storage: **RevokedAtUtc** set) must not accumulate indefinitely. **Accepted** rows are **audit history** and are **never** deleted by retention. Configuration lives under **Auth**, similar in spirit to notification retention (`Notifications:Retention`).
+**Revoked** and **cancelled** **account invitation** rows (same storage: **RevokedAtUtc** set) must not accumulate indefinitely. **Accepted** rows are **audit history** and are **never** deleted by retention. Configuration lives under **AuthOptions**, similar in spirit to notification retention (`NotificationRetentionOptions`).
 
 ## Configuration
 
-Section: **`Auth:Invitations:Retention`**
+Section: **`AuthOptions:Invitations:Retention`**
 
 | Setting                            | Default                                          | Meaning                                                                                                                                                                    |
 | ---------------------------------- | ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **RevokedInvitationRetentionDays** | **7**                                            | Delete **revoked** / **cancelled** invitation rows when older than this many days. Age is measured from **RevokedAtUtc**, or **SentAtUtc** if **RevokedAtUtc** is missing. |
 | **CleanupCronExpression**          | Hangfire default (same pattern as notifications) | Schedule for the background cleanup job.                                                                                                                                   |
 
-- Settings live in deployment configuration (for example `appsettings.json`) under the **Auth** area, not under **Notifications**.
+- Settings live in deployment configuration (for example `appsettings.json`) under the **AuthOptions** area, not under **Notifications**.
 - **Pending** and **accepted** invitations are **never** removed by retention.
 
 ### Example configuration
 
 ```json
-"Auth": {
+"AuthOptions": {
   "Invitations": {
     "InvitationLinkLifetimeHours": 72,
     "Retention": {

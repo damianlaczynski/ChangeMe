@@ -5,7 +5,7 @@ namespace ChangeMe.Backend.Infrastructure.Auth;
 
 public sealed class AuthOptions
 {
-  public const string SectionName = "Auth";
+  public const string SectionName = nameof(AuthOptions);
 
   public string FrontendBaseUrl { get; set; } = "http://localhost:4200";
 

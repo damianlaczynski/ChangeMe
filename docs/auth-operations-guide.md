@@ -1,21 +1,21 @@
 # Authentication operations guide
 
 > **Audience:** operators, administrators, and developers deploying or supporting **ChangeMe**.
-> **Scope:** deployment settings under `Auth` in backend configuration, how each option affects sign-in and accounts, and how to connect external identity providers (OIDC).
+> **Scope:** deployment settings under `AuthOptions` in backend configuration, how each option affects sign-in and accounts, and how to connect external identity providers (OIDC).
 > **Related:** acceptance-level behaviour is defined in `docs/req/auth-requirements.md` and `docs/req/users-requirements.md`. **Passkeys (WebAuthn):** `docs/req/passkeys-requirements.md`. This guide explains **operations**, not formal requirements.
 
 ---
 
 ## 1. Where authentication is configured
 
-| Location                                                                     | Purpose                                                                                                                                                                |
-| ---------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/ChangeMe.Backend/src/ChangeMe.Backend.Web/appsettings.json`             | Production defaults (secrets via environment / secret store in real deployments).                                                                                      |
-| `src/ChangeMe.Backend/src/ChangeMe.Backend.Web/appsettings.Development.json` | Local development overrides.                                                                                                                                           |
-| Environment variables                                                        | Override any setting using `Auth__` prefix and `__` for nesting (see [.NET configuration](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/configuration/)). |
-| `InitialAdministrator` section                                               | Bootstrap admin account on first run (separate from `Auth`).                                                                                                           |
-| `Email` section                                                              | SMTP for invitations, verification, password reset, and auth notification emails.                                                                                      |
-| `Cors:AllowedOrigins`                                                        | Must include the frontend origin or the browser cannot call the API.                                                                                                   |
+| Location                                                                     | Purpose                                                                                                                                                                       |
+| ---------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/ChangeMe.Backend/src/ChangeMe.Backend.Web/appsettings.json`             | Production defaults (secrets via environment / secret store in real deployments).                                                                                             |
+| `src/ChangeMe.Backend/src/ChangeMe.Backend.Web/appsettings.Development.json` | Local development overrides.                                                                                                                                                  |
+| Environment variables                                                        | Override any setting using `AuthOptions__` prefix and `__` for nesting (see [.NET configuration](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/configuration/)). |
+| `InitialAdministratorOptions` section                                        | Bootstrap admin account on first run (separate from `AuthOptions`).                                                                                                           |
+| `Email` section                                                              | SMTP for invitations, verification, password reset, and auth notification emails.                                                                                             |
+| `Cors:AllowedOrigins`                                                        | Must include the frontend origin or the browser cannot call the API.                                                                                                          |
 
 **Restart required:** Auth policy is read when the API starts and on each request for compliance flags (password expiration, mandatory 2FA). Changing `appsettings` requires an application restart (or configuration reload if you add that in hosting).
 
@@ -70,7 +70,7 @@ Administrators manage other users under **Users** (invitations, deactivate, rese
 
 ---
 
-## 4. `Auth` settings reference
+## 4. `AuthOptions` settings reference
 
 ### 4.1 General
 
@@ -78,7 +78,7 @@ Administrators manage other users under **Users** (invitations, deactivate, rese
 | ----------------- | ----------------------- | --------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
 | `FrontendBaseUrl` | `http://localhost:4200` | Canonical URL of the Angular app. | Used in email links (reset, verify, invite) and to build the **OIDC redirect URI**. Must match the URL users actually open. |
 
-### 4.2 JWT (`Auth:Jwt`)
+### 4.2 JWT (`AuthOptions:Jwt`)
 
 | Setting               | Default                   | What it does                                        | Impact                                                                                             |
 | --------------------- | ------------------------- | --------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
@@ -92,7 +92,7 @@ Every successful sign-in creates a session with this lifetime. The frontend alwa
 
 Users can revoke sessions on **My account**; admins can revoke on **User details**.
 
-### 4.3 Password policy (`Auth:PasswordPolicy`)
+### 4.3 Password policy (`AuthOptions:PasswordPolicy`)
 
 | Setting                   | Default                                           | What it does                           | Impact                                                         |
 | ------------------------- | ------------------------------------------------- | -------------------------------------- | -------------------------------------------------------------- |
@@ -105,14 +105,14 @@ Users can revoke sessions on **My account**; admins can revoke on **User details
 
 Policy is exposed to the frontend via `GET /api/auth/settings` so forms can show requirements before submit.
 
-### 4.5 Password expiration (`Auth:PasswordExpiration`)
+### 4.5 Password expiration (`AuthOptions:PasswordExpiration`)
 
 | Setting                  | Default | What it does                           | Impact                                                                                                         |
 | ------------------------ | ------- | -------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
 | `Enabled`                | `true`  | Enables maximum password age.          | When enabled, expired passwords trigger **Required password change** after sign-in instead of the main app.    |
 | `MaximumPasswordAgeDays` | `90`    | Days after `password last changed at`. | Applies to password-based accounts; external-only users without a password are not subject until they set one. |
 
-### 4.6 Email verification (`Auth:EmailVerification`)
+### 4.6 Email verification (`AuthOptions:EmailVerification`)
 
 | Setting             | Default | What it does                            | Impact                                                                                                         |
 | ------------------- | ------- | --------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
@@ -121,35 +121,35 @@ Policy is exposed to the frontend via `GET /api/auth/settings` so forms can show
 
 **Requires working `Email` configuration** (or MailHog in Docker for local dev).
 
-### 4.7 Registration (`Auth:Registration`)
+### 4.7 Registration (`AuthOptions:Registration`)
 
 | Setting         | Default | What it does                                          | Impact                                                                                                           |
 | --------------- | ------- | ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
 | `PublicEnabled` | `true`  | Allows `/register` and self-service account creation. | When `false`, route is blocked; **external OIDC auto-registration** also fails unless an account already exists. |
 
-### 4.8 Password reset (`Auth:PasswordReset`)
+### 4.8 Password reset (`AuthOptions:PasswordReset`)
 
 | Setting             | Default | What it does         | Impact                              |
 | ------------------- | ------- | -------------------- | ----------------------------------- |
 | `LinkLifetimeHours` | `24`    | Reset link validity. | Used by forgot/reset password flow. |
 
-### 4.9 Invitations (`Auth:Invitations`)
+### 4.9 Invitations (`AuthOptions:Invitations`)
 
 | Setting                       | Default | What it does              | Impact                                               |
 | ----------------------------- | ------- | ------------------------- | ---------------------------------------------------- |
 | `InvitationLinkLifetimeHours` | `72`    | Invitation link validity. | Used when admins **Invite user** without a password. |
 
-##### Retention (`Auth:Invitations:Retention`)
+##### Retention (`AuthOptions:Invitations:Retention`)
 
 | Setting                          | Default     | What it does                                                                | Impact                                                                                                   |
 | -------------------------------- | ----------- | --------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
 | `RevokedInvitationRetentionDays` | `7`         | Delete **revoked** / **cancelled** `AccountInvitation` rows after this age. | **Pending** and **accepted** rows are never removed. Age uses `RevokedAtUtc`, or `SentAtUtc` if missing. |
-| `CleanupCronExpression`          | `0 4 * * *` | Hangfire schedule for the cleanup job.                                      | Same pattern as `Notifications:Retention`.                                                               |
+| `CleanupCronExpression`          | `0 4 * * *` | Hangfire schedule for the cleanup job.                                      | Same pattern as `NotificationRetentionOptions`.                                                          |
 
 Example:
 
 ```json
-"Auth": {
+"AuthOptions": {
   "Invitations": {
     "InvitationLinkLifetimeHours": 72,
     "Retention": {
@@ -160,7 +160,7 @@ Example:
 }
 ```
 
-### 4.10 Two-factor authentication (`Auth:TwoFactor`)
+### 4.10 Two-factor authentication (`AuthOptions:TwoFactor`)
 
 | Setting                    | Default | What it does                                          | Impact                                                                                                                                                                                                        |
 | -------------------------- | ------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -187,7 +187,7 @@ Example:
 
 **Administrator:** **Reset two-factor** on **User details** clears 2FA and revokes all sessions (requires `Users.Manage`).
 
-### 4.11 External identity providers (`Auth:External`)
+### 4.11 External identity providers (`AuthOptions:External`)
 
 | Setting                  | Default                      | What it does                                                  | Impact                                                                                                                            |
 | ------------------------ | ---------------------------- | ------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
@@ -266,7 +266,7 @@ The backend sends this URI in the authorization request and again at token excha
 **Step 1 — Turn on the feature:**
 
 ```json
-"Auth": {
+"AuthOptions": {
   "FrontendBaseUrl": "http://localhost:4200",
   "External": {
     "Enabled": true,
@@ -275,7 +275,7 @@ The backend sends this URI in the authorization request and again at token excha
 }
 ```
 
-**Step 2 — Add one object per provider** (array index `0`, `1`, … or environment variables `Auth__External__Providers__0__ClientId`, etc.). Use the matching recipe below for your IdP type.
+**Step 2 — Add one object per provider** (array index `0`, `1`, … or environment variables `AuthOptions__External__Providers__0__ClientId`, etc.). Use the matching recipe below for your IdP type.
 
 **Step 3 — Restart the API** and open Login; you should see **Continue with {Display name}** for each configured provider.
 
@@ -495,14 +495,14 @@ Changing a user’s email in **Edit user** does **not** remove external logins; 
 ### 6.13 Secrets and production
 
 - Store `ClientSecret` and `Jwt:SigningKey` in a secret manager or environment variables, not in source control.
-- Example override: `Auth__External__Providers__0__ClientSecret=<secret>`.
+- Example override: `AuthOptions__External__Providers__0__ClientSecret=<secret>`.
 - Rotate secrets at the IdP and update configuration together.
 
 ---
 
 ## 7. Initial administrator
 
-Configured under `InitialAdministrator` (not inside `Auth`):
+Configured under `InitialAdministratorOptions` (not inside `AuthOptions`):
 
 | Field                                        | Purpose                                      |
 | -------------------------------------------- | -------------------------------------------- |
@@ -582,7 +582,7 @@ Admin unlink: `POST /api/users/{userId}/external-logins/{providerKey}/unlink` (r
 
 1. Start stack: `docker compose up` (or `npm run start:all`).
 2. Apply migrations (`npm run ef:database:update` or `Database:ApplyMigrationsOnStartup: true` in Development).
-3. Configure `Auth` and `Email` in `appsettings.Development.json`.
+3. Configure `AuthOptions` and `EmailOptions` in `appsettings.Development.json`.
 4. Open `http://localhost:4200/login` — confirm UI matches flags (register link, external buttons, etc.).
 5. Call `GET https://localhost:<port>/api/auth/settings` — confirm JSON matches configuration.
 6. Complete one password sign-in and, if configured, one external sign-in through the IdP test tenant.

@@ -2,7 +2,7 @@
 
 public sealed class CorsOptions
 {
-  public const string SectionName = "Cors";
+  public const string SectionName = nameof(CorsOptions);
 
   public string[] AllowedOrigins { get; set; } = [];
 }

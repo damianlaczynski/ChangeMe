@@ -2,7 +2,7 @@ namespace ChangeMe.Backend.Infrastructure.FileStorage;
 
 public class FileStorageOptions
 {
-  public const string SectionName = "FileStorage";
+  public const string SectionName = nameof(FileStorageOptions);
 
   public string RootPath { get; set; } = "../../storage";
 

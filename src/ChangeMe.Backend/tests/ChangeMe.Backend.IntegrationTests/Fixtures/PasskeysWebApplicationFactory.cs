@@ -1,4 +1,5 @@
-﻿using ChangeMe.Backend.Infrastructure.Auth.Passkey;
+﻿using ChangeMe.Backend.Infrastructure.Auth;
+using ChangeMe.Backend.Infrastructure.Auth.Passkey;
 using ChangeMe.Backend.IntegrationTests.Support.Fakes;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,14 +11,14 @@ public class PasskeysWebApplicationFactory : BackendWebApplicationFactory
 {
   protected override void ConfigureAuthEnvironmentOverrides(Dictionary<string, string?> overrides)
   {
-    overrides["Auth__EmailVerification__Enabled"] = "false";
-    overrides["Auth__Registration__PublicEnabled"] = "true";
-    overrides["Auth__Passkeys__PasskeysAuthenticationEnabled"] = "true";
-    overrides["Auth__Passkeys__PasskeysAuthenticationRequired"] = "false";
-    overrides["Auth__Passkeys__DiscoverablePasskeySignInOnLogin"] = "false";
-    overrides["Auth__Passkeys__OfferPasskeyEnrollmentPrompt"] = "true";
-    overrides["Auth__Passkeys__MaxFailedPasskeyAttempts"] = "5";
-    overrides["Auth__TwoFactor__Enabled"] = "true";
+    overrides[$"{AuthOptions.SectionName}__EmailVerification__Enabled"] = "false";
+    overrides[$"{AuthOptions.SectionName}__Registration__PublicEnabled"] = "true";
+    overrides[$"{AuthOptions.SectionName}__Passkeys__PasskeysAuthenticationEnabled"] = "true";
+    overrides[$"{AuthOptions.SectionName}__Passkeys__PasskeysAuthenticationRequired"] = "false";
+    overrides[$"{AuthOptions.SectionName}__Passkeys__DiscoverablePasskeySignInOnLogin"] = "false";
+    overrides[$"{AuthOptions.SectionName}__Passkeys__OfferPasskeyEnrollmentPrompt"] = "true";
+    overrides[$"{AuthOptions.SectionName}__Passkeys__MaxFailedPasskeyAttempts"] = "5";
+    overrides[$"{AuthOptions.SectionName}__TwoFactor__Enabled"] = "true";
   }
 
   protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -37,7 +38,7 @@ public sealed class PasskeysRequiredWebApplicationFactory : PasskeysWebApplicati
   protected override void ConfigureAuthEnvironmentOverrides(Dictionary<string, string?> overrides)
   {
     base.ConfigureAuthEnvironmentOverrides(overrides);
-    overrides["Auth__Passkeys__PasskeysAuthenticationRequired"] = "true";
+    overrides[$"{AuthOptions.SectionName}__Passkeys__PasskeysAuthenticationRequired"] = "true";
   }
 }
 
@@ -46,7 +47,7 @@ public sealed class PasskeysDiscoverableWebApplicationFactory : PasskeysWebAppli
   protected override void ConfigureAuthEnvironmentOverrides(Dictionary<string, string?> overrides)
   {
     base.ConfigureAuthEnvironmentOverrides(overrides);
-    overrides["Auth__Passkeys__DiscoverablePasskeySignInOnLogin"] = "true";
+    overrides[$"{AuthOptions.SectionName}__Passkeys__DiscoverablePasskeySignInOnLogin"] = "true";
   }
 }
 
@@ -55,7 +56,7 @@ public sealed class PasskeysPasskeyOnlyAllowedWebApplicationFactory : PasskeysWe
   protected override void ConfigureAuthEnvironmentOverrides(Dictionary<string, string?> overrides)
   {
     base.ConfigureAuthEnvironmentOverrides(overrides);
-    overrides["Auth__Passkeys__AllowPasskeyOnlyAccounts"] = "true";
+    overrides[$"{AuthOptions.SectionName}__Passkeys__AllowPasskeyOnlyAccounts"] = "true";
   }
 }
 
@@ -64,8 +65,8 @@ public sealed class PasskeysSatisfiesTwoFactorWebApplicationFactory : PasskeysWe
   protected override void ConfigureAuthEnvironmentOverrides(Dictionary<string, string?> overrides)
   {
     base.ConfigureAuthEnvironmentOverrides(overrides);
-    overrides["Auth__Passkeys__PasskeySatisfiesTwoFactor"] = "true";
-    overrides["Auth__TwoFactor__Enabled"] = "true";
+    overrides[$"{AuthOptions.SectionName}__Passkeys__PasskeySatisfiesTwoFactor"] = "true";
+    overrides[$"{AuthOptions.SectionName}__TwoFactor__Enabled"] = "true";
   }
 }
 
@@ -74,7 +75,7 @@ public sealed class PasskeysEmailVerificationWebApplicationFactory : PasskeysWeb
   protected override void ConfigureAuthEnvironmentOverrides(Dictionary<string, string?> overrides)
   {
     base.ConfigureAuthEnvironmentOverrides(overrides);
-    overrides["Auth__EmailVerification__Enabled"] = "true";
+    overrides[$"{AuthOptions.SectionName}__EmailVerification__Enabled"] = "true";
   }
 }
 
@@ -83,8 +84,8 @@ public sealed class PasskeysPasswordExpirationWebApplicationFactory : PasskeysWe
   protected override void ConfigureAuthEnvironmentOverrides(Dictionary<string, string?> overrides)
   {
     base.ConfigureAuthEnvironmentOverrides(overrides);
-    overrides["Auth__PasswordExpiration__Enabled"] = "true";
-    overrides["Auth__PasswordExpiration__MaximumPasswordAgeDays"] = "90";
+    overrides[$"{AuthOptions.SectionName}__PasswordExpiration__Enabled"] = "true";
+    overrides[$"{AuthOptions.SectionName}__PasswordExpiration__MaximumPasswordAgeDays"] = "90";
   }
 }
 
@@ -93,7 +94,7 @@ public sealed class PasskeysMaxOneWebApplicationFactory : PasskeysWebApplication
   protected override void ConfigureAuthEnvironmentOverrides(Dictionary<string, string?> overrides)
   {
     base.ConfigureAuthEnvironmentOverrides(overrides);
-    overrides["Auth__Passkeys__MaximumPasskeysPerUser"] = "1";
+    overrides[$"{AuthOptions.SectionName}__Passkeys__MaximumPasskeysPerUser"] = "1";
   }
 }
 
@@ -102,9 +103,9 @@ public sealed class PasskeysTwoFactorAndRequiredWebApplicationFactory : Passkeys
   protected override void ConfigureAuthEnvironmentOverrides(Dictionary<string, string?> overrides)
   {
     base.ConfigureAuthEnvironmentOverrides(overrides);
-    overrides["Auth__Passkeys__PasskeysAuthenticationRequired"] = "true";
-    overrides["Auth__TwoFactor__Enabled"] = "true";
-    overrides["Auth__TwoFactor__Required"] = "true";
+    overrides[$"{AuthOptions.SectionName}__Passkeys__PasskeysAuthenticationRequired"] = "true";
+    overrides[$"{AuthOptions.SectionName}__TwoFactor__Enabled"] = "true";
+    overrides[$"{AuthOptions.SectionName}__TwoFactor__Required"] = "true";
   }
 }
 

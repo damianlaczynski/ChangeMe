@@ -11,7 +11,7 @@ namespace ChangeMe.Backend.Infrastructure.Configurations;
 
 public sealed class HangfireOptions
 {
-  public const string SectionName = "Hangfire";
+  public const string SectionName = nameof(HangfireOptions);
 
   public string DashboardPath { get; set; } = "/hangfire";
 }
