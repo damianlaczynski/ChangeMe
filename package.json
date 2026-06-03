@@ -27,7 +27,14 @@
     "ef:migrations:add": "dotnet ef migrations add --project src/ChangeMe.Backend/src/ChangeMe.Backend.Infrastructure/ChangeMe.Backend.Infrastructure.csproj --startup-project src/ChangeMe.Backend/src/ChangeMe.Backend.Web/ChangeMe.Backend.Web.csproj --output-dir Persistence/Migrations",
     "ef:migrations:remove": "dotnet ef migrations remove --project src/ChangeMe.Backend/src/ChangeMe.Backend.Infrastructure/ChangeMe.Backend.Infrastructure.csproj --startup-project src/ChangeMe.Backend/src/ChangeMe.Backend.Web/ChangeMe.Backend.Web.csproj",
     "ef:database:update": "dotnet ef database update --project src/ChangeMe.Backend/src/ChangeMe.Backend.Infrastructure/ChangeMe.Backend.Infrastructure.csproj --startup-project src/ChangeMe.Backend/src/ChangeMe.Backend.Web/ChangeMe.Backend.Web.csproj",
-    "data:generate": "dotnet run --no-launch-profile --project src/ChangeMe.Backend/tools/ChangeMe.Backend.DataGenerator/ChangeMe.Backend.DataGenerator.csproj --"
+    "data:generate": "dotnet run --no-launch-profile --project src/ChangeMe.Backend/tools/ChangeMe.Backend.DataGenerator/ChangeMe.Backend.DataGenerator.csproj --",
+    "docker:up": "docker compose up --build",
+    "docker:up:detached": "docker compose up --build -d",
+    "docker:down": "docker compose down",
+    "docker:down:volumes": "docker compose down -v",
+    "docker:build": "docker compose build",
+    "docker:logs": "docker compose logs -f",
+    "docker:test:backend": "docker compose --profile test run --rm backend-tests"
   },
   "devDependencies": {
     "concurrently": "^9.2.0"

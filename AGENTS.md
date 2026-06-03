@@ -58,10 +58,17 @@ From the repository root, run `npm install` once to install root devDependencies
 - Unit tests only: `dotnet test tests/ChangeMe.Backend.UnitTests`
 - Integration tests only: `dotnet test tests/ChangeMe.Backend.IntegrationTests`
 
-### Full stack
+### Full stack (Docker Compose)
 
-- Start dependencies and app containers: `docker compose up --build`
-- Run all backend tests inside a container (bind-mounts the repo; integration tests need the host Docker socket): `docker compose --profile test run --rm backend-tests`
+- Start stack (foreground): `npm run docker:up`
+- Start stack (background): `npm run docker:up:detached`
+- Stop stack: `npm run docker:down`
+- Stop stack and remove volumes: `npm run docker:down:volumes`
+- Rebuild images only: `npm run docker:build`
+- Follow logs: `npm run docker:logs`
+- Backend tests in container (bind-mounts the repo; integration tests need the host Docker socket): `npm run docker:test:backend`
+
+Configuration in containers: `appsettings.json` + `appsettings.Development.json` (image build) with overrides from `docker-compose.yml` environment variables — see `docs/database-and-docker.md`.
 
 ## Repo navigation rules
 

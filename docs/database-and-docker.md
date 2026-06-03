@@ -2,6 +2,20 @@
 
 > Scope: how persistence and `docker-compose.yml` fit **this solution**.
 
+## Docker Compose and configuration
+
+`npm run docker:up` runs `docker compose up --build` from the repository root.
+
+The **backend** container sets `ASPNETCORE_ENVIRONMENT=Development`, so ASP.NET Core loads:
+
+1. `appsettings.json` (baked into the image at publish time)
+2. `appsettings.Development.json` (same)
+3. **Environment variables** from `docker-compose.yml` (override JSON for matching keys)
+
+Today Compose overrides only what the container must differ from local `dotnet run` — for example `ConnectionStrings__DefaultConnection` (database host `postgres` or `sqlserver` instead of `localhost`) and `FileStorageOptions__RootPath=/app/storage`. Everything else (Auth, email, CORS, Serilog, etc.) comes from **appsettings** unless you add more `ServiceName__Property` entries under `backend.environment` in Compose.
+
+To change Docker-only settings, prefer `docker-compose.yml` environment entries over editing appsettings committed for local dev.
+
 ## EF Core migrations
 
 Migration **`.cs` files are not shipped with this starter.** Add them when you are ready (name is yours; `InitialCreate` is a common first migration):
