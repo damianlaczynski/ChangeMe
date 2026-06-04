@@ -28,7 +28,8 @@ public class RequestEmailChangeHandler(
   IUserAccessor userAccessor,
   IOptions<AuthOptions> authOptions,
   IPasskeyPolicyEvaluator passkeyPolicyEvaluator,
-  TimeProvider timeProvider) : ICommandHandler<RequestEmailChangeCommand, MyAccountDto>
+  TimeProvider timeProvider,
+  ILogger<RequestEmailChangeHandler> logger) : ICommandHandler<RequestEmailChangeCommand, MyAccountDto>
 {
   public async Task<Result<MyAccountDto>> Handle(
     RequestEmailChangeCommand command,
@@ -98,11 +99,24 @@ public class RequestEmailChangeHandler(
       tokenResult.Value,
       cancellationToken);
     if (!confirmEmailResult.IsSuccess)
+    {
+      logger.LogWarning(
+        "Pending email change was saved for user {UserId} but the confirmation email to {NewEmail} failed: {Errors}",
+        userId,
+        user.PendingNewEmail,
+        string.Join("; ", confirmEmailResult.Errors));
       return confirmEmailResult.Map();
+    }
 
     var requestedResult = await authEmailService.SendEmailChangeRequestedAsync(user, cancellationToken);
     if (!requestedResult.IsSuccess)
+    {
+      logger.LogWarning(
+        "Pending email change was saved for user {UserId} but the email-change-requested notification failed: {Errors}",
+        userId,
+        string.Join("; ", requestedResult.Errors));
       return requestedResult.Map();
+    }
 
     return await mediator.Send(new GetMyAccountQuery(), cancellationToken);
   }
@@ -124,7 +138,8 @@ public class CancelEmailChangeHandler(
   IUserAccessor userAccessor,
   IOptions<AuthOptions> authOptions,
   IPasskeyPolicyEvaluator passkeyPolicyEvaluator,
-  TimeProvider timeProvider) : ICommandHandler<CancelEmailChangeCommand, MyAccountDto>
+  TimeProvider timeProvider,
+  ILogger<CancelEmailChangeHandler> logger) : ICommandHandler<CancelEmailChangeCommand, MyAccountDto>
 {
   public async Task<Result<MyAccountDto>> Handle(
     CancelEmailChangeCommand command,
@@ -173,7 +188,13 @@ public class CancelEmailChangeHandler(
 
     var emailResult = await authEmailService.SendEmailChangeCancelledAsync(user, cancellationToken);
     if (!emailResult.IsSuccess)
+    {
+      logger.LogWarning(
+        "Email change cancellation was saved for user {UserId} but the cancellation notification failed: {Errors}",
+        userId,
+        string.Join("; ", emailResult.Errors));
       return emailResult.Map();
+    }
 
     return await mediator.Send(new GetMyAccountQuery(), cancellationToken);
   }
@@ -187,7 +208,8 @@ public class ResendEmailChangeConfirmationHandler(
   IAuthEmailService authEmailService,
   IUserAuthTokenService tokenService,
   IUserAccessor userAccessor,
-  TimeProvider timeProvider) : ICommandHandler<ResendEmailChangeConfirmationCommand, MyAccountDto>
+  TimeProvider timeProvider,
+  ILogger<ResendEmailChangeConfirmationHandler> logger) : ICommandHandler<ResendEmailChangeConfirmationCommand, MyAccountDto>
 {
   public async Task<Result<MyAccountDto>> Handle(
     ResendEmailChangeConfirmationCommand command,
@@ -219,7 +241,14 @@ public class ResendEmailChangeConfirmationHandler(
       tokenResult.Value,
       cancellationToken);
     if (!emailResult.IsSuccess)
+    {
+      logger.LogWarning(
+        "Email change confirmation token was saved for user {UserId} but resend to {NewEmail} failed: {Errors}",
+        userId,
+        user.PendingNewEmail,
+        string.Join("; ", emailResult.Errors));
       return emailResult.Map();
+    }
 
     return await mediator.Send(new GetMyAccountQuery(), cancellationToken);
   }

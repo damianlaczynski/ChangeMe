@@ -6,6 +6,7 @@ using ChangeMe.Backend.UnitTests.Support;
 using ChangeMe.Backend.UseCases.Auth;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace ChangeMe.Backend.UnitTests.UseCases.Auth;
 
@@ -44,7 +45,8 @@ public sealed class RequestEmailChangeHandlerTests
       new FakeUserAccessor { UserId = user.Id },
       authOptions,
       new PasskeyPolicyEvaluator(authOptions),
-      TimeProvider.System);
+      TimeProvider.System,
+      NullLogger<RequestEmailChangeHandler>.Instance);
 
     var result = await handler.Handle(
       new RequestEmailChangeCommand(newEmail, "StrongPass123!", null),
