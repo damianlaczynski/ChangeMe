@@ -90,8 +90,6 @@ public class RequestEmailChangeHandler(
     if (!tokenResult.IsSuccess)
       return tokenResult.Map();
 
-    await context.SaveChangesAsync(cancellationToken);
-
     var confirmEmailResult = await authEmailService.SendConfirmEmailChangeAsync(
       user.PendingNewEmail!,
       tokenResult.Value,
@@ -102,6 +100,8 @@ public class RequestEmailChangeHandler(
     var requestedResult = await authEmailService.SendEmailChangeRequestedAsync(user, cancellationToken);
     if (!requestedResult.IsSuccess)
       return requestedResult.Map();
+
+    await context.SaveChangesAsync(cancellationToken);
 
     return await mediator.Send(new GetMyAccountQuery(), cancellationToken);
   }
