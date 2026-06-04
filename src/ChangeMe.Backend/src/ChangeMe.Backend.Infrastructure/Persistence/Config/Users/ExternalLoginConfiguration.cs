@@ -27,6 +27,9 @@ public class ExternalLoginConfiguration : IEntityTypeConfiguration<ExternalLogin
 
     builder.Property(x => x.LastStepUpAtUtc);
 
+    builder.Property(x => x.LastProviderEmail)
+      .HasMaxLength(UserConstraints.EMAIL_MAX_LENGTH);
+
     builder.HasIndex(x => new { x.ProviderKey, x.ProviderSubject })
       .IsUnique();
 

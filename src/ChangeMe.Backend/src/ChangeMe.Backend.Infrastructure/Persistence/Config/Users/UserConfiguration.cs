@@ -55,6 +55,14 @@ public class UserConfiguration : BaseEntityTypeConfiguration<User>
 
     builder.Property(x => x.PasskeyStepUpCompletedAt);
 
+    builder.Property(x => x.PendingNewEmail)
+      .HasMaxLength(UserConstraints.EMAIL_MAX_LENGTH);
+
+    builder.Property(x => x.PendingNewEmailNormalized)
+      .HasMaxLength(UserConstraints.EMAIL_MAX_LENGTH);
+
+    builder.Property(x => x.PendingEmailChangeRequestedAtUtc);
+
     builder.HasIndex(x => x.NormalizedEmail)
       .IsUnique();
 

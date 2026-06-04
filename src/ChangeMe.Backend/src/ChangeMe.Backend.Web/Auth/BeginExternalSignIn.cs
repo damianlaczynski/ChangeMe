@@ -21,5 +21,9 @@ public sealed class BeginExternalSignInCommandValidator : Validator<BeginExterna
     RuleFor(x => x.ProviderKey)
       .NotEmpty()
       .MaximumLength(TwoFactorConstraints.PROVIDER_KEY_MAX_LENGTH);
+    RuleFor(x => x.InvitedEmail)
+      .EmailAddress()
+      .MaximumLength(UserConstraints.EMAIL_MAX_LENGTH)
+      .When(x => !string.IsNullOrWhiteSpace(x.InvitedEmail));
   }
 }

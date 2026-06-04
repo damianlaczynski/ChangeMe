@@ -34,6 +34,11 @@ public class User : Entity, IAggregateRoot
   public DateTime? TwoFactorEnabledAt { get; private set; }
   public string TwoFactorSecretCiphertext { get; private set; } = string.Empty;
   public DateTime? PasskeyStepUpCompletedAt { get; private set; }
+  public string? PendingNewEmail { get; private set; }
+  public string? PendingNewEmailNormalized { get; private set; }
+  public DateTime? PendingEmailChangeRequestedAtUtc { get; private set; }
+
+  public bool HasPendingEmailChange => !string.IsNullOrWhiteSpace(PendingNewEmail);
 
   public bool IsActive => !Deactivated;
   public bool HasCompleteProfile =>
@@ -416,6 +421,44 @@ public class User : Entity, IAggregateRoot
 
     if (value.Trim().Length > UserConstraints.NAME_MAX_LENGTH)
       validationErrors.Add(new ValidationError(propertyName, $"cannot be longer than {UserConstraints.NAME_MAX_LENGTH} characters"));
+  }
+
+  public Result BeginPendingEmailChange(string newEmail, DateTime requestedAtUtc)
+  {
+    var validationErrors = new List<ValidationError>();
+    ValidateEmail(newEmail, validationErrors);
+
+    if (validationErrors.Count > 0)
+      return Result.Invalid(validationErrors);
+
+    var normalizedNew = NormalizeEmail(newEmail);
+    if (normalizedNew == NormalizedEmail)
+      return Result.Error("New email must differ from your current email.");
+
+    PendingNewEmail = newEmail.Trim();
+    PendingNewEmailNormalized = normalizedNew;
+    PendingEmailChangeRequestedAtUtc = requestedAtUtc;
+    return Result.Success();
+  }
+
+  public void CancelPendingEmailChange()
+  {
+    PendingNewEmail = null;
+    PendingNewEmailNormalized = null;
+    PendingEmailChangeRequestedAtUtc = null;
+  }
+
+  public Result ConfirmPendingEmailChange(DateTime confirmedAtUtc)
+  {
+    if (!HasPendingEmailChange || PendingNewEmail is null)
+      return Result.Error("No email change is pending.");
+
+    Email = PendingNewEmail;
+    NormalizedEmail = PendingNewEmailNormalized!;
+    CancelPendingEmailChange();
+    EmailVerified = true;
+    EmailVerifiedAt = confirmedAtUtc;
+    return Result.Success();
   }
 
   public void RecordPasskeyStepUp(DateTime utcNow) => PasskeyStepUpCompletedAt = utcNow;

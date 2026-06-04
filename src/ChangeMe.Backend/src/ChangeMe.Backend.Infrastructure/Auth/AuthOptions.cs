@@ -27,7 +27,16 @@ public sealed class AuthOptions
 
   public ExternalAuthOptions External { get; set; } = new();
 
+  public EmailChangeOptions EmailChange { get; set; } = new();
+
   public PasskeyOptions Passkeys { get; set; } = new();
+}
+
+public sealed class EmailChangeOptions
+{
+  public bool Enabled { get; set; } = true;
+
+  public int LinkLifetimeHours { get; set; } = 72;
 }
 
 public sealed class PasswordExpirationOptions
@@ -82,6 +91,8 @@ public sealed class TwoFactorOptions
 public sealed class ExternalAuthOptions
 {
   public bool Enabled { get; set; }
+
+  public bool LinkingEnabled { get; set; } = true;
 
   public int PendingLifetimeMinutes { get; set; } = 10;
 

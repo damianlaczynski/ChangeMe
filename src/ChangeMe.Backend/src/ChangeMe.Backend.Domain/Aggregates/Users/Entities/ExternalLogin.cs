@@ -10,6 +10,7 @@ public class ExternalLogin
   public string ProviderSubject { get; private set; } = string.Empty;
   public DateTime LinkedAtUtc { get; private set; }
   public DateTime? LastStepUpAtUtc { get; private set; }
+  public string? LastProviderEmail { get; private set; }
 
   public static Result<ExternalLogin> Create(
     Guid userId,
@@ -37,6 +38,9 @@ public class ExternalLogin
   }
 
   public void RecordStepUp(DateTime utcNow) => LastStepUpAtUtc = utcNow;
+
+  public void UpdateLastProviderEmail(string? providerEmail) =>
+    LastProviderEmail = string.IsNullOrWhiteSpace(providerEmail) ? null : providerEmail.Trim();
 
   private static void ValidateProviderKey(string providerKey, ICollection<ValidationError> validationErrors)
   {

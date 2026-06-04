@@ -46,6 +46,10 @@ public class GetAuthSettingsHandler(IOptions<AuthOptions> options)
         && auth.TwoFactor.Enabled
         && auth.External.Enabled,
       ExternalProvidersEnabled = auth.External.Enabled && configuredProviders.Count > 0,
+      ExternalProviderLinkingEnabled = auth.External.Enabled
+        && auth.External.LinkingEnabled
+        && configuredProviders.Count > 0,
+      SelfServiceEmailChangeEnabled = auth.EmailChange.Enabled,
       TwoFactor = new TwoFactorSettingsDto
       {
         VerificationCodeLength = twoFactor.VerificationCodeLength,

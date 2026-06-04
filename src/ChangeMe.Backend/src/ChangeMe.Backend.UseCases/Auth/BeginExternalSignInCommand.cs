@@ -7,7 +7,9 @@ using Microsoft.Extensions.Options;
 
 namespace ChangeMe.Backend.UseCases.Auth;
 
-public sealed record BeginExternalSignInCommand(string ProviderKey) : ICommand<BeginExternalSignInResponseDto>;
+public sealed record BeginExternalSignInCommand(
+  string ProviderKey,
+  string? InvitedEmail = null) : ICommand<BeginExternalSignInResponseDto>;
 
 public class BeginExternalSignInHandler(
   ApplicationDbContext context,
@@ -34,6 +36,10 @@ public class BeginExternalSignInHandler(
     Result<ExternalAuthPending> pendingResult;
     if (userAccessor.UserId is Guid userId)
     {
+      if (!auth.External.LinkingEnabled)
+        return Result<BeginExternalSignInResponseDto>.Forbidden(
+          ExternalAuthUtils.ExternalProviderLinkingDisabledMessage);
+
       var user = await context.Users
         .Include(x => x.ExternalLogins)
         .FirstOrDefaultAsync(x => x.Id == userId, cancellationToken);
@@ -63,7 +69,8 @@ public class BeginExternalSignInHandler(
         nonce,
         codeChallenge,
         codeVerifier,
-        expiresAtUtc);
+        expiresAtUtc,
+        command.InvitedEmail);
     }
 
     if (!pendingResult.IsSuccess)

@@ -35,4 +35,20 @@ public interface IAuthEmailService
   Task<Result> SendPasskeyRemovedAsync(User user, string passkeyName, CancellationToken cancellationToken = default);
 
   Task<Result> SendPasskeysResetByAdminAsync(User user, CancellationToken cancellationToken = default);
+
+  Task<Result> SendEmailChangeRequestedAsync(User user, CancellationToken cancellationToken = default);
+
+  Task<Result> SendConfirmEmailChangeAsync(string newEmail, string plainToken, CancellationToken cancellationToken = default);
+
+  Task<Result> SendEmailChangeCancelledAsync(User user, CancellationToken cancellationToken = default);
+
+  Task<Result> SendEmailChangeCompletedAsync(
+    string previousEmail,
+    string newEmail,
+    CancellationToken cancellationToken = default);
+
+  Task<Result> SendEmailChangedByAdminAsync(
+    string previousEmail,
+    string newEmail,
+    CancellationToken cancellationToken = default);
 }

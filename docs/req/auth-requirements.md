@@ -1,11 +1,11 @@
 # Requirements - Auth
 
-This document covers fourteen REQs for the **Auth** area:
-login and registration with tracked sessions, staying signed in, logout, own sessions, password change, self-service reset, auth emails, password policy, password expiration, account invite acceptance, optional email verification, optional public registration, optional two-factor authentication, and optional external identity providers.
+This document covers fifteen REQs for the **Auth** area:
+login and registration with tracked sessions, staying signed in, logout, own sessions, password change, self-service email change, self-service reset, auth emails, password policy, password expiration, account invite acceptance, optional email verification, optional public registration, optional two-factor authentication, and optional external identity providers.
 
 **Passkeys (WebAuthn)** are specified in `docs/req/passkeys-requirements.md` (REQ-PKY-001 through REQ-PKY-007). When implemented, **Login** and compliance gates integrate with passkey policy per REQ-PKY-002 and REQ-PKY-006.
 
-Screens **Login**, **Forgot password**, **Reset password**, **Accept invitation**, **Two-factor verification**, and **External sign-in callback** are available to guests when applicable. **Link external account** is available to guests during external sign-in when linking an existing password account. **Register** and **Verify email** are available to guests only when the corresponding deployment settings allow them (REQ-AUTH-012, REQ-AUTH-011). All other application screens require an authenticated user whose account is **not deactivated** and whose email is **verified** when email verification is enabled (REQ-AUTH-011).
+Screens **Login**, **Forgot password**, **Reset password**, **Accept invitation**, **Confirm email change**, **Two-factor verification**, and **External sign-in callback** are available to guests when applicable. **Register** and **Verify email** are available to guests only when the corresponding deployment settings allow them (REQ-AUTH-012, REQ-AUTH-011). All other application screens require an authenticated user whose account is **not deactivated** and whose email is **verified** when email verification is enabled (REQ-AUTH-011).
 
 Account lifecycle terms (**awaiting invitation acceptance**, **account invitation**, **external-only account**, **local password**) are defined in `docs/req/invitations-requirements.md` and `docs/req/users-requirements.md` (**Business terms**).
 
@@ -308,6 +308,13 @@ The system must notify users by email about important account security events.
 
 ## Features
 
+### Notification destination
+
+- Every email in this REQ is sent to the account **Profile email** — the **current email** stored on the user account in ChangeMe.
+- **Provider email** from an external identity provider is **never** used as a notification destination.
+- Linking or signing in with Google or Microsoft does **not** change **Profile email** (REQ-AUTH-014).
+- **Change email** (REQ-AUTH-015) sends **Confirm email change** to the pending **new email** only until confirmation succeeds; all other auth emails during a pending change still use **Profile email** (the current email).
+
 ### Notification types
 
 | Event                         | When sent                                                                                                | Subject (example)                          |
@@ -326,8 +333,13 @@ The system must notify users by email about important account security events.
 | **Passkey added**             | User completes **Add passkey** on **My account** (REQ-PKY-003)                                           | `Passkey added to your account`            |
 | **Passkey removed**           | User or administrator removes a passkey credential (REQ-PKY-003, REQ-PKY-005)                            | `Passkey removed from your account`        |
 | **Passkeys reset by admin**   | Administrator **Reset passkeys** on **User details** (REQ-PKY-005)                                       | `Passkeys reset on your account`           |
+| **Email change requested**    | Signed-in user submits **Change email** (REQ-AUTH-015)                                                   | `Email change requested on your account`   |
+| **Confirm email change**      | **Change email** succeeds; link sent to the **new** email address                                        | `Confirm your new ChangeMe email address`  |
+| **Email change completed**    | User completes **Confirm email change** (REQ-AUTH-015)                                                   | `Your ChangeMe email address was changed`  |
+| **Email change cancelled**    | User **Cancel email change** on **My account** (REQ-AUTH-015)                                            | `Email change cancelled on your account`   |
+| **Email changed by admin**    | Administrator saves a different **Email** on **Edit user** (REQ-USR-003)                                 | `Your ChangeMe email address was changed`  |
 
-- Each email contains a short summary and, where applicable, a button link to the frontend (invitation, reset, verify email, or sign-in).
+- Each email contains a short summary and, where applicable, a button link to the frontend (invitation, reset, verify email, confirm email change, or sign-in).
 - Email delivery uses the configured mail server (same as issue notifications).
 - Failed email delivery does not roll back the triggering action; the UI still shows the success message for the action.
 
@@ -466,15 +478,16 @@ A user created by an administrator must complete onboarding before using the app
 When **external providers enabled** is **true** and the user is **awaiting invitation acceptance**:
 
 - On **Login** and **Accept invitation**, the user may choose **Continue with {Display name}** instead of setting a local password (email link) or signing in with email and password.
-- When the provider returns a **verified email** that matches the invited account, the system **completes the invitation** in one step:
+- The administrator invited a **specific email address**; external sign-in onboarding is allowed **only** when the provider returns a **verified email** that **exactly matches** the invited account **Profile email**. This is the **only** guest external sign-in path that links a provider to an existing account without a prior ChangeMe session (REQ-AUTH-014).
+- When the verified provider email matches the invited account, the system **completes the invitation** in one step:
   - links the external provider to the account;
   - does **not** require a local password — the account becomes **external-only**;
   - marks the pending **account invitation** as accepted and clears **Pending invitation** (**accepted** row kept for history; **revoked** rows removed by retention — REQ-INV-006);
   - invalidates unused invitation tokens for that user;
   - applies **First name** and **Last name** from the provider when the administrator left both empty and the provider supplies both; otherwise keeps administrator-entered values;
   - signs the user in (subject to deactivation, two-factor, and other gates per REQ-AUTH-013 and REQ-AUTH-014).
-- Sends **External account linked** email (REQ-AUTH-007).
-- If the provider email does not match, is not verified, or external sign-in is disabled, behavior follows REQ-AUTH-014 (no invitation completion).
+- Sends **External account linked** email (REQ-AUTH-007) to the invited **Profile email**.
+- If the provider email does **not** match the invited **Profile email**, is not verified, or external sign-in is disabled: do **not** complete the invitation; redirect to **Login** or **Accept invitation** with form-level error **`The external account email does not match the invited email address.`**
 
 ### Business rules (all invitation paths)
 
@@ -522,20 +535,21 @@ When email verification is enabled in deployment settings, users must prove cont
 
 ### Interaction with other auth flows
 
-| Flow                                    | When verification enabled                                                                 |
-| --------------------------------------- | ----------------------------------------------------------------------------------------- |
-| **Register** (REQ-AUTH-001)             | No session; **Verify email** screen; verification email sent                              |
-| **Accept invitation** (REQ-AUTH-010)    | **Email verified** on success (email link or external sign-in)                            |
-| **Admin invite user** (REQ-INV-001)     | **Email verified** true when invitation is sent to the user's email                       |
-| **Initial administrator** (REQ-ROL-006) | **Email verified** true at creation                                                       |
-| **Password expiration** (REQ-AUTH-009)  | Evaluated only after a successful sign-in; sign-in requires **Email verified** true first |
-| **Deactivated** (REQ-USR-005)           | **Deactivated** true blocks sign-in regardless of verification                            |
+| Flow                                         | When verification enabled                                                                                      |
+| -------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| **Register** (REQ-AUTH-001)                  | No session; **Verify email** screen; verification email sent                                                   |
+| **Accept invitation** (REQ-AUTH-010)         | **Email verified** on success (email link or external sign-in)                                                 |
+| **Admin invite user** (REQ-INV-001)          | **Email verified** true when invitation is sent to the user's email                                            |
+| **Initial administrator** (REQ-ROL-006)      | **Email verified** true at creation                                                                            |
+| **Password expiration** (REQ-AUTH-009)       | Evaluated only after a successful sign-in; sign-in requires **Email verified** true first                      |
+| **Deactivated** (REQ-USR-005)                | **Deactivated** true blocks sign-in regardless of verification                                                 |
+| **Self-service email change** (REQ-AUTH-015) | **Current email** remains for sign-in until confirmation; successful confirmation sets **Email verified** true |
 
 ### States and business rules
 
 - Email verification status and whether the user **has a local password** are independent of deactivation; an **enabled** account may still be unverified or **awaiting invitation acceptance**.
 - Assignable-user lists (REQ-USR-005) include only users with **Deactivated** false; when verification is enabled they must also be verified and have a password set.
-- **Out of scope for this REQ:** changing the email address on an account; email change would reset verification (see REQ-USR-001 out of scope).
+- Self-service email change follows REQ-AUTH-015; completing a pending change sets **Email verified** true and **Email verified at** to the confirmation time regardless of the global **Email verification enabled** flag.
 
 ---
 
@@ -647,13 +661,15 @@ Two mechanisms cover post-primary-auth flows; they are not interchangeable:
 
 The following actions require **step-up authentication** in addition to an active session:
 
-| Action                                | Where                         |
-| ------------------------------------- | ----------------------------- |
-| **Disable two-factor authentication** | **My account**                |
-| **Regenerate recovery codes**         | **My account**                |
-| **Link {Display name}** (signed-in)   | **My account** (REQ-AUTH-014) |
-| **Unlink** external provider          | **My account** (REQ-AUTH-014) |
-| **Set password**                      | **My account** (REQ-AUTH-014) |
+| Action                                | Where                           |
+| ------------------------------------- | ------------------------------- |
+| **Disable two-factor authentication** | **My account**                  |
+| **Regenerate recovery codes**         | **My account**                  |
+| **Link {Display name}** (signed-in)   | **My account** (REQ-AUTH-014)   |
+| **Unlink** external provider          | **My account** (REQ-AUTH-014)   |
+| **Set password**                      | **My account** (REQ-AUTH-014)   |
+| **Change email** (submit)             | **Change email** (REQ-AUTH-015) |
+| **Cancel email change**               | **My account** (REQ-AUTH-015)   |
 
 Step-up rules (all that apply must succeed):
 
@@ -666,7 +682,7 @@ Step-up rules (all that apply must succeed):
 - **Enable two-factor authentication** and **Set up two-factor authentication** already require password (when applicable) and verification code as part of enrollment; they follow enrollment rules, not this table.
 - Failed step-up attempts use the same rate limits as **Two-factor verification** where codes are involved.
 - When a **recovery code** is consumed during step-up, sends **Recovery code used** email (REQ-AUTH-007).
-- Guest **Link external account** during external sign-in requires **Current password** only (REQ-AUTH-014); step-up session rules do not apply on that screen.
+- Guest **Accept invitation** external onboarding uses invited **Profile email** match only (REQ-AUTH-010); step-up session rules do not apply on that path.
 
 ### My account — two-factor section
 
@@ -818,7 +834,9 @@ Deployments must be able to allow sign-in through configured external identity p
 ### External providers policy
 
 - Deployment settings include **External providers enabled**; default **false**.
-- When **External providers enabled** is **false**, external sign-in buttons, linking UI, and external sign-in APIs are unavailable.
+- Deployment settings include **External provider linking enabled**; default **true**. Effective only when **External providers enabled** is **true**.
+- When **External providers enabled** is **false**, external sign-in buttons, **Link**/**Unlink** UI on **My account**, and external sign-in APIs are unavailable.
+- When **External providers enabled** is **true** and **External provider linking enabled** is **false**, **Continue with {Display name}** on **Login**, **Register**, and **Accept invitation** remains available; existing **External login** rows remain usable for sign-in and step-up; **Link {Display name}** on **My account** and OIDC **link mode** APIs are unavailable; **Unlink** on **My account** remains available subject to last-sign-in-method rules.
 - When **External providers enabled** is **true**, the deployment configures one or more providers. Each provider entry includes at minimum:
   - **Provider key** — stable identifier (for example **`google`**, **`microsoft`**).
   - **Display name** — button label (for example **`Google`**, **`Microsoft`**).
@@ -826,9 +844,9 @@ Deployments must be able to allow sign-in through configured external identity p
   - **Client id** and **Client secret** — deployment secrets, not editable from the application UI.
   - **Allowed email domains** — optional list (for example **`example.com`**). When non-empty, external sign-in and linking succeed only when the normalized provider email ends with `@` + one listed domain; otherwise redirect to **Login** with **`Sign-in with this account is not allowed.`**
   - **Issuer validation mode** — optional deployment setting. **Discovery** (default): accept only the issuer published in the provider’s OIDC metadata (typical for Google, single-tenant Microsoft, generic OIDC). **Microsoft multi-tenant**: accept sign-in from any Microsoft Entra tenant; **required** when the configured authority uses `/common` or `/organizations`. Operator detail: `docs/auth-operations-guide.md`.
-  - **Trust IdP email without email verified** — optional per provider. When **enabled**, treat the identity provider’s email as verified even when the token does not include an explicit **email verified** flag (common for Microsoft Entra). When **disabled**, email-based matching and auto-registration require a verified email assertion from the provider.
+  - **Trust IdP email without email verified** — optional per provider. When **enabled**, treat the identity provider’s email as verified even when the token does not include an explicit **email verified** flag (common for Microsoft Entra). When **disabled**, new account creation via OIDC registration and **Accept invitation** external onboarding require a verified email assertion from the provider.
 - Supported built-in provider templates in documentation and default configuration: **Google** and **Microsoft** (Entra ID / Microsoft identity platform). Additional providers may use the same generic OIDC configuration shape.
-- The frontend loads the list of enabled providers (key and display name only) from a public auth settings endpoint; secrets remain server-side.
+- The frontend loads the list of enabled providers (key and display name only) from a public auth settings endpoint; secrets remain server-side. The same endpoint exposes **External providers enabled**, **External provider linking enabled**, and **Self-service email change enabled** (REQ-AUTH-015).
 - When **Trust identity provider MFA** is **true** (REQ-AUTH-013), the backend evaluates the IdP **`amr`** claim (and provider-specific equivalents) on each external sign-in callback.
 
 ### OIDC protocol security
@@ -837,13 +855,14 @@ Deployments must be able to allow sign-in through configured external identity p
 - Each authorization request generates a cryptographically random **`state`**; the callback rejects mismatched or missing **state** (CSRF protection).
 - Each request includes **`nonce`**; the backend validates **`nonce`** in the ID token on callback (replay protection).
 - On callback, the backend discovers authorize and token endpoints from `{Authority}/.well-known/openid-configuration`. ID token **issuer** validation follows **Issuer validation mode** (default: metadata **issuer**); **audience** (client id), **expiry**, and **signature** are always validated against provider metadata before trusting claims.
-- For auto-registration, account linking, and email-match decisions, the provider email is used only when the identity provider asserts it is verified, when **Trust IdP email without email verified** is **enabled** for that provider, or when the token includes provider-specific verified email claims (for example **verified primary email**). If the email is missing or not treated as verified, the system does not match or create accounts by email; an existing link by provider subject may still sign the user in.
+- For **new account creation** via OIDC on **Register** or **Login**, and for **Accept invitation** external onboarding (REQ-AUTH-010), the provider email is used only when the identity provider asserts it is verified, when **Trust IdP email without email verified** is **enabled** for that provider, or when the token includes provider-specific verified email claims (for example **verified primary email**). If the email is missing or not treated as verified, the system does not create an account by email; an existing **External login** for this provider subject may still sign the user in.
 - Authorization codes are single-use; exchanged server-side only (secrets never sent to the frontend).
 
 ### External providers disabled at runtime
 
 - When **external providers** are **disabled**, **External login** rows are **retained** but **inactive** (not usable for sign-in or step-up until re-enabled).
-- **Login**, **Register**, and **My account** hide external provider buttons and linking UI immediately on next settings load.
+- When **external provider linking** is **disabled** (and external providers remain enabled), **Login**, **Register**, and **Accept invitation** still show **Continue with {Display name}**; **My account** hides **Link {Display name}** only.
+- **Login**, **Register**, and **My account** hide all external provider UI when **External providers enabled** is **false** (on next settings load).
 - Users who **have a local password** continue signing in with email and password (and two-factor when applicable).
 - **External-only** users cannot sign in until an administrator re-enables external providers or the user sets a local password; show **`External sign-in is unavailable. Contact an administrator or set a password when sign-in is available.`** on **Login** when detected (edge case for accounts that relied solely on external sign-in while providers were turned off).
 
@@ -870,30 +889,58 @@ See REQ-AUTH-013 for deployment flag and password-sign-in rules. External sign-i
 - The pair (**Provider key**, **Provider subject**) is unique across all users.
 - A user may link at most one account per **Provider key**.
 
-### Account consolidation (same email)
+### Profile email and provider email
 
-The system maintains **at most one user account per normalized email** (REQ-USR-003). External identities never create a second user when that email already exists.
+| Term               | Meaning                                                                                                                                                                                                                                                                              |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Profile email**  | The **current email** on the ChangeMe user account. Used for email/password sign-in, uniqueness (REQ-USR-003), display on **My account**, and **every** application and auth notification (REQ-AUTH-007, issue notifications).                                                       |
+| **Provider email** | The email address returned by the identity provider on an OIDC callback. Used for **allowed email domains**, **Accept invitation** external onboarding (must match invited **Profile email**), and optional display on **My account**. **Never** used as a notification destination. |
 
-| Situation                                                                                 | Outcome                                                                        |
-| ----------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| External sign-in; **External login** exists for this provider subject                     | Sign in the linked user.                                                       |
-| External sign-in; no **External login**; verified provider email matches an existing user | **Account linking** — merge provider into existing account (never a new user). |
-| External sign-in; no match; **Public registration enabled**                               | Create **one** new user and link provider.                                     |
-| External sign-in; no match; **Public registration disabled**                              | Fail with **`No account exists for this email. Contact an administrator.`**    |
+**Profile email** changes only through: registration, **Invite user**, first-time OIDC account creation (initial **Profile email** = verified provider email), **Change email** (REQ-AUTH-015), or administrator **Edit user** (REQ-USR-003).
 
-**Account linking** paths:
+**Linking** a provider from **My account** does **not** change **Profile email**, even when **Provider email** differs.
 
-| Existing account                                              | Linking flow                                                                                                                                                                                                                                                                                                                  |
-| ------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| User **has a local password**; guest external sign-in         | **Link external account** — **Current password** required (REQ-AUTH-014).                                                                                                                                                                                                                                                     |
-| User **has a local password**; signed-in on **My account**    | **Link {Display name}** — **Sensitive account actions** step-up (REQ-AUTH-013).                                                                                                                                                                                                                                               |
-| User is **awaiting invitation acceptance**                    | **External sign-in** with matching verified email completes the invitation, links the provider, and signs in (REQ-AUTH-010). Email-link **Accept invitation** remains available and sets a local password. Guest **Link external account** (password confirmation) does not apply — invitation completion replaces that flow. |
-| User is **external-only**                                     | Guest sign-in with a second provider **auto-links** and signs in (no **Link external account** password prompt). Linking from **My account** still requires step-up (REQ-AUTH-013).                                                                                                                                           |
-| User already has another linked provider; same verified email | **Link {Display name}** on **My account** (step-up) or guest auto-link when **external-only** — adds a second provider on the **same** user.                                                                                                                                                                                  |
-| Provider identity already linked to a **different** user      | **`This external account is already linked to another user.`**                                                                                                                                                                                                                                                                |
+Subsequent OIDC sign-ins do **not** update **Profile email** from provider claims.
 
-- After linking, all **External login** rows for the user share one profile, roles, sessions, and two-factor settings.
-- The system does **not** merge two distinct user records with different emails; administrators resolve duplicate emails operationally before linking (REQ-USR-003 uniqueness).
+### Guest external sign-in (Login and Register)
+
+The system maintains **at most one user account per normalized Profile email** (REQ-USR-003).
+
+Guest **Continue with {Display name}** on **Login** or **Register** does **not** link a provider to an existing account except **Accept invitation** external onboarding (REQ-AUTH-010). To add Google or Microsoft to an existing account, the user signs in to ChangeMe first, then uses **Link {Display name}** on **My account**.
+
+Evaluate rows **in table order** (first match wins). **Allowed email domains** are evaluated on **Provider email** before other rows.
+
+| Condition                                                                                                         | Outcome                                                                                                                                                                                                                                                     |
+| ----------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Provider email not allowed by domain allowlist (when configured)                                                  | **`Sign-in with this account is not allowed.`** on **Login** or **Register**.                                                                                                                                                                               |
+| **External login** exists for this (**Provider key**, **Provider subject**)                                       | Sign in the linked user (subject to deactivation, email verification, two-factor, and password expiration below). **Provider email** may differ from **Profile email**.                                                                                     |
+| User is **awaiting invitation acceptance**; verified **Provider email** matches invited **Profile email**         | Complete invitation and link provider per REQ-AUTH-010 (only email-match link on guest OIDC).                                                                                                                                                               |
+| User is **awaiting invitation acceptance**; **Provider email** does not match invited **Profile email**           | **`The external account email does not match the invited email address.`** on **Login** or **Accept invitation**.                                                                                                                                           |
+| **Provider subject** not linked; a user account already exists with the same normalized **Provider email**        | **`An account already exists for this email. Sign in with your password, then link {Display name} from My account.`** on **Login** or **Register**. Does **not** open a linking screen.                                                                     |
+| **Provider subject** not linked; no account with that **Provider email**; **public registration** is **enabled**  | Create **one** new user; set initial **Profile email** from verified **Provider email**; link provider; create as **external-only**; issue full session, enrollment bootstrap session, or pending two-factor challenge per **Trust identity provider MFA**. |
+| **Provider subject** not linked; no account with that **Provider email**; **public registration** is **disabled** | **`No account exists for this email. Contact an administrator.`** on **Login**.                                                                                                                                                                             |
+| Matched user’s account is **deactivated**                                                                         | **`This account has been deactivated. Contact an administrator.`** on **Login**.                                                                                                                                                                            |
+| Email verification **enabled**; matched user’s **Profile email** **not verified**                                 | **`Verify your email before signing in.`** on **Login** (verified **Provider email** alone does not override an unverified local registration).                                                                                                             |
+
+- New users created via external sign-in receive **First name** and **Last name** from provider claims when present; otherwise empty (user may complete profile on **Edit profile**).
+- External sign-in never bypasses app TOTP when **Trust identity provider MFA** is **disabled**, or when the IdP does not assert MFA. When **Trust identity provider MFA** is **enabled** and MFA is asserted, external sign-in may bypass **Two-factor verification** and **strict two-factor setup** per REQ-AUTH-013.
+
+### Linking external providers (signed-in only)
+
+Linking adds an **External login** row to the **signed-in** user’s account. The user must already have an active ChangeMe session (email/password, an already-linked provider, or passkey per other REQs).
+
+| Step | Behavior                                                                                                                                                                                                                                                     |
+| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1    | User opens **My account** → **Link {Display name}** for an enabled provider not yet linked. Requires **External provider linking enabled** is **true**.                                                                                                      |
+| 2    | **Sensitive account actions** step-up (REQ-AUTH-013) completes before OIDC starts.                                                                                                                                                                           |
+| 3    | When **Provider email** differs from **Profile email**, show confirmation before OIDC: **`Link {Display name} to your account? Your profile email is {profile email}. The provider may use a different address. Notifications stay on your profile email.`** |
+| 4    | OIDC callback in **link mode** attaches (**Provider key**, **Provider subject**) to the signed-in user. **Provider email match is not required.**                                                                                                            |
+| 5    | **Allowed email domains** (when configured) are evaluated against **Provider email** on callback.                                                                                                                                                            |
+| 6    | (**Provider key**, **Provider subject**) must not already belong to another user — **`This external account is already linked to another user.`**                                                                                                            |
+| 7    | On success: message **`External sign-in method linked.`**; **External account linked** email to **Profile email** (REQ-AUTH-007); refresh **My account**.                                                                                                    |
+
+- A user may link multiple providers (for example Google and Microsoft) from **My account**; each requires its own **Link** action and step-up. **Provider email** values may differ from each other and from **Profile email**.
+- **Out of scope for this REQ:** guest **Link external account** screen; auto-linking a provider during **Login** or **Register** when **Provider email** matches an existing account (except **Accept invitation** per REQ-AUTH-010).
 
 ### Login screen — external sign-in
 
@@ -906,43 +953,14 @@ The system maintains **at most one user account per normalized email** (REQ-USR-
 - Screen/route: **External sign-in callback**; processes the OIDC redirect, shows a loading state, then continues sign-in logic without manual input when possible.
 - On unrecoverable error (provider error, invalid state, denied consent): redirect to **Login** with form-level error **`External sign-in failed. Try again or use email and password.`**
 
-### Sign-in decision after provider success
-
-Evaluate rows **in table order** (first match wins). **Allowed email domains** and unverified provider email are evaluated before account matching.
-
-| Condition                                                                 | Outcome                                                                                                                                                                                                                                                                                                                                                                                                       |
-| ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Provider email not allowed by domain allowlist (when configured)          | **`Sign-in with this account is not allowed.`** on **Login**.                                                                                                                                                                                                                                                                                                                                                 |
-| Provider email missing or not treated as verified                         | Do not match or auto-register by email; an existing link for this provider subject may still sign the user in (next row).                                                                                                                                                                                                                                                                                     |
-| Provider already linked to this user                                      | Sign in that user (subject to deactivation, email verification, two-factor, and password expiration below).                                                                                                                                                                                                                                                                                                   |
-| Verified provider email matches an existing user; provider not yet linked | If **awaiting invitation acceptance** → complete invitation via external sign-in (link provider, no password). If the user **has a local password** → guest **Link external account**. If **external-only** → auto-link provider and sign in. If **no local password** and **not** awaiting invitation (**Invitation canceled**, REQ-INV-005) → link provider and sign in (same as external-only completion). |
-| No matching user; **public registration** is **enabled**                  | Create a new user with **User** role (REQ-ROL-006), mark email verified when the provider asserts verification (otherwise REQ-AUTH-011), create as **external-only**, link the provider; then issue a full session, enrollment bootstrap session, or pending two-factor challenge per **Trust identity provider MFA**.                                                                                        |
-| No matching user; **public registration** is **disabled**                 | Redirect to **Login** with **`No account exists for this email. Contact an administrator.`**                                                                                                                                                                                                                                                                                                                  |
-| Matched user’s account is **deactivated**                                 | **`This account has been deactivated. Contact an administrator.`** on **Login**.                                                                                                                                                                                                                                                                                                                              |
-| Email verification **enabled**; matched user’s mailbox **not verified**   | **`Verify your email before signing in.`** on **Login** (verified provider email alone does not override an unverified local registration).                                                                                                                                                                                                                                                                   |
-
-- New users created via external sign-in receive **First name** and **Last name** from provider claims when present; otherwise empty (user may complete profile on **Edit profile**).
-- External sign-in never bypasses app TOTP when **Trust identity provider MFA** is **disabled**, or when the IdP does not assert MFA. When **Trust identity provider MFA** is **enabled** and MFA is asserted, external sign-in may bypass **Two-factor verification** and **strict two-factor setup** per REQ-AUTH-013.
-
-### Link external account (guest)
-
-- Screen: **Link external account**; available during external sign-in when an existing account matches the provider, the user **has a local password**, and this provider is not yet linked.
-- Shows read-only **Email** and **Provider** (display name).
-
-| Field                | Behavior                                       |
-| -------------------- | ---------------------------------------------- |
-| **Current password** | **Required**; must match the existing account. |
-
-- **Link and sign in** button: on success creates the **External login**, then continues sign-in (session, two-factor, or password expiration as applicable).
-- **Cancel** → **Login** without linking.
-- Duplicate link attempt when the provider subject is already linked to another user: **`This external account is already linked to another user.`** on **Login**.
-
 ### My account — external sign-in methods
 
 - Section **External sign-in methods** on **My account** when **External providers enabled** is **true**; collapsible; default **collapsed**.
-- Lists each linked provider as a row: **Provider** (display name), **Linked at**, **Unlink** action.
-- Lists enabled providers not yet linked with **Link {Display name}** action starting the same OIDC flow in **link mode** (returns to signed-in **My account** on success).
-- **Link {Display name}** and **Unlink** require **Sensitive account actions** step-up authentication (REQ-AUTH-013) before the action completes.
+- Persistent notice at the top of the section: **`Notifications are sent to your profile email ({profile email}), not to provider addresses.`**
+- Lists each linked provider as a row: **Provider** (display name), **Provider email** (last known from the most recent OIDC callback for that link, or **`—`** when unknown), **Linked at**, **Unlink** action.
+- When **Provider email** differs from **Profile email**, show inline hint on the row: **`May differ from your profile email.`**
+- Lists enabled providers not yet linked with **Link {Display name}** when **External provider linking enabled** is **true**; action starts OIDC in **link mode** (returns to signed-in **My account** on success).
+- **Link {Display name}** (when linking is enabled) and **Unlink** require **Sensitive account actions** step-up authentication (REQ-AUTH-013) before the action completes.
 - **Unlink** requires confirmation: **`Remove {Display name} sign-in from your account?`**
 - **Unlink** is blocked when it would leave the user with no sign-in method (**external-only** with only one linked provider) — show message **`Set a password before removing your only sign-in method.`** with link to **Set password** (see below).
 - On successful link: message **`External sign-in method linked.`** and **External account linked** email (REQ-AUTH-007).
@@ -979,8 +997,7 @@ Evaluate rows **in table order** (first match wins). **Allowed email domains** a
 
 ### Admin invite user and invitation
 
-- **Invite user** (REQ-INV-001): administrators onboard by email invitation.
-- A user **awaiting invitation acceptance** may complete onboarding via **Accept invitation** (email link) or via **external sign-in** when providers are enabled and the verified provider email matches (REQ-AUTH-010).
+- **Invite user** (REQ-INV-001): administrators onboard by **Profile email**; the invitee must use that address for **Accept invitation** external onboarding (REQ-AUTH-010).
 
 ### Interaction with other auth flows
 
@@ -995,7 +1012,125 @@ Evaluate rows **in table order** (first match wins). **Allowed email domains** a
 
 ### States and business rules
 
-- Linking and unlinking require an authenticated session except **Link external account** during first provider sign-in.
-- Admin **Edit user** email change (REQ-USR-003): when **External providers enabled** is **true** and the user has one or more **External login** rows, **Edit user** shows warning **`This user has external sign-in linked. Changing email does not remove external logins; the user signs in by provider identity, not email match.`** Saving an email change does **not** auto-remove **External login** rows; administrators may **Unlink** providers from **User details** when appropriate.
-- Deactivating a user revokes sessions (REQ-USR-005); external logins remain linked (inactive while providers disabled deployment-wide).
-- **Out of scope for this REQ:** SAML 2.0; social providers without email claim; automatic admin provisioning rules; SCIM; admin UI to configure providers at runtime; merging two user records with **different** emails into one account.
+- **Link {Display name}** and **Unlink** require a signed-in session and **Sensitive account actions** step-up (REQ-AUTH-013), except administrator **Unlink** on **User details**.
+- After linking, all **External login** rows for the user share one **Profile email**, roles, sessions, and two-factor settings.
+- Admin **Edit user** **Profile email** change (REQ-USR-003): when **External providers enabled** is **true** and the user has at least one **External login**, **Edit user** shows notice **`External sign-in stays linked. Profile email is used for notifications; provider addresses may differ.`** Saving does **not** remove **External login** rows; administrators may **Unlink** providers from **User details** when appropriate.
+- Self-service **Change email** (REQ-AUTH-015): **External login** rows are retained; notice on **Change email** when the user has linked providers: **`External sign-in methods stay linked. Notifications stay on your profile email.`**
+- **Out of scope for this REQ:** SAML 2.0; social providers without email claim; automatic admin provisioning rules; SCIM; admin UI to configure providers at runtime; merging two user records with **different Profile emails** into one account; guest **Link external account** screen.
+
+---
+
+# REQ-AUTH-015: Self-Service Email Change
+
+## Goal
+
+The signed-in user must be able to change the email address on their account by confirming control of the new mailbox. The current email address remains active for sign-in until the change is confirmed.
+
+## Features
+
+### Deployment policy
+
+- Deployment settings include **Self-service email change enabled** (`AuthOptions:EmailChange:Enabled`); default **true**.
+- When **Self-service email change enabled** is **false**, **Change email** is hidden on **My account**, APIs to start a new email change are unavailable, and direct navigation to **Change email** redirects to **My account** with no new request allowed.
+- When **Self-service email change enabled** is **false** and a **pending email change** already exists, **My account** still shows the **Pending email change** panel (resend, cancel) until the pending change is cleared or confirmed.
+- Administrator **Edit user** email change (REQ-USR-003) is unaffected by this flag.
+
+### Business terms
+
+| Term                     | Meaning                                                                                                                                                                                                      |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Pending email change** | A self-service request to replace the current email with a new address. The new address is stored as pending until the user opens the confirmation link sent to that address or an administrator cancels it. |
+| **Current email**        | The account **Profile email** used for sign-in, display, and notifications until a pending change is confirmed or cancelled (REQ-AUTH-014).                                                                  |
+| **New email**            | The target address in a **pending email change**; not used for sign-in until confirmation succeeds.                                                                                                          |
+
+### My account — entry and pending state
+
+- Header action **Change email** on **My account** (REQ-USR-001) opens **Change email**.
+- **Change email** is **not shown** when:
+  - **Self-service email change enabled** is **false**;
+  - the user is **awaiting invitation acceptance**;
+  - a **pending email change** already exists.
+- When a **pending email change** exists, **My account** shows a **Pending email change** panel above the profile summary with:
+  - read-only line **`New email: {new email}`**;
+  - read-only line **`Requested at: {date and time}`**;
+  - message **`Sign in with your current email until you confirm the change from the new mailbox.`**
+  - action **Resend confirmation email**;
+  - action **Cancel email change** (requires **Sensitive account actions** step-up authentication — REQ-AUTH-013).
+- **Resend confirmation email** sends a new **Confirm email change** message to the **new email** (REQ-AUTH-007), invalidates the previous unused confirmation link for this pending change, and shows message **`If the pending change is still valid, a new confirmation link has been sent to the new email address.`**
+- **Cancel email change** opens confirmation dialog **`Cancel the pending email change to "{new email}"? Your current email will stay unchanged.`** On confirm: clears the pending change, sends **Email change cancelled** to the **current email** (REQ-AUTH-007), shows message **`Email change cancelled.`**, and refreshes **My account** in place.
+
+### Change email screen
+
+- Screen: **Change email**
+- Linked from **My account** via header action **Change email**; **Back to my account** at the top.
+- Only authenticated users with **Deactivated** false who are **not** **awaiting invitation acceptance** and have **no pending email change** can open this screen.
+
+| Field             | Behavior                                                                                                  |
+| ----------------- | --------------------------------------------------------------------------------------------------------- |
+| **New email**     | Text field, **required**; valid email format; max **320** characters; must differ from **current email**. |
+| **Current email** | Read-only; shows the signed-in user's **current email**.                                                  |
+
+- When **External providers enabled** is **true** and the user has at least one **External login** row, show persistent notice: **`External sign-in methods stay linked. Notifications stay on your profile email ({current email}). Provider addresses may differ.`**
+
+### Step-up before submit
+
+- **Change email** button opens the **Sensitive account actions** step-up dialog (REQ-AUTH-013) before the request is submitted.
+- Step-up collects **Current password** when the user **has a local password**, **TOTP** or **recovery code** when **two-factor enrolled**, and **step-up external sign-in** when the user is **external-only**.
+- When step-up succeeds, the system validates **New email** and creates the **pending email change**.
+
+### Validation (change email)
+
+- **New email** identical to **current email** shows inline field error: **`New email must differ from your current email.`**
+- Duplicate **new email** (already used by another account) shows form-level error: **`An account with this email already exists.`**
+- Required and format errors are inline on **New email**.
+
+### Submit success
+
+- On successful submit after step-up:
+  - create **pending email change** with **new email** and **requested at** (current date and time);
+  - send **Confirm email change** to the **new email** (REQ-AUTH-007);
+  - send **Email change requested** to the **current email** (REQ-AUTH-007);
+  - show message **`Check the new email address for a confirmation link.`**;
+  - navigate to **My account**.
+- Submit does **not** change **current email**, **Email verified**, or active sessions.
+
+### Confirmation link lifetime
+
+- **Email change confirmation link lifetime (hours)** applies to self-service email change; default **72** (same default as **Email verification link lifetime (hours)** in REQ-AUTH-011).
+- Each **Resend confirmation email** issues a new link and invalidates previous unused links for the same pending change.
+
+### Confirm email change screen (guest)
+
+- Screen: **Confirm email change**; available to guests (confirmation token in URL).
+- **Back to sign in** at the top → **Login**.
+
+| Outcome            | Behavior                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Valid link         | Applies the **new email** as **current email**; clears **pending email change**; sets **Email verified** true and **Email verified at** to the current date and time; revokes **all active sessions** for that user; sends **Email change completed** to the **previous current email** and to the **new email** (REQ-AUTH-007); redirects to **Login** with message **`Email changed. Sign in with your new email address.`** |
+| Invalid or expired | Shows form-level error **`This confirmation link is invalid or has expired.`** with action **Back to sign in** → **Login**. When the user is signed in and a pending change still exists, also show **Resend confirmation email** (same behavior as on **My account**).                                                                                                                                                        |
+
+- Opening a valid confirmation link while signed in as a **different** user shows error **`This confirmation link belongs to another account. Sign out and open the link again, or sign in as the account that requested the change.`** with actions **Sign out** → **Login**, and **Back to my account** when the signed-in user has access to **My account**.
+
+### Form actions (change email)
+
+- **Cancel** button navigates to **My account** without saving.
+- **Change email** button: collect step-up (REQ-AUTH-013), then validate and submit as above.
+
+### Interaction with other auth flows
+
+| Flow                                  | Behavior                                                                                                                                                          |
+| ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Login** (REQ-AUTH-001)              | Sign-in uses **current email** until confirmation; **new email** cannot sign in while the change is pending.                                                      |
+| **Forgot password** (REQ-AUTH-006)    | Available for **current email** while a change is pending.                                                                                                        |
+| **Email verification** (REQ-AUTH-011) | Pending change does not alter **Email verified** on **current email** until confirmation; after confirmation, **Email verified** is true on the **new email**.    |
+| **Passkeys** (REQ-PKY-001)            | Passkey credentials remain on the account; discoverable passkey sign-in is unchanged. Non-discoverable passkey sign-in uses **current email** until confirmation. |
+| **External providers** (REQ-AUTH-014) | **External login** rows retained; **Profile email** is notification destination; provider emails may differ.                                                      |
+| **Admin edit user** (REQ-USR-003)     | Administrator email change cancels any **pending email change**, applies immediately, and follows REQ-USR-003 admin email rules.                                  |
+| **Admin user details** (REQ-USR-004)  | Shows **Pending email change** when present; administrator may **Cancel pending email change**.                                                                   |
+
+### States and business rules
+
+- Only one **pending email change** per user at a time.
+- Users **awaiting invitation acceptance** cannot start self-service email change; they complete onboarding first (REQ-AUTH-010).
+- Confirmation success revokes **every** active session; the user must sign in again with the **new Profile email** (or a linked external provider / passkey per existing rules).
+- **Out of scope for this REQ:** changing email from **Edit profile**; administrator-initiated email change except cancellation of a pending change (REQ-USR-003, REQ-USR-004); changing email without confirmation of the new mailbox on self-service paths.

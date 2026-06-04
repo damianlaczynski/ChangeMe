@@ -71,6 +71,19 @@ public class CompleteExternalSignInHandler(
       return Result<ExternalSignInResponseDto>.Unauthorized(ExternalAuthUtils.SignInNotAllowedMessage);
     }
 
+    if (!string.IsNullOrWhiteSpace(pending.InvitedProfileEmail))
+    {
+      var invitedNormalized = User.NormalizeEmail(pending.InvitedProfileEmail);
+      if (!assertion.EmailVerified
+          || string.IsNullOrWhiteSpace(assertion.Email)
+          || User.NormalizeEmail(assertion.Email) != invitedNormalized)
+      {
+        await ExternalAuthUtils.DeletePendingAsync(context, pending, cancellationToken);
+        return Result<ExternalSignInResponseDto>.Unauthorized(
+          ExternalAuthUtils.InvitedExternalEmailMismatchMessage);
+      }
+    }
+
     if (pending.Mode == ExternalAuthMode.StepUp && pending.UserId is Guid stepUpUserId)
       return await CompleteStepUpModeAsync(
         pending,
@@ -80,6 +93,14 @@ public class CompleteExternalSignInHandler(
         cancellationToken);
 
     if (pending.Mode == ExternalAuthMode.Link && pending.UserId is Guid linkUserId)
+    {
+      if (!auth.External.LinkingEnabled)
+      {
+        await ExternalAuthUtils.DeletePendingAsync(context, pending, cancellationToken);
+        return Result<ExternalSignInResponseDto>.Forbidden(
+          ExternalAuthUtils.ExternalProviderLinkingDisabledMessage);
+      }
+
       return await CompleteLinkModeAsync(
         pending,
         provider,
@@ -87,6 +108,7 @@ public class CompleteExternalSignInHandler(
         assertion,
         auth,
         cancellationToken);
+    }
 
     return await CompleteSignInModeAsync(
       pending,
@@ -191,7 +213,18 @@ public class CompleteExternalSignInHandler(
       if (!assertion.EmailVerified || string.IsNullOrWhiteSpace(assertion.Email))
       {
         await ExternalAuthUtils.DeletePendingAsync(context, pending, cancellationToken);
-        return Result<ExternalSignInResponseDto>.Unauthorized(AuthSessionUtils.InvitePendingAccountMessage);
+        return Result<ExternalSignInResponseDto>.Unauthorized(
+          ExternalAuthUtils.InvitedExternalEmailMismatchMessage);
+      }
+
+      if (!ExternalAuthUtils.ProviderEmailMatchesUser(
+            matchedUser,
+            assertion.Email,
+            assertion.EmailVerified))
+      {
+        await ExternalAuthUtils.DeletePendingAsync(context, pending, cancellationToken);
+        return Result<ExternalSignInResponseDto>.Unauthorized(
+          ExternalAuthUtils.InvitedExternalEmailMismatchMessage);
       }
 
       var linkResult = await LinkExternalLoginAsync(matchedUser, provider, assertion, cancellationToken);
@@ -223,36 +256,11 @@ public class CompleteExternalSignInHandler(
         cancellationToken);
     }
 
-    if (!matchedUser.HasPasswordSet)
-    {
-      var linkResult = await LinkExternalLoginAsync(matchedUser, provider, assertion, cancellationToken);
-      if (!linkResult.IsSuccess)
-        return linkResult.Map();
-
-      await authEmailService.SendExternalAccountLinkedAsync(
-        matchedUser,
-        provider.DisplayName,
-        cancellationToken);
-
-      return await SignInExistingUserAsync(
-        pending,
-        matchedUser,
-        assertion.IdentityProviderMfaAsserted,
-        auth,
-        cancellationToken);
-    }
-
-    pending.MarkLinkAccountRequired();
-    await context.SaveChangesAsync(cancellationToken);
-
-    return Result.Success(new ExternalSignInResponseDto
-    {
-      LinkAccountRequired = new ExternalAccountLinkRequiredDto(
-        pending.State,
-        matchedUser.Email,
-        provider.ProviderKey,
-        provider.DisplayName)
-    });
+    await ExternalAuthUtils.DeletePendingAsync(context, pending, cancellationToken);
+    return Result<ExternalSignInResponseDto>.Unauthorized(
+      string.Format(
+        ExternalAuthUtils.AccountExistsLinkFromMyAccountMessage,
+        provider.DisplayName));
   }
 
   private async Task<Result<ExternalSignInResponseDto>> RegisterAndSignInAsync(
@@ -301,7 +309,10 @@ public class CompleteExternalSignInHandler(
     if (!externalLoginResult.IsSuccess)
       return externalLoginResult.Map();
 
-    var addLoginResult = user.AddExternalLogin(externalLoginResult.Value);
+    var login = externalLoginResult.Value;
+    login.UpdateLastProviderEmail(assertion.Email);
+
+    var addLoginResult = user.AddExternalLogin(login);
     if (!addLoginResult.IsSuccess)
       return Result<ExternalSignInResponseDto>.Error(addLoginResult.Errors.First());
 
@@ -372,12 +383,6 @@ public class CompleteExternalSignInHandler(
       return Result<ExternalSignInResponseDto>.Unauthorized(ExternalAuthUtils.SignInNotAllowedMessage);
     }
 
-    if (!ExternalAuthUtils.ProviderEmailMatchesUser(user, assertion.Email, assertion.EmailVerified))
-    {
-      await ExternalAuthUtils.DeletePendingAsync(context, pending, cancellationToken);
-      return Result<ExternalSignInResponseDto>.Error(ExternalAuthUtils.ExternalProviderEmailMismatchMessage);
-    }
-
     var subjectLinkedElsewhere = await context.ExternalLogins.AnyAsync(
       x => x.ProviderKey == provider.ProviderKey
            && x.ProviderSubject == assertion.ProviderSubject
@@ -396,6 +401,7 @@ public class CompleteExternalSignInHandler(
     var linkedLogin = user.ExternalLogins.First(x =>
       x.ProviderKey.Equals(provider.ProviderKey, StringComparison.OrdinalIgnoreCase));
     linkedLogin.RecordStepUp(DateTime.UtcNow);
+    linkedLogin.UpdateLastProviderEmail(assertion.Email);
 
     await ExternalAuthUtils.DeletePendingAsync(context, pending, cancellationToken);
     await context.SaveChangesAsync(cancellationToken);
@@ -426,7 +432,7 @@ public class CompleteExternalSignInHandler(
       return Result<ExternalSignInResponseDto>.Unauthorized(AuthSessionUtils.EmailNotVerifiedMessage);
     }
 
-    await RecordSignInStepUpAsync(user.Id, pending, cancellationToken);
+    await RecordSignInStepUpAsync(user.Id, pending, pending.ProviderEmail, cancellationToken);
     await ExternalAuthUtils.DeletePendingAsync(context, pending, cancellationToken);
 
     return await ExternalSignInAuthUtils.IssueSignInResponseAsync(
@@ -456,7 +462,10 @@ public class CompleteExternalSignInHandler(
     if (!externalLoginResult.IsSuccess)
       return externalLoginResult.Map();
 
-    var addLoginResult = user.AddExternalLogin(externalLoginResult.Value);
+    var login = externalLoginResult.Value;
+    login.UpdateLastProviderEmail(assertion.Email);
+
+    var addLoginResult = user.AddExternalLogin(login);
     if (!addLoginResult.IsSuccess)
       return addLoginResult;
 
@@ -467,6 +476,7 @@ public class CompleteExternalSignInHandler(
   private async Task RecordSignInStepUpAsync(
     Guid userId,
     ExternalAuthPending pending,
+    string? providerEmail,
     CancellationToken cancellationToken)
   {
     if (string.IsNullOrWhiteSpace(pending.ProviderSubject))
@@ -482,6 +492,7 @@ public class CompleteExternalSignInHandler(
       return;
 
     login.RecordStepUp(DateTime.UtcNow);
+    login.UpdateLastProviderEmail(providerEmail);
     await context.SaveChangesAsync(cancellationToken);
   }
 }

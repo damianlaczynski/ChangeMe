@@ -116,6 +116,7 @@ public sealed class UserAuthTokenService(
       UserAuthTokenType.Invitation => utcNow.AddHours(authOptions.Value.Invitations.InvitationLinkLifetimeHours),
       UserAuthTokenType.PasswordReset => utcNow.AddHours(authOptions.Value.PasswordReset.LinkLifetimeHours),
       UserAuthTokenType.EmailVerification => utcNow.AddHours(authOptions.Value.EmailVerification.LinkLifetimeHours),
+      UserAuthTokenType.EmailChangeConfirmation => utcNow.AddHours(authOptions.Value.EmailChange.LinkLifetimeHours),
       _ => utcNow.AddHours(24)
     };
 }

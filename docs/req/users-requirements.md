@@ -22,29 +22,31 @@ The following terms are used across Users and Auth requirements. They describe o
 | **Local password**                 | A password stored in ChangeMe for email/password sign-in. A user **with a local password** has completed invitation acceptance with a password, self-registration, or **Set password** on **My account**.                                                                                  |
 | **External-only account**          | The user can sign in through one or more linked external providers but **has no local password yet** and is **not** awaiting invitation acceptance (for example after invitation acceptance via OIDC, self-service registration via an IdP, or when no administrator invitation was sent). |
 | **Email verified**                 | When email verification is enabled in deployment settings, the user proved control of the mailbox (verification link, invitation acceptance, or administrator confirmation). When verification is disabled, every account is treated as verified for sign-in purposes.                     |
+| **Profile email**                  | The **current email** on the ChangeMe account; used for sign-in, display, and all notifications (REQ-AUTH-014). Shown as **Email** on **My account** and admin screens.                                                                                                                    |
 | **Two-factor enrolled**            | The user completed authenticator setup; password sign-in requires a verification code unless external **Trust identity provider MFA** applies on that sign-in.                                                                                                                             |
 | **Passkey enrolled**               | The user has at least one **Passkey credential** (REQ-PKY-003). Passkey sign-in is available when **Passkeys authentication enabled** is **true** (REQ-PKY-001).                                                                                                                           |
 | **Passkey-only account**           | The user has at least one passkey, **no local password**, and **no external login**; allowed only when **Allow passkey-only accounts** is **true** (REQ-PKY-001).                                                                                                                          |
 
-Cross-reference: invitations — `docs/req/invitations-requirements.md`; invitation acceptance — REQ-AUTH-010; external sign-in — REQ-AUTH-014; email verification — REQ-AUTH-011; passkeys — `docs/req/passkeys-requirements.md`.
+Cross-reference: invitations — `docs/req/invitations-requirements.md`; invitation acceptance — REQ-AUTH-010; external sign-in — REQ-AUTH-014; email verification — REQ-AUTH-011; self-service email change — REQ-AUTH-015; passkeys — `docs/req/passkeys-requirements.md`.
 
 ## Account model (all Users REQs)
 
 Administrative enablement is separate from onboarding and how the user signs in.
 
-| Concept                      | Shown in UI / admin                                          | Meaning                                                                                                                                                            |
-| ---------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Deactivated**              | **Status** **`Deactivated`**                                 | Whether an administrator disabled the account.                                                                                                                     |
-| **Deactivated at**           | **User details**                                             | When the account was last deactivated, if applicable.                                                                                                              |
-| **Local password**           | Implied by **Change password**, invitation state             | Whether the user has completed setting a ChangeMe password. Users **without** a local password are either **awaiting invitation acceptance** or **external-only**. |
-| **Email verified**           | **Email verified** badge, filters                            | Whether the mailbox is considered confirmed when email verification is enabled (REQ-AUTH-011).                                                                     |
-| **Email verified at**        | **User details**                                             | When verification last succeeded.                                                                                                                                  |
-| **Password last changed at** | **User details**, password expiration                        | When the local password was last set or changed (REQ-AUTH-009).                                                                                                    |
-| **Pending invitation**       | **Invitation** panel (REQ-INV-002); API: `pendingInvitation` | Summary while **awaiting invitation acceptance**; hidden after acceptance or cancel. Closed rows: REQ-INV-006.                                                     |
-| **Two-factor enabled**       | **My account**, **User details**                             | Whether the user enrolled in app TOTP when two-factor is enabled in deployment settings (REQ-AUTH-013).                                                            |
-| **Two-factor enabled at**    | **User details**                                             | When two-factor enrollment last completed.                                                                                                                         |
-| **External login**           | **External sign-in methods**                                 | A linked external provider identity (provider name, linked date).                                                                                                  |
-| **Passkey credential**       | **Passkeys** (REQ-PKY-003, REQ-PKY-005)                      | A registered WebAuthn credential (name, created at, last used at, authenticator type).                                                                             |
+| Concept                      | Shown in UI / admin                                                                             | Meaning                                                                                                                                                            |
+| ---------------------------- | ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Deactivated**              | **Status** **`Deactivated`**                                                                    | Whether an administrator disabled the account.                                                                                                                     |
+| **Deactivated at**           | **User details**                                                                                | When the account was last deactivated, if applicable.                                                                                                              |
+| **Local password**           | Implied by **Change password**, invitation state                                                | Whether the user has completed setting a ChangeMe password. Users **without** a local password are either **awaiting invitation acceptance** or **external-only**. |
+| **Email verified**           | **Email verified** badge, filters                                                               | Whether the mailbox is considered confirmed when email verification is enabled (REQ-AUTH-011).                                                                     |
+| **Email verified at**        | **User details**                                                                                | When verification last succeeded.                                                                                                                                  |
+| **Password last changed at** | **User details**, password expiration                                                           | When the local password was last set or changed (REQ-AUTH-009).                                                                                                    |
+| **Pending invitation**       | **Invitation** panel (REQ-INV-002); API: `pendingInvitation`                                    | Summary while **awaiting invitation acceptance**; hidden after acceptance or cancel. Closed rows: REQ-INV-006.                                                     |
+| **Two-factor enabled**       | **My account**, **User details**                                                                | Whether the user enrolled in app TOTP when two-factor is enabled in deployment settings (REQ-AUTH-013).                                                            |
+| **Two-factor enabled at**    | **User details**                                                                                | When two-factor enrollment last completed.                                                                                                                         |
+| **External login**           | **External sign-in methods**                                                                    | A linked external provider identity (provider name, linked date).                                                                                                  |
+| **Passkey credential**       | **Passkeys** (REQ-PKY-003, REQ-PKY-005)                                                         | A registered WebAuthn credential (name, created at, last used at, authenticator type).                                                                             |
+| **Pending email change**     | **Pending email change** panel on **My account** (REQ-AUTH-015); **User details** (REQ-USR-004) | Self-service request to replace **current email** with a **new email** until confirmed or cancelled.                                                               |
 
 **Email verified** when email verification is enabled (REQ-AUTH-011):
 
@@ -93,8 +95,15 @@ The signed-in user must be able to view their own profile, edit it on a separate
 ### Header actions
 
 - **Edit** button (header action) opens **Edit profile** (same placement as **Edit** on other detail screens).
+- **Change email** button (header action) opens **Change email** (REQ-AUTH-015) when **Self-service email change enabled** is **true**, the user is **not** **awaiting invitation acceptance**, and has **no pending email change**.
 - **Change password** button (header action) opens **Change password** (REQ-AUTH-005).
 - **Sign out everywhere** button (header action) when the user has **Sessions.ManageOwn**; same behavior as REQ-AUTH-003.
+
+### Pending email change panel
+
+- When a **pending email change** exists (REQ-AUTH-015), show the **Pending email change** panel as the **first content block** on **My account** (above the profile summary).
+- Panel content and actions follow REQ-AUTH-015.
+- When **no pending email change** exists, the panel is **not shown**.
 
 ### Edit profile screen
 
@@ -138,7 +147,7 @@ The signed-in user must be able to view their own profile, edit it on a separate
 
 - Any authenticated user with **Deactivated** false can view **My account** and open **Edit profile** to change **First name** and **Last name**.
 - **My account** does **not** expose role assignment or account status changes.
-- **Out of scope for this REQ:** email change.
+- Self-service **Change email** is specified in REQ-AUTH-015; this REQ links to it from header actions and the **Pending email change** panel.
 
 ---
 
@@ -252,7 +261,7 @@ An authorized administrator must be able to update an existing user's profile, r
 | **Deactivated** | Checkbox; editable only with **Users.Deactivate**; label **`Deactivated`**. When checked, **Status** becomes **`Deactivated`**.     |
 
 - **Password** fields are **not shown** on **Edit user**.
-- When **External providers enabled** is **true** and the edited user has at least one **External login**, show persistent notice: **`This user has external sign-in linked. Changing email does not remove external logins.`** (REQ-AUTH-014).
+- When **External providers enabled** is **true** and the edited user has at least one **External login**, show persistent notice: **`External sign-in stays linked. Profile email is used for notifications; provider addresses may differ.`** (REQ-AUTH-014).
 - **Edit user** is the screen for managing a user's role assignments; there is no separate role-assignment screen in **Users** administration.
 
 ### Validation
@@ -271,6 +280,13 @@ An authorized administrator must be able to update an existing user's profile, r
 - An administrator **cannot** remove their own **Administrator** role assignment; save is rejected with message **`You cannot remove your own administrator access.`**
 - On **Edit user**, when the administrator edits **their own** account, the **Roles** field is **not shown**; **Permissions** preview is **not shown**.
 - An administrator **cannot** set their own **Deactivated** to **true**; save is rejected with message **`You cannot deactivate your own account.`**
+- When **Email** is changed on save:
+  - cancel any **pending email change** on that user (REQ-AUTH-015);
+  - apply the new **Email** immediately as **current email**;
+  - set **Email verified** true and **Email verified at** to the current date and time when email verification is enabled (REQ-AUTH-011);
+  - revoke **all active sessions** for that user;
+  - send **Email changed by admin** to the previous **current email** and to the new **Email** (REQ-AUTH-007).
+- When **Email** is unchanged on save, admin email rules above do **not** run.
 
 ### Permissions and visibility
 
@@ -301,7 +317,7 @@ Displays read-only:
 | ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **First name**                | Read-only; **`—`** when empty.                                                                                                                                                                                                                                                                  |
 | **Last name**                 | Read-only; **`—`** when empty.                                                                                                                                                                                                                                                                  |
-| **Email**                     | Email address.                                                                                                                                                                                                                                                                                  |
+| **Email**                     | **Profile email** — account email address; notification destination (REQ-AUTH-014).                                                                                                                                                                                                             |
 | **Status**                    | **`Invited`**, **`Invitation canceled`**, **`Active`**, or **`Deactivated`** (REQ-INV-005).                                                                                                                                                                                                     |
 | **Email verified**            | Badge **`Verified`** or **`Unverified`** when email verification is enabled (REQ-AUTH-011); omitted when verification is disabled.                                                                                                                                                              |
 | **Email verified at**         | Date and time when **Email verified** is true; omitted when verification is disabled or **Email verified** is false.                                                                                                                                                                            |
@@ -318,6 +334,13 @@ Displays read-only:
 - Pending invitation presentation, **Resend invitation**, and **Cancel invitation**: REQ-INV-002, REQ-INV-003, REQ-INV-004.
 - When `pendingInvitation` is present, the **Invitation** panel is the **first** block on the page (above profile summary).
 - Invitation actions are **not** duplicated in the page header.
+
+### Pending email change panel
+
+- When a **pending email change** exists (REQ-AUTH-015), show **Pending email change** as the **first** block on the page when no **Invitation** panel is shown; when both exist, **Invitation** remains first, then **Pending email change**, then profile summary.
+- Panel shows read-only **New email**, **Requested at**, and message **`The user must confirm from the new mailbox before sign-in uses the new address.`**
+- Header action **Cancel pending email change** (requires **Users.Manage**): confirmation **`Cancel the pending email change to "{new email}"? The current email will stay unchanged.`** On confirm: clears the pending change, sends **Email change cancelled** to the user's **current email** (REQ-AUTH-007), shows message **`Pending email change cancelled.`**, and refreshes **User details** in place.
+- When **no pending email change** exists, the panel and header action are **not shown**.
 
 ### External sign-in methods section
 
@@ -355,7 +378,7 @@ Displays read-only:
 | Action                  | Permission required    | Behavior                                                                                                                                                                                                                                                                                  |
 | ----------------------- | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Edit**                | **Users.Manage**       | Opens **Edit user** (profile, deactivation, and role assignments when permitted).                                                                                                                                                                                                         |
-| **Send invitation**     | **Users.Manage**       | Shown when the user has **no** pending invitation (for example after **Cancel invitation**); same behavior as **Resend invitation** (REQ-INV-003).                                                                                                                                          |
+| **Send invitation**     | **Users.Manage**       | Shown when the user has **no** pending invitation (for example after **Cancel invitation**); same behavior as **Resend invitation** (REQ-INV-003).                                                                                                                                        |
 | **Deactivate**          | **Users.Deactivate**   | Shown when **Deactivated** is **false**; confirmation and behavior per REQ-USR-005.                                                                                                                                                                                                       |
 | **Activate**            | **Users.Deactivate**   | Shown when **Deactivated** is **true**; confirmation and behavior per REQ-USR-005.                                                                                                                                                                                                        |
 | **Revoke all sessions** | **Sessions.ManageAny** | Opens confirmation: **`Revoke all active sessions for this user? They will be signed out on every device.`**                                                                                                                                                                              |
