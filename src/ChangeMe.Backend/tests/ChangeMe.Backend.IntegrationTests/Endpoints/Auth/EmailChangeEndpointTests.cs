@@ -8,6 +8,7 @@ using ChangeMe.Backend.IntegrationTests.Support;
 using ChangeMe.Backend.IntegrationTests.Support.Fakes;
 using ChangeMe.Backend.UseCases.Auth;
 using ChangeMe.Backend.UseCases.Auth.Dtos;
+using ChangeMe.Backend.UseCases.Auth.Utils;
 using ChangeMe.Backend.UseCases.Users.Dtos;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
@@ -162,7 +163,7 @@ public sealed class EmailChangeEndpointTests(BackendWebApplicationFactory factor
       cancellationToken);
     Assert.NotNull(result);
     Assert.False(result!.Succeeded);
-    Assert.Equal(ConfirmEmailChangeHandler.TargetEmailTakenMessage, result.Message);
+    Assert.Equal(EmailChangeUtils.TargetEmailTakenMessage, result.Message);
 
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     var changerEntity = await db.Users.AsNoTracking().SingleAsync(x => x.Id == changer.UserId, cancellationToken);

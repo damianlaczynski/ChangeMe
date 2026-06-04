@@ -38,7 +38,7 @@ public class RequestEmailChangeHandler(
 
     var auth = authOptions.Value;
     if (!auth.EmailChange.Enabled)
-      return Result<MyAccountDto>.Forbidden("Self-service email change is not available.");
+      return Result<MyAccountDto>.Forbidden(EmailChangeUtils.EmailChangeDisabledMessage);
 
     var user = await context.Users
       .Include(x => x.ExternalLogins)
@@ -48,10 +48,10 @@ public class RequestEmailChangeHandler(
       return Result<MyAccountDto>.Unauthorized();
 
     if (user.HasPendingInvitation)
-      return Result<MyAccountDto>.Error("Complete your invitation before changing your email.");
+      return Result<MyAccountDto>.Error(EmailChangeUtils.InvitePendingBlocksEmailChangeMessage);
 
     if (user.HasPendingEmailChange)
-      return Result<MyAccountDto>.Error("An email change is already pending.");
+      return Result<MyAccountDto>.Error(EmailChangeUtils.EmailChangeAlreadyPendingMessage);
 
     var utcNow = timeProvider.GetUtcNow().UtcDateTime;
     var passkeyCount = await context.PasskeyCredentials.CountAsync(x => x.UserId == userId, cancellationToken);
@@ -140,7 +140,7 @@ public class CancelEmailChangeHandler(
       return Result<MyAccountDto>.Unauthorized();
 
     if (!user.HasPendingEmailChange)
-      return Result<MyAccountDto>.Error("No email change is pending.");
+      return Result<MyAccountDto>.Error(EmailChangeUtils.NoEmailChangePendingMessage);
 
     var utcNow = timeProvider.GetUtcNow().UtcDateTime;
     var passkeyCount = await context.PasskeyCredentials.CountAsync(x => x.UserId == userId, cancellationToken);
@@ -200,7 +200,7 @@ public class ResendEmailChangeConfirmationHandler(
       return Result<MyAccountDto>.Unauthorized();
 
     if (!user.HasPendingEmailChange || user.PendingNewEmail is null)
-      return Result<MyAccountDto>.Error("No email change is pending.");
+      return Result<MyAccountDto>.Error(EmailChangeUtils.NoEmailChangePendingMessage);
 
     var utcNow = timeProvider.GetUtcNow().UtcDateTime;
     var tokenResult = await tokenService.IssueTokenAsync(
@@ -236,13 +236,6 @@ public class ConfirmEmailChangeHandler(
   IUserAccessor userAccessor,
   TimeProvider timeProvider) : ICommandHandler<ConfirmEmailChangeCommand, ConfirmEmailChangeResponseDto>
 {
-  public const string InvalidLinkMessage = "This confirmation link is invalid or has expired.";
-  public const string TargetEmailTakenMessage =
-    "An account with this email already exists. Cancel the pending email change on My account.";
-  public const string SuccessMessage = "Email changed. Sign in with your new email address.";
-  public const string WrongAccountMessage =
-    "This confirmation link belongs to another account. Sign out and open the link again, or sign in as the account that requested the change.";
-
   public async Task<Result<ConfirmEmailChangeResponseDto>> Handle(
     ConfirmEmailChangeCommand command,
     CancellationToken cancellationToken)
@@ -255,7 +248,7 @@ public class ConfirmEmailChangeHandler(
     {
       return Result.Success(new ConfirmEmailChangeResponseDto(
         false,
-        InvalidLinkMessage,
+        EmailChangeUtils.InvalidConfirmationLinkMessage,
         false));
     }
 
@@ -264,7 +257,7 @@ public class ConfirmEmailChangeHandler(
     {
       return Result.Success(new ConfirmEmailChangeResponseDto(
         false,
-        WrongAccountMessage,
+        EmailChangeUtils.ConfirmationWrongAccountMessage,
         true));
     }
 
@@ -273,7 +266,7 @@ public class ConfirmEmailChangeHandler(
     {
       return Result.Success(new ConfirmEmailChangeResponseDto(
         false,
-        InvalidLinkMessage,
+        EmailChangeUtils.InvalidConfirmationLinkMessage,
         false));
     }
 
@@ -286,7 +279,7 @@ public class ConfirmEmailChangeHandler(
     {
       return Result.Success(new ConfirmEmailChangeResponseDto(
         false,
-        TargetEmailTakenMessage,
+        EmailChangeUtils.TargetEmailTakenMessage,
         false));
     }
 
@@ -307,7 +300,7 @@ public class ConfirmEmailChangeHandler(
 
     return Result.Success(new ConfirmEmailChangeResponseDto(
       true,
-      SuccessMessage,
+      EmailChangeUtils.EmailChangeConfirmedMessage,
       false));
   }
 }

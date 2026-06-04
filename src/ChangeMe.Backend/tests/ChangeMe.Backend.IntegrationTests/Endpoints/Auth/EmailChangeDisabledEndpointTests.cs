@@ -2,7 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using ChangeMe.Backend.IntegrationTests.Fixtures;
 using ChangeMe.Backend.IntegrationTests.Support;
-using ChangeMe.Backend.UseCases.Auth;
+using ChangeMe.Backend.UseCases.Auth.Utils;
 
 namespace ChangeMe.Backend.IntegrationTests.Endpoints.Auth;
 
@@ -27,7 +27,7 @@ public sealed class EmailChangeDisabledEndpointTests(EmailChangeDisabledWebAppli
     Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     var body = await response.Content.ReadAsStringAsync(cancellationToken);
     Assert.Contains(
-      RequestEmailChangeHandler.EmailChangeDisabledMessage,
+      EmailChangeUtils.EmailChangeDisabledMessage,
       body,
       StringComparison.OrdinalIgnoreCase);
   }
