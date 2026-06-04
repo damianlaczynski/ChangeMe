@@ -49,6 +49,15 @@ export const AuthMessages = {
     'If an unverified account exists for this email, a verification link has been sent.',
   invalidEmailVerificationLink: 'This verification link is invalid or has expired.',
   emailVerifiedLogin: 'Email verified. You can sign in now.',
+  emailChangedLogin: 'Email changed. Sign in with your new email address.',
+  confirmEmailChangeSuccess:
+    'Your email address has been updated. Sign in with your new email address.',
+  invalidEmailChangeConfirmationLink:
+    'This confirmation link is invalid or has expired.',
+  emailChangeResendSuccess:
+    'If the pending change is still valid, a new confirmation link has been sent to the new email address.',
+  emailChangeConfirmationWrongAccount:
+    'This confirmation link belongs to another account. Sign out and open the link again, or sign in as the account that requested the change.',
   twoFactorVerificationTitle: 'Two-factor verification',
   twoFactorVerificationSubtitle:
     'Enter the verification code from your authenticator app or use a recovery code.',

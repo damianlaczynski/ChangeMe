@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.UseCases.Users.Dtos;
+using ChangeMe.Backend.UseCases.Users.Dtos;
 
 namespace ChangeMe.Backend.UseCases.Auth.Dtos;
 
@@ -17,4 +17,6 @@ public sealed record MyAccountDto(
   IReadOnlyList<MyAccountExternalLoginDto> ExternalLogins,
   IReadOnlyList<ExternalProviderSettingsDto> LinkableProviders,
   IReadOnlyList<MyAccountPasskeyDto> Passkeys,
-  bool PasskeyStepUpFresh);
+  bool PasskeyStepUpFresh,
+  bool InvitationPending,
+  PendingEmailChangeDto? PendingEmailChange);

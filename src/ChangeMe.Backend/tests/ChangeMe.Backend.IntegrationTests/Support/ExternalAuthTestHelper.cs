@@ -1,4 +1,4 @@
-﻿using System.Net.Http.Json;
+using System.Net.Http.Json;
 using ChangeMe.Backend.Infrastructure.Persistence;
 using ChangeMe.Backend.IntegrationTests.Fixtures;
 using ChangeMe.Backend.IntegrationTests.Support.Fakes;
@@ -14,11 +14,12 @@ internal static class ExternalAuthTestHelper
     ExternalProvidersWebApplicationFactoryBase factory,
     HttpClient client,
     string providerKey = FakeOidcExternalAuthService.ProviderKey,
+    string? invitedEmail = null,
     CancellationToken cancellationToken = default)
   {
     var response = await client.PostAsJsonAsync(
       $"/api/auth/external/{providerKey}/begin",
-      new { },
+      new { InvitedEmail = invitedEmail },
       cancellationToken);
     response.EnsureSuccessStatusCode();
 

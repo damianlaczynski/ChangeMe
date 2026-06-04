@@ -1,0 +1,63 @@
+<app-auth-page
+  title="Confirm email change"
+  subtitle="Confirming your new email address."
+>
+  <div class="mb-4">
+    <app-back-button label="Back to sign in" [route]="['/login']" />
+  </div>
+
+  @if (isVerifying()) {
+    <div class="flex justify-center py-8">
+      <p-progressSpinner />
+    </div>
+  } @else if (successMessage()) {
+    <p-message severity="success">{{ successMessage() }}</p-message>
+    @if (signedOutAfterSuccess()) {
+      <p class="mt-4 text-sm text-surface-600">
+        Your previous sign-in sessions were ended for security. Sign in with your new
+        email address.
+      </p>
+    } @else {
+      <p class="mt-4 text-sm text-surface-600">
+        Sign in with your new email address when you are ready.
+      </p>
+    }
+    <div class="mt-4">
+      <p-button label="Sign in now" (onClick)="goToLogin()" />
+    </div>
+  } @else if (errorMessage()) {
+    <p-message severity="error">{{ errorMessage() }}</p-message>
+    <div class="mt-4 flex flex-wrap gap-2">
+      <p-button label="Back to sign in" [routerLink]="['/login']" />
+      @if (canResendConfirmation()) {
+        <p-button
+          label="Resend confirmation email"
+          icon="pi pi-envelope"
+          severity="secondary"
+          [outlined]="true"
+          [loading]="isResendingConfirmation()"
+          (onClick)="resendConfirmation()"
+        />
+        <p-button
+          label="Back to my account"
+          severity="secondary"
+          [outlined]="true"
+          [routerLink]="['/account']"
+        />
+      } @else if (wrongAccount()) {
+        <p-button
+          label="Sign out"
+          severity="secondary"
+          [outlined]="true"
+          (onClick)="signOut()"
+        />
+        <p-button
+          label="Back to my account"
+          severity="secondary"
+          [outlined]="true"
+          [routerLink]="['/account']"
+        />
+      }
+    </div>
+  }
+</app-auth-page>

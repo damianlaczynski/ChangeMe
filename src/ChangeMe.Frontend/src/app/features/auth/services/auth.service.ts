@@ -17,13 +17,15 @@ import {
   BeginExternalSignInResponse,
   BeginTwoFactorSetupRequest,
   BeginTwoFactorSetupResponse,
+  CancelEmailChangeRequest,
   ChangePasswordRequest,
   CompleteExternalSignInRequest,
+  ConfirmEmailChangeRequest,
+  ConfirmEmailChangeResponse,
   ConfirmTwoFactorSetupRequest,
   DisableTwoFactorRequest,
   EmailVerificationAck,
   ExternalSignInResponse,
-  LinkExternalAccountRequest,
   LoginRequest,
   LoginResponse,
   MyAccountDto,
@@ -36,6 +38,7 @@ import {
   PasskeySignInCompleteRequest,
   RegisterRequest,
   RegisterResponse,
+  RequestEmailChangeRequest,
   RequiredChangePasswordRequest,
   SetPasswordRequest,
   TwoFactorSetupCompletedResponse,
@@ -59,7 +62,6 @@ import {
   readExternalAccountFlow,
   storeExternalAccountFlow
 } from '../utils/external-account-flow.storage';
-import { storeExternalLinkRequired } from '../utils/external-link.storage';
 import {
   canOfferOptionalPasskeyEnrollment,
   isPasskeySupported,
@@ -172,10 +174,10 @@ export class AuthService {
       .pipe(tap((response) => this.applyPasswordSignInResponse(response)));
   }
 
-  beginExternalSignIn(providerKey: string) {
+  beginExternalSignIn(providerKey: string, invitedEmail?: string | null) {
     return this.apiService.post<BeginExternalSignInResponse>(
       `auth/external/${encodeURIComponent(providerKey)}/begin`,
-      {}
+      invitedEmail ? { invitedEmail } : {}
     );
   }
 
@@ -186,8 +188,23 @@ export class AuthService {
     );
   }
 
-  linkExternalAccount(request: LinkExternalAccountRequest) {
-    return this.apiService.post<ExternalSignInResponse>('auth/external/link', request);
+  requestEmailChange(request: RequestEmailChangeRequest) {
+    return this.apiService.post<MyAccountDto>('auth/email-change', request);
+  }
+
+  cancelEmailChange(request: CancelEmailChangeRequest) {
+    return this.apiService.post<MyAccountDto>('auth/email-change/cancel', request);
+  }
+
+  resendEmailChangeConfirmation() {
+    return this.apiService.post<MyAccountDto>('auth/email-change/resend', {});
+  }
+
+  confirmEmailChange(request: ConfirmEmailChangeRequest) {
+    return this.apiService.post<ConfirmEmailChangeResponse>(
+      'auth/email-change/confirm',
+      request
+    );
   }
 
   beginExternalAccountLink(providerKey: string) {
@@ -239,12 +256,6 @@ export class AuthService {
       void this.router.navigate([errorTarget], {
         queryParams: { externalSignInError: '1' }
       });
-      return;
-    }
-
-    if (response.linkAccountRequired) {
-      storeExternalLinkRequired(response.linkAccountRequired);
-      void this.router.navigateByUrl('/link-external-account');
       return;
     }
 

@@ -36,6 +36,7 @@ export class MyAccountExternalMethodsComponent implements OnInit {
   readonly account = input.required<MyAccountDto>();
   readonly stepUpValidityMinutes = input(15);
   readonly passkeysEnabled = input(false);
+  readonly linkingEnabled = input(true);
   readonly accountChanged = output<void>();
 
   private readonly authService = inject(AuthService);
@@ -112,6 +113,29 @@ export class MyAccountExternalMethodsComponent implements OnInit {
   }
 
   startLink(providerKey: string): void {
+    if (this.providerLoadingKey() || !this.linkingEnabled()) {
+      return;
+    }
+
+    const profile = this.account();
+    const provider = this.linkableProviders().find(
+      (x) => x.providerKey === providerKey
+    );
+    if (!profile || !provider) {
+      return;
+    }
+
+    this.confirmationService.confirm({
+      header: `Link ${provider.displayName}`,
+      message: `Link ${provider.displayName} to your account? Your profile email is ${profile.email}. The provider may use a different address. Notifications stay on your profile email.`,
+      icon: 'pi pi-exclamation-triangle',
+      acceptButtonProps: { label: 'Continue', severity: 'primary' },
+      rejectButtonProps: { label: 'Cancel', severity: 'secondary', outlined: true },
+      accept: () => this.beginLink(providerKey)
+    });
+  }
+
+  private beginLink(providerKey: string): void {
     if (this.providerLoadingKey()) {
       return;
     }

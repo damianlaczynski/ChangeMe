@@ -1,10 +1,11 @@
-﻿using System.Net;
+using System.Net;
 using System.Net.Http.Json;
 using ChangeMe.Backend.Infrastructure.Persistence;
 using ChangeMe.Backend.IntegrationTests.Fixtures;
 using ChangeMe.Backend.IntegrationTests.Support;
 using ChangeMe.Backend.IntegrationTests.Support.Fakes;
 using ChangeMe.Backend.UseCases.Auth.Dtos;
+using ChangeMe.Backend.UseCases.Auth.Utils;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -30,6 +31,7 @@ public sealed class ExternalSignInEndpointTests(ExternalProvidersWebApplicationF
     var settings = await IntegrationApiJson.ReadValueAsync<AuthSettingsDto>(response.Content, cancellationToken);
     Assert.NotNull(settings);
     Assert.True(settings.ExternalProvidersEnabled);
+    Assert.True(settings.ExternalProviderLinkingEnabled);
     Assert.Single(settings.ExternalProviders);
     Assert.Equal(FakeOidcExternalAuthService.ProviderKey, settings.ExternalProviders[0].ProviderKey);
   }
@@ -90,7 +92,7 @@ public sealed class ExternalSignInEndpointTests(ExternalProvidersWebApplicationF
   }
 
   [Fact]
-  public async Task PostExternalComplete_WhenEmailMatchesPasswordAccount_ShouldRequireLink()
+  public async Task PostExternalComplete_WhenEmailMatchesPasswordAccount_ShouldRejectWithoutGuestLink()
   {
     var cancellationToken = TestContext.Current.CancellationToken;
     var email = $"oidc-link-{Guid.NewGuid():N}@example.com";
@@ -113,27 +115,14 @@ public sealed class ExternalSignInEndpointTests(ExternalProvidersWebApplicationF
       factory,
       client,
       cancellationToken: cancellationToken);
-    var result = await ExternalAuthTestHelper.CompleteSignInAsync(
-      client,
-      state,
-      $"email:{email}",
+    var response = await client.PostAsJsonAsync(
+      "/api/auth/external/complete",
+      new { Code = $"email:{email}", State = state },
       cancellationToken);
 
-    Assert.Null(result.AuthSession);
-    Assert.NotNull(result.LinkAccountRequired);
-    Assert.Equal(email, result.LinkAccountRequired!.Email);
-
-    var linkResponse = await client.PostAsJsonAsync("/api/auth/external/link", new
-    {
-      State = result.LinkAccountRequired.State,
-      Password = password
-    }, cancellationToken);
-    linkResponse.EnsureSuccessStatusCode();
-
-    var linked = await IntegrationApiJson.ReadValueAsync<ExternalSignInResponseDto>(
-      linkResponse.Content,
-      cancellationToken);
-    Assert.NotNull(linked?.AuthSession);
+    Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    var body = await response.Content.ReadAsStringAsync(cancellationToken);
+    Assert.Contains("An account already exists for this email", body, StringComparison.OrdinalIgnoreCase);
   }
 
   [Fact]
@@ -253,12 +242,18 @@ public sealed class ExternalSignInEndpointTests(ExternalProvidersWebApplicationF
       State = pending.State
     }, cancellationToken);
 
-    Assert.Equal(HttpStatusCode.BadRequest, completeLinkResponse.StatusCode);
+    completeLinkResponse.EnsureSuccessStatusCode();
+    var linked = await IntegrationApiJson.ReadValueAsync<ExternalSignInResponseDto>(
+      completeLinkResponse.Content,
+      cancellationToken);
+    Assert.True(linked?.AccountLinkCompleted);
 
     var accountResponse = await client.GetAsync("/api/auth/account", cancellationToken);
     accountResponse.EnsureSuccessStatusCode();
     var account = await IntegrationApiJson.ReadValueAsync<MyAccountDto>(accountResponse.Content, cancellationToken);
-    Assert.Empty(account!.ExternalLogins);
+    Assert.Single(account!.ExternalLogins);
+    Assert.NotNull(account.ExternalLogins[0].ProviderEmail);
+    Assert.NotEqual(email, account.ExternalLogins[0].ProviderEmail, StringComparer.OrdinalIgnoreCase);
   }
 
   [Fact]
@@ -410,6 +405,57 @@ public sealed class ExternalSignInEndpointTests(ExternalProvidersWebApplicationF
   }
 
   [Fact]
+  public async Task PostExternalComplete_WhenInvitationPendingAndProviderEmailMismatches_ShouldReject()
+  {
+    var cancellationToken = TestContext.Current.CancellationToken;
+    var email = $"oidc-invite-mismatch-{Guid.NewGuid():N}@example.com";
+    var otherEmail = $"other-{Guid.NewGuid():N}@example.com";
+
+    var admin = await TestAuthHelper.CreateAdministratorUserAsync(factory, cancellationToken);
+    var userRoleId = await GetRoleIdByNameAsync(factory, "User", cancellationToken);
+
+    var createResponse = await admin.Client.PostAsJsonAsync("/api/users", new
+    {
+      FirstName = "Invited",
+      LastName = "User",
+      Email = email,
+      RoleIds = new[] { userRoleId }
+    }, cancellationToken);
+    createResponse.EnsureSuccessStatusCode();
+
+    using var client = factory.CreateClient(new WebApplicationFactoryClientOptions
+    {
+      BaseAddress = new Uri("https://localhost")
+    });
+
+    var state = await ExternalAuthTestHelper.BeginSignInAndGetStateAsync(
+      factory,
+      client,
+      invitedEmail: email,
+      cancellationToken: cancellationToken);
+    var response = await ExternalAuthTestHelper.CompleteSignInRawAsync(
+      client,
+      state,
+      $"email:{otherEmail}",
+      cancellationToken);
+
+    Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    var body = await response.Content.ReadAsStringAsync(cancellationToken);
+    Assert.Contains(
+      ExternalAuthUtils.InvitedExternalEmailMismatchMessage,
+      body,
+      StringComparison.OrdinalIgnoreCase);
+
+    await using var scope = factory.Services.CreateAsyncScope();
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    var user = await db.Users
+      .Include(x => x.AccountInvitations)
+      .SingleAsync(x => x.Email == email, cancellationToken);
+    Assert.True(user.HasPendingInvitation);
+    Assert.Empty(await db.ExternalLogins.Where(x => x.UserId == user.Id).ToListAsync(cancellationToken));
+  }
+
+  [Fact]
   public async Task PostExternalComplete_WhenInvitationPendingAndUnverifiedEmail_ShouldReject()
   {
     var cancellationToken = TestContext.Current.CancellationToken;
@@ -435,6 +481,7 @@ public sealed class ExternalSignInEndpointTests(ExternalProvidersWebApplicationF
     var state = await ExternalAuthTestHelper.BeginSignInAndGetStateAsync(
       factory,
       client,
+      invitedEmail: email,
       cancellationToken: cancellationToken);
     var response = await ExternalAuthTestHelper.CompleteSignInRawAsync(
       client,
@@ -443,6 +490,11 @@ public sealed class ExternalSignInEndpointTests(ExternalProvidersWebApplicationF
       cancellationToken);
 
     Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    var unverifiedBody = await response.Content.ReadAsStringAsync(cancellationToken);
+    Assert.Contains(
+      ExternalAuthUtils.InvitedExternalEmailMismatchMessage,
+      unverifiedBody,
+      StringComparison.OrdinalIgnoreCase);
 
     await using var scope = factory.Services.CreateAsyncScope();
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();

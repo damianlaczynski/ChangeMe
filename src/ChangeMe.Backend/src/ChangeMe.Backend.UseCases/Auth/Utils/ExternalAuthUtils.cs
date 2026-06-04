@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.Domain.Aggregates.Users;
+using ChangeMe.Backend.Domain.Aggregates.Users;
 using ChangeMe.Backend.Domain.Aggregates.Users.Entities;
 using ChangeMe.Backend.Domain.Aggregates.Users.Interfaces;
 using ChangeMe.Backend.Infrastructure.Auth;
@@ -32,8 +32,14 @@ public static class ExternalAuthUtils
 
   public const string ExternalAccountUnlinkedMessage = "External sign-in method removed.";
 
-  public const string ExternalProviderEmailMismatchMessage =
-    "The external account email does not match your account email.";
+  public const string ExternalProviderLinkingDisabledMessage =
+    "Linking external sign-in methods is disabled.";
+
+  public const string InvitedExternalEmailMismatchMessage =
+    "The external account email does not match the invited email address.";
+
+  public const string AccountExistsLinkFromMyAccountMessage =
+    "An account already exists for this email. Sign in with your password, then link {0} from My account.";
 
   public static bool IsInvitationPending(User user) => user.HasPendingInvitation;
 

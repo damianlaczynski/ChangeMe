@@ -12,14 +12,19 @@ export interface LoginResponse {
 export interface ExternalSignInResponse {
   authSession: AuthResponse | null;
   twoFactorChallenge: PendingSignInChallenge | null;
-  linkAccountRequired: ExternalAccountLinkRequired | null;
   accountLinkCompleted: boolean;
   externalStepUpCompleted: boolean;
+}
+
+export interface PendingEmailChange {
+  newEmail: string;
+  requestedAtUtc: string;
 }
 
 export interface MyAccountExternalLogin {
   providerKey: string;
   displayName: string;
+  providerEmail: string | null;
   linkedAtUtc: string;
 }
 
@@ -34,13 +39,6 @@ export interface SetPasswordRequest {
   verificationCode?: string | null;
 }
 
-export interface ExternalAccountLinkRequired {
-  state: string;
-  email: string;
-  providerKey: string;
-  providerDisplayName: string;
-}
-
 export interface BeginExternalSignInResponse {
   authorizationUrl: string;
 }
@@ -50,9 +48,25 @@ export interface CompleteExternalSignInRequest {
   state: string;
 }
 
-export interface LinkExternalAccountRequest {
-  state: string;
-  password: string;
+export interface RequestEmailChangeRequest {
+  newEmail: string;
+  currentPassword?: string | null;
+  verificationCode?: string | null;
+}
+
+export interface CancelEmailChangeRequest {
+  currentPassword?: string | null;
+  verificationCode?: string | null;
+}
+
+export interface ConfirmEmailChangeRequest {
+  token: string;
+}
+
+export interface ConfirmEmailChangeResponse {
+  succeeded: boolean;
+  message: string | null;
+  wrongSignedInAccount: boolean;
 }
 
 export interface PendingSignInChallenge {
@@ -203,6 +217,8 @@ export interface MyAccountDto {
   externalLogins: MyAccountExternalLogin[];
   linkableProviders: ExternalProviderSettings[];
   passkeys: MyAccountPasskey[];
+  invitationPending: boolean;
+  pendingEmailChange: PendingEmailChange | null;
 }
 
 export interface DisableTwoFactorRequest {
@@ -260,6 +276,8 @@ export interface AuthSettings {
   twoFactorAuthenticationRequired: boolean;
   trustIdentityProviderMfa: boolean;
   externalProvidersEnabled: boolean;
+  externalProviderLinkingEnabled: boolean;
+  selfServiceEmailChangeEnabled: boolean;
   twoFactor: TwoFactorSettings;
   passkeys?: PasskeySettings;
   externalProviders: ExternalProviderSettings[];

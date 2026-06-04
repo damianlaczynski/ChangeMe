@@ -1,4 +1,4 @@
-﻿namespace ChangeMe.Backend.UseCases.Auth.Dtos;
+namespace ChangeMe.Backend.UseCases.Auth.Dtos;
 
 public sealed record AuthSettingsDto
 {
@@ -11,6 +11,8 @@ public sealed record AuthSettingsDto
   public bool TwoFactorAuthenticationRequired { get; init; }
   public bool TrustIdentityProviderMfa { get; init; }
   public bool ExternalProvidersEnabled { get; init; }
+  public bool ExternalProviderLinkingEnabled { get; init; }
+  public bool SelfServiceEmailChangeEnabled { get; init; } = true;
   public TwoFactorSettingsDto TwoFactor { get; init; } = new();
   public IReadOnlyList<ExternalProviderSettingsDto> ExternalProviders { get; init; } = [];
   public PasskeySettingsDto Passkeys { get; init; } = new();

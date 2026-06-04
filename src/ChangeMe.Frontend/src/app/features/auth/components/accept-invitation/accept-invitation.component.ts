@@ -139,7 +139,7 @@ export class AcceptInvitationComponent {
     clearExternalAccountFlow();
 
     this.authService
-      .beginExternalSignIn(provider.providerKey)
+      .beginExternalSignIn(provider.providerKey, this.previewEmail())
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (response) => window.location.assign(response.authorizationUrl),

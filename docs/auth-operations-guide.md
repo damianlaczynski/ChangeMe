@@ -49,23 +49,23 @@ flowchart TD
 
 ## 3. Application screens (auth area)
 
-| Route                        | Who       | Purpose                                                                     |
-| ---------------------------- | --------- | --------------------------------------------------------------------------- |
-| `/login`                     | Guest     | Email/password sign-in; external **Continue with {Provider}** when enabled. |
-| `/register`                  | Guest     | Self-registration when **Public registration** is enabled.                  |
-| `/verify-email`              | Guest     | After registration when email verification is on; resend verification.      |
-| `/forgot-password`           | Guest     | Request password reset email.                                               |
-| `/reset-password`            | Guest     | Set new password from reset link token.                                     |
-| `/accept-invitation`         | Guest     | Set password for admin-invited users.                                       |
-| `/two-factor-verification`   | Guest     | Enter TOTP or recovery code after password/OIDC when 2FA is enrolled.       |
-| `/external-sign-in/callback` | Guest     | OIDC redirect target; processes provider callback automatically.            |
-| `/confirm-email-change`      | Guest     | Confirm self-service email change from link in email (REQ-AUTH-015).        |
-| `/required-password-change`  | Signed-in | Mandatory password update when password expired.                            |
-| `/account/change-email`      | Signed-in | Self-service **Change email** when enabled (REQ-AUTH-015).                  |
-| `/required-two-factor-setup` | Signed-in | Mandatory 2FA enrollment when policy requires it.                           |
-| `/account`                   | Signed-in | **My account** — profile, sessions, 2FA, external methods.                  |
-| `/account/set-password`      | Signed-in | Set local password for **external-only** accounts (after step-up).          |
-| `/account/change-password`   | Signed-in | Change existing password.                                                   |
+| Route                        | Who             | Purpose                                                                                                                                                                                                                                                                                                                          |
+| ---------------------------- | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/login`                     | Guest           | Email/password sign-in; external **Continue with {Provider}** when enabled.                                                                                                                                                                                                                                                      |
+| `/register`                  | Guest           | Self-registration when **Public registration** is enabled.                                                                                                                                                                                                                                                                       |
+| `/verify-email`              | Guest           | After registration when email verification is on; resend verification.                                                                                                                                                                                                                                                           |
+| `/forgot-password`           | Guest           | Request password reset email.                                                                                                                                                                                                                                                                                                    |
+| `/reset-password`            | Guest           | Set new password from reset link token.                                                                                                                                                                                                                                                                                          |
+| `/accept-invitation`         | Guest           | Set password for admin-invited users.                                                                                                                                                                                                                                                                                            |
+| `/two-factor-verification`   | Guest           | Enter TOTP or recovery code after password/OIDC when 2FA is enrolled.                                                                                                                                                                                                                                                            |
+| `/external-sign-in/callback` | Guest           | OIDC redirect target; processes provider callback automatically.                                                                                                                                                                                                                                                                 |
+| `/confirm-email-change`      | Guest (typical) | Confirm self-service email change from link in email (REQ-AUTH-015). Works while signed in; success toast + message on screen; **Sign in now** → **Login** with `emailChanged=1`. On invalid/expired link or target email taken, signed-in user with pending change sees **Resend confirmation email** (same as **My account**). |
+| `/required-password-change`  | Signed-in       | Mandatory password update when password expired.                                                                                                                                                                                                                                                                                 |
+| `/account/change-email`      | Signed-in       | Self-service **Change email** when enabled (REQ-AUTH-015).                                                                                                                                                                                                                                                                       |
+| `/required-two-factor-setup` | Signed-in       | Mandatory 2FA enrollment when policy requires it.                                                                                                                                                                                                                                                                                |
+| `/account`                   | Signed-in       | **My account** — profile, sessions, 2FA, external methods.                                                                                                                                                                                                                                                                       |
+| `/account/set-password`      | Signed-in       | Set local password for **external-only** accounts (after step-up).                                                                                                                                                                                                                                                               |
+| `/account/change-password`   | Signed-in       | Change existing password.                                                                                                                                                                                                                                                                                                        |
 
 Administrators manage other users under **Users** (invitations, deactivate, reset 2FA, unlink external logins, etc.).
 
@@ -190,11 +190,14 @@ Example:
 
 ### 4.11 Self-service email change (`AuthOptions:EmailChange`)
 
-| Setting   | Default | What it does                                       | Impact                                                                                                                                                                                                                |
-| --------- | ------- | -------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Enabled` | `true`  | Gates **Change email** on **My account** and APIs. | When `false`, users cannot start a new email change; **Change email** is hidden. An existing **pending email change** may still be shown (resend/cancel) until cleared. Confirmation links already sent remain valid. |
+| Setting             | Default | What it does                                       | Impact                                                                                                                                                                                                                |
+| ------------------- | ------- | -------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Enabled`           | `true`  | Gates **Change email** on **My account** and APIs. | When `false`, users cannot start a new email change; **Change email** is hidden. An existing **pending email change** may still be shown (resend/cancel) until cleared. Confirmation links already sent remain valid. |
+| `LinkLifetimeHours` | `72`    | Validity of confirmation links to the new mailbox. | Expired links require **Resend confirmation email** on **Change email**.                                                                                                                                              |
 
-Configuration path example: `AuthOptions__EmailChange__Enabled=false`.
+**Email uniqueness:** Only **Profile email** blocks duplicate accounts at registration, invite, and **Change email** submit. Another user's **pending new email** does not reserve the address. **Confirm email change** re-checks that the target is not already another account's **Profile email**; otherwise the pending change remains and the user is told to cancel it on **My account**.
+
+Configuration path examples: `AuthOptions__EmailChange__Enabled=false`, `AuthOptions__EmailChange__LinkLifetimeHours=48`.
 
 ### 4.12 External identity providers (`AuthOptions:External`)
 
@@ -280,8 +283,13 @@ The backend sends this URI in the authorization request and again at token excha
 ```json
 "AuthOptions": {
   "FrontendBaseUrl": "http://localhost:4200",
+  "EmailChange": {
+    "Enabled": true,
+    "LinkLifetimeHours": 72
+  },
   "External": {
     "Enabled": true,
+    "LinkingEnabled": true,
     "Providers": [ ]
   }
 }

@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace ChangeMe.Backend.IntegrationTests.Support;
 
@@ -6,7 +7,8 @@ internal static class IntegrationApiJson
 {
   private static readonly JsonSerializerOptions SerializerOptions = new()
   {
-    PropertyNameCaseInsensitive = true
+    PropertyNameCaseInsensitive = true,
+    Converters = { new JsonStringEnumConverter() }
   };
 
   public static async Task<T?> ReadValueAsync<T>(HttpContent content, CancellationToken cancellationToken)

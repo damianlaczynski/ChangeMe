@@ -27,11 +27,15 @@ export function isInvitationLinkExpired(
 
 export const UserMessages = {
   externalLoginEmailWarning:
-    'This user has external sign-in linked. Changing email does not remove external logins; the user signs in by provider identity, not email match.',
+    'External sign-in stays linked. Profile email is used for notifications; provider addresses may differ.',
   duplicateEmail: 'A user with this email already exists.',
   invitationSent: 'Invitation sent.',
   invitationResent: 'Invitation resent.',
   invitationCanceled: 'Invitation canceled.',
+  pendingEmailChangeCanceled: 'Pending email change cancelled.',
+  cancelPendingEmailChangeTitle: 'Cancel pending email change?',
+  cancelPendingEmailChangeMessage: (newEmail: string) =>
+    `Cancel the pending email change to ${highlightDialogValue(newEmail)}? The current email will stay unchanged.`,
   cancelInvitationTitle: 'Cancel invitation?',
   cancelInvitationMessage: (email: string) =>
     `Cancel invitation for ${highlightDialogValue(email)}? They will not be able to use the current invitation link. You can send a new invitation later.`,

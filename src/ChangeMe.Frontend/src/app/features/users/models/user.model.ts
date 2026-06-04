@@ -58,12 +58,18 @@ export interface UserDetailsDto {
   invitationPending: boolean;
   status: UserMembershipStatus;
   pendingInvitation: UserInvitationInfoDto | null;
+  pendingEmailChange: PendingEmailChangeDto | null;
   memberSince: string;
   lastSignInAt: string | null;
   roles: UserRoleSummaryDto[];
   effectivePermissions: EffectivePermissionDto[];
   externalLogins: UserExternalLoginDto[];
   passkeys: UserPasskeyDto[];
+}
+
+export interface PendingEmailChangeDto {
+  newEmail: string;
+  requestedAtUtc: string;
 }
 
 export interface UserInvitationInfoDto {
@@ -75,6 +81,7 @@ export interface UserInvitationInfoDto {
 export interface UserExternalLoginDto {
   providerKey: string;
   displayName: string;
+  providerEmail: string | null;
   linkedAtUtc: string;
 }
 

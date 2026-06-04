@@ -22,6 +22,42 @@
       />
     </div>
   } @else if (account(); as profile) {
+    @if (profile.pendingEmailChange; as pendingChange) {
+      <p-panel header="Pending email change" class="mb-4">
+        <p class="m-0 mb-2 text-sm">
+          Sign in with your current email until you confirm the change from the new
+          mailbox.
+        </p>
+        <p class="m-0 text-sm">
+          <span class="text-muted-color">New email:</span>
+          {{ pendingChange.newEmail }}
+        </p>
+        <p class="m-0 mb-4 text-sm">
+          <span class="text-muted-color">Requested at:</span>
+          {{ pendingChange.requestedAtUtc | date: 'dd.MM.yyyy HH:mm' }}
+        </p>
+        <div class="flex flex-wrap gap-2">
+          <p-button
+            label="Resend confirmation email"
+            icon="pi pi-envelope"
+            severity="secondary"
+            [outlined]="true"
+            size="small"
+            [loading]="isResendingEmailChange()"
+            (onClick)="resendEmailChangeConfirmation()"
+          />
+          <p-button
+            label="Cancel email change"
+            icon="pi pi-times"
+            severity="danger"
+            [outlined]="true"
+            size="small"
+            (onClick)="confirmCancelEmailChange(pendingChange.newEmail)"
+          />
+        </div>
+      </p-panel>
+    }
+
     <div class="mb-4 flex flex-wrap items-center gap-2">
       <p-button
         label="Edit"
@@ -48,6 +84,16 @@
           [outlined]="true"
           size="small"
           [routerLink]="['/account/set-password']"
+        />
+      }
+      @if (canChangeEmail()) {
+        <p-button
+          label="Change email"
+          icon="pi pi-envelope"
+          severity="secondary"
+          [outlined]="true"
+          size="small"
+          [routerLink]="['/account/change-email']"
         />
       }
       @if (canManageSessions()) {
@@ -89,6 +135,7 @@
         [account]="profile"
         [stepUpValidityMinutes]="stepUpExternalSignInValidityMinutes()"
         [passkeysEnabled]="passkeysAuthenticationEnabled()"
+        [linkingEnabled]="externalProviderLinkingEnabled()"
         (accountChanged)="reload()"
       />
     }
@@ -143,6 +190,22 @@
 
     @if (canViewSessions()) {
       <app-my-sessions class="mt-4 block" />
+    }
+
+    @if (cancelEmailChangeStepUpVisible() && account(); as stepUpAccount) {
+      <app-identity-step-up-dialog
+        [account]="stepUpAccount"
+        [visible]="cancelEmailChangeStepUpVisible()"
+        [passkeysEnabled]="passkeysAuthenticationEnabled()"
+        [stepUpValidityMinutes]="stepUpExternalSignInValidityMinutes()"
+        submitLabel="Cancel email change"
+        [submitting]="isCancelEmailChangeSubmitting()"
+        [errorMessage]="cancelEmailChangeStepUpError()"
+        fieldIdPrefix="cancelEmailChangeStepUp"
+        (visibleChange)="cancelEmailChangeStepUpVisible.set($event)"
+        (cancelled)="closeCancelEmailChangeStepUp()"
+        (verified)="onCancelEmailChangeStepUpVerified($event)"
+      />
     }
   }
 </p-card>

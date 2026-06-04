@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.Domain.Aggregates.Users.Interfaces;
+using ChangeMe.Backend.Domain.Aggregates.Users.Interfaces;
 using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.IntegrationTests.Support.Fakes;
 using Microsoft.Extensions.DependencyInjection;
@@ -91,6 +91,15 @@ public sealed class ExternalProvidersTwoFactorTrustMfaWebApplicationFactory
   }
 }
 
+public sealed class ExternalProvidersLinkingDisabledWebApplicationFactory
+  : ExternalProvidersWebApplicationFactoryBase
+{
+  protected override void ApplyFactorySpecificAuthOverrides(Dictionary<string, string?> overrides)
+  {
+    overrides[$"{AuthOptions.SectionName}__External__LinkingEnabled"] = "false";
+  }
+}
+
 [CollectionDefinition(Name)]
 public sealed class ExternalProvidersIntegrationTestCollection
   : ICollectionFixture<ExternalProvidersWebApplicationFactory>
@@ -124,4 +133,11 @@ public sealed class ExternalProvidersTwoFactorIntegrationTestCollection
   : ICollectionFixture<ExternalProvidersTwoFactorWebApplicationFactory>
 {
   public const string Name = "ExternalProvidersTwoFactorIntegrationTests";
+}
+
+[CollectionDefinition(Name)]
+public sealed class ExternalProvidersLinkingDisabledIntegrationTestCollection
+  : ICollectionFixture<ExternalProvidersLinkingDisabledWebApplicationFactory>
+{
+  public const string Name = "ExternalProvidersLinkingDisabledIntegrationTests";
 }

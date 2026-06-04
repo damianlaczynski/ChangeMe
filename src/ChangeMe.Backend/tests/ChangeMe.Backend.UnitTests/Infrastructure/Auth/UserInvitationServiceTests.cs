@@ -1,4 +1,4 @@
-﻿using Ardalis.Result;
+using Ardalis.Result;
 using ChangeMe.Backend.Domain.Aggregates.Users;
 using ChangeMe.Backend.Domain.Aggregates.Users.Enums;
 using ChangeMe.Backend.Domain.Aggregates.Users.Interfaces;
@@ -248,6 +248,34 @@ public sealed class UserInvitationServiceTests
 
     public Task<Result> SendPasskeysResetByAdminAsync(
       User user,
+      CancellationToken cancellationToken = default) =>
+      Task.FromResult(Result.Success());
+
+    public Task<Result> SendEmailChangeRequestedAsync(
+      User user,
+      CancellationToken cancellationToken = default) =>
+      Task.FromResult(Result.Success());
+
+    public Task<Result> SendConfirmEmailChangeAsync(
+      string newEmail,
+      string plainToken,
+      CancellationToken cancellationToken = default) =>
+      Task.FromResult(Result.Success());
+
+    public Task<Result> SendEmailChangeCancelledAsync(
+      User user,
+      CancellationToken cancellationToken = default) =>
+      Task.FromResult(Result.Success());
+
+    public Task<Result> SendEmailChangeCompletedAsync(
+      string previousEmail,
+      string newEmail,
+      CancellationToken cancellationToken = default) =>
+      Task.FromResult(Result.Success());
+
+    public Task<Result> SendEmailChangedByAdminAsync(
+      string previousEmail,
+      string newEmail,
       CancellationToken cancellationToken = default) =>
       Task.FromResult(Result.Success());
   }
