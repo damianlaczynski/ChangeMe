@@ -291,7 +291,6 @@ public class ConfirmEmailChangeHandler(
 
     await tokenService.MarkTokenUsedAsync(command.Token, cancellationToken);
     await UsersUtils.RevokeAllActiveSessionsAsync(context, user.Id, cancellationToken);
-    await context.SaveChangesAsync(cancellationToken);
 
     var emailResult = await authEmailService.SendEmailChangeCompletedAsync(
       previousEmail,
@@ -299,6 +298,8 @@ public class ConfirmEmailChangeHandler(
       cancellationToken);
     if (!emailResult.IsSuccess)
       return emailResult.Map();
+
+    await context.SaveChangesAsync(cancellationToken);
 
     return Result.Success(new ConfirmEmailChangeResponseDto(
       true,

@@ -15,6 +15,8 @@ internal sealed class FakeUserAccessor : IUserAccessor
 
 internal sealed class FakeAuthEmailService : IAuthEmailService
 {
+  public bool FailSendEmailChangeCompleted { get; init; }
+
   public int PasswordChangedEmailsSent { get; private set; }
   public string? LastPlainToken { get; private set; }
 
@@ -121,7 +123,9 @@ internal sealed class FakeAuthEmailService : IAuthEmailService
     string previousEmail,
     string newEmail,
     CancellationToken cancellationToken = default) =>
-    Task.FromResult(Result.Success());
+    FailSendEmailChangeCompleted
+      ? Task.FromResult(Result.Error(FailingAuthEmailService.DefaultErrorMessage))
+      : Task.FromResult(Result.Success());
 
   public Task<Result> SendEmailChangedByAdminAsync(
     string previousEmail,
