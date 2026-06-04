@@ -1,4 +1,5 @@
 ﻿using ChangeMe.Backend.Domain.Aggregates.Users;
+using ChangeMe.Backend.UseCases.Auth.Dtos;
 using ChangeMe.Backend.UseCases.Users.Dtos;
 
 namespace ChangeMe.Backend.UseCases.Users.Utils;
@@ -32,6 +33,11 @@ public static class UsersMappingExtensions
       InvitationPending = user.HasPendingInvitation,
       Status = UsersStatusUtils.ComputeStatus(user),
       PendingInvitation = pendingInvitation,
+      PendingEmailChange = user.HasPendingEmailChange
+        && user.PendingNewEmail is not null
+        && user.PendingEmailChangeRequestedAtUtc is not null
+        ? new PendingEmailChangeDto(user.PendingNewEmail, user.PendingEmailChangeRequestedAtUtc.Value)
+        : null,
       MemberSince = user.CreatedAt,
       LastSignInAt = lastSignInAt,
       Roles = roles,

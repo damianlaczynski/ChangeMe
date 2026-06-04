@@ -15,6 +15,10 @@ internal sealed class FakeUserAccessor : IUserAccessor
 
 internal sealed class FakeAuthEmailService : IAuthEmailService
 {
+  public bool FailSendEmailChangeCompleted { get; init; }
+  public bool FailSendConfirmEmailChange { get; init; }
+  public bool FailSendEmailChangeRequested { get; init; }
+
   public int PasswordChangedEmailsSent { get; private set; }
   public string? LastPlainToken { get; private set; }
 
@@ -100,6 +104,40 @@ internal sealed class FakeAuthEmailService : IAuthEmailService
     User user,
     CancellationToken cancellationToken = default) =>
     Task.FromResult(Result.Success());
+
+  public Task<Result> SendConfirmEmailChangeAsync(
+    string newEmail,
+    string plainToken,
+    CancellationToken cancellationToken = default) =>
+    FailSendConfirmEmailChange
+      ? Task.FromResult(Result.Error(FailingAuthEmailService.DefaultErrorMessage))
+      : Task.FromResult(Result.Success());
+
+  public Task<Result> SendEmailChangeCancelledAsync(
+    User user,
+    CancellationToken cancellationToken = default) =>
+    Task.FromResult(Result.Success());
+
+  public Task<Result> SendEmailChangeRequestedAsync(
+    User user,
+    CancellationToken cancellationToken = default) =>
+    FailSendEmailChangeRequested
+      ? Task.FromResult(Result.Error(FailingAuthEmailService.DefaultErrorMessage))
+      : Task.FromResult(Result.Success());
+
+  public Task<Result> SendEmailChangeCompletedAsync(
+    string previousEmail,
+    string newEmail,
+    CancellationToken cancellationToken = default) =>
+    FailSendEmailChangeCompleted
+      ? Task.FromResult(Result.Error(FailingAuthEmailService.DefaultErrorMessage))
+      : Task.FromResult(Result.Success());
+
+  public Task<Result> SendEmailChangedByAdminAsync(
+    string previousEmail,
+    string newEmail,
+    CancellationToken cancellationToken = default) =>
+    Task.FromResult(Result.Success());
 }
 
 internal sealed class FailingAuthEmailService : IAuthEmailService
@@ -180,6 +218,34 @@ internal sealed class FailingAuthEmailService : IAuthEmailService
 
   public Task<Result> SendPasskeysResetByAdminAsync(
     User user,
+    CancellationToken cancellationToken = default) =>
+    Task.FromResult(Result.Error(DefaultErrorMessage));
+
+  public Task<Result> SendEmailChangeRequestedAsync(
+    User user,
+    CancellationToken cancellationToken = default) =>
+    Task.FromResult(Result.Error(DefaultErrorMessage));
+
+  public Task<Result> SendConfirmEmailChangeAsync(
+    string newEmail,
+    string plainToken,
+    CancellationToken cancellationToken = default) =>
+    Task.FromResult(Result.Error(DefaultErrorMessage));
+
+  public Task<Result> SendEmailChangeCancelledAsync(
+    User user,
+    CancellationToken cancellationToken = default) =>
+    Task.FromResult(Result.Error(DefaultErrorMessage));
+
+  public Task<Result> SendEmailChangeCompletedAsync(
+    string previousEmail,
+    string newEmail,
+    CancellationToken cancellationToken = default) =>
+    Task.FromResult(Result.Error(DefaultErrorMessage));
+
+  public Task<Result> SendEmailChangedByAdminAsync(
+    string previousEmail,
+    string newEmail,
     CancellationToken cancellationToken = default) =>
     Task.FromResult(Result.Error(DefaultErrorMessage));
 }

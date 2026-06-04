@@ -231,6 +231,98 @@ public sealed class AuthEmailService(
       cancellationToken);
   }
 
+  public Task<Result> SendEmailChangeRequestedAsync(
+    User user,
+    CancellationToken cancellationToken = default) =>
+    SendAsync(
+      user.Email,
+      "Email change requested on your account",
+      BrandedEmailTemplates.BuildActionEmail(
+        "Email change requested",
+        "A change to the email address on your ChangeMe account was requested.",
+        "Your current email stays active for sign-in until you confirm the change from the new mailbox.",
+        BuildLink("/account", null),
+        "My account"),
+      cancellationToken);
+
+  public Task<Result> SendConfirmEmailChangeAsync(
+    string newEmail,
+    string plainToken,
+    CancellationToken cancellationToken = default) =>
+    SendAsync(
+      newEmail,
+      "Confirm your new ChangeMe email address",
+      BrandedEmailTemplates.BuildActionEmail(
+        "Confirm your new email",
+        "Confirm this email address to complete your ChangeMe account email change.",
+        "If you did not request this change, you can ignore this email.",
+        BuildLink("/confirm-email-change", plainToken),
+        "Confirm email"),
+      cancellationToken);
+
+  public Task<Result> SendEmailChangeCancelledAsync(
+    User user,
+    CancellationToken cancellationToken = default) =>
+    SendAsync(
+      user.Email,
+      "Email change cancelled",
+      BrandedEmailTemplates.BuildActionEmail(
+        "Email change cancelled",
+        "The pending email change on your ChangeMe account was cancelled.",
+        "Your current email address is unchanged.",
+        BuildLink("/account", null),
+        "My account"),
+      cancellationToken);
+
+  public Task<Result> SendEmailChangeCompletedAsync(
+    string previousEmail,
+    string newEmail,
+    CancellationToken cancellationToken = default) =>
+    SendEmailToBothAsync(
+      previousEmail,
+      newEmail,
+      "Your ChangeMe email address was changed",
+      "Email address changed",
+      "The email address on your ChangeMe account was changed.",
+      "Sign in with your new email address. You have been signed out on all devices.",
+      cancellationToken);
+
+  public Task<Result> SendEmailChangedByAdminAsync(
+    string previousEmail,
+    string newEmail,
+    CancellationToken cancellationToken = default) =>
+    SendEmailToBothAsync(
+      previousEmail,
+      newEmail,
+      "Your ChangeMe email address was changed by an administrator",
+      "Email changed by administrator",
+      "An administrator changed the email address on your ChangeMe account.",
+      "Sign in with your new email address. You have been signed out on all devices.",
+      cancellationToken);
+
+  private async Task<Result> SendEmailToBothAsync(
+    string previousEmail,
+    string newEmail,
+    string subject,
+    string title,
+    string lead,
+    string detail,
+    CancellationToken cancellationToken)
+  {
+    var body = BrandedEmailTemplates.BuildActionEmail(
+      title,
+      lead,
+      detail,
+      BuildLink("/login", null),
+      "Sign in");
+
+    var first = await SendAsync(previousEmail, subject, body, cancellationToken);
+    if (!first.IsSuccess)
+      return first;
+
+    return await SendAsync(newEmail, subject, body, cancellationToken);
+  }
+
   private async Task<Result> SendAsync(
     string to,
     string subject,

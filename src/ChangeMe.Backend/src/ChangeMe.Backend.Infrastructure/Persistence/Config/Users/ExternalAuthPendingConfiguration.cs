@@ -41,6 +41,9 @@ public class ExternalAuthPendingConfiguration : IEntityTypeConfiguration<Externa
     builder.Property(x => x.ProviderEmail)
       .HasMaxLength(UserConstraints.EMAIL_MAX_LENGTH);
 
+    builder.Property(x => x.InvitedProfileEmail)
+      .HasMaxLength(UserConstraints.EMAIL_MAX_LENGTH);
+
     builder.Property(x => x.ProviderFirstName)
       .HasMaxLength(UserConstraints.NAME_MAX_LENGTH);
 

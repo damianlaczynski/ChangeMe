@@ -51,6 +51,7 @@ public class GetUserByIdHandler(
         .Select(login => new UserExternalLoginDto(
           login.ProviderKey,
           ExternalAuthUtils.ResolveProviderDisplayName(auth, login.ProviderKey),
+          login.LastProviderEmail,
           login.LinkedAtUtc))
         .ToList()
       : [];

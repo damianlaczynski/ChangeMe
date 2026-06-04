@@ -47,6 +47,7 @@ public class GetMyAccountHandler(
         .Select(login => new MyAccountExternalLoginDto(
           login.ProviderKey,
           ExternalAuthUtils.ResolveProviderDisplayName(auth, login.ProviderKey),
+          login.LastProviderEmail,
           login.LinkedAtUtc))
         .ToList()
       : [];
@@ -55,7 +56,7 @@ public class GetMyAccountHandler(
       .Select(x => x.ProviderKey)
       .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-    var linkableProviders = auth.External.Enabled
+    var linkableProviders = auth.External.Enabled && auth.External.LinkingEnabled
       ? auth.External.Providers
         .Where(x => x.IsConfigured && !linkedProviderKeys.Contains(x.ProviderKey))
         .Select(x => new ExternalProviderSettingsDto
@@ -76,6 +77,12 @@ public class GetMyAccountHandler(
     var passkeyStepUpFresh = auth.Passkeys.PasskeysAuthenticationEnabled
       && user.IsPasskeyStepUpFresh(DateTime.UtcNow, auth.Passkeys.PasskeyStepUpValidityMinutes);
 
+    PendingEmailChangeDto? pendingEmailChange = user.HasPendingEmailChange
+      && user.PendingNewEmail is not null
+      && user.PendingEmailChangeRequestedAtUtc is not null
+      ? new PendingEmailChangeDto(user.PendingNewEmail, user.PendingEmailChangeRequestedAtUtc.Value)
+      : null;
+
     return Result.Success(new MyAccountDto(
       user.Id,
       user.FirstName,
@@ -91,6 +98,8 @@ public class GetMyAccountHandler(
       externalLogins,
       linkableProviders,
       passkeys,
-      passkeyStepUpFresh));
+      passkeyStepUpFresh,
+      user.HasPendingInvitation,
+      pendingEmailChange));
   }
 }

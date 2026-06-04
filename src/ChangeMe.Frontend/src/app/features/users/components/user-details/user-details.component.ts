@@ -85,6 +85,11 @@ export class UserDetailsComponent {
     );
   });
 
+  readonly canCancelPendingEmailChange = computed(() => {
+    const profile = this.user();
+    return !!profile && this.canManageUsers() && !!profile.pendingEmailChange;
+  });
+
   readonly canSendInvitation = computed(() => {
     const profile = this.user();
     return (
@@ -320,6 +325,27 @@ export class UserDetailsComponent {
     });
   }
 
+  confirmCancelPendingEmailChange(): void {
+    const profile = this.user();
+    const pending = profile?.pendingEmailChange;
+    if (!profile || !pending) {
+      return;
+    }
+
+    this.confirmationService.confirm({
+      header: UserMessages.cancelPendingEmailChangeTitle,
+      message: UserMessages.cancelPendingEmailChangeMessage(pending.newEmail),
+      icon: 'pi pi-exclamation-triangle',
+      acceptButtonProps: { label: 'Cancel pending change', severity: 'danger' },
+      rejectButtonProps: {
+        label: 'Keep pending change',
+        severity: 'secondary',
+        outlined: true
+      },
+      accept: () => this.cancelPendingEmailChange()
+    });
+  }
+
   confirmCancelInvitation(): void {
     const profile = this.user();
     if (!profile) {
@@ -520,6 +546,19 @@ export class UserDetailsComponent {
         next: (user) => {
           this.user.set(user);
           this.toastService.success(UserMessages.invitationResent);
+        },
+        error: (error: Error) => this.errorMessage.set(error.message)
+      });
+  }
+
+  private cancelPendingEmailChange(): void {
+    this.usersService
+      .cancelPendingEmailChange(this.id())
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (user) => {
+          this.user.set(user);
+          this.toastService.success(UserMessages.pendingEmailChangeCanceled);
         },
         error: (error: Error) => this.errorMessage.set(error.message)
       });

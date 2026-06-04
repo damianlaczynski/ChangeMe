@@ -19,7 +19,7 @@
 
 **Restart required:** Auth policy is read when the API starts and on each request for compliance flags (password expiration, mandatory 2FA). Changing `appsettings` requires an application restart (or configuration reload if you add that in hosting).
 
-**Public settings API:** `GET /api/auth/settings` exposes password policy, registration flags, 2FA flags, and external provider **keys and display names only**—never client secrets.
+**Public settings API:** `GET /api/auth/settings` exposes password policy, registration flags, 2FA flags, **self-service email change enabled**, **external provider linking enabled**, and external provider **keys and display names only**—never client secrets.
 
 ---
 
@@ -49,22 +49,23 @@ flowchart TD
 
 ## 3. Application screens (auth area)
 
-| Route                        | Who       | Purpose                                                                      |
-| ---------------------------- | --------- | ---------------------------------------------------------------------------- |
-| `/login`                     | Guest     | Email/password sign-in; external **Continue with {Provider}** when enabled.  |
-| `/register`                  | Guest     | Self-registration when **Public registration** is enabled.                   |
-| `/verify-email`              | Guest     | After registration when email verification is on; resend verification.       |
-| `/forgot-password`           | Guest     | Request password reset email.                                                |
-| `/reset-password`            | Guest     | Set new password from reset link token.                                      |
-| `/accept-invitation`         | Guest     | Set password for admin-invited users.                                        |
-| `/two-factor-verification`   | Guest     | Enter TOTP or recovery code after password/OIDC when 2FA is enrolled.        |
-| `/external-sign-in/callback` | Guest     | OIDC redirect target; processes provider callback automatically.             |
-| `/link-external-account`     | Guest     | Link OIDC identity to existing password account (current password required). |
-| `/required-password-change`  | Signed-in | Mandatory password update when password expired.                             |
-| `/required-two-factor-setup` | Signed-in | Mandatory 2FA enrollment when policy requires it.                            |
-| `/account`                   | Signed-in | **My account** — profile, sessions, 2FA, external methods.                   |
-| `/account/set-password`      | Signed-in | Set local password for **external-only** accounts (after step-up).           |
-| `/account/change-password`   | Signed-in | Change existing password.                                                    |
+| Route                        | Who             | Purpose                                                                                                                                                                                                                                                                                                                          |
+| ---------------------------- | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/login`                     | Guest           | Email/password sign-in; external **Continue with {Provider}** when enabled.                                                                                                                                                                                                                                                      |
+| `/register`                  | Guest           | Self-registration when **Public registration** is enabled.                                                                                                                                                                                                                                                                       |
+| `/verify-email`              | Guest           | After registration when email verification is on; resend verification.                                                                                                                                                                                                                                                           |
+| `/forgot-password`           | Guest           | Request password reset email.                                                                                                                                                                                                                                                                                                    |
+| `/reset-password`            | Guest           | Set new password from reset link token.                                                                                                                                                                                                                                                                                          |
+| `/accept-invitation`         | Guest           | Set password for admin-invited users.                                                                                                                                                                                                                                                                                            |
+| `/two-factor-verification`   | Guest           | Enter TOTP or recovery code after password/OIDC when 2FA is enrolled.                                                                                                                                                                                                                                                            |
+| `/external-sign-in/callback` | Guest           | OIDC redirect target; processes provider callback automatically.                                                                                                                                                                                                                                                                 |
+| `/confirm-email-change`      | Guest (typical) | Confirm self-service email change from link in email (REQ-AUTH-015). Works while signed in; success toast + message on screen; **Sign in now** → **Login** with `emailChanged=1`. On invalid/expired link or target email taken, signed-in user with pending change sees **Resend confirmation email** (same as **My account**). |
+| `/required-password-change`  | Signed-in       | Mandatory password update when password expired.                                                                                                                                                                                                                                                                                 |
+| `/account/change-email`      | Signed-in       | Self-service **Change email** when enabled (REQ-AUTH-015).                                                                                                                                                                                                                                                                       |
+| `/required-two-factor-setup` | Signed-in       | Mandatory 2FA enrollment when policy requires it.                                                                                                                                                                                                                                                                                |
+| `/account`                   | Signed-in       | **My account** — profile, sessions, 2FA, external methods.                                                                                                                                                                                                                                                                       |
+| `/account/set-password`      | Signed-in       | Set local password for **external-only** accounts (after step-up).                                                                                                                                                                                                                                                               |
+| `/account/change-password`   | Signed-in       | Change existing password.                                                                                                                                                                                                                                                                                                        |
 
 Administrators manage other users under **Users** (invitations, deactivate, reset 2FA, unlink external logins, etc.).
 
@@ -182,19 +183,31 @@ Example:
 **Sensitive actions** (require step-up: password + TOTP if enabled, or recent external step-up for passwordless accounts):
 
 - Disable 2FA, regenerate recovery codes
-- Link/unlink external provider on **My account**
+- Link external provider on **My account** (when `LinkingEnabled` is true); unlink external provider on **My account**
 - Set password (external-only accounts)
 
 **Administrator:** **Reset two-factor** on **User details** clears 2FA and revokes all sessions (requires `Users.Manage`).
 
-### 4.11 External identity providers (`AuthOptions:External`)
+### 4.11 Self-service email change (`AuthOptions:EmailChange`)
 
-| Setting                  | Default                      | What it does                                                  | Impact                                                                                                                            |
-| ------------------------ | ---------------------------- | ------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `Enabled`                | `false`                      | Master switch for OIDC sign-in and linking UI.                | When `false`, no provider buttons; APIs return forbidden/disabled messages. Existing `External login` rows are kept but unusable. |
-| `PendingLifetimeMinutes` | `10`                         | Lifetime of pending OIDC state rows.                          | Expired pending flows must be restarted from Login or **My account**.                                                             |
-| `SignInCallbackPath`     | `/external-sign-in/callback` | Frontend path appended to `FrontendBaseUrl` for redirect URI. | Must match IdP redirect URI registration.                                                                                         |
-| `Providers`              | `[]`                         | List of provider configurations.                              | Each fully configured entry appears on Login, Register, and **My account**. Incomplete entries are ignored.                       |
+| Setting             | Default | What it does                                       | Impact                                                                                                                                                                                                                |
+| ------------------- | ------- | -------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Enabled`           | `true`  | Gates **Change email** on **My account** and APIs. | When `false`, users cannot start a new email change; **Change email** is hidden. An existing **pending email change** may still be shown (resend/cancel) until cleared. Confirmation links already sent remain valid. |
+| `LinkLifetimeHours` | `72`    | Validity of confirmation links to the new mailbox. | Expired links require **Resend confirmation email** on **Change email**.                                                                                                                                              |
+
+**Email uniqueness:** Only **Profile email** blocks duplicate accounts at registration, invite, and **Change email** submit. Another user's **pending new email** does not reserve the address. **Confirm email change** re-checks that the target is not already another account's **Profile email**; otherwise the pending change remains and the user is told to cancel it on **My account**.
+
+Configuration path examples: `AuthOptions__EmailChange__Enabled=false`, `AuthOptions__EmailChange__LinkLifetimeHours=48`.
+
+### 4.12 External identity providers (`AuthOptions:External`)
+
+| Setting                  | Default                      | What it does                                                                       | Impact                                                                                                                                                                                                                                                      |
+| ------------------------ | ---------------------------- | ---------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Enabled`                | `false`                      | Master switch for OIDC sign-in (**Continue with …** on Login/Register/invitation). | When `false`, no provider buttons; sign-in and step-up external APIs are unavailable. Existing `External login` rows are kept but unusable until re-enabled.                                                                                                |
+| `LinkingEnabled`         | `true`                       | Gates **Link {Provider}** from **My account** (OIDC **link mode**).                | When `false` while `Enabled` is `true`, guest sign-in and first-time OIDC registration still work; users with existing links can sign in and **Unlink**; **Link** actions and link-mode APIs are hidden/forbidden. Requires `Enabled: true` to take effect. |
+| `PendingLifetimeMinutes` | `10`                         | Lifetime of pending OIDC state rows.                                               | Expired pending flows must be restarted from Login or **My account**.                                                                                                                                                                                       |
+| `SignInCallbackPath`     | `/external-sign-in/callback` | Frontend path appended to `FrontendBaseUrl` for redirect URI.                      | Must match IdP redirect URI registration.                                                                                                                                                                                                                   |
+| `Providers`              | `[]`                         | List of provider configurations.                                                   | Each fully configured entry appears on **Login**, **Register**, and **Accept invitation** when `Enabled` is `true`. **My account** shows **Link** only when `LinkingEnabled` is `true`. Incomplete entries are ignored.                                     |
 
 Per-provider fields:
 
@@ -217,15 +230,17 @@ Per-provider fields:
 
 ## 5. How options interact (common scenarios)
 
-| Scenario                                          | Recommended settings                                                            | Result                                                                                                                 |
-| ------------------------------------------------- | ------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| Internal app, passwords only                      | `External:Enabled: false`, 2FA optional or off                                  | Classic email/password only.                                                                                           |
-| Enterprise SSO + optional password                | Enable one OIDC provider, domain allowlist, `Registration:PublicEnabled: false` | Only existing users or admin-created users link/sign in; new emails without account get _No account exists…_.          |
-| High security                                     | `TwoFactor:Required: true`, 2FA enabled                                         | All users must set up authenticator after first sign-in (unless IdP MFA trusted on external path).                     |
-| Google/Microsoft + skip app 2FA when IdP used MFA | `TwoFactor:TrustIdentityProviderMfa: true` + 2FA enabled                        | External sign-in with `amr` containing `mfa` skips app TOTP and mandatory setup; password sign-in still uses app TOTP. |
-| Phishing-resistant sign-in                        | `Passkeys:PasskeysAuthenticationEnabled: true`                                  | Users enroll passkeys on **My account**; optional mandatory passkeys and 2FA substitution per REQ-PKY-001.             |
-| Public SaaS signup                                | `Registration:PublicEnabled: true`, email verification on                       | Register → verify email → login.                                                                                       |
-| Lock registration, allow Google                   | `Registration:PublicEnabled: false`, Google OIDC                                | New users only via Google if email not already in directory; matching email triggers link flow.                        |
+| Scenario                                          | Recommended settings                                                            | Result                                                                                                                                               |
+| ------------------------------------------------- | ------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Internal app, passwords only                      | `External:Enabled: false`, 2FA optional or off                                  | Classic email/password only.                                                                                                                         |
+| Enterprise SSO + optional password                | Enable one OIDC provider, domain allowlist, `Registration:PublicEnabled: false` | Only existing users or admin-created users link/sign in; new emails without account get _No account exists…_.                                        |
+| High security                                     | `TwoFactor:Required: true`, 2FA enabled                                         | All users must set up authenticator after first sign-in (unless IdP MFA trusted on external path).                                                   |
+| Google/Microsoft + skip app 2FA when IdP used MFA | `TwoFactor:TrustIdentityProviderMfa: true` + 2FA enabled                        | External sign-in with `amr` containing `mfa` skips app TOTP and mandatory setup; password sign-in still uses app TOTP.                               |
+| Phishing-resistant sign-in                        | `Passkeys:PasskeysAuthenticationEnabled: true`                                  | Users enroll passkeys on **My account**; optional mandatory passkeys and 2FA substitution per REQ-PKY-001.                                           |
+| Public SaaS signup                                | `Registration:PublicEnabled: true`, email verification on                       | Register → verify email → login.                                                                                                                     |
+| Lock registration, allow Google                   | `Registration:PublicEnabled: false`, Google OIDC                                | New users only via Google when no account exists; existing emails must sign in with password and link from **My account** if `LinkingEnabled` is on. |
+| SSO sign-in, no self-service link                 | `External:Enabled: true`, `External:LinkingEnabled: false`                      | **Continue with …** on Login; no **Link** on **My account**; admins can still unlink on **User details**.                                            |
+| No self-service email change                      | `EmailChange:Enabled: false`                                                    | **Change email** hidden; admin **Edit user** email change still available.                                                                           |
 
 ---
 
@@ -268,8 +283,13 @@ The backend sends this URI in the authorization request and again at token excha
 ```json
 "AuthOptions": {
   "FrontendBaseUrl": "http://localhost:4200",
+  "EmailChange": {
+    "Enabled": true,
+    "LinkLifetimeHours": 72
+  },
   "External": {
     "Enabled": true,
+    "LinkingEnabled": true,
     "Providers": [ ]
   }
 }
@@ -477,20 +497,28 @@ Set `External:Enabled` to `false` and restart.
 | --------------------------- | ------------------------------------------------------------------------------------------ |
 | Has password                | Can still use **Login** with email/password.                                               |
 | External-only (no password) | Cannot sign in until providers re-enabled or an admin helps set a password / local access. |
-| Linked providers in DB      | Rows retained; linking UI hidden.                                                          |
+| Linked providers in DB      | Rows retained; sign-in and linking UI hidden until re-enabled.                             |
 
-### 6.12 Account linking behaviour (operator summary)
+To keep OIDC sign-in but stop users from adding providers themselves, leave `External:Enabled` **true** and set `External:LinkingEnabled` to **false**.
 
-| Event                                     | Behaviour                                                                 |
-| ----------------------------------------- | ------------------------------------------------------------------------- |
-| Provider subject already linked           | Signs in that user.                                                       |
-| New provider, email matches existing user | Guest must confirm **current password** on **Link external account**.     |
-| Signed-in user links another provider     | **My account** → step-up (password + 2FA or external step-up).            |
-| New email, registration allowed           | Creates user without password (`Has password set` false), links provider. |
-| New email, registration disabled          | Error: no account exists.                                                 |
-| Same provider subject on another user     | Error: already linked to another user.                                    |
+### 6.12 External sign-in and linking (operator summary)
 
-Changing a user’s email in **Edit user** does **not** remove external logins; warn operators that sign-in is by provider identity, not email match.
+Guest **Continue with {Provider}** on **Login**, **Register**, or **Accept invitation** does **not** attach a provider to an existing account (except invitation onboarding when provider email matches the invited **Profile email** — REQ-AUTH-010). Linking is only from **My account** when `External:LinkingEnabled` is **true**.
+
+| Event                                                                   | Behaviour                                                                                                                                         |
+| ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| (**Provider key**, **subject**) already linked                          | Signs in that user. **Provider email** from the token may differ from **Profile email**; sign-in does not change **Profile email**.               |
+| Subject not linked; account exists with same normalized provider email  | Redirect to **Login** with: sign in with password, then link from **My account**. No guest **Link external account** screen.                      |
+| Subject not linked; no account; public registration enabled             | Creates a new **external-only** user; initial **Profile email** = verified provider email.                                                        |
+| Subject not linked; no account; public registration disabled            | _No account exists for this email…_                                                                                                               |
+| **Accept invitation**; provider email matches invited **Profile email** | Completes invitation and links provider (REQ-AUTH-010).                                                                                           |
+| **Accept invitation**; provider email differs from invited email        | _The external account email does not match the invited email address._                                                                            |
+| Signed-in user links another provider (`LinkingEnabled: true`)          | **My account** → step-up → optional confirmation when provider email ≠ **Profile email** → OIDC link mode. Provider email match **not** required. |
+| `LinkingEnabled: false`                                                 | **Link** hidden; existing links still sign in; **Unlink** still available (subject to last-method rules).                                         |
+| Same (**Provider key**, **subject**) on another user                    | _This external account is already linked to another user._                                                                                        |
+| Different addresses (e.g. `jan@firma.pl` vs `jan@gmail.com`)            | Treated as **different** emails: separate accounts or “account already exists” per table above — not merged automatically.                        |
+
+Changing **Profile email** in **Edit user** or via self-service **Change email** (`EmailChange:Enabled`) does **not** remove **External login** rows. Sign-in stays tied to (**Provider key**, **subject**), not email match.
 
 ### 6.13 Secrets and production
 

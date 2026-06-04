@@ -1,10 +1,11 @@
 import { Routes } from '@angular/router';
 import { AcceptInvitationComponent } from '@features/auth/components/accept-invitation/accept-invitation.component';
+import { ChangeEmailComponent } from '@features/auth/components/change-email/change-email.component';
 import { ChangePasswordComponent } from '@features/auth/components/change-password/change-password.component';
+import { ConfirmEmailChangeComponent } from '@features/auth/components/confirm-email-change/confirm-email-change.component';
 import { EditMyAccountComponent } from '@features/auth/components/edit-my-account/edit-my-account.component';
 import { ExternalSignInCallbackComponent } from '@features/auth/components/external-sign-in-callback/external-sign-in-callback.component';
 import { ForgotPasswordComponent } from '@features/auth/components/forgot-password/forgot-password.component';
-import { LinkExternalAccountComponent } from '@features/auth/components/link-external-account/link-external-account.component';
 import { LoginComponent } from '@features/auth/components/login/login.component';
 import { MyAccountComponent } from '@features/auth/components/my-account/my-account.component';
 import { OptionalPasskeyEnrollmentComponent } from '@features/auth/components/optional-passkey-enrollment/optional-passkey-enrollment.component';
@@ -64,9 +65,8 @@ export const routes: Routes = [
     canActivate: [externalSignInCallbackGuard]
   },
   {
-    path: 'link-external-account',
-    component: LinkExternalAccountComponent,
-    canActivate: [guestGuard]
+    path: 'confirm-email-change',
+    component: ConfirmEmailChangeComponent
   },
   {
     path: 'register',
@@ -151,6 +151,11 @@ export const routes: Routes = [
   {
     path: 'account/change-password',
     component: ChangePasswordComponent,
+    canActivate: [authGuard]
+  },
+  {
+    path: 'account/change-email',
+    component: ChangeEmailComponent,
     canActivate: [authGuard]
   },
   {

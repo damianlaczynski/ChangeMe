@@ -1,5 +1,6 @@
 ﻿using ChangeMe.Backend.Domain.Aggregates.Roles;
 using ChangeMe.Backend.Domain.Aggregates.Sessions;
+using ChangeMe.Backend.Domain.Aggregates.Users;
 using ChangeMe.Backend.Domain.Authorization;
 using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UseCases.Auth.Utils;
@@ -168,4 +169,14 @@ public static class UsersUtils
         x.LastActivityAt))
       .ToList();
   }
+
+  public static Task<bool> IsProfileEmailTakenAsync(
+    ApplicationDbContext context,
+    string normalizedEmail,
+    Guid? excludeUserId,
+    CancellationToken cancellationToken) =>
+    context.Users.AnyAsync(
+      x => (excludeUserId == null || x.Id != excludeUserId)
+           && x.NormalizedEmail == normalizedEmail,
+      cancellationToken);
 }

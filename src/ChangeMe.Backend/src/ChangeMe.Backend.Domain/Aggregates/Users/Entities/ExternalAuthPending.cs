@@ -21,6 +21,7 @@ public class ExternalAuthPending
   public string? ProviderLastName { get; private set; }
   public bool IdentityProviderMfaAsserted { get; private set; }
   public DateTime ExpiresAtUtc { get; private set; }
+  public string? InvitedProfileEmail { get; private set; }
 
   public bool IsExpired(DateTime utcNow) => utcNow >= ExpiresAtUtc;
 
@@ -30,7 +31,8 @@ public class ExternalAuthPending
     string nonce,
     string codeChallenge,
     string codeVerifier,
-    DateTime expiresAtUtc)
+    DateTime expiresAtUtc,
+    string? invitedProfileEmail = null)
   {
     var validationErrors = ValidateCore(providerKey, state, nonce, codeChallenge, codeVerifier);
     if (validationErrors.Count > 0)
@@ -44,7 +46,10 @@ public class ExternalAuthPending
       CodeChallenge = codeChallenge,
       CodeVerifier = codeVerifier,
       Mode = ExternalAuthMode.SignIn,
-      ExpiresAtUtc = expiresAtUtc
+      ExpiresAtUtc = expiresAtUtc,
+      InvitedProfileEmail = string.IsNullOrWhiteSpace(invitedProfileEmail)
+        ? null
+        : invitedProfileEmail.Trim()
     });
   }
 

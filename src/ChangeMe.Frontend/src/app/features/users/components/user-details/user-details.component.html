@@ -87,6 +87,16 @@
           />
         }
       }
+      @if (canCancelPendingEmailChange()) {
+        <p-button
+          label="Cancel pending email change"
+          icon="pi pi-times"
+          severity="danger"
+          [outlined]="true"
+          size="small"
+          (onClick)="confirmCancelPendingEmailChange()"
+        />
+      }
       @if (canManageSessions() && !profile.deactivated) {
         <p-button
           label="Revoke all sessions"
@@ -181,6 +191,23 @@
             />
           </div>
         }
+      </p-panel>
+    }
+
+    @if (profile.pendingEmailChange; as pendingChange) {
+      <p-panel header="Pending email change" class="mb-4">
+        <dl class="grid gap-4 sm:grid-cols-2">
+          <div class="flex flex-col gap-1">
+            <dt class="text-muted-color text-sm">New email</dt>
+            <dd class="m-0 font-medium">{{ pendingChange.newEmail }}</dd>
+          </div>
+          <div class="flex flex-col gap-1">
+            <dt class="text-muted-color text-sm">Requested at</dt>
+            <dd class="m-0">
+              {{ pendingChange.requestedAtUtc | date: 'dd.MM.yyyy HH:mm' }}
+            </dd>
+          </div>
+        </dl>
       </p-panel>
     }
 
@@ -303,6 +330,17 @@
             >
               <div class="flex flex-col gap-1">
                 <span class="text-color font-medium">{{ login.displayName }}</span>
+                <span class="text-muted-color text-sm">
+                  Provider email: {{ login.providerEmail ?? '—' }}
+                </span>
+                @if (
+                  login.providerEmail &&
+                  login.providerEmail.toLowerCase() !== profile.email.toLowerCase()
+                ) {
+                  <span class="text-muted-color text-sm">
+                    May differ from profile email.
+                  </span>
+                }
                 <span class="text-muted-color text-sm">
                   Linked {{ login.linkedAtUtc | date: 'dd.MM.yyyy HH:mm' }}
                 </span>

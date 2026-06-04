@@ -1,4 +1,6 @@
-﻿namespace ChangeMe.Backend.UseCases.Users.Dtos;
+﻿using ChangeMe.Backend.UseCases.Auth.Dtos;
+
+namespace ChangeMe.Backend.UseCases.Users.Dtos;
 
 public sealed record UserListItemDto
 {
@@ -44,6 +46,7 @@ public sealed record UserDetailsDto
   public bool InvitationPending { get; init; }
   public UserMembershipStatus Status { get; init; }
   public UserInvitationInfoDto? PendingInvitation { get; init; }
+  public PendingEmailChangeDto? PendingEmailChange { get; init; }
   public DateTime MemberSince { get; init; }
   public DateTime? LastSignInAt { get; init; }
   public IReadOnlyList<UserRoleSummaryDto> Roles { get; init; } = [];
@@ -64,6 +67,7 @@ public sealed record UserPasskeyDto(
 public sealed record UserExternalLoginDto(
   string ProviderKey,
   string DisplayName,
+  string? ProviderEmail,
   DateTime LinkedAtUtc);
 
 public sealed record RoleAssignmentOptionDto(Guid Id, string Name, bool IsSystem);

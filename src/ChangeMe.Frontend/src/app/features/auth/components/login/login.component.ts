@@ -289,6 +289,9 @@ export class LoginComponent {
     if (params.get('emailVerified') === '1') {
       return { info: AuthMessages.emailVerifiedLogin, error: '' };
     }
+    if (params.get('emailChanged') === '1') {
+      return { info: AuthMessages.emailChangedLogin, error: '' };
+    }
     if (params.get('registrationDisabled') === '1') {
       return { info: AuthMessages.registrationDisabled, error: '' };
     }

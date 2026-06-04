@@ -253,7 +253,7 @@ Passkey step-up rules:
 ### States and business rules
 
 - Passkey step-up does not issue a new application session; it only unlocks the pending action.
-- **Out of scope for this REQ:** step-up for guest **Link external account** (password only per REQ-AUTH-014).
+- **Out of scope for this REQ:** step-up for **Accept invitation** external onboarding (invitation email match per REQ-AUTH-010 / REQ-AUTH-014).
 
 ---
 

@@ -1,9 +1,12 @@
 ﻿using ChangeMe.Backend.Domain.Aggregates.Roles;
 using ChangeMe.Backend.Domain.Aggregates.Users;
+using ChangeMe.Backend.Domain.Aggregates.Users.Enums;
+using ChangeMe.Backend.Domain.Aggregates.Users.Interfaces;
 using ChangeMe.Backend.Domain.Authorization;
+using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UseCases.Users.Dtos;
-
 using ChangeMe.Backend.UseCases.Users.Utils;
+using Microsoft.Extensions.Options;
 
 namespace ChangeMe.Backend.UseCases.Users;
 
@@ -18,7 +21,10 @@ public sealed record UpdateUserCommand(
 public class UpdateUserHandler(
   IMediator mediator,
   ApplicationDbContext context,
-  IUserAccessor userAccessor) : ICommandHandler<UpdateUserCommand, UserDetailsDto>
+  IUserAccessor userAccessor,
+  IAuthEmailService authEmailService,
+  IUserAuthTokenService tokenService,
+  IOptions<AuthOptions> authOptions) : ICommandHandler<UpdateUserCommand, UserDetailsDto>
 {
   public async Task<Result<UserDetailsDto>> Handle(UpdateUserCommand command, CancellationToken cancellationToken)
   {
@@ -27,12 +33,21 @@ public class UpdateUserHandler(
       return Result<UserDetailsDto>.NotFound();
 
     var normalizedEmail = User.NormalizeEmail(command.Email);
-    var emailTaken = await context.Users.AnyAsync(
-      x => x.NormalizedEmail == normalizedEmail && x.Id != user.Id,
-      cancellationToken);
+    var emailChanged = !user.NormalizedEmail.Equals(normalizedEmail, StringComparison.Ordinal);
+    var previousEmail = user.Email;
 
-    if (emailTaken)
+    if (emailChanged
+        && await UsersUtils.IsProfileEmailTakenAsync(context, normalizedEmail, user.Id, cancellationToken))
       return Result<UserDetailsDto>.Conflict(UsersUtils.DuplicateEmailMessage);
+
+    if (emailChanged)
+    {
+      user.CancelPendingEmailChange();
+      await tokenService.InvalidateUnusedTokensAsync(
+        user.Id,
+        UserAuthTokenType.EmailChangeConfirmation,
+        cancellationToken);
+    }
 
     var updateProfileResult = user.UpdateAdminProfile(command.FirstName, command.LastName, command.Email);
     if (!updateProfileResult.IsSuccess)
@@ -97,7 +112,25 @@ public class UpdateUserHandler(
         user.Activate();
       }
     }
+    if (emailChanged)
+    {
+      if (authOptions.Value.EmailVerification.Enabled)
+        user.MarkEmailVerified();
+
+      await UsersUtils.RevokeAllActiveSessionsAsync(context, user.Id, cancellationToken);
+    }
+
     await context.SaveChangesAsync(cancellationToken);
+
+    if (emailChanged)
+    {
+      var emailResult = await authEmailService.SendEmailChangedByAdminAsync(
+        previousEmail,
+        user.Email,
+        cancellationToken);
+      if (!emailResult.IsSuccess)
+        return emailResult.Map();
+    }
 
     var updatedUserResult = await mediator.Send(new GetUserByIdQuery(user.Id), cancellationToken);
     if (!updatedUserResult.IsSuccess)

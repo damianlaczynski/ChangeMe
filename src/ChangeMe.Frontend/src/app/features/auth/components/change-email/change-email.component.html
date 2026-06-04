@@ -1,0 +1,79 @@
+<p-card
+  header="Change email"
+  subheader="Confirm control of your new mailbox before the change takes effect."
+>
+  <div class="mb-4">
+    <app-back-button label="Back to my account" [route]="['/account']" />
+  </div>
+
+  @if (account(); as profile) {
+    <form
+      class="p-fluid flex flex-col gap-4"
+      [formGroup]="form"
+      (ngSubmit)="onSubmit()"
+    >
+      <p-panel header="Email addresses" [toggleable]="true">
+        <div class="grid gap-4">
+          <div class="flex flex-col gap-1.5">
+            <label for="currentEmail">Current email</label>
+            <input
+              pInputText
+              id="currentEmail"
+              [value]="profile.email"
+              readonly
+              class="w-full"
+            />
+          </div>
+          <div class="flex flex-col gap-1.5">
+            <label for="newEmail">New email</label>
+            <input
+              pInputText
+              id="newEmail"
+              type="email"
+              autocomplete="email"
+              [formControl]="form.controls.newEmail"
+              [invalid]="shouldShowError(form.controls.newEmail)"
+              class="w-full"
+            />
+            @if (shouldShowError(form.controls.newEmail)) {
+              <p-message severity="error" variant="simple">
+                Enter a valid email address.
+              </p-message>
+            }
+          </div>
+        </div>
+      </p-panel>
+
+      @if (externalNotice(); as notice) {
+        <p-message severity="info">{{ notice }}</p-message>
+      }
+
+      @if (submitError()) {
+        <p-message severity="error">{{ submitError() }}</p-message>
+      }
+
+      <p-button
+        type="submit"
+        label="Change email"
+        icon="pi pi-envelope"
+        [loading]="isSubmitting()"
+      />
+    </form>
+  }
+</p-card>
+
+@if (account(); as profile) {
+  <app-identity-step-up-dialog
+    [account]="profile"
+    [visible]="stepUpVisible()"
+    [passkeysEnabled]="passkeysEnabled()"
+    [stepUpValidityMinutes]="stepUpValidityMinutes()"
+    submitLabel="Change email"
+    [submitting]="isSubmitting()"
+    [errorMessage]="stepUpError()"
+    fieldIdPrefix="changeEmailStepUp"
+    (visibleChange)="stepUpVisible.set($event)"
+    (cancelled)="closeStepUp()"
+    (verified)="onStepUpVerified($event)"
+  />
+}

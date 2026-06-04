@@ -86,6 +86,13 @@ export class UsersService {
     );
   }
 
+  cancelPendingEmailChange(id: string): Observable<UserDetailsDto> {
+    return this.apiService.post<UserDetailsDto>(
+      `${this.baseEndpoint}/${id}/cancel-pending-email-change`,
+      {}
+    );
+  }
+
   sendInvitation(id: string): Observable<UserDetailsDto> {
     return this.apiService.post<UserDetailsDto>(
       `${this.baseEndpoint}/${id}/send-invitation`,

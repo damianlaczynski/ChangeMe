@@ -18,6 +18,10 @@ const AUTH_ENDPOINTS_WITHOUT_REFRESH = [
 ] as const;
 
 function shouldAttemptTokenRefresh(requestUrl: string): boolean {
+  if (requestUrl.includes('/auth/email-change/confirm')) {
+    return false;
+  }
+
   return !AUTH_ENDPOINTS_WITHOUT_REFRESH.some((segment) =>
     requestUrl.includes(segment)
   );
