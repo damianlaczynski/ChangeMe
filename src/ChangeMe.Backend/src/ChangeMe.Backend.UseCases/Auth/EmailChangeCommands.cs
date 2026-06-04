@@ -211,6 +211,8 @@ public class ResendEmailChangeConfirmationHandler(
     if (!tokenResult.IsSuccess)
       return tokenResult.Map();
 
+    await context.SaveChangesAsync(cancellationToken);
+
     var emailResult = await authEmailService.SendConfirmEmailChangeAsync(
       user.PendingNewEmail,
       tokenResult.Value,

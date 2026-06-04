@@ -81,6 +81,59 @@ public sealed class EmailChangeEndpointTests(BackendWebApplicationFactory factor
   }
 
   [Fact]
+  public async Task PostEmailChangeResend_WhenPendingChange_ShouldPersistTokenUsableForConfirm()
+  {
+    var cancellationToken = TestContext.Current.CancellationToken;
+    const string password = "StrongPass123!";
+    var user = await TestAuthHelper.CreateAuthenticatedUserAsync(factory, cancellationToken);
+    var newEmail = $"resend-{Guid.NewGuid():N}@example.com";
+
+    await user.Client.PostAsJsonAsync("/api/auth/email-change", new
+    {
+      NewEmail = newEmail,
+      CurrentPassword = password,
+      VerificationCode = (string?)null
+    }, cancellationToken);
+
+    var resendResponse = await user.Client.PostAsJsonAsync(
+      "/api/auth/email-change/resend",
+      new { },
+      cancellationToken);
+    resendResponse.EnsureSuccessStatusCode();
+
+    await using var scope = factory.Services.CreateAsyncScope();
+    var fakeEmail = scope.ServiceProvider.GetRequiredService<IEmailService>() as FakeEmailService;
+    Assert.NotNull(fakeEmail);
+
+    var confirmEmail = fakeEmail.SentEmails.Last(e =>
+      e.Subject == "Confirm your new ChangeMe email address");
+    var token = EmailLinkTokenExtractor.FromBody(confirmEmail.Body);
+    Assert.False(string.IsNullOrWhiteSpace(token));
+
+    using var guestClient = factory.CreateClient(new WebApplicationFactoryClientOptions
+    {
+      BaseAddress = new Uri("https://localhost")
+    });
+
+    var confirmResponse = await guestClient.PostAsJsonAsync("/api/auth/email-change/confirm", new
+    {
+      Token = token
+    }, cancellationToken);
+    confirmResponse.EnsureSuccessStatusCode();
+
+    var result = await IntegrationApiJson.ReadValueAsync<ConfirmEmailChangeResponseDto>(
+      confirmResponse.Content,
+      cancellationToken);
+    Assert.NotNull(result);
+    Assert.True(result!.Succeeded);
+
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    var entity = await db.Users.AsNoTracking().SingleAsync(x => x.Id == user.UserId, cancellationToken);
+    Assert.Equal(newEmail, entity.Email);
+    Assert.False(entity.HasPendingEmailChange);
+  }
+
+  [Fact]
   public async Task PostRegister_WhenAnotherUserHasPendingChangeToSameEmail_ShouldSucceed()
   {
     var cancellationToken = TestContext.Current.CancellationToken;
