@@ -1,21 +1,22 @@
-using Ardalis.Result;
 using ChangeMe.Backend.Domain.Aggregates.Users;
 using ChangeMe.Backend.Domain.Aggregates.Users.Enums;
 using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UnitTests.Support;
 using ChangeMe.Backend.UseCases.Auth;
+using ChangeMe.Backend.UseCases.Auth.Utils;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace ChangeMe.Backend.UnitTests.UseCases.Auth;
 
 public sealed class ConfirmEmailChangeHandlerTests
 {
   [Fact]
-  public async Task Handle_WhenCompletionEmailFails_ShouldReturnErrorWithoutPersistingChange()
+  public async Task Handle_WhenCompletionEmailFails_ShouldStillReturnSuccessAndApplyChange()
   {
     var cancellationToken = TestContext.Current.CancellationToken;
     await using var context = UseCasesTestDb.Create(
-      nameof(Handle_WhenCompletionEmailFails_ShouldReturnErrorWithoutPersistingChange));
+      nameof(Handle_WhenCompletionEmailFails_ShouldStillReturnSuccessAndApplyChange));
     var authOptions = TestAuthOptions.Create();
     var tokenService = new UserAuthTokenService(context, authOptions, TimeProvider.System);
     var passwordHasher = new PasswordHasherAdapter();
@@ -44,19 +45,20 @@ public sealed class ConfirmEmailChangeHandlerTests
       new FakeAuthEmailService { FailSendEmailChangeCompleted = true },
       tokenService,
       new FakeUserAccessor(),
-      TimeProvider.System);
+      TimeProvider.System,
+      NullLogger<ConfirmEmailChangeHandler>.Instance);
 
     var result = await handler.Handle(new ConfirmEmailChangeCommand(plainToken), cancellationToken);
 
-    Assert.False(result.IsSuccess);
-    Assert.Contains(
-      FailingAuthEmailService.DefaultErrorMessage,
-      result.Errors.First());
+    Assert.True(result.IsSuccess);
+    Assert.NotNull(result.Value);
+    Assert.True(result.Value!.Succeeded);
+    Assert.Equal(EmailChangeUtils.EmailChangeConfirmedMessage, result.Value.Message);
 
     context.ChangeTracker.Clear();
     var updated = await context.Users.AsNoTracking().SingleAsync(x => x.Id == user.Id, cancellationToken);
-    Assert.Equal(previousEmail, updated.Email);
-    Assert.True(updated.HasPendingEmailChange);
-    Assert.Equal(newEmail, updated.PendingNewEmail);
+    Assert.Equal(newEmail, updated.Email);
+    Assert.False(updated.HasPendingEmailChange);
+    Assert.True(updated.EmailVerified);
   }
 }

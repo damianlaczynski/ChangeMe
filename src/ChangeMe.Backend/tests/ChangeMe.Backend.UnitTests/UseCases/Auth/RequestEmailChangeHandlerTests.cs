@@ -12,11 +12,11 @@ namespace ChangeMe.Backend.UnitTests.UseCases.Auth;
 public sealed class RequestEmailChangeHandlerTests
 {
   [Fact]
-  public async Task Handle_WhenNotificationEmailFails_ShouldReturnErrorWithoutPersistingPendingChange()
+  public async Task Handle_WhenNotificationEmailFails_ShouldReturnErrorButPersistPendingChange()
   {
     var cancellationToken = TestContext.Current.CancellationToken;
     await using var context = UseCasesTestDb.Create(
-      nameof(Handle_WhenNotificationEmailFails_ShouldReturnErrorWithoutPersistingPendingChange));
+      nameof(Handle_WhenNotificationEmailFails_ShouldReturnErrorButPersistPendingChange));
     var authOptions = TestAuthOptions.Create();
     var passwordHasher = new PasswordHasherAdapter();
     var currentEmail = "current@example.com";
@@ -57,13 +57,13 @@ public sealed class RequestEmailChangeHandlerTests
 
     context.ChangeTracker.Clear();
     var updated = await context.Users.AsNoTracking().SingleAsync(x => x.Id == user.Id, cancellationToken);
-    Assert.False(updated.HasPendingEmailChange);
-    Assert.Equal(currentEmail, updated.Email);
+    Assert.True(updated.HasPendingEmailChange);
+    Assert.Equal(newEmail, updated.PendingNewEmail);
 
     var hasToken = await context.UserAuthTokens.AnyAsync(
       x => x.UserId == user.Id && x.Type == UserAuthTokenType.EmailChangeConfirmation,
       cancellationToken);
-    Assert.False(hasToken);
+    Assert.True(hasToken);
   }
 
   private sealed class UnusedMediator : IMediator, IPublisher

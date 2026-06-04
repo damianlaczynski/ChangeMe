@@ -6,6 +6,7 @@ using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UseCases.Auth.Dtos;
 using ChangeMe.Backend.UseCases.Auth.Utils;
 using ChangeMe.Backend.UseCases.Users.Utils;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace ChangeMe.Backend.UseCases.Auth;
@@ -90,6 +91,8 @@ public class RequestEmailChangeHandler(
     if (!tokenResult.IsSuccess)
       return tokenResult.Map();
 
+    await context.SaveChangesAsync(cancellationToken);
+
     var confirmEmailResult = await authEmailService.SendConfirmEmailChangeAsync(
       user.PendingNewEmail!,
       tokenResult.Value,
@@ -100,8 +103,6 @@ public class RequestEmailChangeHandler(
     var requestedResult = await authEmailService.SendEmailChangeRequestedAsync(user, cancellationToken);
     if (!requestedResult.IsSuccess)
       return requestedResult.Map();
-
-    await context.SaveChangesAsync(cancellationToken);
 
     return await mediator.Send(new GetMyAccountQuery(), cancellationToken);
   }
@@ -236,7 +237,8 @@ public class ConfirmEmailChangeHandler(
   IAuthEmailService authEmailService,
   IUserAuthTokenService tokenService,
   IUserAccessor userAccessor,
-  TimeProvider timeProvider) : ICommandHandler<ConfirmEmailChangeCommand, ConfirmEmailChangeResponseDto>
+  TimeProvider timeProvider,
+  ILogger<ConfirmEmailChangeHandler> logger) : ICommandHandler<ConfirmEmailChangeCommand, ConfirmEmailChangeResponseDto>
 {
   public async Task<Result<ConfirmEmailChangeResponseDto>> Handle(
     ConfirmEmailChangeCommand command,
@@ -291,15 +293,19 @@ public class ConfirmEmailChangeHandler(
 
     await tokenService.MarkTokenUsedAsync(command.Token, cancellationToken);
     await UsersUtils.RevokeAllActiveSessionsAsync(context, user.Id, cancellationToken);
+    await context.SaveChangesAsync(cancellationToken);
 
     var emailResult = await authEmailService.SendEmailChangeCompletedAsync(
       previousEmail,
       newEmail,
       cancellationToken);
     if (!emailResult.IsSuccess)
-      return emailResult.Map();
-
-    await context.SaveChangesAsync(cancellationToken);
+    {
+      logger.LogWarning(
+        "Email change was confirmed for user {UserId} but completion notification emails failed: {Errors}",
+        user.Id,
+        string.Join("; ", emailResult.Errors));
+    }
 
     return Result.Success(new ConfirmEmailChangeResponseDto(
       true,
