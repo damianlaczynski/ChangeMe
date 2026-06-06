@@ -14,7 +14,7 @@
 <!--#endif-->
 - `.config/dotnet-tools.json` - pins **`dotnet-ef`** for `dotnet ef migrations add` (optional; see `docs/database-and-docker.md`).
 - `docs/` - implementation, testing, and requirements guidance.
-- `docs/requirements-change-process.md` - analysts add **pending** deltas to `docs/req/changes/`; developers mark done or remove after implementation; atomic REQ files under `docs/req/<domain>/` hold full acceptance detail; cross-cutting terms in `docs/req/_shared/`.
+- `docs/requirements-change-process.md` - analysts add **pending** deltas to `docs/requirements/changes/`; functional specifications (`FR-*`) under `docs/requirements/functional/<domain>/`; shared NFR and reference docs under `docs/requirements/_shared/`.
 - Root `package.json` - optional npm scripts that run frontend and backend tasks from the repository root (see Commands).
 
 ## Start here by task
@@ -24,8 +24,8 @@
 - Test work or bugfix verification: read `docs/testing-playbook.md`.
 - Cross-stack feature: read all four docs above before editing.
 - Auth deployment, 2FA, or OIDC providers: read `docs/auth-operations-guide.md`.
-- Passkeys / WebAuthn: read `docs/req/passkeys/` (start with REQ-PKY-001 in `docs/req/README.md`).
-- Requirement changes: read `docs/requirements-change-process.md`; pending deltas in `docs/req/changes/`; validate with `npm run req:validate`.
+- Passkeys / WebAuthn: read `docs/requirements/functional/passkeys/` (start with FR-PKY-001 in `docs/requirements/README.md`).
+- Requirement changes: read `docs/requirements-change-process.md`; pending deltas in `docs/requirements/changes/`; validate with `npm run requirements:validate`.
 
 ## Commands
 
@@ -41,7 +41,7 @@ From the repository root, run `npm install` once to install root devDependencies
 - Full automated check (frontend CI tests + full backend solution tests, parallel): `npm run test:all` — backend integration tests use Testcontainers and need a running Docker engine
 - EF Core (from repo root; run `npm run ef:restore` once after clone): `npm run ef:migrations:add -- <Name>`, `npm run ef:migrations:remove`, `npm run ef:database:update`
 - Demo data (after migrations; Development only): `npm run data:generate`, or `npm run data:generate -- --reset` — see `docs/data-generator.md`
-- Requirements structure: `npm run req:validate` — checks atomic REQ files, cross-references, and regenerates `docs/req/README.md`
+- Requirements structure: `npm run requirements:validate` — checks `FR-*` / `NFR-*` specs, acceptance scenarios, cross-references, and regenerates `docs/requirements/README.md`
 
 ### Frontend (in `src/ChangeMe.Frontend`)
 

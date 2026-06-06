@@ -35,7 +35,8 @@
     "docker:build": "docker compose build",
     "docker:logs": "docker compose logs -f",
     "docker:test:backend": "docker compose --profile test run --rm backend-tests",
-    "req:validate": "node scripts/req-validate.mjs"
+    "requirements:validate": "node scripts/requirements-validate.mjs",
+    "req:validate": "npm run requirements:validate"
   },
   "devDependencies": {
     "concurrently": "^9.2.0"
