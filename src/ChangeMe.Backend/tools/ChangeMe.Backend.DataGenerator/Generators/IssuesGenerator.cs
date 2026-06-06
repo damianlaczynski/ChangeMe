@@ -12,8 +12,13 @@ namespace ChangeMe.Backend.DataGenerator.Generators;
 
 internal sealed class IssuesGenerator(IOptions<DataGeneratorOptions> options)
 {
-  public IReadOnlyList<DomainIssue> Generate(IReadOnlyList<DomainUser> demoUsers)
+  public IReadOnlyList<DomainIssue> Generate(
+    IReadOnlyList<DomainUser> demoUsers,
+    IReadOnlyList<Guid> projectIds)
   {
+    if (projectIds.Count == 0)
+      throw new InvalidOperationException("At least one project id is required to generate demo issues.");
+
     var config = options.Value;
     var faker = new Faker { Random = new Randomizer(config.Seed + 1) };
     var issues = new List<DomainIssue>();
@@ -23,6 +28,7 @@ internal sealed class IssuesGenerator(IOptions<DataGeneratorOptions> options)
     for (var index = 0; index < config.Issues; index++)
     {
       var actor = PickRandom(demoUsers, faker);
+      var projectId = PickRandom(projectIds, faker);
       var assignee = faker.Random.Bool(0.7f) ? PickRandom(demoUsers, faker) : null;
       var title = Truncate(faker.Hacker.Phrase(), IssueConstraints.TITLE_MAX_LENGTH);
       if (title.Length < IssueConstraints.TITLE_MIN_LENGTH)
@@ -33,6 +39,7 @@ internal sealed class IssuesGenerator(IOptions<DataGeneratorOptions> options)
       var status = faker.PickRandom(statuses);
 
       var issueResult = DomainIssue.Create(
+        projectId,
         title,
         description,
         priority,

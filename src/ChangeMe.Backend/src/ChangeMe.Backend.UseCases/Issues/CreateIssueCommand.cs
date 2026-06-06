@@ -1,11 +1,13 @@
 ﻿using ChangeMe.Backend.Domain.Aggregates.Issue;
 using ChangeMe.Backend.Domain.Aggregates.Issue.Enums;
 using ChangeMe.Backend.UseCases.Issues.Dtos;
+using ChangeMe.Backend.Domain.Authorization;
 using ChangeMe.Backend.UseCases.Issues.Utils;
 
 namespace ChangeMe.Backend.UseCases.Issues;
 
 public record CreateIssueCommand(
+  Guid ProjectId,
   string Title,
   string Description,
   IssueStatus Status,
@@ -26,6 +28,15 @@ public class CreateIssueHandler(
     if (userAccessor.UserId is not Guid actorUserId)
       return Result.Unauthorized();
 
+    var accessResult = await IssuesUtils.ValidateProjectIssueAccessAsync(
+      context,
+      command.ProjectId,
+      actorUserId,
+      ProjectPermissionCodes.IssuesManage,
+      cancellationToken);
+    if (!accessResult.IsSuccess)
+      return accessResult.Map();
+
     var assigneeValidation = await IssuesUtils.ValidateAssigneeExistsAsync(
       context,
       command.AssignedToUserId,
@@ -35,6 +46,7 @@ public class CreateIssueHandler(
       return assigneeValidation.Map();
 
     var issueResult = Issue.Create(
+      command.ProjectId,
       command.Title,
       command.Description,
       command.Priority,

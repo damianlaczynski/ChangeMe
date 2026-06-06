@@ -131,6 +131,28 @@ internal static class TestAuthHelper
     return user;
   }
 
+  public static async Task RefreshLoginAsync(
+    BackendWebApplicationFactory factory,
+    AuthenticatedTestUser user,
+    CancellationToken cancellationToken = default)
+  {
+    const string password = "StrongPass123!";
+    using var loginClient = factory.CreateClient(new WebApplicationFactoryClientOptions
+    {
+      BaseAddress = new Uri("https://localhost")
+    });
+
+    var loginResponse = await loginClient.PostAsJsonAsync("/api/auth/login", new
+    {
+      Email = user.Email,
+      Password = password
+    }, cancellationToken);
+
+    loginResponse.EnsureSuccessStatusCode();
+    var token = ExtractToken(await loginResponse.Content.ReadAsStringAsync(cancellationToken));
+    user.Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+  }
+
   private static string ExtractToken(string responseBody)
   {
     using var document = JsonDocument.Parse(responseBody);

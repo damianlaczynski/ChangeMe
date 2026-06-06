@@ -38,7 +38,10 @@ internal static class DataGeneratorHost
     builder.Services.AddScoped<DemoDataExistsChecker>();
     builder.Services.AddScoped<DemoDataCleaner>();
     builder.Services.AddScoped<UsersGenerator>();
+    builder.Services.AddScoped<ProjectsGenerator>();
     builder.Services.AddScoped<IssuesGenerator>();
+    builder.Services.AddScoped<TimeEntriesGenerator>();
+    builder.Services.AddScoped<BillingGenerator>();
     builder.Services.AddScoped<NotificationsGenerator>();
     builder.Services.AddScoped<DemoDataGeneratorOrchestrator>();
     builder.Services.AddSingleton(new DataGeneratorRunOptions(reset));

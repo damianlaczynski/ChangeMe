@@ -3,8 +3,22 @@ id: REQ-USR-001
 title: My Account Profile
 domain: users
 status: active
-depends_on: [REQ-AUTH-001, REQ-AUTH-003, REQ-AUTH-004, REQ-AUTH-005, REQ-AUTH-013, REQ-AUTH-014, REQ-AUTH-015, REQ-PKY-003, REQ-ROL-001, REQ-USR-004]
+depends_on:
+  [
+    REQ-AUTH-001,
+    REQ-AUTH-003,
+    REQ-AUTH-004,
+    REQ-AUTH-005,
+    REQ-AUTH-013,
+    REQ-AUTH-014,
+    REQ-AUTH-015,
+    REQ-BIL-003,
+    REQ-PKY-003,
+    REQ-ROL-001,
+    REQ-USR-004,
+  ]
 ---
+
 ## Goal
 
 The signed-in user must be able to view their own profile, edit it on a separate screen, and reach account security actions.
@@ -71,6 +85,12 @@ The signed-in user must be able to view their own profile, edit it on a separate
 
 - Collapsible section **Passkeys** on the same screen when **Passkeys authentication enabled** is **true** (REQ-PKY-003).
 - Not a separate screen or sidebar entry.
+
+### Employment summary section
+
+- Collapsible section **Employment summary** on the same screen when the user has **Billing.ViewOwn** and an active employment contract exists (REQ-BIL-003).
+- Not a separate screen or sidebar entry.
+- When no active contract exists, the section is **not shown**.
 
 ### Set password
 

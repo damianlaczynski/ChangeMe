@@ -1,4 +1,6 @@
-﻿using ChangeMe.Backend.Infrastructure.FileStorage;
+﻿using ChangeMe.Backend.Domain.Authorization;
+using ChangeMe.Backend.Infrastructure.FileStorage;
+using ChangeMe.Backend.UseCases.Issues.Utils;
 
 namespace ChangeMe.Backend.UseCases.Issues;
 
@@ -7,16 +9,29 @@ public record DeleteIssueCommand(
 
 public class DeleteIssueHandler(
   ApplicationDbContext context,
+  IUserAccessor userAccessor,
   IFileStorageService fileStorageService) : ICommandHandler<DeleteIssueCommand, Guid>
 {
   public async Task<Result<Guid>> Handle(DeleteIssueCommand command, CancellationToken cancellationToken)
   {
+    if (userAccessor.UserId is not Guid actorUserId)
+      return Result.Unauthorized();
+
     var issue = await context.Issues
       .Include(i => i.Attachments)
       .FirstOrDefaultAsync(i => i.Id == command.Id, cancellationToken);
 
     if (issue is null)
       return Result.NotFound();
+
+    var accessResult = await IssuesUtils.ValidateProjectIssueAccessAsync(
+      context,
+      issue.ProjectId,
+      actorUserId,
+      ProjectPermissionCodes.IssuesManage,
+      cancellationToken);
+    if (!accessResult.IsSuccess)
+      return accessResult.Map();
 
     var storageKeysByContainer = issue.Attachments
       .GroupBy(a => a.StorageContainer)

@@ -37,6 +37,9 @@ public class IssueDto
   public DateTime LastActivityAt { get; set; }
   public bool IsWatchedByCurrentUser { get; set; }
   public int WatchersCount { get; set; }
+  public Guid ProjectId { get; set; }
+  public string? ProjectName { get; set; }
+  public bool CanManage { get; set; }
 }
 
 public class IssueAssignableUserDto
@@ -61,6 +64,10 @@ public class IssueDetailsDto
   public DateTime LastActivityAt { get; set; }
   public bool IsWatchedByCurrentUser { get; set; }
   public int WatchersCount { get; set; }
+  public Guid ProjectId { get; set; }
+  public string? ProjectName { get; set; }
+  public bool CanViewProject { get; set; }
+  public bool CanManage { get; set; }
   public IReadOnlyCollection<AcceptanceCriterionDto> AcceptanceCriteria { get; set; } = [];
   public IReadOnlyCollection<IssueCommentDto> Comments { get; set; } = [];
   public IReadOnlyCollection<IssueHistoryEntryDto> HistoryEntries { get; set; } = [];

@@ -7,8 +7,10 @@ public class Notification : Entity, IAggregateRoot
   private Notification() { }
 
   public Guid RecipientUserId { get; private set; }
-  public Guid IssueId { get; private set; }
+  public Guid? IssueId { get; private set; }
   public Guid IssueHistoryEntryId { get; private set; }
+  public Guid? BillingSourceEntityId { get; private set; }
+  public DateTime? BillingSourceRevisionAt { get; private set; }
   public NotificationEventType EventType { get; private set; }
   public string IssueTitle { get; private set; } = string.Empty;
   public string Message { get; private set; } = string.Empty;
@@ -26,28 +28,16 @@ public class Notification : Entity, IAggregateRoot
     string message,
     string link)
   {
-    var validationErrors = new List<ValidationError>();
-
-    if (recipientUserId == Guid.Empty)
-      validationErrors.Add(new ValidationError(nameof(RecipientUserId), "cannot be empty"));
+    var validationErrors = ValidateCommon(
+      recipientUserId,
+      eventType,
+      issueTitle,
+      message,
+      link);
     if (issueId == Guid.Empty)
       validationErrors.Add(new ValidationError(nameof(IssueId), "cannot be empty"));
     if (issueHistoryEntryId == Guid.Empty)
       validationErrors.Add(new ValidationError(nameof(IssueHistoryEntryId), "cannot be empty"));
-    if (!Enum.IsDefined(eventType))
-      validationErrors.Add(new ValidationError(nameof(EventType), "invalid event type"));
-    if (string.IsNullOrWhiteSpace(issueTitle))
-      validationErrors.Add(new ValidationError(nameof(IssueTitle), "cannot be empty"));
-    else if (issueTitle.Trim().Length > NotificationConstraints.ISSUE_TITLE_MAX_LENGTH)
-      validationErrors.Add(new ValidationError(nameof(IssueTitle), $"cannot be longer than {NotificationConstraints.ISSUE_TITLE_MAX_LENGTH} characters"));
-    if (string.IsNullOrWhiteSpace(message))
-      validationErrors.Add(new ValidationError(nameof(Message), "cannot be empty"));
-    else if (message.Trim().Length > NotificationConstraints.MESSAGE_MAX_LENGTH)
-      validationErrors.Add(new ValidationError(nameof(Message), $"cannot be longer than {NotificationConstraints.MESSAGE_MAX_LENGTH} characters"));
-    if (string.IsNullOrWhiteSpace(link))
-      validationErrors.Add(new ValidationError(nameof(Link), "cannot be empty"));
-    else if (link.Trim().Length > NotificationConstraints.LINK_MAX_LENGTH)
-      validationErrors.Add(new ValidationError(nameof(Link), $"cannot be longer than {NotificationConstraints.LINK_MAX_LENGTH} characters"));
 
     if (validationErrors.Count > 0)
       return Result.Invalid(validationErrors);
@@ -59,6 +49,40 @@ public class Notification : Entity, IAggregateRoot
       IssueHistoryEntryId = issueHistoryEntryId,
       EventType = eventType,
       IssueTitle = issueTitle.Trim(),
+      Message = message.Trim(),
+      Link = link.Trim(),
+      IsRead = false,
+    });
+  }
+
+  public static Result<Notification> CreateBilling(
+    Guid recipientUserId,
+    NotificationEventType eventType,
+    string title,
+    string message,
+    string link,
+    Guid? billingSourceEntityId = null,
+    DateTime? billingSourceRevisionAt = null)
+  {
+    var validationErrors = ValidateCommon(
+      recipientUserId,
+      eventType,
+      title,
+      message,
+      link);
+
+    if (validationErrors.Count > 0)
+      return Result.Invalid(validationErrors);
+
+    return Result.Success(new Notification
+    {
+      RecipientUserId = recipientUserId,
+      IssueId = null,
+      IssueHistoryEntryId = Guid.CreateVersion7(),
+      BillingSourceEntityId = billingSourceEntityId,
+      BillingSourceRevisionAt = billingSourceRevisionAt,
+      EventType = eventType,
+      IssueTitle = title.Trim(),
       Message = message.Trim(),
       Link = link.Trim(),
       IsRead = false,
@@ -77,6 +101,35 @@ public class Notification : Entity, IAggregateRoot
   public void MarkEmailSent()
   {
     EmailSentAt = DateTime.UtcNow;
+  }
+
+  private static List<ValidationError> ValidateCommon(
+    Guid recipientUserId,
+    NotificationEventType eventType,
+    string title,
+    string message,
+    string link)
+  {
+    var validationErrors = new List<ValidationError>();
+
+    if (recipientUserId == Guid.Empty)
+      validationErrors.Add(new ValidationError(nameof(RecipientUserId), "cannot be empty"));
+    if (!Enum.IsDefined(eventType))
+      validationErrors.Add(new ValidationError(nameof(EventType), "invalid event type"));
+    if (string.IsNullOrWhiteSpace(title))
+      validationErrors.Add(new ValidationError(nameof(IssueTitle), "cannot be empty"));
+    else if (title.Trim().Length > NotificationConstraints.ISSUE_TITLE_MAX_LENGTH)
+      validationErrors.Add(new ValidationError(nameof(IssueTitle), $"cannot be longer than {NotificationConstraints.ISSUE_TITLE_MAX_LENGTH} characters"));
+    if (string.IsNullOrWhiteSpace(message))
+      validationErrors.Add(new ValidationError(nameof(Message), "cannot be empty"));
+    else if (message.Trim().Length > NotificationConstraints.MESSAGE_MAX_LENGTH)
+      validationErrors.Add(new ValidationError(nameof(Message), $"cannot be longer than {NotificationConstraints.MESSAGE_MAX_LENGTH} characters"));
+    if (string.IsNullOrWhiteSpace(link))
+      validationErrors.Add(new ValidationError(nameof(Link), "cannot be empty"));
+    else if (link.Trim().Length > NotificationConstraints.LINK_MAX_LENGTH)
+      validationErrors.Add(new ValidationError(nameof(Link), $"cannot be longer than {NotificationConstraints.LINK_MAX_LENGTH} characters"));
+
+    return validationErrors;
   }
 }
 

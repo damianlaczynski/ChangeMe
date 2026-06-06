@@ -1,0 +1,643 @@
+<p-card
+  header="Billing reports"
+  subheader="Analyze employment, leave, and settlement data"
+>
+  <p-tabs [value]="activeTab()" (valueChange)="onTabChange($event)">
+    <p-tablist>
+      <p-tab value="reports">Reports</p-tab>
+      <p-tab value="leave">Leave</p-tab>
+      <p-tab value="audit-log">Audit log</p-tab>
+      <p-tab value="settings">Settings</p-tab>
+    </p-tablist>
+
+    <p-tabpanels>
+      <p-tabpanel value="reports">
+        <form
+          class="mb-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3"
+          [formGroup]="settlementFiltersForm"
+        >
+          <div class="flex flex-col gap-1.5">
+            <label for="reportPeriod">Settlement period</label>
+            <p-select
+              inputId="reportPeriod"
+              appendTo="body"
+              formControlName="settlementPeriodId"
+              [options]="settlementPeriods()"
+              optionLabel="label"
+              optionValue="id"
+              placeholder="Select period"
+            />
+          </div>
+
+          <div class="flex flex-col gap-1.5">
+            <label for="reportUsers">Users</label>
+            <p-multiselect
+              inputId="reportUsers"
+              appendTo="body"
+              formControlName="userIds"
+              [options]="periodUserOptions()"
+              optionLabel="userDisplayName"
+              optionValue="userId"
+              placeholder="All users in period"
+            />
+          </div>
+
+          <div class="flex flex-col gap-1.5">
+            <label for="reportContractTypes">Contract type</label>
+            <p-multiselect
+              inputId="reportContractTypes"
+              appendTo="body"
+              formControlName="contractTypes"
+              [options]="contractTypeOptions"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="All contract types"
+            />
+          </div>
+
+          <div class="flex flex-col gap-1.5 md:col-span-2 xl:col-span-3">
+            <span class="text-sm">Grouping</span>
+            <p-selectbutton
+              formControlName="groupingMode"
+              [options]="billingSettlementGroupingModes"
+              optionLabel="label"
+              optionValue="value"
+            />
+          </div>
+
+          <div class="flex flex-wrap items-end gap-2 md:col-span-2 xl:col-span-3">
+            <p-button
+              label="Run report"
+              icon="pi pi-play"
+              (onClick)="runSettlementReport()"
+            />
+            @if (settlementReport()) {
+              <p-button
+                label="Export CSV"
+                icon="pi pi-download"
+                severity="secondary"
+                [outlined]="true"
+                (onClick)="exportSettlementReport()"
+              />
+            }
+          </div>
+        </form>
+
+        @if (settlementReportError()) {
+          <p-message severity="error" class="mb-3 block">
+            {{ settlementReportError() }}
+          </p-message>
+        }
+
+        @if (isLoadingSettlementReport()) {
+          <div class="flex justify-center py-8">
+            <p-progressSpinner ariaLabel="Loading settlement report" />
+          </div>
+        } @else if (!hasRunSettlementReport()) {
+          <p-message severity="info">
+            {{ BillingMessages.billingReportsPlaceholder }}
+          </p-message>
+        } @else if (settlementReport(); as report) {
+          @if (report.rows.length === 0) {
+            <p-message severity="info">{{ BillingMessages.noReportData }}</p-message>
+          } @else {
+            <div class="mb-4 grid gap-3 md:grid-cols-4">
+              <p-panel header="Users">
+                <div class="text-xl font-semibold">{{ report.userCount }}</div>
+              </p-panel>
+              <p-panel header="Total expected time">
+                <div class="text-xl font-semibold">
+                  {{ formatMonthlyHoursNorm(report.totalExpectedMinutes) }}
+                </div>
+              </p-panel>
+              <p-panel header="Total logged time">
+                <div class="text-xl font-semibold">
+                  {{ formatMonthlyHoursNorm(report.totalLoggedMinutes) }}
+                </div>
+              </p-panel>
+              <p-panel header="Net balance">
+                <div
+                  class="text-xl font-semibold"
+                  [class]="getSettlementBalanceClass(report.netBalanceMinutes)"
+                >
+                  {{ formatMonthlyHoursNorm(report.netBalanceMinutes) }}
+                </div>
+              </p-panel>
+            </div>
+
+            <p-table [value]="report.rows" stripedRows>
+              <ng-template #header>
+                <tr>
+                  @switch (report.groupingMode) {
+                    @case (BillingSettlementReportGroupingMode.ByPosition) {
+                      <th>Position</th>
+                      <th>User count</th>
+                      <th>Total logged time</th>
+                      <th>Total balance</th>
+                    }
+                    @case (BillingSettlementReportGroupingMode.ByContractType) {
+                      <th>Contract type</th>
+                      <th>User count</th>
+                      <th>Total expected time</th>
+                      <th>Total logged time</th>
+                    }
+                    @default {
+                      <th>User</th>
+                      <th>Expected time</th>
+                      <th>Logged time</th>
+                      <th>Leave days</th>
+                      <th>Balance</th>
+                    }
+                  }
+                </tr>
+              </ng-template>
+              <ng-template #body let-row>
+                <tr>
+                  @switch (report.groupingMode) {
+                    @case (BillingSettlementReportGroupingMode.ByPosition) {
+                      <td>{{ row.positionName ?? row.label }}</td>
+                      <td>{{ row.userCount }}</td>
+                      <td>{{ formatMonthlyHoursNorm(row.loggedMinutes) }}</td>
+                      <td [class]="getSettlementBalanceClass(row.balanceMinutes)">
+                        {{ formatMonthlyHoursNorm(row.balanceMinutes) }}
+                      </td>
+                    }
+                    @case (BillingSettlementReportGroupingMode.ByContractType) {
+                      <td>
+                        {{
+                          row.contractType
+                            ? getContractTypeLabel(row.contractType)
+                            : row.label
+                        }}
+                      </td>
+                      <td>{{ row.userCount }}</td>
+                      <td>{{ formatMonthlyHoursNorm(row.expectedMinutes) }}</td>
+                      <td>{{ formatMonthlyHoursNorm(row.loggedMinutes) }}</td>
+                    }
+                    @default {
+                      <td>{{ row.userDisplayName ?? row.label }}</td>
+                      <td>{{ formatMonthlyHoursNorm(row.expectedMinutes) }}</td>
+                      <td>{{ formatMonthlyHoursNorm(row.loggedMinutes) }}</td>
+                      <td>{{ row.leaveDays }}</td>
+                      <td [class]="getSettlementBalanceClass(row.balanceMinutes)">
+                        <p-tag
+                          [value]="formatMonthlyHoursNorm(row.balanceMinutes)"
+                          [severity]="getSettlementBalanceSeverity(row.balanceMinutes)"
+                        />
+                      </td>
+                    }
+                  }
+                </tr>
+              </ng-template>
+            </p-table>
+          }
+        }
+      </p-tabpanel>
+
+      <p-tabpanel value="leave">
+        <form
+          class="mb-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3"
+          [formGroup]="leaveFiltersForm"
+        >
+          <div class="flex flex-col gap-1.5">
+            <label for="leaveYear">Year</label>
+            <p-inputNumber
+              inputId="leaveYear"
+              formControlName="year"
+              [useGrouping]="false"
+            />
+          </div>
+
+          <div class="flex flex-col gap-1.5">
+            <label for="leaveReportUsers">Users</label>
+            <p-multiselect
+              inputId="leaveReportUsers"
+              appendTo="body"
+              formControlName="userIds"
+              [options]="userOptions()"
+              optionLabel="label"
+              optionValue="id"
+              placeholder="All users"
+            />
+          </div>
+
+          <div class="flex flex-col gap-1.5">
+            <label for="leaveReportTypes">Leave type</label>
+            <p-multiselect
+              inputId="leaveReportTypes"
+              appendTo="body"
+              formControlName="leaveTypeIds"
+              [options]="leaveTypes()"
+              optionLabel="name"
+              optionValue="id"
+              placeholder="All leave types"
+            />
+          </div>
+
+          <div class="flex flex-col gap-1.5 md:col-span-2">
+            <label for="leaveReportStatuses">Status</label>
+            <p-multiselect
+              inputId="leaveReportStatuses"
+              appendTo="body"
+              formControlName="statuses"
+              [options]="leaveRequestStatusOptions"
+              optionLabel="label"
+              optionValue="value"
+            />
+          </div>
+
+          <div class="flex flex-col gap-1.5 md:col-span-2 xl:col-span-3">
+            <span class="text-sm">Grouping</span>
+            <p-selectbutton
+              formControlName="groupingMode"
+              [options]="billingLeaveGroupingModes"
+              optionLabel="label"
+              optionValue="value"
+            />
+          </div>
+
+          <div class="flex flex-wrap items-end gap-2 md:col-span-2 xl:col-span-3">
+            <p-button
+              label="Run report"
+              icon="pi pi-play"
+              (onClick)="runLeaveReport()"
+            />
+            @if (leaveReport()) {
+              <p-button
+                label="Export CSV"
+                icon="pi pi-download"
+                severity="secondary"
+                [outlined]="true"
+                (onClick)="exportLeaveReport()"
+              />
+            }
+          </div>
+        </form>
+
+        @if (leaveReportError()) {
+          <p-message severity="error" class="mb-3 block">
+            {{ leaveReportError() }}
+          </p-message>
+        }
+
+        @if (isLoadingLeaveReport()) {
+          <div class="flex justify-center py-8">
+            <p-progressSpinner ariaLabel="Loading leave report" />
+          </div>
+        } @else if (!hasRunLeaveReport()) {
+          <p-message severity="info">
+            {{ BillingMessages.billingReportsPlaceholder }}
+          </p-message>
+        } @else if (leaveReport(); as report) {
+          @if (report.rows.length === 0) {
+            <p-message severity="info">{{ BillingMessages.noReportData }}</p-message>
+          } @else {
+            <p-table [value]="report.rows" stripedRows>
+              <ng-template #header>
+                <tr>
+                  @switch (report.groupingMode) {
+                    @case (BillingLeaveReportGroupingMode.ByLeaveType) {
+                      <th>Leave type</th>
+                      <th>Total days</th>
+                      <th>Request count</th>
+                    }
+                    @case (BillingLeaveReportGroupingMode.LeaveCalendar) {
+                      <th>User</th>
+                      <th>Leave type</th>
+                      <th>Dates</th>
+                      <th>Days</th>
+                    }
+                    @default {
+                      <th>User</th>
+                      <th>Entitled days</th>
+                      <th>Used days</th>
+                      <th>Remaining days</th>
+                    }
+                  }
+                </tr>
+              </ng-template>
+              <ng-template #body let-row>
+                <tr>
+                  @switch (report.groupingMode) {
+                    @case (BillingLeaveReportGroupingMode.ByLeaveType) {
+                      <td>{{ row.leaveTypeName }}</td>
+                      <td>{{ row.totalDays }}</td>
+                      <td>{{ row.requestCount }}</td>
+                    }
+                    @case (BillingLeaveReportGroupingMode.LeaveCalendar) {
+                      <td>{{ row.userDisplayName }}</td>
+                      <td>{{ row.leaveTypeName }}</td>
+                      <td>{{ row.datesDisplay }}</td>
+                      <td>{{ row.days }}</td>
+                    }
+                    @default {
+                      <td>{{ row.userDisplayName }}</td>
+                      <td>{{ row.entitledDays }}</td>
+                      <td>{{ row.usedDays }}</td>
+                      <td>{{ row.remainingDays }}</td>
+                    }
+                  }
+                </tr>
+              </ng-template>
+            </p-table>
+          }
+        }
+      </p-tabpanel>
+
+      <p-tabpanel value="audit-log">
+        <form
+          class="mb-4 flex flex-wrap items-end gap-3"
+          [formGroup]="auditFiltersForm"
+        >
+          <div class="flex min-w-64 flex-col gap-1.5">
+            <label for="auditPeriod">Settlement period</label>
+            <p-select
+              inputId="auditPeriod"
+              appendTo="body"
+              formControlName="settlementPeriodId"
+              [options]="settlementPeriods()"
+              optionLabel="label"
+              optionValue="id"
+              [showClear]="true"
+              placeholder="All periods"
+            />
+          </div>
+          <p-button
+            label="Apply filters"
+            icon="pi pi-filter"
+            (onClick)="applyAuditFilters()"
+          />
+        </form>
+
+        @if (auditLogError()) {
+          <p-message severity="error" class="mb-3 block">
+            {{ auditLogError() }}
+          </p-message>
+        }
+
+        @if (isLoadingAuditLog()) {
+          <div class="flex justify-center py-8">
+            <p-progressSpinner ariaLabel="Loading audit log" />
+          </div>
+        } @else if (auditLog(); as page) {
+          @if (page.items.length === 0) {
+            <p-message severity="info">
+              {{ BillingMessages.noSettlementOperations }}
+            </p-message>
+          } @else {
+            <p-table [value]="page.items" stripedRows>
+              <ng-template #header>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Actor</th>
+                  <th>Operation</th>
+                  <th>Period</th>
+                  <th>User</th>
+                </tr>
+              </ng-template>
+              <ng-template #body let-entry>
+                <tr>
+                  <td>{{ entry.timestamp | date: 'dd.MM.yyyy HH:mm' }}</td>
+                  <td>{{ entry.actorDisplayName }}</td>
+                  <td>{{ getSettlementOperationLabel(entry.operation) }}</td>
+                  <td>{{ entry.periodLabel }}</td>
+                  <td>{{ entry.userDisplayName || BillingMessages.emptyField }}</td>
+                </tr>
+              </ng-template>
+            </p-table>
+
+            @if (page.totalCount > page.pageSize) {
+              <p-paginator
+                class="mt-3"
+                [rows]="page.pageSize"
+                [totalRecords]="page.totalCount"
+                [first]="(page.currentPage - 1) * page.pageSize"
+                (onPageChange)="onAuditPageChange($event)"
+              />
+            }
+          }
+        }
+      </p-tabpanel>
+
+      <p-tabpanel value="settings">
+        <div class="flex flex-col gap-6">
+          <p-panel header="Billing settings">
+            @if (isLoadingSettings()) {
+              <div class="flex justify-center py-6">
+                <p-progressSpinner ariaLabel="Loading billing settings" />
+              </div>
+            } @else if (settingsError()) {
+              <p-message severity="error">{{ settingsError() }}</p-message>
+            } @else if (settings(); as currentSettings) {
+              <form
+                class="flex flex-col gap-4"
+                [formGroup]="settingsForm"
+                (ngSubmit)="saveSettings()"
+              >
+                @if (settingsSubmitError()) {
+                  <p-message severity="error">{{ settingsSubmitError() }}</p-message>
+                }
+
+                <h4 class="m-0 text-base font-semibold">Leave allowance</h4>
+                <div class="grid gap-4 md:grid-cols-2">
+                  <div class="flex flex-col gap-1.5">
+                    <label for="defaultAnnualLeaveDays">
+                      Default annual leave days
+                    </label>
+                    <p-inputNumber
+                      inputId="defaultAnnualLeaveDays"
+                      formControlName="defaultAnnualLeaveDays"
+                      [min]="BillingSettingsConstraints.MIN_ANNUAL_LEAVE_DAYS"
+                      [max]="BillingSettingsConstraints.MAX_ANNUAL_LEAVE_DAYS"
+                      [minFractionDigits]="1"
+                      [maxFractionDigits]="1"
+                    />
+                  </div>
+                  <div class="flex items-center justify-between gap-2 md:mt-7">
+                    <label for="allowHalfDayLeave">Allow half-day leave</label>
+                    <p-toggleswitch
+                      inputId="allowHalfDayLeave"
+                      formControlName="allowHalfDayLeave"
+                    />
+                  </div>
+                </div>
+
+                <h4 class="m-0 text-base font-semibold">Default work hours</h4>
+                <div class="grid gap-4 md:grid-cols-2">
+                  <div class="flex flex-col gap-1.5">
+                    <label for="defaultWorkdayStart">Default workday start</label>
+                    <input
+                      pInputText
+                      id="defaultWorkdayStart"
+                      formControlName="defaultWorkdayStart"
+                    />
+                  </div>
+                  <div class="flex flex-col gap-1.5">
+                    <label for="defaultWorkdayEnd">Default workday end</label>
+                    <input
+                      pInputText
+                      id="defaultWorkdayEnd"
+                      formControlName="defaultWorkdayEnd"
+                    />
+                  </div>
+                  <div class="flex flex-col gap-1.5">
+                    <label for="halfDaySplitTime">Half-day split time</label>
+                    <input
+                      pInputText
+                      id="halfDaySplitTime"
+                      formControlName="halfDaySplitTime"
+                    />
+                  </div>
+                  <div class="flex flex-col gap-1.5">
+                    <label for="defaultWorkdays">Default workdays</label>
+                    <p-multiSelect
+                      inputId="defaultWorkdays"
+                      appendTo="body"
+                      formControlName="defaultWorkdays"
+                      [options]="weekdayOptions"
+                      optionLabel="label"
+                      optionValue="value"
+                    />
+                  </div>
+                  <div class="flex flex-col gap-1.5">
+                    <label for="defaultAvailabilityStatus">
+                      Default availability status
+                    </label>
+                    <p-select
+                      inputId="defaultAvailabilityStatus"
+                      appendTo="body"
+                      formControlName="defaultAvailabilityStatus"
+                      [options]="availabilityStatusOptions"
+                      optionLabel="label"
+                      optionValue="value"
+                    />
+                  </div>
+                  <div class="flex flex-col gap-1.5">
+                    <span class="text-muted-color text-sm">
+                      Default workday duration
+                    </span>
+                    <span>
+                      {{
+                        formatWorkdayDuration(
+                          currentSettings.defaultWorkdayDurationMinutes
+                        )
+                      }}
+                    </span>
+                  </div>
+                </div>
+
+                @if (canManageSettings() && currentSettings.canEdit) {
+                  <div>
+                    <p-button
+                      type="submit"
+                      label="Save"
+                      icon="pi pi-check"
+                      [loading]="isSavingSettings()"
+                    />
+                  </div>
+                }
+              </form>
+            }
+          </p-panel>
+
+          <p-panel header="Leave types">
+            <div class="mb-4 flex flex-wrap gap-2">
+              @if (canManageSettings()) {
+                <p-button
+                  label="Add leave type"
+                  icon="pi pi-plus"
+                  severity="secondary"
+                  [outlined]="true"
+                  size="small"
+                  (onClick)="openCreateLeaveType()"
+                />
+              }
+            </div>
+
+            @if (isLoadingLeaveTypes()) {
+              <div class="flex justify-center py-6">
+                <p-progressSpinner ariaLabel="Loading leave types" />
+              </div>
+            } @else if (leaveTypesError()) {
+              <p-message severity="error">{{ leaveTypesError() }}</p-message>
+            } @else {
+              <p-table [value]="leaveTypes()" stripedRows>
+                <ng-template #header>
+                  <tr>
+                    <th>Name</th>
+                    <th>Code</th>
+                    <th>Counts as paid</th>
+                    <th>Uses allowance</th>
+                    <th>Requires approval</th>
+                    <th>Active</th>
+                    @if (canManageSettings()) {
+                      <th>Actions</th>
+                    }
+                  </tr>
+                </ng-template>
+                <ng-template #body let-leaveType>
+                  <tr>
+                    <td>
+                      {{ leaveType.name }}
+                      @if (leaveType.isSeeded) {
+                        <p-tag value="Seeded" severity="secondary" class="ml-2" />
+                      }
+                    </td>
+                    <td>{{ leaveType.code }}</td>
+                    <td>{{ formatBooleanLabel(leaveType.countsAsPaid) }}</td>
+                    <td>{{ formatBooleanLabel(leaveType.usesAllowance) }}</td>
+                    <td>{{ formatBooleanLabel(leaveType.requiresApproval) }}</td>
+                    <td>{{ formatBooleanLabel(leaveType.isActive) }}</td>
+                    @if (canManageSettings()) {
+                      <td>
+                        <div class="flex flex-wrap gap-1">
+                          @if (leaveType.canManage) {
+                            <p-button
+                              label="Edit"
+                              icon="pi pi-pencil"
+                              [text]="true"
+                              size="small"
+                              (onClick)="openEditLeaveType(leaveType)"
+                            />
+                          }
+                          @if (leaveType.canDelete) {
+                            <p-button
+                              label="Delete"
+                              icon="pi pi-trash"
+                              severity="danger"
+                              [text]="true"
+                              size="small"
+                              (onClick)="confirmDeleteLeaveType(leaveType)"
+                            />
+                          }
+                        </div>
+                      </td>
+                    }
+                  </tr>
+                </ng-template>
+                <ng-template #emptymessage>
+                  <tr>
+                    <td [attr.colspan]="canManageSettings() ? 7 : 6">
+                      <p class="text-muted-color m-0 py-4 text-center">
+                        {{ BillingMessages.noLeaveTypes }}
+                      </p>
+                    </td>
+                  </tr>
+                </ng-template>
+              </p-table>
+            }
+          </p-panel>
+        </div>
+
+        @if (leaveTypeDialogVisible()) {
+          <app-leave-type-dialog
+            [leaveType]="editingLeaveType()"
+            [visible]="leaveTypeDialogVisible()"
+            (visibleChange)="leaveTypeDialogVisible.set($event)"
+            (saved)="onLeaveTypeSaved()"
+          />
+        }
+      </p-tabpanel>
+    </p-tabpanels>
+  </p-tabs>
+</p-card>

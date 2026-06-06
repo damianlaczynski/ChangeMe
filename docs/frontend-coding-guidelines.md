@@ -34,6 +34,35 @@ For dev server, lint, format, and test commands from `src/ChangeMe.Frontend` or 
 - Avoid scattering raw `HttpClient` usage through components; route all HTTP through feature services and the shared `ApiService`.
 - When loading data in response to changing state, prefer an explicit RxJS pipeline over ad hoc nested subscriptions.
 
+#### `effect()` and list reloads (avoid infinite loops)
+
+Angular `effect()` re-runs whenever any signal read inside it changes. A common bug is:
+
+1. An effect reads a **reload trigger** (for example `hasLoaded()`, a query object, or a refresh counter).
+2. The effect triggers a fetch and then updates one of those same signals (or calls `query.set({ ...query() })`, which always creates a **new object reference**).
+3. The effect runs again → endless HTTP requests.
+
+**Rules:**
+
+- Do **not** read `hasLoaded()` (or similar “fetch finished” flags) inside an effect that also triggers loading. Use a dedicated **event token** instead (for example `lastHandledSaveToken` compared to `logTimeDialogService.saved()`).
+- When reloading the **same** query parameters (same page, filters, sort), do **not** call `signal.set({ ...signal() })` — that emits even when values are unchanged. Either skip the update, or bump a separate `refreshToken` included in a stable **`lastLoadKey`** guard.
+- In effects that load paginated data, build a string key from every input that should trigger a new fetch (`projectId`, `refreshToken`, serialized query fields). Compare with `lastLoadKey` and **return early** when unchanged. See `project-membership-history-tab.component.ts` and `my-time.component.ts`.
+- Ignore stale responses with a monotonic `loadRequestId` (increment before subscribe; drop callbacks when `requestId !== loadRequestId`).
+- For `p-table` with `[customSort]="true"`, ignore `(sortFunction)` while `isLoading()` / `isLoadingMore()` to avoid sort events firing during data refresh.
+- When an `effect()` should react to **one** input (for example “user entered authenticated shell”) but calls a service method that reads/writes other signals (`isLoading`, `permissions`, fetch flags), wrap that call in `untracked(() => …)` so the effect does not subscribe to those internals. Pair with a **`lastSynced…` guard** inside the service when the operation must run at most once per session state. See `app-shell.component.ts` → `RunningTimerService.syncWithSession`.
+
+**Preferred patterns:**
+
+| Scenario                 | Approach                                                                                 |
+| ------------------------ | ---------------------------------------------------------------------------------------- |
+| Route/input id change    | `lastLoadedIssueId` guard (see `issue-details.component.ts`)                             |
+| External refresh token   | Compare `lastHandledSaveToken` to service counter; never tie to `hasLoaded`              |
+| Query/filter change      | `lastLoadKey` from serialized query + optional `refreshToken`                            |
+| Same-page forced refresh | Increment `refreshToken` instead of re-`set`ting an equal query object                   |
+| Query stream             | `toObservable(query)` **without** an effect that writes back to `query` on load complete |
+
+Reference implementations: `features/projects/components/project-membership-history-tab/`, `features/time/components/my-time/`, `features/issues/components/issue-details/`.
+
 ### Dependency injection
 
 - Prefer `inject()` field initializers, matching the current codebase pattern.
@@ -80,7 +109,8 @@ For dev server, lint, format, and test commands from `src/ChangeMe.Frontend` or 
 - Use `p-message` for inline field validation and screen-level load errors; use toasts for successful mutations and action failures that are not tied to a single form field.
 - Use `p-tag` for compact status labels such as issue status or priority.
 - Use `p-table` for tabular data, `p-paginator` for server-driven paging, and `p-progressSpinner` or table `[loading]` for in-flight data.
-- Keep business logic in feature services and component TypeScript. PrimeNG should handle presentation only.
+- Use `p-confirmDialog` / `ConfirmationService` for destructive actions. Match the established pattern from issues and user administration: warning icon (`pi pi-exclamation-triangle`), danger-styled accept button (**Delete**, **Remove**, and so on), and secondary outlined **Cancel**. Reuse `createDestructiveConfirmationOptions()` from `shared/ui/utils/confirmation-dialog.utils.ts` instead of duplicating button props.
+- For overflow menu delete actions, style the item with red label/icon classes (see `destructiveMenuItemDangerClasses` / feature-specific exports such as `issueDeleteMenuItemDangerClasses`).
 
 ### Theming and layout
 

@@ -1,0 +1,163 @@
+<p-card
+  class="mb-4"
+  [header]="pageTitle()"
+  subheader="Review project metadata, members, and history"
+>
+  <div class="mb-4 flex flex-wrap items-center gap-2">
+    <app-back-button label="Back to projects list" [route]="['/projects']" />
+    @if (project(); as current) {
+      @if (current.canManage && !current.isSystem) {
+        <p-button
+          label="Edit"
+          icon="pi pi-pencil"
+          severity="secondary"
+          [outlined]="true"
+          size="small"
+          [routerLink]="['/projects', current.id, 'edit']"
+        />
+        <p-button
+          label="Delete"
+          icon="pi pi-trash"
+          severity="danger"
+          [outlined]="true"
+          size="small"
+          (onClick)="confirmDeleteProject()"
+        />
+      }
+    }
+  </div>
+
+  @if (showSystemProjectEditBlockedMessage()) {
+    <p-message class="mb-4" severity="warn">
+      {{ ProjectMessages.systemProjectCannotBeModified }}
+    </p-message>
+  }
+
+  @if (isLoading()) {
+    <div class="flex flex-col items-center gap-2 py-8">
+      <p-progressSpinner ariaLabel="Loading project details" />
+      <p class="text-muted-color m-0 text-sm">Loading project details...</p>
+    </div>
+  } @else if (errorMessage()) {
+    <div class="flex flex-col items-center gap-2">
+      <p-message severity="error">{{ errorMessage() }}</p-message>
+      <p-button
+        size="small"
+        label="Try again"
+        icon="pi pi-refresh"
+        severity="secondary"
+        [outlined]="true"
+        [loading]="isLoading()"
+        (onClick)="refresh()"
+      />
+    </div>
+  } @else if (project(); as current) {
+    <dl
+      class="mb-6 grid gap-4 rounded-lg border border-surface-200 p-4 sm:grid-cols-2 lg:grid-cols-3"
+    >
+      <div class="flex flex-col gap-1">
+        <dt class="text-muted-color text-sm">Name</dt>
+        <dd class="m-0 font-medium">{{ current.name }}</dd>
+      </div>
+      <div class="flex flex-col gap-1 sm:col-span-2">
+        <dt class="text-muted-color text-sm">Description</dt>
+        <dd class="m-0 font-medium">{{ formatDescription(current.description) }}</dd>
+      </div>
+      @if (current.isSystem) {
+        <div class="flex flex-col gap-1">
+          <dt class="text-muted-color text-sm">System</dt>
+          <dd class="m-0"><p-tag value="System" severity="info" /></dd>
+        </div>
+      }
+      <div class="flex flex-col gap-1">
+        <dt class="text-muted-color text-sm">My role</dt>
+        <dd class="m-0">
+          <p-tag
+            [value]="getProjectRoleLabel(current.currentUserRole)"
+            [severity]="getProjectRoleSeverity(current.currentUserRole)"
+          />
+        </dd>
+      </div>
+      <div class="flex flex-col gap-1">
+        <dt class="text-muted-color text-sm">Issues</dt>
+        <dd class="m-0 font-medium">
+          {{ ProjectMessages.issuesCount(current.issueCount) }}
+        </dd>
+      </div>
+      @if (current.canViewLoggedTime) {
+        <div class="flex flex-col gap-1">
+          <dt class="text-muted-color text-sm">Logged time</dt>
+          <dd class="m-0 font-medium">
+            {{ current.loggedTimeFormatted }}
+            @if (canViewTimeReports()) {
+              <span class="text-muted-color mx-1">·</span>
+              <a
+                class="text-primary hover:underline"
+                [routerLink]="['/time-reports']"
+                [queryParams]="{ projectIds: [current.id] }"
+              >
+                {{ TimeMessages.viewTimeReport }}
+              </a>
+            }
+          </dd>
+        </div>
+      }
+    </dl>
+
+    @if (current.canViewIssues) {
+      <p-panel header="Issues" [toggleable]="true" class="mb-4">
+        <p class="m-0 mb-4">
+          {{ ProjectMessages.issuesCount(current.issueCount) }}
+        </p>
+        @if (current.issueCount > 0) {
+          <p-button
+            label="View issues"
+            icon="pi pi-list"
+            severity="secondary"
+            [outlined]="true"
+            size="small"
+            [routerLink]="['/issues']"
+            [queryParams]="{ projectId: current.id }"
+          />
+        } @else {
+          <p class="text-muted-color m-0">{{ ProjectMessages.noIssuesInProject }}</p>
+        }
+      </p-panel>
+    }
+
+    @if (current.canViewMembers) {
+      <p-panel header="Members" [toggleable]="true" class="mb-4">
+        <app-project-members-section
+          [projectId]="current.id"
+          [projectName]="current.name"
+          [canManageMembers]="current.canManageMembers"
+          (membersChanged)="onMembersChanged()"
+        />
+      </p-panel>
+    }
+
+    <p-tabs [value]="activeTab()" (valueChange)="onTabChange($event)">
+      <p-tablist>
+        <p-tab value="membership-history">Membership history</p-tab>
+        <p-tab value="operations">Operations</p-tab>
+      </p-tablist>
+      <p-tabpanels>
+        <p-tabpanel value="membership-history">
+          @if (current.canViewMembers) {
+            <app-project-membership-history-tab
+              [projectId]="current.id"
+              [refreshToken]="membershipHistoryKey()"
+            />
+          } @else {
+            <p class="text-muted-color m-0 pt-2">
+              You do not have permission to view membership history.
+            </p>
+          }
+        </p-tabpanel>
+        <p-tabpanel value="operations">
+          <app-project-operation-history-tab [projectId]="current.id" />
+        </p-tabpanel>
+      </p-tabpanels>
+    </p-tabs>
+  }
+</p-card>

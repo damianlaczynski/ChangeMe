@@ -5,6 +5,7 @@ using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UnitTests.Support;
 using ChangeMe.Backend.UseCases.Auth;
 using ChangeMe.Backend.UseCases.Auth.Utils;
+using ChangeMe.Backend.UseCases.Projects.Services;
 using Microsoft.AspNetCore.Http;
 
 namespace ChangeMe.Backend.UnitTests.UseCases.Auth;
@@ -145,6 +146,7 @@ public sealed class RegisterUserHandlerTests
       new UserEmailVerificationService(
         new UserAuthTokenService(context, authOptions, TimeProvider.System),
         new FakeAuthEmailService()),
+      new ProjectMembershipService(context),
       authOptions,
       httpContextAccessor);
   }

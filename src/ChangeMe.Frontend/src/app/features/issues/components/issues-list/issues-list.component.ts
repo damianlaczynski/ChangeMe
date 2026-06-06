@@ -9,8 +9,9 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ToastService } from '@core/toast/services/toast.service';
+import { AuthService } from '@features/auth/services/auth.service';
 import {
   IssueAssignableUserDto,
   IssueDto,
@@ -18,7 +19,12 @@ import {
   IssueSearchParameters,
   IssueStatus
 } from '@features/issues/models/issue.model';
+import { ProjectOptionDto } from '@features/projects/models/project.model';
+import { ProjectsService } from '@features/projects/services/projects.service';
+import { ProjectPermissionCodes } from '@features/projects/utils/projects.utils';
 import { IssuesService } from '@features/issues/services/issues.service';
+import { LogTimeDialogService } from '@features/time/services/log-time-dialog.service';
+import { TimeService } from '@features/time/services/time.service';
 import {
   getDeleteIssueConfirmMessage,
   getIssuePriorityLabel,
@@ -30,6 +36,7 @@ import {
   issueStatuses
 } from '@features/issues/utils/issue.utils';
 import { AppliedFiltersChipsComponent } from '@shared/components/applied-filters-chips/applied-filters-chips.component';
+import { PermissionCodes } from '@shared/authorization/permission-codes';
 import { PaginationResult } from '@shared/data/models/pagination-result.model';
 import { createEmptyPaginationResult } from '@shared/data/utils/pagination.utils';
 import { AppliedFilterChip } from '@shared/models/applied-filter-chip.model';
@@ -55,6 +62,7 @@ type IssuesFilterForm = {
   statuses: FormControl<IssueStatus[]>;
   priorities: FormControl<IssuePriority[]>;
   assignedToUserId: FormControl<string | null>;
+  projectId: FormControl<string | null>;
   watchedByMe: FormControl<boolean>;
   createdByMe: FormControl<boolean>;
 };
@@ -86,6 +94,12 @@ type IssueSortField = 'Id' | 'Title' | 'CreatedAt' | 'LastActivityAt';
 })
 export class IssuesComponent {
   private readonly issuesService = inject(IssuesService);
+  private readonly projectsService = inject(ProjectsService);
+  private readonly authService = inject(AuthService);
+  private readonly logTimeDialogService = inject(LogTimeDialogService);
+  private readonly timeService = inject(TimeService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly confirmationService = inject(ConfirmationService);
   private readonly toastService = inject(ToastService);
   private readonly destroyRef = inject(DestroyRef);
@@ -110,11 +124,18 @@ export class IssuesComponent {
   readonly errorMessage = signal<string | null>(null);
   readonly assignableUsers = signal<IssueAssignableUserDto[]>([]);
   readonly isLoadingAssignableUsers = signal(false);
+  readonly projectOptions = signal<ProjectOptionDto[]>([]);
+  readonly isLoadingProjectOptions = signal(false);
   readonly pendingWatchIssueIds = signal<string[]>([]);
   readonly pendingDeleteIssueIds = signal<string[]>([]);
   readonly filtersCollapsed = signal(true);
   readonly issueActionItems = signal<MenuItem[]>([]);
+  readonly loggableProjectIds = signal<Set<string>>(new Set());
   private readonly issueActionsMenu = viewChild.required<Menu>('issueActionsMenu');
+
+  readonly canLogTime = computed(() =>
+    this.authService.hasPermission(PermissionCodes.timeLogOwn)
+  );
 
   readonly appliedFilterChips = computed(() => {
     const query = this.query();
@@ -157,6 +178,14 @@ export class IssuesComponent {
       chips.push({ id: 'my-issues', label: 'My issues' });
     }
 
+    if (query.projectId) {
+      const project = this.projectOptions().find((item) => item.id === query.projectId);
+      chips.push({
+        id: 'project',
+        label: `Project: ${project?.name ?? 'Unknown'}`
+      });
+    }
+
     return chips;
   });
 
@@ -167,12 +196,31 @@ export class IssuesComponent {
     statuses: new FormControl<IssueStatus[]>([], { nonNullable: true }),
     priorities: new FormControl<IssuePriority[]>([], { nonNullable: true }),
     assignedToUserId: new FormControl<string | null>(null),
+    projectId: new FormControl<string | null>(null),
     watchedByMe: new FormControl(false, { nonNullable: true }),
     createdByMe: new FormControl(false, { nonNullable: true })
   });
 
   constructor() {
     this.loadAssignableUsers();
+    this.loadProjectOptions();
+    this.loadLoggableProjects();
+
+    this.route.queryParamMap
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((params) => {
+        const projectId = params.get('projectId');
+        if (!projectId) {
+          return;
+        }
+
+        this.filtersForm.patchValue({ projectId });
+        this.query.update((current) => ({
+          ...current,
+          pageNumber: 1,
+          projectId
+        }));
+      });
 
     toObservable(this.query)
       .pipe(
@@ -212,8 +260,18 @@ export class IssuesComponent {
       statuses: formValue.statuses.length > 0 ? formValue.statuses : undefined,
       priorities: formValue.priorities.length > 0 ? formValue.priorities : undefined,
       assignedToUserId: formValue.assignedToUserId,
+      projectId: formValue.projectId,
       watchedByMe: formValue.watchedByMe,
       createdByMe: formValue.createdByMe
+    });
+
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {
+        projectId: formValue.projectId
+      },
+      queryParamsHandling: 'merge',
+      replaceUrl: true
     });
   }
 
@@ -265,6 +323,18 @@ export class IssuesComponent {
     if (chip.id === 'my-issues') {
       this.filtersForm.patchValue({ createdByMe: false });
       this.query.set({ ...nextQuery, createdByMe: false });
+      return;
+    }
+
+    if (chip.id === 'project') {
+      this.filtersForm.patchValue({ projectId: null });
+      this.query.set({ ...nextQuery, projectId: null });
+      void this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: { projectId: null },
+        queryParamsHandling: 'merge',
+        replaceUrl: true
+      });
     }
   }
 
@@ -274,6 +344,7 @@ export class IssuesComponent {
       statuses: [],
       priorities: [],
       assignedToUserId: null,
+      projectId: null,
       watchedByMe: false,
       createdByMe: false
     });
@@ -285,8 +356,16 @@ export class IssuesComponent {
       statuses: undefined,
       priorities: undefined,
       assignedToUserId: null,
+      projectId: null,
       watchedByMe: false,
       createdByMe: false
+    });
+
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { projectId: null },
+      queryParamsHandling: 'merge',
+      replaceUrl: true
     });
   }
 
@@ -333,7 +412,7 @@ export class IssuesComponent {
   }
 
   openIssueActionsMenu(event: Event, issue: IssueDto): void {
-    this.issueActionItems.set([
+    const items: MenuItem[] = [
       {
         label: 'Open details',
         icon: 'pi pi-eye',
@@ -344,15 +423,37 @@ export class IssuesComponent {
         label: 'Edit issue',
         icon: 'pi pi-pencil',
         routerLink: ['/issues', issue.id, 'edit']
-      },
-      {
-        label: 'Delete issue',
-        icon: 'pi pi-trash',
-        ...issueDeleteMenuItemDangerClasses,
-        disabled: this.isDeletePending(issue.id),
-        command: () => this.confirmDeleteIssue(issue)
       }
-    ]);
+    ];
+
+    if (
+      this.canLogTime() &&
+      this.loggableProjectIds().has(issue.projectId)
+    ) {
+      items.push({
+        label: 'Log time',
+        icon: 'pi pi-clock',
+        command: () =>
+          this.logTimeDialogService.open({
+            projectId: issue.projectId,
+            projectName: issue.projectName ?? undefined,
+            issueId: issue.id,
+            issueTitle: issue.title,
+            readonlyProject: true,
+            readonlyIssue: true
+          })
+      });
+    }
+
+    items.push({
+      label: 'Delete issue',
+      icon: 'pi pi-trash',
+      ...issueDeleteMenuItemDangerClasses,
+      disabled: this.isDeletePending(issue.id),
+      command: () => this.confirmDeleteIssue(issue)
+    });
+
+    this.issueActionItems.set(items);
     this.issueActionsMenu().toggle(event);
   }
 
@@ -444,6 +545,38 @@ export class IssuesComponent {
       ...this.query(),
       pageNumber: 1
     });
+  }
+
+  private loadLoggableProjects(): void {
+    if (!this.canLogTime()) {
+      return;
+    }
+
+    this.timeService
+      .getLoggableProjects()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (projects) =>
+          this.loggableProjectIds.set(new Set(projects.map((project) => project.id))),
+        error: () => this.loggableProjectIds.set(new Set())
+      });
+  }
+
+  private loadProjectOptions(): void {
+    this.isLoadingProjectOptions.set(true);
+
+    this.projectsService
+      .getManageableProjects(ProjectPermissionCodes.issuesView)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (projects) => {
+          this.projectOptions.set(projects);
+          this.isLoadingProjectOptions.set(false);
+        },
+        error: () => {
+          this.isLoadingProjectOptions.set(false);
+        }
+      });
   }
 
   private loadAssignableUsers(): void {

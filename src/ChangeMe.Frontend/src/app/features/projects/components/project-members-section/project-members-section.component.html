@@ -1,0 +1,223 @@
+@if (canManageMembers()) {
+  <div class="mb-4 flex flex-wrap items-center justify-end gap-2">
+    <p-button
+      label="Add member"
+      icon="pi pi-user-plus"
+      size="small"
+      (onClick)="openAddMemberDialog()"
+    />
+  </div>
+}
+
+<div class="mb-4 flex flex-col gap-1.5">
+  <label for="membersSearch">Search members</label>
+  <input
+    id="membersSearch"
+    type="text"
+    pInputText
+    [formControl]="membersSearchControl"
+    placeholder="Search members..."
+    class="w-full"
+  />
+</div>
+
+@if (membersError()) {
+  <p-message severity="error" class="mb-4">{{ membersError() }}</p-message>
+}
+
+<p-menu #memberActionsMenu [model]="memberActionItems()" [popup]="true" />
+
+<p-table [value]="members()" [loading]="isLoadingMembers()" stripedRows>
+  <ng-template #header>
+    <tr>
+      <th>Name</th>
+      <th>Email</th>
+      <th>Role</th>
+      <th>Account</th>
+      @if (canManageMembers()) {
+        <th>Actions</th>
+      }
+    </tr>
+  </ng-template>
+  <ng-template #body let-member>
+    <tr>
+      <td>
+        @if (member.canViewUserDetails) {
+          <a
+            class="text-primary font-medium hover:underline"
+            [routerLink]="['/users', member.userId]"
+          >
+            {{ formatMemberName(member) || '—' }}
+          </a>
+        } @else {
+          {{ formatMemberName(member) || '—' }}
+        }
+      </td>
+      <td>{{ member.email }}</td>
+      <td>
+        <p-tag
+          [value]="getProjectRoleLabel(member.role)"
+          [severity]="getProjectRoleSeverity(member.role)"
+        />
+      </td>
+      <td>
+        <p-tag
+          [value]="getAccountBadgeLabel(member.deactivated)"
+          [severity]="getAccountBadgeSeverity(member.deactivated)"
+        />
+      </td>
+      @if (canManageMembers()) {
+        <td>
+          <p-button
+            type="button"
+            icon="pi pi-ellipsis-v"
+            severity="secondary"
+            [text]="true"
+            size="small"
+            pTooltip="Member actions"
+            tooltipPosition="top"
+            [attr.aria-label]="'Actions for ' + formatMemberReference(member)"
+            (onClick)="openMemberActionsMenu($event, member)"
+          />
+        </td>
+      }
+    </tr>
+  </ng-template>
+  <ng-template #emptymessage>
+    <tr>
+      <td [attr.colspan]="canManageMembers() ? 5 : 4">
+        <p class="text-muted-color m-0 py-4 text-center">
+          {{ ProjectMessages.noMembers }}
+        </p>
+      </td>
+    </tr>
+  </ng-template>
+</p-table>
+
+@if (hasLoadedMembers()) {
+  <p-paginator
+    [rows]="membersPagination()?.pageSize ?? 10"
+    [totalRecords]="membersPagination()?.totalCount ?? 0"
+    [first]="
+      ((membersPagination()?.currentPage ?? 1) - 1) *
+      (membersPagination()?.pageSize ?? 10)
+    "
+    (onPageChange)="onMembersPageChange($event)"
+  />
+}
+
+<p-dialog
+  header="Add project member"
+  [visible]="showAddMemberDialog()"
+  [modal]="true"
+  [draggable]="false"
+  [style]="{ width: '32rem' }"
+  (visibleChange)="showAddMemberDialog.set($event)"
+>
+  <form class="p-fluid flex flex-col gap-4" [formGroup]="addMemberForm">
+    <div class="flex flex-col gap-1.5">
+      <label for="addMemberUser">User</label>
+      <p-select
+        inputId="addMemberUser"
+        appendTo="body"
+        [formControl]="addMemberForm.controls.userId"
+        [options]="addableUsers()"
+        optionLabel="displayLabel"
+        optionValue="id"
+        placeholder="Select user"
+        [loading]="isLoadingAddableUsers()"
+      />
+      @if (
+        addMemberForm.controls.userId.invalid && addMemberForm.controls.userId.touched
+      ) {
+        <p-message severity="error" variant="simple">User is required</p-message>
+      }
+    </div>
+
+    <div class="flex flex-col gap-1.5">
+      <label for="addMemberRole">Role</label>
+      <p-select
+        inputId="addMemberRole"
+        appendTo="body"
+        [formControl]="addMemberForm.controls.role"
+        [options]="projectRoles()"
+        optionLabel="label"
+        optionValue="value"
+      />
+    </div>
+
+    @if (memberDialogError()) {
+      <p-message severity="error">{{ memberDialogError() }}</p-message>
+    }
+  </form>
+
+  <ng-template #footer>
+    <p-button
+      label="Cancel"
+      severity="secondary"
+      [outlined]="true"
+      (onClick)="showAddMemberDialog.set(false)"
+    />
+    <p-button
+      label="Add member"
+      icon="pi pi-check"
+      [loading]="isSubmittingMemberAction()"
+      (onClick)="submitAddMember()"
+    />
+  </ng-template>
+</p-dialog>
+
+<p-dialog
+  header="Change member role"
+  [visible]="showChangeRoleDialog()"
+  [modal]="true"
+  [draggable]="false"
+  [style]="{ width: '32rem' }"
+  (visibleChange)="showChangeRoleDialog.set($event)"
+>
+  @if (selectedMember(); as member) {
+    <div class="mb-4 flex flex-col gap-2">
+      <p class="m-0">
+        <span class="text-muted-color">Name:</span>
+        {{ formatMemberName(member) || '—' }}
+      </p>
+      <p class="m-0">
+        <span class="text-muted-color">Email:</span>
+        {{ member.email }}
+      </p>
+    </div>
+
+    <form class="p-fluid flex flex-col gap-4" [formGroup]="changeRoleForm">
+      <div class="flex flex-col gap-1.5">
+        <label for="changeMemberRole">Role</label>
+        <p-select
+          inputId="changeMemberRole"
+          appendTo="body"
+          [formControl]="changeRoleForm.controls.role"
+          [options]="projectRoles()"
+          optionLabel="label"
+          optionValue="value"
+        />
+      </div>
+
+      @if (memberDialogError()) {
+        <p-message severity="error">{{ memberDialogError() }}</p-message>
+      }
+    </form>
+  }
+
+  <ng-template #footer>
+    <p-button
+      label="Cancel"
+      severity="secondary"
+      [outlined]="true"
+      (onClick)="showChangeRoleDialog.set(false)"
+    />
+    <p-button
+      label="Save"
+      icon="pi pi-check"
+      [loading]="isSubmittingMemberAction()"
+      (onClick)="submitChangeRole()"
+    />
+  </ng-template>
+</p-dialog>

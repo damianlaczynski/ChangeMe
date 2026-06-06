@@ -1,10 +1,38 @@
 ﻿using ChangeMe.Backend.Domain.Aggregates.Issue;
 using ChangeMe.Backend.Domain.Aggregates.Issue.Enums;
+using ChangeMe.Backend.Domain.Aggregates.Project.Enums;
+using ChangeMe.Backend.Domain.Authorization;
+using ChangeMe.Backend.UseCases.Projects.Utils;
+
 namespace ChangeMe.Backend.UseCases.Issues.Utils;
 
 public static class IssuesUtils
 {
   public const string AssignedUserDoesNotExistMessage = "assigned user does not exist";
+
+  public static async Task<Result<ProjectRole?>> GetProjectMemberRoleAsync(
+    ApplicationDbContext context,
+    Guid projectId,
+    Guid userId,
+    CancellationToken cancellationToken) =>
+    await ProjectsUtils.GetMemberRoleAsync(context, projectId, userId, cancellationToken);
+
+  public static Result RequireProjectIssuePermission(ProjectRole? role, string permissionCode) =>
+    ProjectsUtils.RequireProjectPermission(role, permissionCode);
+
+  public static async Task<Result> ValidateProjectIssueAccessAsync(
+    ApplicationDbContext context,
+    Guid projectId,
+    Guid userId,
+    string permissionCode,
+    CancellationToken cancellationToken)
+  {
+    var roleResult = await GetProjectMemberRoleAsync(context, projectId, userId, cancellationToken);
+    if (!roleResult.IsSuccess)
+      return roleResult.Map();
+
+    return RequireProjectIssuePermission(roleResult.Value, permissionCode);
+  }
 
   public static async Task<Result> ValidateAssigneeExistsAsync(
     ApplicationDbContext context,

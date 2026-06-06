@@ -1,0 +1,91 @@
+<p-card
+  class="mb-4"
+  header="Contract details"
+  subheader="Read-only employment contract"
+>
+  <div class="mb-4 flex flex-wrap items-center gap-2">
+    <app-back-button label="Back to user details" [route]="['/users', id()]" />
+    @if (contract(); as details) {
+      @if (details.canManage) {
+        <p-button
+          label="Edit"
+          icon="pi pi-pencil"
+          severity="secondary"
+          [outlined]="true"
+          size="small"
+          [routerLink]="[
+            '/users',
+            id(),
+            'employment',
+            'contracts',
+            contractId(),
+            'edit'
+          ]"
+        />
+      }
+    }
+  </div>
+
+  @if (isLoading()) {
+    <div class="flex flex-col items-center gap-2 py-8">
+      <p-progressSpinner ariaLabel="Loading contract" />
+    </div>
+  } @else if (errorMessage()) {
+    <p-message severity="error">{{ errorMessage() }}</p-message>
+  } @else if (contract(); as details) {
+    <p-panel header="Contract">
+      <div class="mb-3">
+        <p-tag
+          [value]="details.status"
+          [severity]="getContractStatusSeverity(details.status)"
+        />
+      </div>
+      <div class="grid gap-3 md:grid-cols-2">
+        <div>
+          <div class="text-muted-color text-sm">User</div>
+          <div>{{ details.userDisplayName }}</div>
+        </div>
+        <div>
+          <div class="text-muted-color text-sm">Position</div>
+          <div>{{ details.positionName }}</div>
+        </div>
+        <div>
+          <div class="text-muted-color text-sm">Contract type</div>
+          <div>{{ getContractTypeLabel(details.contractType) }}</div>
+        </div>
+        <div>
+          <div class="text-muted-color text-sm">FTE</div>
+          <div>{{ details.fte | number: '1.2-2' }}</div>
+        </div>
+        <div>
+          <div class="text-muted-color text-sm">Start date</div>
+          <div>{{ details.startDate | date: 'dd.MM.yyyy' }}</div>
+        </div>
+        <div>
+          <div class="text-muted-color text-sm">End date</div>
+          <div>
+            @if (details.endDate) {
+              {{ details.endDate | date: 'dd.MM.yyyy' }}
+            } @else {
+              {{ BillingMessages.emptyField }}
+            }
+          </div>
+        </div>
+        <div>
+          <div class="text-muted-color text-sm">Monthly hours norm</div>
+          <div>{{ formatMonthlyHoursNorm(details.monthlyHoursNormMinutes) }}</div>
+        </div>
+        <div>
+          <div class="text-muted-color text-sm">Rate / salary</div>
+          <div>
+            {{ formatCompensationDisplay(details.hourlyRate, details.monthlySalary) }}
+          </div>
+        </div>
+        <div class="md:col-span-2">
+          <div class="text-muted-color text-sm">Notes</div>
+          <div>{{ details.notes || BillingMessages.emptyField }}</div>
+        </div>
+      </div>
+    </p-panel>
+  }
+</p-card>

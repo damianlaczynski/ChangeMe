@@ -4,7 +4,7 @@ Demo/test data generator for local ChangeMe development.
 
 ## Purpose
 
-This tool fills the database with sample users, issues, comments, acceptance criteria, watchers, and notifications so you can exercise the frontend and API without entering data manually.
+This tool fills the database with sample users, projects, issues, time entries, billing employment data, availability calendars, comments, acceptance criteria, watchers, and notifications so you can exercise the frontend and API without entering data manually.
 
 **Run only in Development.** Do not use in production.
 
@@ -50,15 +50,18 @@ The seeded system administrator (`admin@example.local` / `admin`) is left unchan
 
 `DataGenerator` section in `src/ChangeMe.Backend/src/ChangeMe.Backend.Web/appsettings.Development.json`:
 
-| Key                               | Description                            |
-| --------------------------------- | -------------------------------------- |
-| `Seed`                            | Bogus seed (repeatable data)           |
-| `Users`                           | Number of demo accounts                |
-| `Issues`                          | Number of issues                       |
-| `CommentsPerIssueMin` / `Max`     | Comment count range per issue          |
-| `NotificationsPerUserMin` / `Max` | Notification count range per demo user |
-| `DefaultPassword`                 | Shared password for demo accounts      |
-| `EmailDomain`                     | Email domain (e.g. `demo.local`)       |
+| Key                               | Description                                          |
+| --------------------------------- | ---------------------------------------------------- |
+| `Seed`                            | Bogus seed (repeatable data)                         |
+| `Users`                           | Number of demo accounts                              |
+| `Projects`                        | Number of additional demo projects                   |
+| `Issues`                          | Number of issues                                     |
+| `TimeEntries`                     | Number of logged time entries                        |
+| `CommentsPerIssueMin` / `Max`     | Comment count range per issue                        |
+| `NotificationsPerUserMin` / `Max` | Notification count range per demo user               |
+| `GenerateBilling`                 | Create employment, availability, and leave demo data |
+| `DefaultPassword`                 | Shared password for demo accounts                    |
+| `EmailDomain`                     | Email domain (e.g. `demo.local`)                     |
 
 ## More information
 

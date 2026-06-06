@@ -1,0 +1,137 @@
+<p-card
+  class="mb-4"
+  header="Projects"
+  subheader="Browse, search and manage your projects."
+>
+  <form class="p-fluid" [formGroup]="filtersForm" (ngSubmit)="applyFilters()">
+    <div class="flex flex-col gap-1.5 mb-4">
+      <div class="flex flex-wrap items-center gap-2">
+        <input
+          id="searchText"
+          type="text"
+          pInputText
+          [formControl]="filtersForm.controls.searchText"
+          placeholder="Search projects..."
+          class="min-w-0 flex-1"
+        />
+        <p-button type="submit" label="Search" icon="pi pi-search" />
+        <p-button
+          label="Add project"
+          icon="pi pi-plus"
+          [routerLink]="['/projects/create']"
+        />
+      </div>
+    </div>
+  </form>
+
+  @if (errorMessage()) {
+    <p-message severity="error" class="mb-4">{{ errorMessage() }}</p-message>
+  }
+
+  <p-menu #projectActionsMenu [model]="projectActionItems()" [popup]="true" />
+
+  <p-table
+    [value]="projects()"
+    [loading]="isLoading() && !hasLoaded()"
+    [sortField]="query().sortField"
+    [sortOrder]="query().ascending ? 1 : -1"
+    [customSort]="true"
+    (onSort)="onTableSort($event)"
+    stripedRows
+  >
+    <ng-template #header>
+      <tr>
+        <th pSortableColumn="Name">
+          <div class="flex items-center gap-2">
+            Name
+            <p-sortIcon field="Name" />
+          </div>
+        </th>
+        <th>Description</th>
+        <th pSortableColumn="Issues">
+          <div class="flex items-center gap-2">
+            Issues
+            <p-sortIcon field="Issues" />
+          </div>
+        </th>
+        <th>My role</th>
+        <th>System</th>
+        <th>Actions</th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-project>
+      <tr>
+        <td>
+          <a
+            class="text-primary font-medium hover:underline"
+            [routerLink]="['/projects', project.id]"
+          >
+            {{ project.name }}
+          </a>
+        </td>
+        <td>{{ formatDescription(project.description) }}</td>
+        <td>{{ ProjectMessages.issuesCount(project.issueCount) }}</td>
+        <td>
+          <p-tag
+            [value]="getProjectRoleLabel(project.currentUserRole)"
+            [severity]="getProjectRoleSeverity(project.currentUserRole)"
+          />
+        </td>
+        <td>
+          @if (project.isSystem) {
+            <p-tag value="System" severity="info" />
+          }
+        </td>
+        <td>
+          <p-button
+            type="button"
+            icon="pi pi-ellipsis-v"
+            severity="secondary"
+            [text]="true"
+            size="small"
+            pTooltip="Project actions"
+            tooltipPosition="top"
+            [attr.aria-label]="'Actions for ' + project.name"
+            (onClick)="openProjectActionsMenu($event, project)"
+          />
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="6">
+          <div class="flex flex-col items-center gap-2 py-4">
+            <p class="text-muted-color m-0 text-center">
+              {{ ProjectMessages.noProjects }}
+            </p>
+            <div class="flex flex-wrap items-center justify-center gap-2">
+              <p-button
+                size="small"
+                label="Add project"
+                icon="pi pi-plus"
+                [routerLink]="['/projects/create']"
+              />
+              <p-button
+                size="small"
+                label="Refresh"
+                icon="pi pi-refresh"
+                severity="secondary"
+                [outlined]="true"
+                (onClick)="refresh()"
+              />
+            </div>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+  @if (hasLoaded()) {
+    <p-paginator
+      [rows]="pagination()?.pageSize ?? 10"
+      [totalRecords]="pagination()?.totalCount ?? 0"
+      [first]="((pagination()?.currentPage ?? 1) - 1) * (pagination()?.pageSize ?? 10)"
+      (onPageChange)="onPageChange($event)"
+    />
+  }
+</p-card>

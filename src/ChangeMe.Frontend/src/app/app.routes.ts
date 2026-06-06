@@ -26,6 +26,7 @@ import {
 } from '@features/auth/guards/passkey.guard';
 import { passwordChangeRequiredGuard } from '@features/auth/guards/password-change-required.guard';
 import {
+  anyPermissionsGuard,
   permissionGuard,
   permissionsGuard
 } from '@features/auth/guards/permission.guard';
@@ -34,14 +35,37 @@ import {
   twoFactorChallengeGuard,
   twoFactorSetupRequiredGuard
 } from '@features/auth/guards/two-factor.guard';
+import { AvailabilityCalendarComponent } from '@features/billing/components/availability-calendar/availability-calendar.component';
+import { BillingReportsComponent } from '@features/billing/components/billing-reports/billing-reports.component';
+import { CreateEmploymentContractComponent } from '@features/billing/components/create-employment-contract/create-employment-contract.component';
+import { CreateLeaveRequestComponent } from '@features/billing/components/create-leave-request/create-leave-request.component';
+import { CreatePositionComponent } from '@features/billing/components/create-position/create-position.component';
+import { EditEmploymentContractComponent } from '@features/billing/components/edit-employment-contract/edit-employment-contract.component';
+import { EditPositionComponent } from '@features/billing/components/edit-position/edit-position.component';
+import { EmploymentContractDetailsComponent } from '@features/billing/components/employment-contract-details/employment-contract-details.component';
+import { LeaveRequestDetailsComponent } from '@features/billing/components/leave-request-details/leave-request-details.component';
+import { LeaveRequestsListComponent } from '@features/billing/components/leave-requests-list/leave-requests-list.component';
+import { MyAvailabilityComponent } from '@features/billing/components/my-availability/my-availability.component';
+import { MyBillingComponent } from '@features/billing/components/my-billing/my-billing.component';
+import { MyLeaveComponent } from '@features/billing/components/my-leave/my-leave.component';
+import { PositionDetailsComponent } from '@features/billing/components/position-details/position-details.component';
+import { PositionsListComponent } from '@features/billing/components/positions-list/positions-list.component';
+import { SettlementsListComponent } from '@features/billing/components/settlements-list/settlements-list.component';
+import { UserSettlementDetailsComponent } from '@features/billing/components/user-settlement-details/user-settlement-details.component';
 import { CreateIssueComponent } from '@features/issues/components/create-issue/create-issue.component';
 import { EditIssueComponent } from '@features/issues/components/edit-issue/edit-issue.component';
 import { IssueDetailsComponent } from '@features/issues/components/issue-details/issue-details.component';
 import { IssuesComponent } from '@features/issues/components/issues-list/issues-list.component';
+import { CreateProjectComponent } from '@features/projects/components/create-project/create-project.component';
+import { EditProjectComponent } from '@features/projects/components/edit-project/edit-project.component';
+import { ProjectDetailsComponent } from '@features/projects/components/project-details/project-details.component';
+import { ProjectsListComponent } from '@features/projects/components/projects-list/projects-list.component';
 import { CreateRoleComponent } from '@features/roles/components/create-role/create-role.component';
 import { EditRoleComponent } from '@features/roles/components/edit-role/edit-role.component';
 import { RoleDetailsComponent } from '@features/roles/components/role-details/role-details.component';
 import { RolesListComponent } from '@features/roles/components/roles-list/roles-list.component';
+import { MyTimeComponent } from '@features/time/components/my-time/my-time.component';
+import { TimeReportsComponent } from '@features/time/components/time-reports/time-reports.component';
 import { EditUserComponent } from '@features/users/components/edit-user/edit-user.component';
 import { InviteUserComponent } from '@features/users/components/invite-user/invite-user.component';
 import { UserDetailsComponent } from '@features/users/components/user-details/user-details.component';
@@ -139,6 +163,143 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'projects',
+    component: ProjectsListComponent,
+    canActivate: [authGuard]
+  },
+  {
+    path: 'projects/create',
+    component: CreateProjectComponent,
+    canActivate: [authGuard]
+  },
+  {
+    path: 'projects/:id',
+    component: ProjectDetailsComponent,
+    canActivate: [authGuard]
+  },
+  {
+    path: 'projects/:id/edit',
+    component: EditProjectComponent,
+    canActivate: [authGuard]
+  },
+  {
+    path: 'my-time',
+    component: MyTimeComponent,
+    canActivate: [authGuard, permissionGuard(PermissionCodes.timeViewOwn)]
+  },
+  {
+    path: 'time-reports',
+    component: TimeReportsComponent,
+    canActivate: [authGuard, permissionGuard(PermissionCodes.timeViewReports)]
+  },
+  {
+    path: 'my-leave',
+    component: MyLeaveComponent,
+    data: { title: 'My leave' },
+    canActivate: [authGuard, permissionGuard(PermissionCodes.billingViewOwn)]
+  },
+  {
+    path: 'my-availability',
+    component: MyAvailabilityComponent,
+    data: { title: 'My availability' },
+    canActivate: [authGuard, permissionGuard(PermissionCodes.billingViewOwn)]
+  },
+  {
+    path: 'my-billing',
+    component: MyBillingComponent,
+    data: { title: 'My billing' },
+    canActivate: [authGuard, permissionGuard(PermissionCodes.billingViewOwn)]
+  },
+  {
+    path: 'leave-requests',
+    component: LeaveRequestsListComponent,
+    data: { title: 'Leave requests' },
+    canActivate: [
+      authGuard,
+      anyPermissionsGuard([
+        PermissionCodes.billingViewAny,
+        PermissionCodes.billingManageLeave,
+        PermissionCodes.billingApproveLeave
+      ])
+    ]
+  },
+  {
+    path: 'leave-requests/create',
+    component: CreateLeaveRequestComponent,
+    data: { title: 'Create leave request' },
+    canActivate: [authGuard, permissionGuard(PermissionCodes.billingManageLeave)]
+  },
+  {
+    path: 'leave-requests/:id',
+    component: LeaveRequestDetailsComponent,
+    data: { title: 'Leave request details' },
+    canActivate: [
+      authGuard,
+      anyPermissionsGuard([
+        PermissionCodes.billingViewAny,
+        PermissionCodes.billingManageLeave,
+        PermissionCodes.billingApproveLeave,
+        PermissionCodes.billingViewOwn
+      ])
+    ]
+  },
+  {
+    path: 'availability-calendar',
+    component: AvailabilityCalendarComponent,
+    data: { title: 'Availability calendar' },
+    canActivate: [authGuard, permissionGuard(PermissionCodes.billingViewAny)]
+  },
+  {
+    path: 'billing/positions',
+    component: PositionsListComponent,
+    canActivate: [authGuard]
+  },
+  {
+    path: 'billing/positions/create',
+    component: CreatePositionComponent,
+    canActivate: [authGuard, permissionGuard(PermissionCodes.billingManageEmployment)]
+  },
+  {
+    path: 'billing/positions/:id',
+    component: PositionDetailsComponent,
+    canActivate: [authGuard]
+  },
+  {
+    path: 'billing/positions/:id/edit',
+    component: EditPositionComponent,
+    canActivate: [authGuard, permissionGuard(PermissionCodes.billingManageEmployment)]
+  },
+  {
+    path: 'settlements',
+    component: SettlementsListComponent,
+    data: { title: 'Settlements' },
+    canActivate: [
+      authGuard,
+      anyPermissionsGuard([
+        PermissionCodes.billingViewReports,
+        PermissionCodes.billingManageSettlements
+      ])
+    ]
+  },
+  {
+    path: 'user-settlements/:id',
+    component: UserSettlementDetailsComponent,
+    data: { title: 'User settlement details' },
+    canActivate: [
+      authGuard,
+      anyPermissionsGuard([
+        PermissionCodes.billingViewReports,
+        PermissionCodes.billingManageSettlements,
+        PermissionCodes.billingViewOwn
+      ])
+    ]
+  },
+  {
+    path: 'billing-reports',
+    component: BillingReportsComponent,
+    canActivate: [authGuard, permissionGuard(PermissionCodes.billingViewReports)]
+  },
+  {
     path: 'account',
     component: MyAccountComponent,
     canActivate: [authGuard]
@@ -188,6 +349,33 @@ export const routes: Routes = [
     path: 'users/:id/edit',
     component: EditUserComponent,
     canActivate: [authGuard, permissionGuard(PermissionCodes.usersManage)]
+  },
+  {
+    path: 'users/:id/employment/contracts/create',
+    component: CreateEmploymentContractComponent,
+    canActivate: [
+      authGuard,
+      permissionsGuard(
+        [PermissionCodes.usersView, PermissionCodes.billingManageEmployment],
+        '/users'
+      )
+    ]
+  },
+  {
+    path: 'users/:id/employment/contracts/:contractId',
+    component: EmploymentContractDetailsComponent,
+    canActivate: [authGuard, permissionGuard(PermissionCodes.usersView)]
+  },
+  {
+    path: 'users/:id/employment/contracts/:contractId/edit',
+    component: EditEmploymentContractComponent,
+    canActivate: [
+      authGuard,
+      permissionsGuard(
+        [PermissionCodes.usersView, PermissionCodes.billingManageEmployment],
+        '/users'
+      )
+    ]
   },
   {
     path: 'roles',

@@ -17,7 +17,10 @@ const domains = {
   invitations: "Invitations",
   access: "Access (roles & permissions)",
   passkeys: "Passkeys",
+  projects: "Projects",
   issues: "Issues",
+  time: "Time tracking",
+  billing: "Billing and settlements",
 };
 
 const byDomain = {};

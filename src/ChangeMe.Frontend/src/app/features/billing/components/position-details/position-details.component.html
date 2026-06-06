@@ -1,0 +1,62 @@
+<p-card class="mb-4" header="Position details">
+  <div class="mb-4">
+    <app-back-button label="Back to positions" [route]="['/billing/positions']" />
+  </div>
+
+  @if (isLoading()) {
+    <div class="flex justify-center py-8">
+      <p-progressSpinner ariaLabel="Loading position" />
+    </div>
+  } @else if (errorMessage()) {
+    <p-message severity="error">{{ errorMessage() }}</p-message>
+  } @else if (position(); as current) {
+    <div class="mb-4 flex flex-wrap items-center justify-end gap-2">
+      @if (current.canManage) {
+        <p-button
+          label="Edit"
+          icon="pi pi-pencil"
+          [routerLink]="['/billing/positions', current.id, 'edit']"
+        />
+      }
+      @if (current.canDelete) {
+        <p-button
+          label="Delete position"
+          icon="pi pi-trash"
+          severity="danger"
+          [outlined]="true"
+          (onClick)="confirmDelete()"
+        />
+      }
+    </div>
+
+    <dl class="grid gap-4 sm:grid-cols-2">
+      <div class="flex flex-col gap-1">
+        <dt class="text-muted-color text-sm">Name</dt>
+        <dd class="m-0 font-medium">{{ current.name }}</dd>
+      </div>
+      <div class="flex flex-col gap-1">
+        <dt class="text-muted-color text-sm">Department</dt>
+        <dd class="m-0">{{ current.department || BillingMessages.departmentEmpty }}</dd>
+      </div>
+      <div class="flex flex-col gap-1">
+        <dt class="text-muted-color text-sm">Active</dt>
+        <dd class="m-0">
+          <p-tag
+            [value]="getPositionActiveLabel(current.isActive)"
+            [severity]="getPositionActiveSeverity(current.isActive)"
+          />
+        </dd>
+      </div>
+      <div class="flex flex-col gap-1">
+        <dt class="text-muted-color text-sm">Contracts</dt>
+        <dd class="m-0">{{ current.contractCount }}</dd>
+      </div>
+      <div class="flex flex-col gap-1 sm:col-span-2">
+        <dt class="text-muted-color text-sm">Description</dt>
+        <dd class="m-0">
+          {{ current.description || BillingMessages.descriptionEmpty }}
+        </dd>
+      </div>
+    </dl>
+  }
+</p-card>

@@ -5,6 +5,7 @@ domain: access
 status: active
 depends_on: [REQ-ROL-001, REQ-ROL-005]
 ---
+
 ## Goal
 
 An authorized administrator must be able to create custom roles and edit their name, description, and permissions.
@@ -16,11 +17,11 @@ An authorized administrator must be able to create custom roles and edit their n
 - Screen: **Create role**
 - Requires permission **Roles.Manage**.
 
-| Field           | Behavior                                                                                                           |
-| --------------- | ------------------------------------------------------------------------------------------------------------------ |
-| **Name**        | Text field, **required**; **2–100** characters; unique case-insensitive.                                           |
-| **Description** | Multiline text area, **not required**; max **500** characters; empty when omitted.                                 |
-| **Permissions** | Checkbox list grouped by **Users**, **Roles**, **Sessions** (REQ-ROL-001); at least **one** checkbox **required**. |
+| Field           | Behavior                                                                                                                                  |
+| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| **Name**        | Text field, **required**; **2–100** characters; unique case-insensitive.                                                                  |
+| **Description** | Multiline text area, **not required**; max **500** characters; empty when omitted.                                                        |
+| **Permissions** | Checkbox list grouped by **Users**, **Roles**, **Sessions**, **Time**, **Billing** (REQ-ROL-001); at least **one** checkbox **required**. |
 
 - Each checkbox shows permission **label** and **description** from REQ-ROL-001.
 
@@ -59,11 +60,11 @@ An authorized administrator must be able to create custom roles and edit their n
 
 ### System role rules
 
-| Role              | **System** badge | Editable | Deletable            | Permissions                                               |
-| ----------------- | ---------------- | -------- | -------------------- | --------------------------------------------------------- |
-| **Administrator** | Yes              | No       | No                   | All catalog permissions; fixed.                           |
-| **User**          | Yes              | No       | No                   | **Sessions.ViewOwn**, **Sessions.ManageOwn** only; fixed. |
-| Custom roles      | No               | Yes      | Yes, when unassigned | Selected from catalog at create/edit time.                |
+| Role              | **System** badge | Editable | Deletable            | Permissions                                                                                                                                                         |
+| ----------------- | ---------------- | -------- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Administrator** | Yes              | No       | No                   | All catalog permissions; fixed.                                                                                                                                     |
+| **User**          | Yes              | No       | No                   | **Sessions.ViewOwn**, **Sessions.ManageOwn**, **Time.ViewOwn**, **Time.LogOwn**, **Time.ManageOwn**, **Billing.ViewOwn**, **Billing.ManageOwnAvailability**; fixed. |
+| Custom roles      | No               | Yes      | Yes, when unassigned | Selected from catalog at create/edit time.                                                                                                                          |
 
 ### States and business rules
 

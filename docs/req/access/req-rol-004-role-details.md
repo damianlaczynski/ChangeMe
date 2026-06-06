@@ -5,6 +5,7 @@ domain: access
 status: active
 depends_on: [REQ-ROL-001, REQ-ROL-003, REQ-USR-004]
 ---
+
 ## Goal
 
 An authorized administrator must be able to review a role's metadata, permissions, and assigned users, and navigate to related administration flows.
@@ -31,7 +32,7 @@ An authorized administrator must be able to review a role's metadata, permission
 
 - Section title: **`Permissions`**
 - Lists every permission assigned to the role.
-- Each row shows permission **label** and **description** from REQ-ROL-001, grouped by **Users**, **Roles**, **Sessions**.
+- Each row shows permission **label** and **description** from REQ-ROL-001, grouped by **Users**, **Roles**, **Sessions**, **Time**.
 - Permissions are read-only on this screen; editing happens on **Edit role** (REQ-ROL-003).
 
 ### Assigned users section

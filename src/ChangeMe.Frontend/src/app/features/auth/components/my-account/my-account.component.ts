@@ -22,6 +22,7 @@ import { StepUpVerificationResult } from '@features/auth/models/step-up.model';
 import { AuthService } from '@features/auth/services/auth.service';
 import { TwoFactorSetupDialogService } from '@features/auth/services/two-factor-setup-dialog.service';
 import { AuthMessages, PermissionCodes } from '@features/auth/utils/auth.utils';
+import { MyEmploymentSummaryComponent } from '@features/billing/components/my-employment-summary/my-employment-summary.component';
 import { EffectivePermissionsComponent } from '@features/users/components/effective-permissions/effective-permissions.component';
 import { UserMessages } from '@features/users/utils/users.utils';
 import { ConfirmationService } from 'primeng/api';
@@ -48,7 +49,8 @@ import { Tag } from 'primeng/tag';
     MyAccountTwoFactorComponent,
     MyAccountPasskeysComponent,
     MyAccountExternalMethodsComponent,
-    IdentityStepUpDialogComponent
+    IdentityStepUpDialogComponent,
+    MyEmploymentSummaryComponent
   ],
   templateUrl: './my-account.component.html'
 })

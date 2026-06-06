@@ -1,5 +1,12 @@
 import { BreakpointObserver } from '@angular/cdk/layout';
-import { Component, computed, DestroyRef, inject } from '@angular/core';
+import {
+  Component,
+  computed,
+  DestroyRef,
+  effect,
+  inject,
+  untracked
+} from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
 import { SidebarNavComponent } from '@core/layout/components/sidebar-nav/sidebar-nav.component';
@@ -17,6 +24,10 @@ import { PasskeySetupNoticeService } from '@features/auth/services/passkey-setup
 import { PasswordExpirationNoticeService } from '@features/auth/services/password-expiration-notice.service';
 import { TwoFactorSetupNoticeService } from '@features/auth/services/two-factor-setup-notice.service';
 import { NotificationsBellComponent } from '@features/notifications/components/notifications-bell/notifications-bell.component';
+import { LogTimeDialogComponent } from '@features/time/components/log-time-dialog/log-time-dialog.component';
+import { RunningTimerControlComponent } from '@features/time/components/running-timer-control/running-timer-control.component';
+import { LogTimeDialogService } from '@features/time/services/log-time-dialog.service';
+import { RunningTimerService } from '@features/time/services/running-timer.service';
 import { PermissionCodes } from '@shared/authorization/permission-codes';
 import { Button } from 'primeng/button';
 import { Drawer } from 'primeng/drawer';
@@ -29,6 +40,8 @@ import { filter, map } from 'rxjs/operators';
     RouterLink,
     SidebarNavComponent,
     NotificationsBellComponent,
+    LogTimeDialogComponent,
+    RunningTimerControlComponent,
     PasswordExpirationBannerComponent,
     TwoFactorSetupBannerComponent,
     PasskeySetupBannerComponent,
@@ -42,6 +55,8 @@ import { filter, map } from 'rxjs/operators';
 })
 export class AppShellComponent {
   private readonly authService = inject(AuthService);
+  private readonly logTimeDialogService = inject(LogTimeDialogService);
+  private readonly runningTimerService = inject(RunningTimerService);
   private readonly router = inject(Router);
   private readonly breakpointObserver = inject(BreakpointObserver);
   private readonly destroyRef = inject(DestroyRef);
@@ -67,18 +82,73 @@ export class AppShellComponent {
       .pipe(map((state) => state.matches)),
     { initialValue: false }
   );
+  readonly isSmallScreen = toSignal(
+    this.breakpointObserver
+      .observe('(min-width: 640px)')
+      .pipe(map((state) => state.matches)),
+    { initialValue: false }
+  );
+  readonly canLogTime = computed(() =>
+    this.authService.hasPermission(PermissionCodes.timeLogOwn)
+  );
 
   readonly authenticatedNavItems = computed<LayoutNavItem[]>(() => {
     const items: LayoutNavItem[] = [
       { label: 'Issues', icon: 'pi pi-list', routerLink: '/issues', exact: true },
-      { label: 'Create issue', icon: 'pi pi-plus', routerLink: '/issues/create' }
+      { label: 'Create issue', icon: 'pi pi-plus', routerLink: '/issues/create' },
+      { label: 'Projects', icon: 'pi pi-folder', routerLink: '/projects', exact: true }
     ];
+
+    if (this.authService.hasPermission(PermissionCodes.timeViewOwn)) {
+      items.push({
+        label: 'My time',
+        icon: 'pi pi-clock',
+        routerLink: '/my-time',
+        exact: true
+      });
+    }
+
+    if (this.authService.hasPermission(PermissionCodes.billingViewOwn)) {
+      items.push(
+        {
+          label: 'My leave',
+          icon: 'pi pi-sun',
+          routerLink: '/my-leave',
+          exact: true
+        },
+        {
+          label: 'My availability',
+          icon: 'pi pi-calendar-plus',
+          routerLink: '/my-availability',
+          exact: true
+        },
+        {
+          label: 'My billing',
+          icon: 'pi pi-wallet',
+          routerLink: '/my-billing',
+          exact: true
+        }
+      );
+    }
 
     if (this.authService.hasPermission(PermissionCodes.usersView)) {
       items.push({
         label: 'Users',
         icon: 'pi pi-users',
         routerLink: '/users',
+        exact: true
+      });
+    }
+
+    if (
+      this.authService.hasPermission(PermissionCodes.billingViewAny) ||
+      this.authService.hasPermission(PermissionCodes.billingManageLeave) ||
+      this.authService.hasPermission(PermissionCodes.billingApproveLeave)
+    ) {
+      items.push({
+        label: 'Leave requests',
+        icon: 'pi pi-calendar',
+        routerLink: '/leave-requests',
         exact: true
       });
     }
@@ -92,6 +162,57 @@ export class AppShellComponent {
       });
     }
 
+    if (this.authService.hasPermission(PermissionCodes.billingViewAny)) {
+      items.push({
+        label: 'Availability calendar',
+        icon: 'pi pi-users',
+        routerLink: '/availability-calendar',
+        exact: true
+      });
+    }
+
+    if (
+      this.authService.hasPermission(PermissionCodes.billingManageEmployment) ||
+      this.authService.hasPermission(PermissionCodes.billingViewAny)
+    ) {
+      items.push({
+        label: 'Positions',
+        icon: 'pi pi-briefcase',
+        routerLink: '/billing/positions',
+        exact: true
+      });
+    }
+
+    if (
+      this.authService.hasPermission(PermissionCodes.billingManageSettlements) ||
+      this.authService.hasPermission(PermissionCodes.billingViewReports)
+    ) {
+      items.push({
+        label: 'Settlements',
+        icon: 'pi pi-calculator',
+        routerLink: '/settlements',
+        exact: true
+      });
+    }
+
+    if (this.authService.hasPermission(PermissionCodes.timeViewReports)) {
+      items.push({
+        label: 'Time reports',
+        icon: 'pi pi-chart-bar',
+        routerLink: '/time-reports',
+        exact: true
+      });
+    }
+
+    if (this.authService.hasPermission(PermissionCodes.billingViewReports)) {
+      items.push({
+        label: 'Billing reports',
+        icon: 'pi pi-chart-line',
+        routerLink: '/billing-reports',
+        exact: true
+      });
+    }
+
     items.push({ label: 'My account', icon: 'pi pi-user', routerLink: '/account' });
     return items;
   });
@@ -100,6 +221,11 @@ export class AppShellComponent {
     inject(PasswordExpirationNoticeService);
     inject(TwoFactorSetupNoticeService);
     inject(PasskeySetupNoticeService);
+
+    effect(() => {
+      const showChrome = this.showAuthenticatedChrome();
+      untracked(() => this.runningTimerService.syncWithSession(showChrome));
+    });
 
     this.router.events
       .pipe(
@@ -136,15 +262,21 @@ export class AppShellComponent {
     this.layoutService.closeMobileNav();
   }
 
+  openLogTimeDialog(): void {
+    this.logTimeDialogService.open();
+  }
+
   logout(): void {
     this.authService
       .logout()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => {
+          this.runningTimerService.timer.set(null);
           void this.router.navigateByUrl('/login');
         },
         error: () => {
+          this.runningTimerService.timer.set(null);
           void this.router.navigateByUrl('/login');
         }
       });

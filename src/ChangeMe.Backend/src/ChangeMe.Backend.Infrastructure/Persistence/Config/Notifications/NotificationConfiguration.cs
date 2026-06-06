@@ -15,12 +15,17 @@ public class NotificationConfiguration : BaseEntityTypeConfiguration<Notificatio
       .HasColumnType("uuid");
 
     builder.Property(n => n.IssueId)
-      .IsRequired()
       .HasColumnType("uuid");
 
     builder.Property(n => n.IssueHistoryEntryId)
       .IsRequired()
       .HasColumnType("uuid");
+
+    builder.Property(n => n.BillingSourceEntityId)
+      .HasColumnType("uuid");
+
+    builder.Property(n => n.BillingSourceRevisionAt)
+      .HasColumnType("timestamp with time zone");
 
     builder.Property(n => n.EventType)
       .IsRequired()
@@ -43,6 +48,8 @@ public class NotificationConfiguration : BaseEntityTypeConfiguration<Notificatio
 
     builder.HasIndex(n => new { n.RecipientUserId, n.IssueHistoryEntryId })
       .IsUnique();
+
+    builder.HasIndex(n => new { n.RecipientUserId, n.BillingSourceEntityId, n.BillingSourceRevisionAt });
 
     builder.HasIndex(n => new { n.RecipientUserId, n.IsRead });
   }

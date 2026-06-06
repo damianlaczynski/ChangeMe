@@ -29,6 +29,12 @@ public class IssueConfiguration : BaseEntityTypeConfiguration<Issue>
     builder.Property(i => i.AssignedToUserId)
       .HasColumnType("uuid");
 
+    builder.Property(i => i.ProjectId)
+      .IsRequired()
+      .HasColumnType("uuid");
+
+    builder.HasIndex(i => i.ProjectId);
+
     builder.Property(i => i.LastActivityAt)
       .IsRequired();
 

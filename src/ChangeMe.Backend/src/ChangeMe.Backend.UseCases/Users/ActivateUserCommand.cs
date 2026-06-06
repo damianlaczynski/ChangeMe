@@ -1,4 +1,5 @@
-﻿using ChangeMe.Backend.UseCases.Users.Dtos;
+﻿using ChangeMe.Backend.UseCases.Projects.Services;
+using ChangeMe.Backend.UseCases.Users.Dtos;
 
 namespace ChangeMe.Backend.UseCases.Users;
 
@@ -6,7 +7,8 @@ public sealed record ActivateUserCommand(Guid Id) : ICommand<UserDetailsDto>;
 
 public class ActivateUserHandler(
   IMediator mediator,
-  ApplicationDbContext context) : ICommandHandler<ActivateUserCommand, UserDetailsDto>
+  ApplicationDbContext context,
+  ProjectMembershipService projectMembershipService) : ICommandHandler<ActivateUserCommand, UserDetailsDto>
 {
   public async Task<Result<UserDetailsDto>> Handle(ActivateUserCommand command, CancellationToken cancellationToken)
   {
@@ -17,6 +19,7 @@ public class ActivateUserHandler(
     if (!user.IsActive)
     {
       user.Activate();
+      await projectMembershipService.AddUserToDefaultProjectAsync(user.Id, cancellationToken);
       await context.SaveChangesAsync(cancellationToken);
     }
 

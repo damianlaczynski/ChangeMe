@@ -1,0 +1,71 @@
+@if (runningTimerService.hasRunningTimer()) {
+  <p-button
+    severity="secondary"
+    [outlined]="true"
+    size="small"
+    class="hidden sm:inline-flex"
+    [pTooltip]="tooltip()"
+    tooltipPosition="bottom"
+    (onClick)="togglePopover($event)"
+  >
+    <span class="flex items-center gap-2">
+      <span class="inline-block h-2 w-2 rounded-full bg-green-500" aria-hidden="true"></span>
+      <span>{{ elapsedLabel() }}</span>
+    </span>
+  </p-button>
+  <p-button
+    severity="secondary"
+    [rounded]="true"
+    [text]="true"
+    class="sm:hidden"
+    [pTooltip]="tooltip()"
+    tooltipPosition="bottom"
+    ariaLabel="Running timer"
+    (onClick)="togglePopover($event)"
+  >
+    <span class="relative inline-flex">
+      <i class="pi pi-clock" aria-hidden="true"></i>
+      <span
+        class="absolute -top-0.5 -right-0.5 inline-block h-2 w-2 rounded-full bg-green-500"
+        aria-hidden="true"
+      ></span>
+    </span>
+  </p-button>
+
+  <p-popover #popover [dismissable]="true">
+    <ng-template #content>
+      <div class="flex min-w-[16rem] flex-col gap-3 p-1">
+        <div>
+          <p class="text-muted-color m-0 text-sm">Elapsed</p>
+          <p class="m-0 text-lg font-semibold">{{ elapsedLabel() }}</p>
+        </div>
+        <div>
+          <p class="text-muted-color m-0 text-sm">Project</p>
+          <p class="m-0 font-medium">
+            @if (timer()?.projectName) {
+              {{ timer()!.projectName }}
+            } @else {
+              {{ TimeMessages.noProjectSelected }}
+            }
+          </p>
+        </div>
+        @if (timer()?.issueTitle) {
+          <div>
+            <p class="text-muted-color m-0 text-sm">Issue</p>
+            <p class="m-0 font-medium">{{ timer()!.issueTitle }}</p>
+          </div>
+        }
+        <div class="flex flex-wrap gap-2">
+          <p-button label="Stop and log" size="small" (onClick)="stopAndLog()" />
+          <p-button
+            label="Discard timer"
+            size="small"
+            severity="danger"
+            [outlined]="true"
+            (onClick)="discardTimer()"
+          />
+        </div>
+      </div>
+    </ng-template>
+  </p-popover>
+}

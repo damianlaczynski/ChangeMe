@@ -1,4 +1,6 @@
-﻿namespace ChangeMe.Backend.UseCases.Auth;
+﻿using ChangeMe.Backend.UseCases.Time.Utils;
+
+namespace ChangeMe.Backend.UseCases.Auth;
 
 public sealed record LogoutCommand() : ICommand<bool>;
 
@@ -18,6 +20,7 @@ public class LogoutHandler(
       return Result.Success(true);
 
     session.Revoke(DateTime.UtcNow);
+    await TimeUtils.DiscardRunningTimerAsync(context, session.UserId, cancellationToken);
     await context.SaveChangesAsync(cancellationToken);
     return Result.Success(true);
   }

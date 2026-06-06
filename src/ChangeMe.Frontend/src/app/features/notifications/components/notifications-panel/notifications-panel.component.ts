@@ -3,6 +3,7 @@ import { Component, inject, output, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { NotificationDto } from '@features/notifications/models/notification.model';
 import { NotificationsService } from '@features/notifications/services/notifications.service';
+import { isBillingNotification } from '@features/notifications/utils/notifications.utils';
 import { Button } from 'primeng/button';
 import { Message } from 'primeng/message';
 import { ProgressSpinner } from 'primeng/progressspinner';
@@ -43,6 +44,7 @@ export class NotificationsPanelComponent {
   readonly closed = output<void>();
 
   readonly activeTab = signal<'unread' | 'read'>('unread');
+  readonly isBillingNotification = isBillingNotification;
 
   openNotification(notification: NotificationDto): void {
     if (!notification.isRead) {

@@ -1,4 +1,5 @@
 ﻿using ChangeMe.Backend.UseCases.Auth.Utils;
+using ChangeMe.Backend.UseCases.Projects.Services;
 
 namespace ChangeMe.Backend.UseCases.Auth;
 
@@ -6,7 +7,8 @@ public sealed record VerifyEmailCommand(string Token) : ICommand<bool>;
 
 public class VerifyEmailHandler(
   ApplicationDbContext context,
-  IUserAuthTokenService tokenService) : ICommandHandler<VerifyEmailCommand, bool>
+  IUserAuthTokenService tokenService,
+  ProjectMembershipService projectMembershipService) : ICommandHandler<VerifyEmailCommand, bool>
 {
   public async Task<Result<bool>> Handle(VerifyEmailCommand command, CancellationToken cancellationToken)
   {
@@ -24,6 +26,7 @@ public class VerifyEmailHandler(
 
     user.MarkEmailVerified();
     await tokenService.MarkTokenUsedAsync(command.Token, cancellationToken);
+    await projectMembershipService.AddUserToDefaultProjectAsync(user.Id, cancellationToken);
     await context.SaveChangesAsync(cancellationToken);
 
     return Result.Success(true);

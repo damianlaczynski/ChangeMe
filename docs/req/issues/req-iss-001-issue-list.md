@@ -3,11 +3,12 @@ id: REQ-ISS-001
 title: Issue List
 domain: issues
 status: active
-depends_on: [REQ-AUTH-001, REQ-ISS-002, REQ-USR-005]
+depends_on: [REQ-AUTH-001, REQ-ISS-002, REQ-PRJ-002, REQ-PRJ-005, REQ-USR-005]
 ---
+
 ## Goal
 
-The user must be able to browse all issues, search, filter, sort, navigate to details, manage watches, and quickly start creating a new issue.
+The user must be able to browse issues in projects they can access, search, filter, sort, navigate to details, manage watches, and quickly start creating a new issue when permitted.
 
 ## Features
 
@@ -18,19 +19,20 @@ The user must be able to browse all issues, search, filter, sort, navigate to de
 
 ### Search and actions bar
 
-- **Add issue** button opens **Create issue** (REQ-ISS-002).
+- **Add issue** button opens **Create issue** (REQ-ISS-002); visible only when the user has **Project.Issues.Manage** on at least one project.
 
 ### Issues table — columns
 
-| Column            | Description                                                                                       |
-| ----------------- | ------------------------------------------------------------------------------------------------- |
-| **Title**         | Short issue title; clickable link to **Issue details**.                                           |
-| **Status**        | Issue status badge (**New**, **In Progress**, **Resolved**, **Closed**).                          |
-| **Priority**      | Priority badge (**Low**, **Medium**, **High**, **Critical**).                                     |
-| **Assigned to**   | Assignee as **`{name} ({email})`** or **email** when name is missing; **`Unassigned`** when none. |
-| **Created at**    | Issue creation date and time.                                                                     |
-| **Last activity** | Date and time of the most recent change, comment, or other activity on the issue.                 |
-| **Actions**       | Watch control and overflow menu for row actions (see below).                                      |
+| Column            | Description                                                                                                                  |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| **Title**         | Short issue title; clickable link to **Issue details**.                                                                      |
+| **Project**       | Project name; clickable link to **Project details** when the user has **Project.View** on that project; plain text when not. |
+| **Status**        | Issue status badge (**New**, **In Progress**, **Resolved**, **Closed**).                                                     |
+| **Priority**      | Priority badge (**Low**, **Medium**, **High**, **Critical**).                                                                |
+| **Assigned to**   | Assignee as **`{name} ({email})`** or **email** when name is missing; **`Unassigned`** when none.                            |
+| **Created at**    | Issue creation date and time.                                                                                                |
+| **Last activity** | Date and time of the most recent change, comment, or other activity on the issue.                                            |
+| **Actions**       | Watch control and overflow menu for row actions (see below).                                                                 |
 
 ### Sorting
 
@@ -42,12 +44,16 @@ The user must be able to browse all issues, search, filter, sort, navigate to de
 ### Row actions and watch control
 
 - **Watch / Unwatch**: compact button shows **watcher count** as label and bell / bell-slash icon for current watch state. Tooltip format: `**Watch this issue ({n} watchers)`** or `**Unwatch this issue ({n} watchers)\*\*`where`{n}` is the count.
-- Overflow menu: **Open details**, **Edit issue**, **Delete issue**.
+- Overflow menu: **Open details**, **Edit issue**, **Log time**, **Delete issue**.
+- **Log time** opens **Log time** dialog with **Project** and **Issue** pre-filled (REQ-TIM-007); visible when the user has **Time.LogOwn** and **Project.Time.Log** on the issue's project.
+- **Edit issue** and **Delete issue** are shown only when the user has **Project.Issues.Manage** on the issue's project.
 - **Delete issue** confirmation: `**Delete "{issue title}"? This action cannot be undone.`\*\*
 
 ### Search and filters
 
 - Toggleable **Filters** panel (collapsed by default).
+- **Project** filter: multi-select from projects where the user has **Project.Issues.View**; empty selection means no restriction.
+- The issues table shows only issues that belong to projects where the user has **Project.Issues.View** (REQ-PRJ-005).
 - **Status** filter: multi-select; empty selection means no restriction.
 - **Priority** filter: multi-select; empty selection means no restriction.
 - **Assigned to** filter: single-select user list from assignable users (REQ-USR-005); clearable.

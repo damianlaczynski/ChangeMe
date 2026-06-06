@@ -4,6 +4,7 @@ using ChangeMe.Backend.Domain.Aggregates.Users;
 using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UseCases.Auth.Dtos;
 using ChangeMe.Backend.UseCases.Auth.Utils;
+using ChangeMe.Backend.UseCases.Projects.Services;
 using ChangeMe.Backend.UseCases.Users.Dtos;
 using ChangeMe.Backend.UseCases.Users.Utils;
 using Microsoft.AspNetCore.Http;
@@ -24,6 +25,7 @@ public class RegisterUserHandler(
   ISessionLifetimeService sessionLifetime,
   IPasswordExpirationEvaluator passwordExpirationEvaluator,
   UserEmailVerificationService emailVerificationService,
+  ProjectMembershipService projectMembershipService,
   IOptions<AuthOptions> authOptions,
   IHttpContextAccessor httpContextAccessor) : ICommandHandler<RegisterUserCommand, RegisterUserResponseDto>
 {
@@ -133,6 +135,7 @@ public class RegisterUserHandler(
     if (!sessionResult.IsSuccess)
       return Result<RegisterUserResponseDto>.Invalid(sessionResult.ValidationErrors);
 
+    await projectMembershipService.AddUserToDefaultProjectAsync(user.Id, cancellationToken);
     await context.SaveChangesAsync(cancellationToken);
 
     var authResponse = await AuthSessionUtils.CreateAuthResponseAsync(

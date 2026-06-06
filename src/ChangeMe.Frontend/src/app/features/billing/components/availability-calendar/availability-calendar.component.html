@@ -1,0 +1,270 @@
+<div class="flex flex-col gap-4">
+  <div class="grid gap-3 lg:grid-cols-3">
+    <p-multiselect
+      [options]="users()"
+      optionLabel="email"
+      optionValue="id"
+      placeholder="All users"
+      [ngModel]="selectedUserIds()"
+      (ngModelChange)="selectedUserIds.set($event)"
+      display="chip"
+      class="w-full"
+    />
+    <p-multiselect
+      [options]="projects()"
+      optionLabel="name"
+      optionValue="id"
+      placeholder="All projects"
+      [ngModel]="selectedProjectIds()"
+      (ngModelChange)="selectedProjectIds.set($event)"
+      display="chip"
+      class="w-full"
+    />
+    <p-multiselect
+      [options]="statusFilterOptions"
+      optionLabel="label"
+      optionValue="value"
+      placeholder="All statuses"
+      [ngModel]="selectedStatuses()"
+      (ngModelChange)="selectedStatuses.set($event)"
+      display="chip"
+      class="w-full"
+    />
+  </div>
+
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <div class="flex flex-wrap items-center gap-2">
+      <p-button icon="pi pi-chevron-left" [text]="true" (onClick)="goPrevious()" />
+      <p-button
+        label="Today"
+        [outlined]="true"
+        severity="secondary"
+        (onClick)="goToday()"
+      />
+      <p-button icon="pi pi-chevron-right" [text]="true" (onClick)="goNext()" />
+      <span class="font-semibold">{{ periodLabel() }}</span>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-2">
+      <p-selectbutton
+        [options]="viewOptions"
+        [ngModel]="view()"
+        (ngModelChange)="setView($event)"
+        optionLabel="label"
+        optionValue="value"
+      />
+      <p-selectbutton
+        [options]="densityOptions"
+        [ngModel]="density()"
+        (ngModelChange)="setDensity($event)"
+        optionLabel="label"
+        optionValue="value"
+      />
+      @if (canManageAny) {
+        <p-button label="Add availability" (onClick)="openHeaderAddAvailability()" />
+      }
+    </div>
+  </div>
+
+  @if (calendar()?.isTruncated) {
+    <p-message severity="info">{{ BillingMessages.teamCalendarTruncated }}</p-message>
+  }
+
+  @if (errorMessage()) {
+    <p-message severity="error">{{ errorMessage() }}</p-message>
+  }
+
+  @if (isLoading()) {
+    <div class="flex justify-center py-8">
+      <p-progressspinner />
+    </div>
+  } @else if (calendarUsers().length === 0) {
+    <p-message severity="info">{{ BillingMessages.noUsersMatchFilters }}</p-message>
+  } @else if (view() === 'month') {
+    <div class="overflow-x-auto">
+      <table class="min-w-full border-collapse text-sm">
+        <thead>
+          <tr>
+            <th
+              class="sticky left-0 z-10 bg-surface-0 px-3 py-2 text-left dark:bg-surface-950"
+            >
+              User
+            </th>
+            @for (date of monthDates(); track date) {
+              @if (isInMonth(date, anchorDate())) {
+                <th
+                  class="px-2 py-2 text-center"
+                  [class.text-muted-color]="isWeekendDate(date)"
+                  [class.border-b-2]="isTodayDate(date)"
+                  [class.border-primary]="isTodayDate(date)"
+                >
+                  {{ date.slice(-2) }}
+                </th>
+              }
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (user of calendarUsers(); track user.id) {
+            <tr class="border-t border-surface-200 dark:border-surface-700">
+              <td
+                class="sticky left-0 z-10 bg-surface-0 px-3 py-2 font-medium dark:bg-surface-950"
+              >
+                {{ user.fullName }}
+              </td>
+              @for (date of monthDates(); track date) {
+                @if (isInMonth(date, anchorDate())) {
+                  @let entry = effectiveEntry(user.id, date);
+                  <td class="px-1 py-1 align-top">
+                    <button
+                      type="button"
+                      class="min-h-14 w-full rounded border p-1 text-left"
+                      [class.border-primary]="isTodayDate(date)"
+                      (click)="openCell(user, date)"
+                    >
+                      @if (entry) {
+                        <p-tag
+                          [value]="getAvailabilityStatusLabel(entry)"
+                          [severity]="getAvailabilityStatusSeverity(entry)"
+                          [pTooltip]="
+                            density() === 'compact'
+                              ? getAvailabilityEntryTooltip(entry)
+                              : undefined
+                          "
+                          tooltipPosition="top"
+                        />
+                        @if (density() === 'standard' && !entry.allDay) {
+                          <div class="mt-1 text-xs">
+                            {{ formatAvailabilityTimeRange(entry) }}
+                          </div>
+                        }
+                        @if (countDayEntries(entries(), user.id, date) > 1) {
+                          <div class="mt-1 text-xs">
+                            +{{ countDayEntries(entries(), user.id, date) - 1 }}
+                          </div>
+                        }
+                      }
+                    </button>
+                  </td>
+                }
+              }
+            </tr>
+          }
+          <tr class="border-t border-surface-200 font-medium dark:border-surface-700">
+            <td class="sticky left-0 bg-surface-0 px-3 py-2 dark:bg-surface-950">
+              Team summary
+            </td>
+            @for (date of monthDates(); track date) {
+              @if (isInMonth(date, anchorDate())) {
+                @let summary = countTeamDaySummary(entries(), calendarUsers(), date);
+                <td class="px-2 py-2 text-center text-xs">
+                  {{ summary.availableCount }} in · {{ summary.awayCount }} away
+                </td>
+              }
+            }
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  } @else {
+    <div class="overflow-x-auto">
+      <table class="min-w-full border-collapse text-sm">
+        <thead>
+          <tr>
+            <th
+              class="sticky left-0 bg-surface-0 px-3 py-2 text-left dark:bg-surface-950"
+            >
+              User
+            </th>
+            @for (date of weekDates(); track date) {
+              <th
+                class="px-2 py-2 text-center"
+                [class.border-b-2]="isTodayDate(date)"
+                [class.border-primary]="isTodayDate(date)"
+              >
+                {{ date | date: 'EEE dd' }}
+              </th>
+            }
+            <th class="px-2 py-2 text-center">Summary</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (user of calendarUsers(); track user.id) {
+            <tr class="border-t border-surface-200 dark:border-surface-700">
+              <td
+                class="sticky left-0 bg-surface-0 px-3 py-2 font-medium dark:bg-surface-950"
+              >
+                {{ user.fullName }}
+              </td>
+              @for (date of weekDates(); track date) {
+                @let entry = effectiveEntry(user.id, date);
+                <td class="px-1 py-1">
+                  <button
+                    type="button"
+                    class="min-h-14 w-full rounded border p-1 text-left"
+                    [class.border-primary]="isTodayDate(date)"
+                    (click)="openCell(user, date)"
+                  >
+                    @if (entry) {
+                      <p-tag
+                        [value]="getAvailabilityStatusLabel(entry)"
+                        [severity]="getAvailabilityStatusSeverity(entry)"
+                        [pTooltip]="
+                          density() === 'compact'
+                            ? getAvailabilityEntryTooltip(entry)
+                            : undefined
+                        "
+                        tooltipPosition="top"
+                      />
+                      @if (density() === 'standard' && !entry.allDay) {
+                        <div class="mt-1 text-xs">
+                          {{ formatAvailabilityTimeRange(entry) }}
+                        </div>
+                      }
+                    }
+                  </button>
+                </td>
+              }
+              <td class="px-2 py-2 text-center">
+                {{ countAvailableDays(entries(), user.id, weekDates()) }}/7 in
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
+
+<app-day-availability-panel
+  [visible]="panelVisible()"
+  [title]="panelTitle()"
+  [entries]="panelEntries()"
+  [canManage]="canManageUser(panelUser()?.id ?? '')"
+  [canManagePattern]="canManageUser(panelUser()?.id ?? '')"
+  (hidden)="panelVisible.set(false)"
+  (addException)="openAddException()"
+  (editEntry)="openEditEntry($event)"
+  (editPattern)="openPatternDialog()"
+/>
+
+<app-edit-availability-dialog
+  [visible]="availabilityDialogVisible()"
+  [userId]="availabilityDialogUserId()"
+  [manageForUser]="availabilityDialogManageForUser()"
+  [showUserPicker]="availabilityDialogShowUserPicker()"
+  [userOptions]="userPickerOptions()"
+  [selectedDate]="availabilityDialogSelectedDate()"
+  [entry]="editingEntry()"
+  (hidden)="availabilityDialogVisible.set(false)"
+  (saved)="onAvailabilitySaved()"
+/>
+
+<app-edit-weekly-pattern-dialog
+  [visible]="patternDialogVisible()"
+  [userId]="panelUser()?.id ?? null"
+  [manageForUser]="true"
+  [pattern]="panelPattern()"
+  (hidden)="patternDialogVisible.set(false)"
+  (saved)="onPatternSaved()"
+/>

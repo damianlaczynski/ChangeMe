@@ -1,0 +1,127 @@
+<p-card header="My leave">
+  @if (isLoadingBalance()) {
+    <div class="mb-4 flex justify-center py-4">
+      <p-progressSpinner ariaLabel="Loading leave balance" />
+    </div>
+  } @else if (!hasActiveContract()) {
+    <p-message severity="info" class="mb-4 block">
+      {{ BillingMessages.noActiveContract }}
+    </p-message>
+  } @else if (balance(); as leaveBalance) {
+    <p-panel header="Leave balance ({{ leaveBalance.year }})" class="mb-4">
+      <div class="grid gap-4 md:grid-cols-3">
+        <div>
+          <div class="text-muted-color text-sm">Entitled days</div>
+          <div class="text-xl font-semibold">{{ leaveBalance.entitledDays }}</div>
+        </div>
+        <div>
+          <div class="text-muted-color text-sm">Used days</div>
+          <div class="text-xl font-semibold">{{ leaveBalance.usedDays }}</div>
+        </div>
+        <div>
+          <div class="text-muted-color text-sm">Remaining days</div>
+          <div
+            class="text-xl font-semibold"
+            [class.text-orange-500]="leaveBalance.remainingDays < 0"
+          >
+            {{ leaveBalance.remainingDays }}
+          </div>
+        </div>
+      </div>
+    </p-panel>
+  }
+
+  <p-panel header="My requests">
+    <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-2">
+        <p-toggleswitch [formControl]="showAllYearsControl" />
+        <span>Show all years</span>
+      </div>
+      <p-button
+        label="Request leave"
+        icon="pi pi-plus"
+        (onClick)="openRequestDialog()"
+      />
+    </div>
+
+    @if (errorMessage()) {
+      <p-message severity="error" class="mb-3 block">{{ errorMessage() }}</p-message>
+    }
+
+    @if (isLoadingRequests()) {
+      <div class="flex justify-center py-8">
+        <p-progressSpinner ariaLabel="Loading leave requests" />
+      </div>
+    } @else if (requests().length === 0) {
+      <p-message severity="info">{{ BillingMessages.noMyLeaveRequests }}</p-message>
+    } @else {
+      <p-table [value]="requests()" [rowHover]="true">
+        <ng-template #header>
+          <tr>
+            <th>Leave type</th>
+            <th>Dates</th>
+            <th>Days</th>
+            <th>Status</th>
+            <th>Submitted at</th>
+            <th class="w-24">Actions</th>
+          </tr>
+        </ng-template>
+        <ng-template #body let-request>
+          <tr class="cursor-pointer" (click)="onRowClick(request)">
+            <td>{{ request.leaveTypeName }}</td>
+            <td>{{ request.datesDisplay }}</td>
+            <td>{{ request.days }}</td>
+            <td>
+              <p-tag
+                [value]="request.status"
+                [severity]="getLeaveRequestStatusSeverity(request.status)"
+              />
+            </td>
+            <td>
+              @if (request.submittedAt) {
+                {{ request.submittedAt | date: 'dd.MM.yyyy HH:mm' }}
+              } @else {
+                {{ BillingMessages.emptyField }}
+              }
+            </td>
+            <td (click)="$event.stopPropagation()">
+              <p-button
+                icon="pi pi-ellipsis-v"
+                severity="secondary"
+                [text]="true"
+                size="small"
+                (onClick)="openRowActions($event, request)"
+              />
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+
+      <p-menu
+        #rowActionsMenu
+        [popup]="true"
+        [model]="rowActionItems()"
+        appendTo="body"
+      />
+
+      @if (totalCount() > LeaveRequestConstraints.PAGE_SIZE) {
+        <p-paginator
+          class="mt-3"
+          [rows]="LeaveRequestConstraints.PAGE_SIZE"
+          [totalRecords]="totalCount()"
+          [first]="(pageNumber() - 1) * LeaveRequestConstraints.PAGE_SIZE"
+          (onPageChange)="onPageChange($event)"
+        />
+      }
+    }
+  </p-panel>
+</p-card>
+
+@if (requestDialogVisible()) {
+  <app-request-leave-dialog
+    [request]="editingRequest()"
+    [visible]="requestDialogVisible()"
+    (visibleChange)="requestDialogVisible.set($event)"
+    (saved)="onSaved()"
+  />
+}

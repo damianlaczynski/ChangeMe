@@ -1,0 +1,83 @@
+<p-dialog
+  header="Edit employment profile"
+  [visible]="visible()"
+  (visibleChange)="!$event && onHide()"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: 'min(32rem, calc(100vw - 2rem))' }"
+  (onHide)="onHide()"
+>
+  <form class="flex flex-col gap-3" [formGroup]="form" (ngSubmit)="save()">
+    @if (submitError()) {
+      <p-message severity="error">{{ submitError() }}</p-message>
+    }
+
+    <div class="flex flex-col gap-1.5">
+      <label for="employmentEmployeeId">Employee ID</label>
+      <input
+        pInputText
+        id="employmentEmployeeId"
+        [formControl]="form.controls.employeeId"
+        [maxlength]="constraints.EMPLOYEE_ID_MAX_LENGTH"
+      />
+    </div>
+
+    <div class="flex flex-col gap-1.5">
+      <label for="employmentNationalId">National ID</label>
+      <input
+        pInputText
+        id="employmentNationalId"
+        [formControl]="form.controls.nationalId"
+        [maxlength]="constraints.NATIONAL_ID_MAX_LENGTH"
+      />
+    </div>
+
+    <div class="flex flex-col gap-1.5">
+      <label for="employmentTaxId">Tax ID</label>
+      <input
+        pInputText
+        id="employmentTaxId"
+        [formControl]="form.controls.taxId"
+        [maxlength]="constraints.TAX_ID_MAX_LENGTH"
+      />
+    </div>
+
+    <div class="flex flex-col gap-1.5">
+      <label for="employmentBankAccount">Bank account</label>
+      <input
+        pInputText
+        id="employmentBankAccount"
+        [formControl]="form.controls.bankAccount"
+        [maxlength]="constraints.BANK_ACCOUNT_MAX_LENGTH"
+      />
+    </div>
+
+    <div class="flex flex-col gap-1.5">
+      <label for="employmentNotes">Employment notes</label>
+      <textarea
+        pTextarea
+        id="employmentNotes"
+        rows="3"
+        [formControl]="form.controls.notes"
+        [maxlength]="constraints.EMPLOYMENT_NOTES_MAX_LENGTH"
+      ></textarea>
+    </div>
+
+    <div class="flex flex-wrap justify-end gap-2">
+      <p-button
+        label="Cancel"
+        severity="secondary"
+        [outlined]="true"
+        type="button"
+        (onClick)="onHide()"
+      />
+      <p-button
+        label="Save changes"
+        icon="pi pi-check"
+        type="submit"
+        [loading]="isSubmitting()"
+      />
+    </div>
+  </form>
+</p-dialog>

@@ -1,0 +1,199 @@
+<p-card header="Settlements">
+  <div class="mb-4 flex flex-wrap items-end justify-between gap-3">
+    <div class="flex min-w-64 flex-1 flex-col gap-1.5">
+      <label for="settlementPeriodSelect">Period</label>
+      @if (isLoadingPeriods()) {
+        <p-progressSpinner ariaLabel="Loading settlement periods" />
+      } @else if (periods().length === 0) {
+        <p-message severity="info">No settlement periods yet.</p-message>
+      } @else {
+        <p-select
+          inputId="settlementPeriodSelect"
+          [formControl]="selectedPeriodIdControl"
+          [options]="periods()"
+          optionLabel="label"
+          optionValue="id"
+          appendTo="body"
+          class="w-full max-w-md"
+        >
+          <ng-template #selectedItem let-period>
+            <div class="flex items-center gap-2">
+              <span>{{ period.label }}</span>
+              <p-tag
+                [value]="period.status"
+                [severity]="getSettlementPeriodStatusSeverity(period.status)"
+              />
+            </div>
+          </ng-template>
+          <ng-template #item let-period>
+            <div class="flex items-center gap-2">
+              <span>{{ period.label }}</span>
+              <p-tag
+                [value]="period.status"
+                [severity]="getSettlementPeriodStatusSeverity(period.status)"
+              />
+            </div>
+          </ng-template>
+        </p-select>
+      }
+    </div>
+
+    @if (canManageSettlements) {
+      <p-button
+        label="Create period"
+        icon="pi pi-plus"
+        (onClick)="openCreateDialog()"
+      />
+    }
+  </div>
+
+  @if (errorMessage()) {
+    <p-message severity="error" class="mb-3 block">{{ errorMessage() }}</p-message>
+  }
+
+  @if (periodDetails(); as details) {
+    <p-panel header="Period summary" class="mb-4">
+      <div class="mb-4 flex flex-wrap gap-2">
+        @if (
+          details.status === SettlementPeriodStatus.Open && details.canManage
+        ) {
+          <p-button
+            label="Recalculate all"
+            icon="pi pi-refresh"
+            severity="secondary"
+            [outlined]="true"
+            size="small"
+            [loading]="isRecalculatingAll()"
+            (onClick)="recalculateAll()"
+          />
+          <p-button
+            label="Close period"
+            icon="pi pi-lock"
+            severity="danger"
+            [outlined]="true"
+            size="small"
+            [loading]="isClosing()"
+            (onClick)="confirmClosePeriod()"
+          />
+        }
+      </div>
+
+      @if (isLoadingDetails()) {
+        <div class="flex justify-center py-4">
+          <p-progressSpinner ariaLabel="Loading period details" />
+        </div>
+      } @else {
+        <div class="grid gap-3 md:grid-cols-2">
+          <div>
+            <div class="text-muted-color text-sm">Status</div>
+            <div class="mt-1">
+              <p-tag
+                [value]="details.status"
+                [severity]="getSettlementPeriodStatusSeverity(details.status)"
+              />
+            </div>
+          </div>
+          @if (details.status === SettlementPeriodStatus.Closed) {
+            <div>
+              <div class="text-muted-color text-sm">Closed at</div>
+              <div>
+                @if (details.closedAt) {
+                  {{ details.closedAt | date: 'dd.MM.yyyy HH:mm' }}
+                } @else {
+                  {{ BillingMessages.emptyField }}
+                }
+              </div>
+            </div>
+            <div>
+              <div class="text-muted-color text-sm">Closed by</div>
+              <div>
+                {{ details.closedByDisplayName || BillingMessages.emptyField }}
+              </div>
+            </div>
+          }
+          <div>
+            <div class="text-muted-color text-sm">Last calculated at</div>
+            <div>
+              @if (details.lastCalculatedAt) {
+                {{ details.lastCalculatedAt | date: 'dd.MM.yyyy HH:mm' }}
+              } @else {
+                {{ BillingMessages.emptyField }}
+              }
+            </div>
+          </div>
+        </div>
+      }
+    </p-panel>
+
+    <p-panel header="User settlements">
+      @if (isLoadingDetails()) {
+        <div class="flex justify-center py-8">
+          <p-progressSpinner ariaLabel="Loading user settlements" />
+        </div>
+      } @else if (details.userSettlements.length === 0) {
+        <p-message severity="info">{{ BillingMessages.noSettlementsForPeriod }}</p-message>
+      } @else {
+        <p-table [value]="details.userSettlements" [rowHover]="true">
+          <ng-template #header>
+            <tr>
+              <th>User</th>
+              <th>Position</th>
+              <th>Contract type</th>
+              <th>Expected time</th>
+              <th>Logged time</th>
+              <th>Leave days</th>
+              <th>Balance</th>
+              <th>Last calculated at</th>
+              @if (details.status === SettlementPeriodStatus.Open && details.canManage) {
+                <th class="w-28"></th>
+              }
+            </tr>
+          </ng-template>
+          <ng-template #body let-settlement>
+            <tr class="cursor-pointer" (click)="onRowClick(settlement)">
+              <td>{{ settlement.userDisplayName }}</td>
+              <td>{{ settlement.positionName || BillingMessages.emptyField }}</td>
+              <td>
+                @if (settlement.contractType) {
+                  {{ getContractTypeLabel(settlement.contractType) }}
+                } @else {
+                  {{ BillingMessages.emptyField }}
+                }
+              </td>
+              <td>{{ formatMonthlyHoursNorm(settlement.expectedMinutes) }}</td>
+              <td>{{ formatMonthlyHoursNorm(settlement.loggedMinutes) }}</td>
+              <td>{{ settlement.leaveDays }}</td>
+              <td [class]="getSettlementBalanceClass(settlement.balanceMinutes)">
+                {{ formatMonthlyHoursNorm(settlement.balanceMinutes) }}
+              </td>
+              <td>{{ settlement.lastCalculatedAt | date: 'dd.MM.yyyy HH:mm' }}</td>
+              @if (details.status === SettlementPeriodStatus.Open && details.canManage) {
+                <td (click)="$event.stopPropagation()">
+                  @if (settlement.canRecalculate) {
+                    <p-button
+                      label="Recalculate"
+                      icon="pi pi-refresh"
+                      severity="secondary"
+                      [text]="true"
+                      size="small"
+                      [loading]="recalculatingRowId() === settlement.id"
+                      (onClick)="recalculateRow($event, settlement)"
+                    />
+                  }
+                </td>
+              }
+            </tr>
+          </ng-template>
+        </p-table>
+      }
+    </p-panel>
+  }
+</p-card>
+
+@if (createDialogVisible()) {
+  <app-create-settlement-period-dialog
+    [visible]="createDialogVisible()"
+    (visibleChange)="createDialogVisible.set($event)"
+    (created)="onPeriodCreated($event)"
+  />
+}

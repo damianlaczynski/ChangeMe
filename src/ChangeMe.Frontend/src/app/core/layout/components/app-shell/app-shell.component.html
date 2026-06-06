@@ -75,6 +75,19 @@
         <div class="flex-1"></div>
 
         <div class="flex flex-wrap items-center gap-1 sm:gap-2">
+          @if (canLogTime()) {
+            <p-button
+              icon="pi pi-clock"
+              [label]="isSmallScreen() ? undefined : 'Log time'"
+              size="small"
+              (onClick)="openLogTimeDialog()"
+            />
+          }
+          @if (canLogTime()) {
+            <div id="running-timer-control">
+              <app-running-timer-control />
+            </div>
+          }
           <app-notifications-bell />
           <p-button
             [icon]="layoutService.$themeMode() === 'dark' ? 'pi pi-sun' : 'pi pi-moon'"
@@ -183,5 +196,6 @@
     <app-required-password-change-dialog />
     <app-two-factor-setup-dialog />
     <app-passkey-setup-dialog />
+    <app-log-time-dialog />
   }
 </div>

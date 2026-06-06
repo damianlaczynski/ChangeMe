@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-05T16:50:14.016Z",
+  "generatedAt": "2026-06-06T10:10:15.028Z",
   "reqs": [
     {
       "id": "REQ-AUTH-001",
@@ -7,20 +7,7 @@
       "domain": "identity",
       "status": "active",
       "file": "identity/req-auth-001-login-and-registration-with-sessions.md",
-      "depends_on": [
-        "REQ-AUTH-006",
-        "REQ-AUTH-009",
-        "REQ-AUTH-010",
-        "REQ-AUTH-011",
-        "REQ-AUTH-012",
-        "REQ-AUTH-013",
-        "REQ-AUTH-014",
-        "REQ-INV-005",
-        "REQ-PKY-002",
-        "REQ-PKY-006",
-        "REQ-ROL-001",
-        "REQ-ROL-006"
-      ]
+      "depends_on": []
     },
     {
       "id": "REQ-AUTH-002",
@@ -112,16 +99,7 @@
       "domain": "identity",
       "status": "active",
       "file": "identity/req-auth-009-password-expiration.md",
-      "depends_on": [
-        "REQ-AUTH-001",
-        "REQ-AUTH-005",
-        "REQ-AUTH-006",
-        "REQ-AUTH-007",
-        "REQ-AUTH-008",
-        "REQ-AUTH-013",
-        "REQ-USR-004",
-        "REQ-USR-006"
-      ]
+      "depends_on": []
     },
     {
       "id": "REQ-AUTH-010",
@@ -180,24 +158,7 @@
       "domain": "identity",
       "status": "active",
       "file": "identity/req-auth-013-two-factor-authentication.md",
-      "depends_on": [
-        "REQ-AUTH-001",
-        "REQ-AUTH-003",
-        "REQ-AUTH-004",
-        "REQ-AUTH-005",
-        "REQ-AUTH-007",
-        "REQ-AUTH-009",
-        "REQ-AUTH-010",
-        "REQ-AUTH-011",
-        "REQ-AUTH-014",
-        "REQ-AUTH-015",
-        "REQ-PKY-001",
-        "REQ-PKY-006",
-        "REQ-PKY-007",
-        "REQ-USR-001",
-        "REQ-USR-004",
-        "REQ-USR-005"
-      ]
+      "depends_on": []
     },
     {
       "id": "REQ-AUTH-014",
@@ -239,6 +200,165 @@
         "REQ-USR-001",
         "REQ-USR-003",
         "REQ-USR-004"
+      ]
+    },
+    {
+      "id": "REQ-BIL-001",
+      "title": "Billing Policy and Permissions",
+      "domain": "billing",
+      "status": "active",
+      "file": "billing/req-bil-001-billing-policy-and-permissions.md",
+      "depends_on": [
+        "REQ-ROL-001",
+        "REQ-TIM-001",
+        "REQ-USR-004"
+      ]
+    },
+    {
+      "id": "REQ-BIL-002",
+      "title": "Position Catalog",
+      "domain": "billing",
+      "status": "active",
+      "file": "billing/req-bil-002-position-catalog.md",
+      "depends_on": [
+        "REQ-BIL-001"
+      ]
+    },
+    {
+      "id": "REQ-BIL-003",
+      "title": "User Employment Profile and Contracts",
+      "domain": "billing",
+      "status": "active",
+      "file": "billing/req-bil-003-user-employment-profile-and-contracts.md",
+      "depends_on": [
+        "REQ-BIL-001",
+        "REQ-BIL-002",
+        "REQ-USR-004"
+      ]
+    },
+    {
+      "id": "REQ-BIL-004",
+      "title": "Leave Types and Allowance Policy",
+      "domain": "billing",
+      "status": "active",
+      "file": "billing/req-bil-004-leave-types-and-allowance-policy.md",
+      "depends_on": [
+        "REQ-BIL-001"
+      ]
+    },
+    {
+      "id": "REQ-BIL-005",
+      "title": "Leave Requests and Approval",
+      "domain": "billing",
+      "status": "active",
+      "file": "billing/req-bil-005-leave-requests-and-approval.md",
+      "depends_on": [
+        "REQ-BIL-001",
+        "REQ-BIL-004"
+      ]
+    },
+    {
+      "id": "REQ-BIL-006",
+      "title": "My Leave",
+      "domain": "billing",
+      "status": "active",
+      "file": "billing/req-bil-006-my-leave.md",
+      "depends_on": [
+        "REQ-BIL-001",
+        "REQ-BIL-004",
+        "REQ-BIL-005"
+      ]
+    },
+    {
+      "id": "REQ-BIL-007",
+      "title": "Settlement Periods and Calculation",
+      "domain": "billing",
+      "status": "active",
+      "file": "billing/req-bil-007-settlement-periods-and-calculation.md",
+      "depends_on": [
+        "REQ-BIL-001",
+        "REQ-BIL-003",
+        "REQ-BIL-004",
+        "REQ-TIM-001"
+      ]
+    },
+    {
+      "id": "REQ-BIL-008",
+      "title": "Billing Reports and Export",
+      "domain": "billing",
+      "status": "active",
+      "file": "billing/req-bil-008-billing-reports-and-export.md",
+      "depends_on": [
+        "REQ-BIL-001",
+        "REQ-BIL-004",
+        "REQ-BIL-005",
+        "REQ-BIL-007"
+      ]
+    },
+    {
+      "id": "REQ-BIL-009",
+      "title": "Navigation, Shell, and Presentation",
+      "domain": "billing",
+      "status": "active",
+      "file": "billing/req-bil-009-navigation-shell-and-presentation.md",
+      "depends_on": [
+        "REQ-BIL-006",
+        "REQ-BIL-007",
+        "REQ-BIL-008",
+        "REQ-BIL-011",
+        "REQ-BIL-012"
+      ]
+    },
+    {
+      "id": "REQ-BIL-010",
+      "title": "Availability Policy and Entries",
+      "domain": "billing",
+      "status": "active",
+      "file": "billing/req-bil-010-availability-policy-and-entries.md",
+      "depends_on": [
+        "REQ-BIL-001",
+        "REQ-BIL-004",
+        "REQ-BIL-005",
+        "REQ-ROL-001"
+      ]
+    },
+    {
+      "id": "REQ-BIL-011",
+      "title": "My Availability Calendar",
+      "domain": "billing",
+      "status": "active",
+      "file": "billing/req-bil-011-my-availability-calendar.md",
+      "depends_on": [
+        "REQ-BIL-004",
+        "REQ-BIL-010",
+        "REQ-BIL-006"
+      ]
+    },
+    {
+      "id": "REQ-BIL-012",
+      "title": "Team Availability Calendar",
+      "domain": "billing",
+      "status": "active",
+      "file": "billing/req-bil-012-team-availability-calendar.md",
+      "depends_on": [
+        "REQ-BIL-010",
+        "REQ-BIL-011",
+        "REQ-PRJ-006",
+        "REQ-USR-002"
+      ]
+    },
+    {
+      "id": "REQ-BIL-013",
+      "title": "Billing Email and In-App Notifications",
+      "domain": "billing",
+      "status": "active",
+      "file": "billing/req-bil-013-billing-email-and-in-app-notifications.md",
+      "depends_on": [
+        "REQ-AUTH-007",
+        "REQ-BIL-010",
+        "REQ-BIL-011",
+        "REQ-BIL-012",
+        "REQ-ISS-005"
       ]
     },
     {
@@ -338,6 +458,8 @@
       "depends_on": [
         "REQ-AUTH-001",
         "REQ-ISS-002",
+        "REQ-PRJ-002",
+        "REQ-PRJ-005",
         "REQ-USR-005"
       ]
     },
@@ -349,6 +471,8 @@
       "file": "issues/req-iss-002-issue-create-and-edit-flow.md",
       "depends_on": [
         "REQ-ISS-003",
+        "REQ-PRJ-003",
+        "REQ-PRJ-005",
         "REQ-USR-005"
       ]
     },
@@ -361,7 +485,8 @@
       "depends_on": [
         "REQ-ISS-001",
         "REQ-ISS-002",
-        "REQ-ISS-004"
+        "REQ-ISS-004",
+        "REQ-PRJ-005"
       ]
     },
     {
@@ -381,7 +506,9 @@
       "domain": "issues",
       "status": "active",
       "file": "issues/req-iss-005-notification-bell-and-dropdown.md",
-      "depends_on": []
+      "depends_on": [
+        "REQ-BIL-013"
+      ]
     },
     {
       "id": "REQ-ISS-006",
@@ -415,19 +542,7 @@
       "domain": "passkeys",
       "status": "active",
       "file": "passkeys/req-pky-002-sign-in-with-passkey.md",
-      "depends_on": [
-        "REQ-AUTH-001",
-        "REQ-AUTH-004",
-        "REQ-AUTH-006",
-        "REQ-AUTH-009",
-        "REQ-AUTH-010",
-        "REQ-AUTH-012",
-        "REQ-AUTH-013",
-        "REQ-AUTH-014",
-        "REQ-PKY-003",
-        "REQ-PKY-006",
-        "REQ-USR-004"
-      ]
+      "depends_on": []
     },
     {
       "id": "REQ-PKY-003",
@@ -476,16 +591,7 @@
       "domain": "passkeys",
       "status": "active",
       "file": "passkeys/req-pky-006-combined-compliance-gates-and-cross-auth-interaction.md",
-      "depends_on": [
-        "REQ-AUTH-006",
-        "REQ-AUTH-010",
-        "REQ-AUTH-013",
-        "REQ-AUTH-014",
-        "REQ-PKY-001",
-        "REQ-PKY-007",
-        "REQ-ROL-006",
-        "REQ-USR-005"
-      ]
+      "depends_on": []
     },
     {
       "id": "REQ-PKY-007",
@@ -495,6 +601,98 @@
       "file": "passkeys/req-pky-007-passkey-notification-emails.md",
       "depends_on": [
         "REQ-AUTH-007"
+      ]
+    },
+    {
+      "id": "REQ-PRJ-001",
+      "title": "Seeded Default Project and Project Rules",
+      "domain": "projects",
+      "status": "active",
+      "file": "projects/req-prj-001-seeded-default-project-and-project-rules.md",
+      "depends_on": [
+        "REQ-PRJ-005"
+      ]
+    },
+    {
+      "id": "REQ-PRJ-002",
+      "title": "Projects List",
+      "domain": "projects",
+      "status": "active",
+      "file": "projects/req-prj-002-projects-list.md",
+      "depends_on": [
+        "REQ-PRJ-003",
+        "REQ-PRJ-005"
+      ]
+    },
+    {
+      "id": "REQ-PRJ-003",
+      "title": "Create and Edit Project",
+      "domain": "projects",
+      "status": "active",
+      "file": "projects/req-prj-003-create-and-edit-project.md",
+      "depends_on": [
+        "REQ-PRJ-001",
+        "REQ-PRJ-005",
+        "REQ-PRJ-007",
+        "REQ-PRJ-008"
+      ]
+    },
+    {
+      "id": "REQ-PRJ-004",
+      "title": "Project Details",
+      "domain": "projects",
+      "status": "active",
+      "file": "projects/req-prj-004-project-details.md",
+      "depends_on": [
+        "REQ-PRJ-003",
+        "REQ-PRJ-005",
+        "REQ-PRJ-006",
+        "REQ-ISS-001"
+      ]
+    },
+    {
+      "id": "REQ-PRJ-005",
+      "title": "Project RBAC and Effective Permissions",
+      "domain": "projects",
+      "status": "active",
+      "file": "projects/req-prj-005-project-rbac-and-effective-permissions.md",
+      "depends_on": [
+        "REQ-ROL-001"
+      ]
+    },
+    {
+      "id": "REQ-PRJ-006",
+      "title": "Project Member Management",
+      "domain": "projects",
+      "status": "active",
+      "file": "projects/req-prj-006-project-member-management.md",
+      "depends_on": [
+        "REQ-PRJ-004",
+        "REQ-PRJ-005",
+        "REQ-USR-005"
+      ]
+    },
+    {
+      "id": "REQ-PRJ-007",
+      "title": "Project Membership History",
+      "domain": "projects",
+      "status": "active",
+      "file": "projects/req-prj-007-project-membership-history.md",
+      "depends_on": [
+        "REQ-PRJ-004",
+        "REQ-PRJ-005",
+        "REQ-PRJ-006"
+      ]
+    },
+    {
+      "id": "REQ-PRJ-008",
+      "title": "Project Operation History",
+      "domain": "projects",
+      "status": "active",
+      "file": "projects/req-prj-008-project-operation-history.md",
+      "depends_on": [
+        "REQ-PRJ-004",
+        "REQ-PRJ-005"
       ]
     },
     {
@@ -564,16 +762,94 @@
       "domain": "access",
       "status": "active",
       "file": "access/req-rol-006-initial-administrator-and-system-roles.md",
+      "depends_on": []
+    },
+    {
+      "id": "REQ-TIM-001",
+      "title": "Time Tracking Policy and Permissions",
+      "domain": "time",
+      "status": "active",
+      "file": "time/req-tim-001-time-tracking-policy-and-permissions.md",
       "depends_on": [
-        "REQ-AUTH-001",
-        "REQ-AUTH-009",
-        "REQ-AUTH-011",
-        "REQ-AUTH-012",
-        "REQ-AUTH-013",
         "REQ-ROL-001",
-        "REQ-ROL-003",
-        "REQ-ROL-004",
-        "REQ-ROL-005"
+        "REQ-PRJ-005"
+      ]
+    },
+    {
+      "id": "REQ-TIM-002",
+      "title": "Log Time — Manual Entry and Timer",
+      "domain": "time",
+      "status": "active",
+      "file": "time/req-tim-002-log-time-manual-and-timer.md",
+      "depends_on": [
+        "REQ-TIM-001",
+        "REQ-TIM-007",
+        "REQ-PRJ-002"
+      ]
+    },
+    {
+      "id": "REQ-TIM-003",
+      "title": "Issue Details — Time Tab",
+      "domain": "time",
+      "status": "active",
+      "file": "time/req-tim-003-issue-details-time-tab.md",
+      "depends_on": [
+        "REQ-ISS-003",
+        "REQ-TIM-001",
+        "REQ-TIM-002",
+        "REQ-TIM-004",
+        "REQ-TIM-007"
+      ]
+    },
+    {
+      "id": "REQ-TIM-004",
+      "title": "My Time and Entry Management",
+      "domain": "time",
+      "status": "active",
+      "file": "time/req-tim-004-my-time-and-entry-management.md",
+      "depends_on": [
+        "REQ-TIM-001",
+        "REQ-TIM-002",
+        "REQ-TIM-006",
+        "REQ-TIM-007"
+      ]
+    },
+    {
+      "id": "REQ-TIM-005",
+      "title": "Time Reports and CSV Export",
+      "domain": "time",
+      "status": "active",
+      "file": "time/req-tim-005-time-reports-and-export.md",
+      "depends_on": [
+        "REQ-TIM-001",
+        "REQ-TIM-004",
+        "REQ-TIM-006",
+        "REQ-TIM-007"
+      ]
+    },
+    {
+      "id": "REQ-TIM-006",
+      "title": "Time Entry Operation Audit Log",
+      "domain": "time",
+      "status": "active",
+      "file": "time/req-tim-006-time-entry-operation-audit-log.md",
+      "depends_on": [
+        "REQ-TIM-001",
+        "REQ-TIM-002",
+        "REQ-TIM-004",
+        "REQ-TIM-005"
+      ]
+    },
+    {
+      "id": "REQ-TIM-007",
+      "title": "Navigation, Shell, and Presentation",
+      "domain": "time",
+      "status": "active",
+      "file": "time/req-tim-007-navigation-shell-and-presentation.md",
+      "depends_on": [
+        "REQ-TIM-001",
+        "REQ-TIM-002",
+        "REQ-ISS-005"
       ]
     },
     {
@@ -582,18 +858,7 @@
       "domain": "users",
       "status": "active",
       "file": "users/req-usr-001-my-account-profile.md",
-      "depends_on": [
-        "REQ-AUTH-001",
-        "REQ-AUTH-003",
-        "REQ-AUTH-004",
-        "REQ-AUTH-005",
-        "REQ-AUTH-013",
-        "REQ-AUTH-014",
-        "REQ-AUTH-015",
-        "REQ-PKY-003",
-        "REQ-ROL-001",
-        "REQ-USR-004"
-      ]
+      "depends_on": []
     },
     {
       "id": "REQ-USR-002",
@@ -630,24 +895,7 @@
       "domain": "users",
       "status": "active",
       "file": "users/req-usr-004-user-details-and-session-administration.md",
-      "depends_on": [
-        "REQ-AUTH-004",
-        "REQ-AUTH-007",
-        "REQ-AUTH-009",
-        "REQ-AUTH-011",
-        "REQ-AUTH-013",
-        "REQ-AUTH-014",
-        "REQ-AUTH-015",
-        "REQ-INV-002",
-        "REQ-INV-003",
-        "REQ-INV-004",
-        "REQ-INV-005",
-        "REQ-PKY-005",
-        "REQ-ROL-001",
-        "REQ-ROL-004",
-        "REQ-USR-003",
-        "REQ-USR-005"
-      ]
+      "depends_on": []
     },
     {
       "id": "REQ-USR-005",

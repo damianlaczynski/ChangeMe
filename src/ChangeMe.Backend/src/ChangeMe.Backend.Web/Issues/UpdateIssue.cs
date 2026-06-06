@@ -25,6 +25,9 @@ public sealed class UpdateIssueCommandValidator : Validator<UpdateIssueCommand>
     RuleFor(x => x.Id)
       .NotEmpty();
 
+    RuleFor(x => x.ProjectId)
+      .NotEmpty();
+
     RuleFor(x => x.Title)
       .NotEmpty()
       .MinimumLength(IssueConstraints.TITLE_MIN_LENGTH)

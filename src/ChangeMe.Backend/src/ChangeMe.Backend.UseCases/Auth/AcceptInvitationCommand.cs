@@ -1,4 +1,5 @@
 ﻿using ChangeMe.Backend.UseCases.Auth.Utils;
+using ChangeMe.Backend.UseCases.Projects.Services;
 
 namespace ChangeMe.Backend.UseCases.Auth;
 
@@ -13,6 +14,7 @@ public class AcceptInvitationHandler(
   IPasswordHasher passwordHasher,
   IUserAuthTokenService tokenService,
   IAuthEmailService authEmailService,
+  ProjectMembershipService projectMembershipService,
   TimeProvider timeProvider) : ICommandHandler<AcceptInvitationCommand, bool>
 {
   public async Task<Result<bool>> Handle(AcceptInvitationCommand command, CancellationToken cancellationToken)
@@ -50,6 +52,7 @@ public class AcceptInvitationHandler(
       return Result<bool>.Conflict(acceptInvitationResult.Errors.First());
 
     await tokenService.MarkTokenUsedAsync(command.Token, cancellationToken);
+    await projectMembershipService.AddUserToDefaultProjectAsync(user.Id, cancellationToken);
     await context.SaveChangesAsync(cancellationToken);
 
     await authEmailService.SendPasswordResetCompletedAsync(user, cancellationToken);

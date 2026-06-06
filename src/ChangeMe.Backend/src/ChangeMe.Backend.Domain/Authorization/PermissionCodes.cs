@@ -11,6 +11,22 @@ public static class PermissionCodes
   public const string SessionsManageOwn = "Sessions.ManageOwn";
   public const string SessionsViewAny = "Sessions.ViewAny";
   public const string SessionsManageAny = "Sessions.ManageAny";
+  public const string TimeViewOwn = "Time.ViewOwn";
+  public const string TimeLogOwn = "Time.LogOwn";
+  public const string TimeManageOwn = "Time.ManageOwn";
+  public const string TimeViewAny = "Time.ViewAny";
+  public const string TimeManageAny = "Time.ManageAny";
+  public const string TimeViewReports = "Time.ViewReports";
+  public const string TimeLogPastLimit = "Time.LogPastLimit";
+  public const string BillingViewOwn = "Billing.ViewOwn";
+  public const string BillingViewAny = "Billing.ViewAny";
+  public const string BillingManageEmployment = "Billing.ManageEmployment";
+  public const string BillingManageLeave = "Billing.ManageLeave";
+  public const string BillingApproveLeave = "Billing.ApproveLeave";
+  public const string BillingViewReports = "Billing.ViewReports";
+  public const string BillingManageSettlements = "Billing.ManageSettlements";
+  public const string BillingManageOwnAvailability = "Billing.ManageOwnAvailability";
+  public const string BillingManageAvailability = "Billing.ManageAvailability";
 
   public static readonly IReadOnlyList<string> All =
   [
@@ -22,12 +38,33 @@ public static class PermissionCodes
     SessionsViewOwn,
     SessionsManageOwn,
     SessionsViewAny,
-    SessionsManageAny
+    SessionsManageAny,
+    TimeViewOwn,
+    TimeLogOwn,
+    TimeManageOwn,
+    TimeViewAny,
+    TimeManageAny,
+    TimeViewReports,
+    TimeLogPastLimit,
+    BillingViewOwn,
+    BillingViewAny,
+    BillingManageEmployment,
+    BillingManageLeave,
+    BillingApproveLeave,
+    BillingViewReports,
+    BillingManageSettlements,
+    BillingManageOwnAvailability,
+    BillingManageAvailability,
   ];
 
   public static readonly IReadOnlyList<string> DefaultUserRole =
   [
     SessionsViewOwn,
-    SessionsManageOwn
+    SessionsManageOwn,
+    TimeViewOwn,
+    TimeLogOwn,
+    TimeManageOwn,
+    BillingViewOwn,
+    BillingManageOwnAvailability,
   ];
 }

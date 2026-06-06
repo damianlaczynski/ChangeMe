@@ -6,7 +6,7 @@
 ---
 id: REQ-XXX-NNN
 title: Requirement Name
-domain: identity | users | invitations | access | passkeys | issues
+domain: identity | users | invitations | access | passkeys | projects | issues | time | billing
 status: active
 depends_on: [REQ-YYY-MMM]
 ---

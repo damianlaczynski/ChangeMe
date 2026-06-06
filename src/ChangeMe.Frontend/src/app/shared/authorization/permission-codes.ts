@@ -7,5 +7,21 @@ export const PermissionCodes = {
   sessionsViewOwn: 'Sessions.ViewOwn',
   sessionsManageOwn: 'Sessions.ManageOwn',
   sessionsViewAny: 'Sessions.ViewAny',
-  sessionsManageAny: 'Sessions.ManageAny'
+  sessionsManageAny: 'Sessions.ManageAny',
+  timeViewOwn: 'Time.ViewOwn',
+  timeLogOwn: 'Time.LogOwn',
+  timeManageOwn: 'Time.ManageOwn',
+  timeViewAny: 'Time.ViewAny',
+  timeManageAny: 'Time.ManageAny',
+  timeViewReports: 'Time.ViewReports',
+  timeLogPastLimit: 'Time.LogPastLimit',
+  billingViewOwn: 'Billing.ViewOwn',
+  billingViewAny: 'Billing.ViewAny',
+  billingManageEmployment: 'Billing.ManageEmployment',
+  billingManageLeave: 'Billing.ManageLeave',
+  billingApproveLeave: 'Billing.ApproveLeave',
+  billingViewReports: 'Billing.ViewReports',
+  billingManageSettlements: 'Billing.ManageSettlements',
+  billingManageOwnAvailability: 'Billing.ManageOwnAvailability',
+  billingManageAvailability: 'Billing.ManageAvailability'
 } as const;

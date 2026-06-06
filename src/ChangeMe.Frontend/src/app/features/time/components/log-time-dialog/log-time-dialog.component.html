@@ -1,0 +1,181 @@
+<p-dialog
+  header="Log time"
+  [visible]="dialogServiceRef.visible()"
+  (visibleChange)="onVisibleChange($event)"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [dismissableMask]="false"
+  styleClass="log-time-dialog w-full max-w-lg"
+  [contentStyle]="{ overflow: 'visible' }"
+  (onHide)="onHide()"
+>
+  <form class="flex flex-col gap-3" [formGroup]="form" (ngSubmit)="save()">
+    @if (projects().length === 0 && !isLoadingProjects()) {
+      <p-message severity="warn">{{ TimeMessages.noLoggableProjects }}</p-message>
+    }
+
+    @if (requestError()) {
+      <p-message severity="error">{{ requestError() }}</p-message>
+    }
+
+    <div class="flex flex-col gap-1.5">
+      <label for="logTimeProject">Project</label>
+      <p-select
+        inputId="logTimeProject"
+        appendTo="body"
+        class="w-full"
+        [fluid]="true"
+        [formControl]="form.controls.projectId"
+        [options]="projects()"
+        optionLabel="name"
+        optionValue="id"
+        dataKey="id"
+        placeholder="Select project"
+        [loading]="isLoadingProjects()"
+        [disabled]="readonlyProject()"
+        [invalid]="form.controls.projectId.touched && form.controls.projectId.errors"
+      />
+      @if (
+        form.controls.projectId.touched && form.controls.projectId.errors?.['required']
+      ) {
+        <p-message severity="error">{{ TimeMessages.projectRequired }}</p-message>
+      }
+    </div>
+
+    <div class="flex flex-col gap-1.5">
+      <label for="logTimeIssue">Issue</label>
+      <p-select
+        inputId="logTimeIssue"
+        appendTo="body"
+        class="w-full"
+        [fluid]="true"
+        [formControl]="form.controls.issueId"
+        [options]="issueOptions()"
+        optionLabel="title"
+        optionValue="id"
+        dataKey="id"
+        placeholder="No issue"
+        [loading]="isLoadingIssues()"
+        [disabled]="!form.controls.projectId.value || readonlyIssue()"
+        [filter]="true"
+        filterBy="title"
+      />
+    </div>
+
+    <div class="flex flex-col gap-1.5">
+      <label for="logTimeWorkDate">Work date</label>
+      <p-datepicker
+        inputId="logTimeWorkDate"
+        class="w-full"
+        [fluid]="true"
+        [formControl]="form.controls.workDate"
+        dateFormat="yy-mm-dd"
+        [showIcon]="true"
+        appendTo="body"
+        [invalid]="form.controls.workDate.touched && form.controls.workDate.errors"
+      />
+    </div>
+
+    <div class="flex flex-col gap-1.5">
+      <span class="text-sm font-medium">Duration</span>
+      <div class="flex max-w-xs flex-wrap items-end gap-3">
+        <div class="flex w-24 shrink-0 flex-col gap-1">
+          <label for="logTimeHours" class="text-sm">Hours</label>
+          <p-inputNumber
+            inputId="logTimeHours"
+            [fluid]="false"
+            [formControl]="form.controls.hours"
+            [min]="0"
+            [max]="24"
+          />
+        </div>
+        <div class="flex w-24 shrink-0 flex-col gap-1">
+          <label for="logTimeMinutes" class="text-sm">Minutes</label>
+          <p-inputNumber
+            inputId="logTimeMinutes"
+            [fluid]="false"
+            [formControl]="form.controls.minutes"
+            [min]="0"
+            [max]="59"
+          />
+        </div>
+      </div>
+      <p class="text-muted-color m-0 text-sm">Total: {{ totalDurationLabel() }}</p>
+    </div>
+
+    @if (
+      form.controls.hours.touched &&
+      (totalDurationMinutes() < 1 || totalDurationMinutes() > 1440)
+    ) {
+      <p-message severity="error">{{ TimeMessages.durationRange }}</p-message>
+    }
+
+    @if (!hidePresets()) {
+      <div class="flex flex-wrap gap-2">
+        @for (preset of durationPresets; track preset.id) {
+          <p-button
+            type="button"
+            [label]="preset.label"
+            size="small"
+            severity="secondary"
+            [outlined]="true"
+            (onClick)="applyPreset(preset.minutes)"
+          />
+        }
+      </div>
+    }
+
+    @if (showStartTimerLink()) {
+      <button
+        type="button"
+        class="text-primary m-0 w-fit cursor-pointer border-0 bg-transparent p-0 text-sm hover:underline"
+        (click)="startTimerInstead()"
+      >
+        Start timer instead
+      </button>
+    }
+
+    <div class="flex flex-col gap-1.5">
+      <label for="logTimeDescription">Description</label>
+      <textarea
+        id="logTimeDescription"
+        pTextarea
+        class="w-full"
+        rows="2"
+        [formControl]="form.controls.description"
+        [invalid]="
+          form.controls.description.touched && form.controls.description.errors
+        "
+      ></textarea>
+      <span class="text-muted-color text-sm">
+        {{ formatDescriptionCounter(descriptionLength()) }}
+      </span>
+      @if (
+        form.controls.description.touched &&
+        form.controls.description.errors?.['maxlength']
+      ) {
+        <p-message severity="error">{{ TimeMessages.descriptionTooLong }}</p-message>
+      }
+    </div>
+  </form>
+
+  <ng-template #footer>
+    <div class="flex flex-wrap justify-end gap-2">
+      <p-button
+        type="button"
+        label="Cancel"
+        severity="secondary"
+        [outlined]="true"
+        (onClick)="onHide()"
+      />
+      <p-button
+        type="button"
+        label="Save"
+        [loading]="isSaving()"
+        [disabled]="!canSave()"
+        (onClick)="save()"
+      />
+    </div>
+  </ng-template>
+</p-dialog>

@@ -6,11 +6,14 @@ public sealed class DataGeneratorOptions
 
   public int Seed { get; set; } = 20260522;
   public int Users { get; set; } = 8;
+  public int Projects { get; set; } = 4;
   public int Issues { get; set; } = 25;
+  public int TimeEntries { get; set; } = 50;
   public int CommentsPerIssueMin { get; set; }
   public int CommentsPerIssueMax { get; set; } = 4;
   public int NotificationsPerUserMin { get; set; }
   public int NotificationsPerUserMax { get; set; } = 3;
+  public bool GenerateBilling { get; set; } = true;
   public string DefaultPassword { get; set; } = "Demo123!";
   public string EmailDomain { get; set; } = "demo.local";
 }

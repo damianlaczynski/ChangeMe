@@ -11,7 +11,10 @@ public static class IssueMappingExtensions
   public static IssueDetailsDto ToDetailsDto(
     this Issue issue,
     IReadOnlyDictionary<Guid, string> userLookup,
-    Guid? currentUserId)
+    Guid? currentUserId,
+    string? projectName = null,
+    bool canViewProject = false,
+    bool canManage = false)
   {
     return new IssueDetailsDto
     {
@@ -20,6 +23,10 @@ public static class IssueMappingExtensions
       Description = issue.Description,
       Status = issue.Status,
       Priority = issue.Priority,
+      ProjectId = issue.ProjectId,
+      ProjectName = projectName,
+      CanViewProject = canViewProject,
+      CanManage = canManage,
       CreatedBy = issue.CreatedBy,
       CreatedByName = userLookup.GetValueOrDefault(issue.CreatedBy),
       AssignedToUserId = issue.AssignedToUserId,
@@ -99,4 +106,6 @@ public static class IssueMappingExtensions
       ? userLookup.GetValueOrDefault(userId, value)
       : value;
   }
+
+  public static string? FormatProjectHistoryValue(string? value) => value;
 }

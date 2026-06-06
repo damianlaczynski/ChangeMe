@@ -5,6 +5,7 @@ using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UnitTests.Support;
 using ChangeMe.Backend.UseCases.Auth;
 using ChangeMe.Backend.UseCases.Auth.Utils;
+using ChangeMe.Backend.UseCases.Projects.Services;
 
 namespace ChangeMe.Backend.UnitTests.UseCases.Auth;
 
@@ -35,7 +36,7 @@ public sealed class VerifyEmailHandlerTests
       cancellationToken: cancellationToken)).Value;
     await context.SaveChangesAsync(cancellationToken);
 
-    var handler = new VerifyEmailHandler(context, tokenService);
+    var handler = new VerifyEmailHandler(context, tokenService, new ProjectMembershipService(context));
     var result = await handler.Handle(new VerifyEmailCommand(plainToken), cancellationToken);
 
     Assert.True(result.IsSuccess);
@@ -52,7 +53,7 @@ public sealed class VerifyEmailHandlerTests
     await using var context = UseCasesTestDb.Create(nameof(Handle_WhenTokenIsInvalid_ShouldReturnNotFound));
     var authOptions = TestAuthOptions.Create(emailVerificationEnabled: true);
     var tokenService = new UserAuthTokenService(context, authOptions, TimeProvider.System);
-    var handler = new VerifyEmailHandler(context, tokenService);
+    var handler = new VerifyEmailHandler(context, tokenService, new ProjectMembershipService(context));
 
     var result = await handler.Handle(new VerifyEmailCommand("invalid-token"), cancellationToken);
 

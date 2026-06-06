@@ -3,8 +3,20 @@ id: REQ-ROL-006
 title: Initial Administrator and System Roles
 domain: access
 status: active
-depends_on: [REQ-AUTH-001, REQ-AUTH-009, REQ-AUTH-011, REQ-AUTH-012, REQ-AUTH-013, REQ-ROL-001, REQ-ROL-003, REQ-ROL-004, REQ-ROL-005]
+depends_on:
+  [
+    REQ-AUTH-001,
+    REQ-AUTH-009,
+    REQ-AUTH-011,
+    REQ-AUTH-012,
+    REQ-AUTH-013,
+    REQ-ROL-001,
+    REQ-ROL-003,
+    REQ-ROL-004,
+    REQ-ROL-005,
+  ]
 ---
+
 ## Goal
 
 When the application is first deployed, the system must provide seeded system roles and a first administrator account so user and role administration can begin without manual data preparation.
@@ -31,10 +43,10 @@ The deployment supplies these values for the first administrator:
 
 On first startup, the system ensures these roles exist:
 
-| Role              | **System** badge | Permissions                                        |
-| ----------------- | ---------------- | -------------------------------------------------- |
-| **Administrator** | Yes              | All permissions from REQ-ROL-001.                  |
-| **User**          | Yes              | **Sessions.ViewOwn**, **Sessions.ManageOwn** only. |
+| Role              | **System** badge | Permissions                                                                                                                                                  |
+| ----------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Administrator** | Yes              | All permissions from REQ-ROL-001.                                                                                                                            |
+| **User**          | Yes              | **Sessions.ViewOwn**, **Sessions.ManageOwn**, **Time.ViewOwn**, **Time.LogOwn**, **Time.ManageOwn**, **Billing.ViewOwn**, **Billing.ManageOwnAvailability**. |
 
 - If the **Administrator** role already exists, the system adds any newly defined catalog permissions that role does not yet have.
 - System roles follow edit, delete, and assignment rules from REQ-ROL-003, REQ-ROL-004, and REQ-ROL-005.

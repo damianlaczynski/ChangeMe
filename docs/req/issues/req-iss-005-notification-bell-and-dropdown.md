@@ -3,11 +3,12 @@ id: REQ-ISS-005
 title: Notification Bell and Dropdown
 domain: issues
 status: active
-depends_on: []
+depends_on: [REQ-BIL-013]
 ---
+
 ## Goal
 
-The user must be able to review new and historical notifications related to watched issues from a bell control in the top application bar, without leaving the current screen.
+The user must be able to review new and historical notifications related to watched issues and billing availability changes from a bell control in the top application bar, without leaving the current screen.
 
 There is no separate **Notifications** screen or sidebar entry.
 
@@ -58,6 +59,12 @@ There is no separate **Notifications** screen or sidebar entry.
 
 ### Consistency with issues
 
-- Opening a notification navigates to **Issue details** for the linked issue.
-- After opening from a notification, the user sees current issue state, comments, and history.
+- Opening an issue notification navigates to **Issue details** for the linked issue.
+- After opening from an issue notification, the user sees current issue state, comments, and history.
 - The notification dropdown does not replace change history on **Issue details**.
+
+### Billing availability notifications
+
+- Availability notifications from REQ-BIL-013 appear in the same bell dropdown and follow the same **Unread** / **Read** tabs, pagination, and retention rules as issue notifications.
+- Billing notification rows show **message** and **event time**; they do not show an issue title.
+- **Open** on a billing notification navigates per REQ-BIL-013.

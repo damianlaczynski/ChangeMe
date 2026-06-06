@@ -1,0 +1,162 @@
+<p-card class="mb-4" header="Create contract" subheader="Add an employment contract">
+  <div class="mb-4">
+    <app-back-button label="Back to user details" [route]="['/users', id()]" />
+  </div>
+
+  @if (isLoading()) {
+    <div class="flex flex-col items-center gap-2 py-8">
+      <p-progressSpinner ariaLabel="Loading" />
+    </div>
+  } @else if (loadError()) {
+    <p-message severity="error">{{ loadError() }}</p-message>
+  } @else {
+    <form class="flex flex-col gap-4" [formGroup]="form" (ngSubmit)="onSubmit()">
+      @if (submitError()) {
+        <p-message severity="error">{{ submitError() }}</p-message>
+      }
+      @if (form.errors?.['compensationRequired'] && form.touched) {
+        <p-message severity="error">
+          {{ BillingMessages.compensationRequired }}
+        </p-message>
+      }
+
+      <p-panel header="Contract details">
+        <div class="grid gap-4 md:grid-cols-2">
+          <div class="flex flex-col gap-1.5 md:col-span-2">
+            <label for="contractUser">User</label>
+            <input pInputText id="contractUser" [value]="userLabel()" readonly />
+          </div>
+
+          <div class="flex flex-col gap-1.5">
+            <label for="contractPosition">Position</label>
+            <p-select
+              inputId="contractPosition"
+              appendTo="body"
+              formControlName="positionId"
+              [options]="positions()"
+              optionLabel="name"
+              optionValue="id"
+              placeholder="Select position"
+            />
+          </div>
+
+          <div class="flex flex-col gap-1.5">
+            <label for="contractType">Contract type</label>
+            <p-select
+              inputId="contractType"
+              appendTo="body"
+              formControlName="contractType"
+              [options]="contractTypeOptions"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Select contract type"
+            />
+          </div>
+
+          <div class="flex flex-col gap-1.5">
+            <label for="contractStartDate">Start date</label>
+            <p-datepicker
+              inputId="contractStartDate"
+              appendTo="body"
+              formControlName="startDate"
+              dateFormat="dd.mm.yy"
+              [showIcon]="true"
+            />
+          </div>
+
+          <div class="flex flex-col gap-1.5">
+            <label for="contractEndDate">End date</label>
+            <p-datepicker
+              inputId="contractEndDate"
+              appendTo="body"
+              formControlName="endDate"
+              dateFormat="dd.mm.yy"
+              [showIcon]="true"
+            />
+          </div>
+
+          <div class="flex flex-col gap-1.5">
+            <label for="contractFte">FTE</label>
+            <p-inputNumber
+              inputId="contractFte"
+              formControlName="fte"
+              [min]="constraints.MIN_FTE"
+              [max]="constraints.MAX_FTE"
+              [minFractionDigits]="2"
+              [maxFractionDigits]="2"
+            />
+          </div>
+
+          <div class="flex flex-col gap-1.5">
+            <label>Monthly hours norm</label>
+            <div class="flex flex-wrap gap-2">
+              <p-inputNumber
+                formControlName="normHours"
+                suffix=" h"
+                [min]="0"
+                [max]="168"
+              />
+              <p-inputNumber
+                formControlName="normMinutes"
+                suffix=" m"
+                [min]="0"
+                [max]="59"
+              />
+            </div>
+          </div>
+
+          <div class="flex flex-col gap-1.5">
+            <label for="contractHourlyRate">Hourly rate</label>
+            <p-inputNumber
+              inputId="contractHourlyRate"
+              formControlName="hourlyRate"
+              mode="decimal"
+              [minFractionDigits]="2"
+              [maxFractionDigits]="2"
+              [min]="constraints.MIN_COMPENSATION"
+            />
+          </div>
+
+          <div class="flex flex-col gap-1.5">
+            <label for="contractMonthlySalary">Monthly salary</label>
+            <p-inputNumber
+              inputId="contractMonthlySalary"
+              formControlName="monthlySalary"
+              mode="decimal"
+              [minFractionDigits]="2"
+              [maxFractionDigits]="2"
+              [min]="constraints.MIN_COMPENSATION"
+            />
+          </div>
+
+          <div class="flex flex-col gap-1.5 md:col-span-2">
+            <label for="contractNotes">Notes</label>
+            <textarea
+              pTextarea
+              id="contractNotes"
+              rows="3"
+              formControlName="notes"
+              [maxlength]="constraints.CONTRACT_NOTES_MAX_LENGTH"
+            ></textarea>
+          </div>
+        </div>
+      </p-panel>
+
+      <div class="flex flex-wrap gap-2">
+        <p-button
+          label="Cancel"
+          severity="secondary"
+          [outlined]="true"
+          type="button"
+          (onClick)="cancel()"
+        />
+        <p-button
+          label="Save"
+          icon="pi pi-check"
+          type="submit"
+          [loading]="isSubmitting()"
+        />
+      </div>
+    </form>
+  }
+</p-card>

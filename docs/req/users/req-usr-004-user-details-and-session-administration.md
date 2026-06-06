@@ -3,8 +3,28 @@ id: REQ-USR-004
 title: User Details and Session Administration
 domain: users
 status: active
-depends_on: [REQ-AUTH-004, REQ-AUTH-007, REQ-AUTH-009, REQ-AUTH-011, REQ-AUTH-013, REQ-AUTH-014, REQ-AUTH-015, REQ-INV-002, REQ-INV-003, REQ-INV-004, REQ-INV-005, REQ-PKY-005, REQ-ROL-001, REQ-ROL-004, REQ-USR-003, REQ-USR-005]
+depends_on:
+  [
+    REQ-AUTH-004,
+    REQ-AUTH-007,
+    REQ-AUTH-009,
+    REQ-AUTH-011,
+    REQ-AUTH-013,
+    REQ-AUTH-014,
+    REQ-AUTH-015,
+    REQ-BIL-003,
+    REQ-INV-002,
+    REQ-INV-003,
+    REQ-INV-004,
+    REQ-INV-005,
+    REQ-PKY-005,
+    REQ-ROL-001,
+    REQ-ROL-004,
+    REQ-USR-003,
+    REQ-USR-005,
+  ]
 ---
+
 ## Goal
 
 An authorized administrator must be able to inspect a user's account, roles, effective permissions, and active sessions and revoke sessions when needed.
@@ -61,6 +81,13 @@ Displays read-only:
 - Read-only table: **Name**, **Created at**, **Last used at**, **Authenticator type**, **Backup eligible**, **Backup state**; per-row **Remove** when the administrator has **Users.Manage** (REQ-PKY-005).
 - Empty state: **`No passkeys registered.`**
 
+### Employment section
+
+- Collapsible section **Employment** with employment profile, contracts table, and related actions: REQ-BIL-003.
+- Section header quick links **View leave** and **View availability** per REQ-BIL-009.
+- Placed after **Passkeys** (when shown) or after profile-related panels, and **before** **Roles**.
+- Visible when the viewer has **Billing.ViewAny** or **Billing.ManageEmployment**.
+
 ### Roles section
 
 - Section title: **`Roles`**
@@ -76,7 +103,7 @@ Displays read-only:
   - permission **label** and **description**;
   - **From roles** — comma-separated list of assigned role **names** that grant this permission (for example **`From roles: Administrator, Support`**).
 - When a permission is granted by only one assigned role, the text uses singular: **`From role: User`**.
-- Rows are grouped by **Users**, **Roles**, **Sessions**.
+- Rows are grouped by **Users**, **Roles**, **Sessions**, **Time**, **Billing**.
 - Empty state when the user has roles but no permissions in the union: **`No permissions.`**
 - This section is informational; role changes are made on **Edit user** (REQ-USR-003).
 

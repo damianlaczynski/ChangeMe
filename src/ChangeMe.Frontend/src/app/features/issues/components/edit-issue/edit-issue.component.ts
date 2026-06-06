@@ -17,6 +17,9 @@ import {
   IssueStatus,
   UpdateIssueRequest
 } from '@features/issues/models/issue.model';
+import { ProjectOptionDto } from '@features/projects/models/project.model';
+import { ProjectsService } from '@features/projects/services/projects.service';
+import { ProjectPermissionCodes } from '@features/projects/utils/projects.utils';
 import { IssuesService } from '@features/issues/services/issues.service';
 import {
   IssueAcceptanceCriteriaConstraints,
@@ -35,6 +38,7 @@ import { Select } from 'primeng/select';
 import { Textarea } from 'primeng/textarea';
 
 type EditIssueForm = {
+  projectId: FormControl<string | null>;
   title: FormControl<string>;
   description: FormControl<string>;
   status: FormControl<IssueStatus>;
@@ -69,6 +73,7 @@ export class EditIssueComponent {
   readonly id = input<string>();
 
   private readonly issuesService = inject(IssuesService);
+  private readonly projectsService = inject(ProjectsService);
   private readonly router = inject(Router);
   private readonly toastService = inject(ToastService);
   private readonly destroyRef = inject(DestroyRef);
@@ -78,15 +83,18 @@ export class EditIssueComponent {
   readonly issueConstraints = IssueConstraints;
   readonly issueAcceptanceCriteriaConstraints = IssueAcceptanceCriteriaConstraints;
   readonly assignableUsers = signal<IssueAssignableUserDto[]>([]);
+  readonly manageableProjects = signal<ProjectOptionDto[]>([]);
   readonly issue = signal<IssueDetailsDto | null>(null);
   readonly isLoadingIssue = signal(true);
   readonly isLoadingAssignableUsers = signal(true);
+  readonly isLoadingManageableProjects = signal(true);
   readonly isSubmitting = signal(false);
   readonly loadError = signal<string | null>(null);
   readonly submitError = signal<string | null>(null);
   readonly isSubmitted = signal(false);
 
   readonly form = new FormGroup<EditIssueForm>({
+    projectId: new FormControl<string | null>(null, Validators.required),
     title: new FormControl('', {
       nonNullable: true,
       validators: [
@@ -128,6 +136,19 @@ export class EditIssueComponent {
         }
       });
 
+    this.projectsService
+      .getManageableProjects(ProjectPermissionCodes.issuesManage)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (projects) => {
+          this.manageableProjects.set(projects);
+          this.isLoadingManageableProjects.set(false);
+        },
+        error: () => {
+          this.isLoadingManageableProjects.set(false);
+        }
+      });
+
     effect(() => {
       const issueId = this.id();
       if (!issueId) {
@@ -153,6 +174,7 @@ export class EditIssueComponent {
         next: (issue) => {
           this.issue.set(issue);
           this.form.setValue({
+            projectId: issue.projectId,
             title: issue.title,
             description: issue.description,
             status: issue.status,
@@ -211,8 +233,14 @@ export class EditIssueComponent {
       return;
     }
 
+    const projectId = this.form.controls.projectId.value;
+    if (!projectId) {
+      return;
+    }
+
     const request: UpdateIssueRequest = {
       id,
+      projectId,
       title: this.form.controls.title.value.trim(),
       description: this.form.controls.description.value.trim(),
       status: this.form.controls.status.value,
@@ -245,7 +273,11 @@ export class EditIssueComponent {
   }
 
   shouldShowError(
-    control: FormControl<string> | FormControl<IssueStatus> | FormControl<IssuePriority>
+    control:
+      | FormControl<string>
+      | FormControl<string | null>
+      | FormControl<IssueStatus>
+      | FormControl<IssuePriority>
   ): boolean {
     return !!control.errors && (control.touched || this.isSubmitted());
   }

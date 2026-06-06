@@ -22,7 +22,10 @@ Long-term history lives in git (REQ edits and past change records in commit hist
 | `invitations/` | Invite, resend, cancel, status                          |
 | `access/`      | Roles and permissions                                   |
 | `passkeys/`    | WebAuthn passkeys                                       |
+| `projects/`    | Projects and issue project membership                   |
 | `issues/`      | Issues, attachments, notifications                      |
+| `time/`        | Work time logging, reports, and audit                   |
+| `billing/`     | Employment, contracts, leave, settlements, and reports  |
 
 ## Roles
 

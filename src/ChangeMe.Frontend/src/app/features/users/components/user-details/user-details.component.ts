@@ -17,6 +17,7 @@ import {
 } from '@core/user/utils/user-display.utils';
 import { AuthService } from '@features/auth/services/auth.service';
 import { AuthMessages, formatIpAddress } from '@features/auth/utils/auth.utils';
+import { UserEmploymentSectionComponent } from '@features/billing/components/user-employment-section/user-employment-section.component';
 import { EffectivePermissionsComponent } from '@features/users/components/effective-permissions/effective-permissions.component';
 import { AdminUserSessionDto, UserDetailsDto } from '@features/users/models/user.model';
 import { UsersService } from '@features/users/services/users.service';
@@ -54,7 +55,8 @@ import { Tag } from 'primeng/tag';
     Paginator,
     Panel,
     ProgressSpinner,
-    EffectivePermissionsComponent
+    EffectivePermissionsComponent,
+    UserEmploymentSectionComponent
   ],
   templateUrl: './user-details.component.html'
 })

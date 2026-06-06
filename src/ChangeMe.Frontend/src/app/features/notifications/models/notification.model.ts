@@ -3,7 +3,7 @@ import { PaginationResult } from '@shared/data/models/pagination-result.model';
 
 export interface NotificationDto {
   id: string;
-  issueId: string;
+  issueId?: string | null;
   eventType: NotificationEventType;
   issueTitle: string;
   message: string;
@@ -24,7 +24,7 @@ export interface NotificationSearchParameters extends PaginationParameters {
 
 export interface NotificationRealtimeMessage {
   notificationId: string;
-  issueId: string;
+  issueId?: string | null;
   eventType: NotificationEventType;
   issueTitle: string;
   message: string;
@@ -45,5 +45,8 @@ export enum NotificationEventType {
   ACCEPTANCE_CRITERION_UPDATED = 'ACCEPTANCE_CRITERION_UPDATED',
   ACCEPTANCE_CRITERION_REMOVED = 'ACCEPTANCE_CRITERION_REMOVED',
   ATTACHMENT_ADDED = 'ATTACHMENT_ADDED',
-  ATTACHMENT_REMOVED = 'ATTACHMENT_REMOVED'
+  ATTACHMENT_REMOVED = 'ATTACHMENT_REMOVED',
+  AVAILABILITY_UPDATED_BY_ADMIN = 'AVAILABILITY_UPDATED_BY_ADMIN',
+  WEEKLY_PATTERN_UPDATED_BY_ADMIN = 'WEEKLY_PATTERN_UPDATED_BY_ADMIN',
+  AVAILABILITY_UPDATED_BY_SELF = 'AVAILABILITY_UPDATED_BY_SELF'
 }

@@ -19,6 +19,8 @@ builder.Services.AddHangfire(builder, logger);
 builder.Services.AddInfrastructureServices(builder.Configuration, logger);
 builder.Services.AddMediator();
 builder.Services.AddNotifications(builder, logger);
+builder.Services.AddProjects(logger);
+builder.Services.AddTime(logger);
 builder.Services.AddFileStorage(builder, logger);
 
 logger.LogInformation("Starting web host");

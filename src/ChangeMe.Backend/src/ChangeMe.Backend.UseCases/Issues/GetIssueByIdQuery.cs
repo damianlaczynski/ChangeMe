@@ -1,4 +1,6 @@
-﻿using ChangeMe.Backend.UseCases.Issues.Dtos;
+﻿using ChangeMe.Backend.Domain.Aggregates.Users;
+using ChangeMe.Backend.Domain.Authorization;
+using ChangeMe.Backend.UseCases.Issues.Dtos;
 using ChangeMe.Backend.UseCases.Issues.Utils;
 
 namespace ChangeMe.Backend.UseCases.Issues;
@@ -11,6 +13,9 @@ public class GetIssueByIdHandler(
 {
   public async Task<Result<IssueDetailsDto>> Handle(GetIssueByIdQuery query, CancellationToken cancellationToken)
   {
+    if (userAccessor.UserId is not Guid currentUserId)
+      return Result.Unauthorized();
+
     var issue = await context.Issues
       .AsNoTracking()
       .Include(i => i.AcceptanceCriteria)
@@ -20,11 +25,40 @@ public class GetIssueByIdHandler(
     if (issue is null)
       return Result.NotFound();
 
+    var accessResult = await IssuesUtils.ValidateProjectIssueAccessAsync(
+      context,
+      issue.ProjectId,
+      currentUserId,
+      ProjectPermissionCodes.IssuesView,
+      cancellationToken);
+    if (!accessResult.IsSuccess)
+      return accessResult.Map();
+
+    var roleResult = await IssuesUtils.GetProjectMemberRoleAsync(
+      context,
+      issue.ProjectId,
+      currentUserId,
+      cancellationToken);
+
+    var projectName = await context.Projects
+      .AsNoTracking()
+      .Where(p => p.Id == issue.ProjectId)
+      .Select(p => p.Name)
+      .FirstOrDefaultAsync(cancellationToken);
+
     var userLookup = await IssuesUtils.GetUserDisplayNameLookupAsync(
       context,
       IssuesUtils.CollectRelatedUserIds(issue),
       cancellationToken);
 
-    return Result.Success(issue.ToDetailsDto(userLookup, userAccessor.UserId));
+    var canViewProject = ProjectAuthorization.HasPermission(roleResult.Value, ProjectPermissionCodes.View);
+    var canManage = ProjectAuthorization.HasPermission(roleResult.Value, ProjectPermissionCodes.IssuesManage);
+
+    return Result.Success(issue.ToDetailsDto(
+      userLookup,
+      userAccessor.UserId,
+      projectName,
+      canViewProject,
+      canManage));
   }
 }

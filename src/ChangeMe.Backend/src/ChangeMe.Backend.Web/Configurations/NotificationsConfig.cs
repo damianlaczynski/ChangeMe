@@ -1,4 +1,5 @@
-﻿using ChangeMe.Backend.UseCases.Issues.Services;
+﻿using ChangeMe.Backend.UseCases.Billing.Services;
+using ChangeMe.Backend.UseCases.Issues.Services;
 using ChangeMe.Backend.UseCases.Notifications.Services;
 using ChangeMe.Backend.Web.Notifications;
 using Hangfire;
@@ -14,6 +15,7 @@ public static class NotificationsConfig
     services.AddSignalR();
     services.AddSingleton(TimeProvider.System);
     services.AddScoped<IssueNotificationService>();
+    services.AddScoped<AvailabilityNotificationService>();
     services.AddScoped<NotificationRetentionPolicy>();
     services.AddScoped<NotificationRetentionCleanupJob>();
     services.AddSingleton<INotificationRealtimePublisher, SignalRNotificationRealtimePublisher>();

@@ -39,9 +39,12 @@ If demo data already exists and you omit `--reset`, the tool exits successfully 
 ## What gets generated
 
 - **Users** — `user1@demo.local`, `user2@demo.local`, … with the default `User` role
-- **Issues** — varied title, description, status, priority, optional assignee
+- **Projects** — additional non-system projects (default project is ensured separately) with demo users as members
+- **Issues** — varied title, description, status, priority, optional assignee, distributed across all projects
 - **Issue children** — acceptance criteria, comments, watchers (via domain methods)
+- **Time entries** — logged work spread across demo users, projects, and issues with audit log entries
 - **Notifications** — linked to issues and demo users
+- **Billing / availability** — demo positions, employment profiles and contracts, weekly recurring patterns with generated entries, manual availability exceptions, and approved leave requests with synced leave entries
 
 All inserts go through domain factories (`User.Create`, `Issue.Create`, etc.) and `ApplicationDbContext`, matching the integration-test pattern.
 
@@ -58,7 +61,7 @@ npm run data:generate
   → ChangeMe.Backend.DataGenerator (console)
   → DatabaseConfig.InitializeDatabaseAsync (migrate + ApplicationDataSeeder)
   → DemoDataExistsChecker (skip or DemoDataCleaner on --reset)
-  → UsersGenerator → IssuesGenerator → NotificationsGenerator
+  → UsersGenerator → BillingGenerator → ProjectsGenerator → IssuesGenerator → TimeEntriesGenerator → NotificationsGenerator
   → ApplicationDbContext.SaveChanges
 ```
 

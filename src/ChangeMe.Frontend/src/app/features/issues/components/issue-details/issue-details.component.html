@@ -67,6 +67,21 @@
         </dd>
       </div>
       <div class="flex flex-col gap-1">
+        <dt class="text-muted-color text-sm">Project</dt>
+        <dd class="m-0 font-medium">
+          @if (currentIssue.canViewProject) {
+            <a
+              class="text-primary hover:underline"
+              [routerLink]="['/projects', currentIssue.projectId]"
+            >
+              {{ currentIssue.projectName || currentIssue.projectId }}
+            </a>
+          } @else {
+            {{ currentIssue.projectName || '—' }}
+          }
+        </dd>
+      </div>
+      <div class="flex flex-col gap-1">
         <dt class="text-muted-color text-sm">Assigned to</dt>
         <dd class="m-0 font-medium">
           {{ currentIssue.assignedToUserName || 'Unassigned' }}
@@ -102,6 +117,12 @@
           {{ currentIssue.lastActivityAt | date: 'dd.MM.yyyy HH:mm' }}
         </dd>
       </div>
+      @if (showIssueTimeTab()) {
+        <div class="flex flex-col gap-1">
+          <dt class="text-muted-color text-sm">Logged time</dt>
+          <dd class="m-0 font-medium">{{ issueTimeTotalFormatted() }}</dd>
+        </div>
+      }
     </dl>
 
     <div class="flex flex-col gap-4">
@@ -125,6 +146,9 @@
         <p-tablist>
           <p-tab value="comments">Comments</p-tab>
           <p-tab value="attachments">Attachments</p-tab>
+          @if (showIssueTimeTab()) {
+            <p-tab value="time">{{ timeTabLabel() }}</p-tab>
+          }
           <p-tab value="history">History</p-tab>
         </p-tablist>
         <p-tabpanels>
@@ -139,6 +163,20 @@
               <app-issue-attachments-tab [issueId]="currentIssue.id" />
             }
           </p-tabpanel>
+
+          @if (showIssueTimeTab()) {
+            <p-tabpanel value="time">
+              @if (activeTab() === 'time') {
+                <app-issue-time-tab
+                  [issueId]="currentIssue.id"
+                  [projectId]="currentIssue.projectId"
+                  [projectName]="currentIssue.projectName ?? null"
+                  [issueTitle]="currentIssue.title"
+                  (summaryLoaded)="onIssueTimeSummaryLoaded($event)"
+                />
+              }
+            </p-tabpanel>
+          }
 
           <p-tabpanel value="history">
             @if (activeTab() === 'history') {

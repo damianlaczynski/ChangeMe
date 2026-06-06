@@ -1,4 +1,6 @@
-﻿namespace ChangeMe.Backend.UseCases.Auth;
+﻿using ChangeMe.Backend.UseCases.Time.Utils;
+
+namespace ChangeMe.Backend.UseCases.Auth;
 
 public sealed record LogoutAllSessionsCommand() : ICommand<bool>;
 
@@ -12,6 +14,8 @@ public class LogoutAllSessionsHandler(
       return Result<bool>.Unauthorized();
 
     await RevokeAllActiveSessionsAsync(context, userId, cancellationToken);
+    await TimeUtils.DiscardRunningTimerAsync(context, userId, cancellationToken);
+    await context.SaveChangesAsync(cancellationToken);
     return Result.Success(true);
   }
 

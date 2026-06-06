@@ -1,0 +1,140 @@
+@if (!hasAccess()) {
+  <p class="text-muted-color m-0 pt-2">
+    You do not have permission to view time on this issue.
+  </p>
+} @else {
+  <p-card class="mb-4" [header]="TimeMessages.timeOnIssue">
+    <div class="flex flex-col gap-2">
+      <div>
+        <p class="text-muted-color m-0 text-sm">{{ TimeMessages.totalLoggedTime }}</p>
+        <p class="m-0 text-xl font-semibold">{{ totalDurationFormatted() }}</p>
+      </div>
+      <div>
+        <p class="text-muted-color m-0 mb-2 text-sm">{{ TimeMessages.contributors }}</p>
+        @if (contributorNames().length === 0) {
+          <p class="text-muted-color m-0">{{ TimeMessages.noIssueContributors }}</p>
+        } @else {
+          <div class="flex flex-wrap gap-2">
+            @for (name of visibleContributors(); track name) {
+              <p-tag [value]="name" severity="secondary" />
+            }
+            @if (hiddenContributorCount() > 0) {
+              <p-tag
+                [value]="TimeMessages.moreContributors(hiddenContributorCount())"
+                severity="secondary"
+                [pTooltip]="hiddenContributorNames()"
+                tooltipPosition="top"
+              />
+            }
+          </div>
+        }
+      </div>
+    </div>
+  </p-card>
+
+  @if (canLogTime()) {
+    <div class="mb-4 flex flex-wrap gap-2">
+      <p-button label="Log time" icon="pi pi-clock" (onClick)="openLogTimeDialog()" />
+      @if (!runningTimerService.hasRunningTimer()) {
+        <p-button
+          label="Start timer"
+          icon="pi pi-stopwatch"
+          severity="secondary"
+          [outlined]="true"
+          [loading]="runningTimerService.isStarting()"
+          (onClick)="startTimer()"
+        />
+      }
+    </div>
+  }
+
+  @if (loadError()) {
+    <p-message severity="error" class="mb-4">{{ loadError() }}</p-message>
+  }
+
+  @if (isLoading() && !hasLoaded()) {
+    <div class="flex flex-col items-center gap-2 py-8">
+      <p-progressSpinner ariaLabel="Loading time entries" />
+    </div>
+  } @else if (entries().length === 0) {
+    <div class="flex flex-col items-center gap-3 py-8 text-center">
+      <p class="text-muted-color m-0">{{ TimeMessages.noIssueTimeLogged }}</p>
+      @if (canLogTime()) {
+        <div class="flex flex-wrap justify-center gap-2">
+          <p-button label="Log time" icon="pi pi-clock" (onClick)="openLogTimeDialog()" />
+          @if (!runningTimerService.hasRunningTimer()) {
+            <p-button
+              label="Start timer"
+              icon="pi pi-stopwatch"
+              severity="secondary"
+              [outlined]="true"
+              (onClick)="startTimer()"
+            />
+          }
+        </div>
+      }
+    </div>
+  } @else {
+    <p-menu #entryActionsMenu [model]="entryActionItems()" [popup]="true" />
+
+    <p-table [value]="entries()" [loading]="isLoading()" stripedRows>
+      <ng-template #header>
+        <tr>
+          <th>Author</th>
+          <th>Work date</th>
+          <th>Duration</th>
+          <th>Description</th>
+          <th>Actions</th>
+        </tr>
+      </ng-template>
+      <ng-template #body let-entry>
+        <tr>
+          <td>{{ entry.authorName }}</td>
+          <td>{{ entry.workDate | date: 'dd.MM.yyyy' }}</td>
+          <td>{{ entry.durationFormatted }}</td>
+          <td>
+            @if (entry.description) {
+              <span [pTooltip]="entry.description" tooltipPosition="top">
+                {{ truncateDescription(entry.description) }}
+              </span>
+            } @else {
+              {{ TimeMessages.emptyDescription }}
+            }
+          </td>
+          <td>
+            @if (entry.canEdit || entry.canDelete) {
+              <p-button
+                type="button"
+                icon="pi pi-ellipsis-v"
+                severity="secondary"
+                [text]="true"
+                size="small"
+                ariaLabel="Entry actions"
+                (onClick)="openEntryActionsMenu($event, entry)"
+              />
+            }
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+
+    @if (hasNextPage()) {
+      <div class="mt-4 flex justify-center">
+        <p-button
+          label="Show more"
+          severity="secondary"
+          [outlined]="true"
+          [loading]="isLoadingMore()"
+          (onClick)="showMore()"
+        />
+      </div>
+    }
+  }
+}
+
+<app-edit-time-entry-dialog
+  [entry]="editingEntry()"
+  [visible]="editDialogVisible()"
+  (visibleChange)="editDialogVisible.set($event)"
+  (saved)="onEditSaved()"
+/>

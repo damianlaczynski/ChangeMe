@@ -21,6 +21,11 @@ public static class ApplicationDataSeeder
       logger,
       administratorRole,
       cancellationToken);
+
+    await ProjectDefaultSeeder.EnsureDefaultProjectAsync(context, cancellationToken);
+    await TimeTrackingSettingsSeeder.EnsureTimeTrackingSettingsAsync(context, cancellationToken);
+    await BillingSettingsSeeder.EnsureBillingSettingsAsync(context, cancellationToken);
+    await LeaveTypeSeeder.EnsureLeaveTypesAsync(context, cancellationToken);
     await context.SaveChangesAsync(cancellationToken);
   }
 

@@ -1,0 +1,78 @@
+<p-dialog
+  [header]="isEditMode() ? 'Edit leave type' : 'Create leave type'"
+  [visible]="visible()"
+  (visibleChange)="!$event && onHide()"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: 'min(32rem, calc(100vw - 2rem))' }"
+  (onHide)="onHide()"
+>
+  <form class="flex flex-col gap-3" [formGroup]="form" (ngSubmit)="save()">
+    @if (submitError()) {
+      <p-message severity="error">{{ submitError() }}</p-message>
+    }
+
+    <div class="flex flex-col gap-1.5">
+      <label for="leaveTypeName">Name</label>
+      <input
+        pInputText
+        id="leaveTypeName"
+        formControlName="name"
+        [maxlength]="constraints.NAME_MAX_LENGTH"
+      />
+    </div>
+
+    <div class="flex flex-col gap-1.5">
+      <label for="leaveTypeCode">Code</label>
+      <input
+        pInputText
+        id="leaveTypeCode"
+        formControlName="code"
+        [maxlength]="constraints.CODE_MAX_LENGTH"
+      />
+    </div>
+
+    <div class="flex items-center justify-between gap-2">
+      <label for="leaveTypeCountsAsPaid">Counts as paid</label>
+      <p-toggleswitch inputId="leaveTypeCountsAsPaid" formControlName="countsAsPaid" />
+    </div>
+
+    <div class="flex items-center justify-between gap-2">
+      <label for="leaveTypeUsesAllowance">Uses allowance</label>
+      <p-toggleswitch
+        inputId="leaveTypeUsesAllowance"
+        formControlName="usesAllowance"
+      />
+    </div>
+
+    <div class="flex items-center justify-between gap-2">
+      <label for="leaveTypeRequiresApproval">Requires approval</label>
+      <p-toggleswitch
+        inputId="leaveTypeRequiresApproval"
+        formControlName="requiresApproval"
+      />
+    </div>
+
+    <div class="flex items-center justify-between gap-2">
+      <label for="leaveTypeActive">Active</label>
+      <p-toggleswitch inputId="leaveTypeActive" formControlName="isActive" />
+    </div>
+
+    <div class="flex flex-wrap justify-end gap-2">
+      <p-button
+        label="Cancel"
+        severity="secondary"
+        [outlined]="true"
+        type="button"
+        (onClick)="onHide()"
+      />
+      <p-button
+        [label]="isEditMode() ? 'Save changes' : 'Save'"
+        icon="pi pi-check"
+        type="submit"
+        [loading]="isSubmitting()"
+      />
+    </div>
+  </form>
+</p-dialog>

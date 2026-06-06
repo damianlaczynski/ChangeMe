@@ -26,3 +26,21 @@ export function permissionsGuard(
     return router.createUrlTree([fallbackUrl]);
   };
 }
+
+export function anyPermissionsGuard(
+  requiredPermissions: string[],
+  fallbackUrl = '/account'
+): CanActivateFn {
+  return () => {
+    const authService = inject(AuthService);
+    const router = inject(Router);
+
+    if (
+      requiredPermissions.some((permission) => authService.hasPermission(permission))
+    ) {
+      return true;
+    }
+
+    return router.createUrlTree([fallbackUrl]);
+  };
+}

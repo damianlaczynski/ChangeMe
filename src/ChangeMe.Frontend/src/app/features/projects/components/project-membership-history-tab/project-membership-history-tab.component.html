@@ -1,0 +1,76 @@
+<div class="pt-2">
+  @if (loadError()) {
+    <p-message severity="error">{{ loadError() }}</p-message>
+  } @else if (isLoadingHistory()) {
+    <p-progressSpinner ariaLabel="Loading membership history" styleClass="h-8 w-8" />
+  } @else if (historyEntries().length > 0) {
+    <p-timeline [value]="historyEntries()" align="left">
+      <ng-template pTemplate="marker" let-event>
+        <span
+          class="flex h-8 w-8 items-center justify-center rounded-full"
+          [ngClass]="getMembershipHistoryEventVisual(event.eventType).markerClass"
+        >
+          <i
+            class="text-sm"
+            [ngClass]="getMembershipHistoryEventVisual(event.eventType).icon"
+            aria-hidden="true"
+          ></i>
+        </span>
+      </ng-template>
+      <ng-template pTemplate="content" let-event>
+        <div class="flex flex-col gap-2 pb-4">
+          <p-tag
+            class="justify-start"
+            [value]="event.summary"
+            [severity]="getMembershipHistoryEventVisual(event.eventType).tagSeverity"
+          />
+          <div class="flex items-center gap-2">
+            <time class="text-muted-color shrink-0 text-right text-sm whitespace-nowrap">
+              {{ event.createdAt | date: 'dd.MM.yyyy HH:mm' }}
+            </time>
+            <span class="mx-1">·</span>
+            <p class="text-muted-color m-0 min-w-0 text-sm">
+              {{ event.actorName || event.actorUserId }}
+            </p>
+          </div>
+          <p class="text-muted-color m-0 text-sm">
+            <span class="font-medium">Affected user:</span>
+            {{ event.affectedUserName || event.affectedUserId }}
+          </p>
+          @if (shouldShowMembershipBeforeAfter(event.eventType)) {
+            <p class="text-muted-color m-0 text-sm">
+              <span class="font-medium">Before:</span>
+              {{ event.previousValue || '—' }}
+              <span class="mx-1">·</span>
+              <span class="font-medium">After:</span>
+              {{ event.currentValue || '—' }}
+            </p>
+          } @else if (event.eventType === 'MEMBER_ADDED') {
+            <p class="text-muted-color m-0 text-sm">
+              <span class="font-medium">After:</span>
+              {{ event.currentValue || '—' }}
+            </p>
+          } @else if (event.eventType === 'MEMBER_REMOVED') {
+            <p class="text-muted-color m-0 text-sm">
+              <span class="font-medium">Before:</span>
+              {{ event.previousValue || '—' }}
+            </p>
+          }
+        </div>
+      </ng-template>
+    </p-timeline>
+  } @else if (hasLoadedHistory()) {
+    <p class="m-0 text-muted-color">{{ ProjectMessages.noMembershipHistory }}</p>
+  }
+
+  @if (canShowMoreHistory()) {
+    <div class="mt-4 flex justify-center">
+      <p-button
+        label="Show more"
+        [text]="true"
+        [loading]="isLoadingMoreHistory()"
+        (onClick)="showMoreHistory()"
+      />
+    </div>
+  }
+</div>

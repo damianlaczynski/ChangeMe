@@ -19,9 +19,11 @@ public sealed class CreateIssueEndpointTests(BackendWebApplicationFactory factor
     var cancellationToken = TestContext.Current.CancellationToken;
     var user = await TestAuthHelper.CreateAuthenticatedUserAsync(factory, cancellationToken);
     using var client = user.Client;
+    var defaultProjectId = await ProjectTestHelper.GetDefaultProjectIdAsync(factory, cancellationToken);
 
     var request = new
     {
+      ProjectId = defaultProjectId,
       Title = "Issue created from integration test",
       Description = "Created through HTTP",
       Status = IssueStatus.NEW,
@@ -68,6 +70,7 @@ public sealed class CreateIssueEndpointTests(BackendWebApplicationFactory factor
 
     var response = await client.PostAsJsonAsync("/api/issues", new
     {
+      ProjectId = Guid.NewGuid(),
       Title = "Unauthorized issue",
       Description = "Should fail",
       Status = IssueStatus.NEW,

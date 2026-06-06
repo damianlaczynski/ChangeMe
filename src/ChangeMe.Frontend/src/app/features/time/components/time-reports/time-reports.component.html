@@ -1,0 +1,691 @@
+<p-card
+  class="mb-4"
+  header="Time reports"
+  subheader="Analyze logged work time and review changes."
+>
+  <p-tabs [value]="activeTab()" (valueChange)="onTabChange($event)">
+    <p-tablist>
+      <p-tab value="reports">Reports</p-tab>
+      <p-tab value="audit-log">Audit log</p-tab>
+      <p-tab value="settings">Settings</p-tab>
+    </p-tablist>
+    <p-tabpanels>
+      <p-tabpanel value="reports">
+        <form class="p-fluid mt-4 flex flex-col gap-4" [formGroup]="reportFilterForm">
+          <div class="flex flex-wrap gap-2">
+            @for (preset of reportDateFilterPresets; track preset.value) {
+              <p-button
+                type="button"
+                [label]="preset.label"
+                size="small"
+                severity="secondary"
+                [outlined]="true"
+                (onClick)="applyReportDatePreset(preset.value)"
+              />
+            }
+          </div>
+
+          <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <div class="flex flex-col gap-1.5">
+              <label for="reportDateFrom">Date from</label>
+              <p-datepicker
+                inputId="reportDateFrom"
+                [formControl]="reportFilterForm.controls.dateFrom"
+                dateFormat="yy-mm-dd"
+                [showIcon]="true"
+                appendTo="body"
+              />
+            </div>
+            <div class="flex flex-col gap-1.5">
+              <label for="reportDateTo">Date to</label>
+              <p-datepicker
+                inputId="reportDateTo"
+                [formControl]="reportFilterForm.controls.dateTo"
+                dateFormat="yy-mm-dd"
+                [showIcon]="true"
+                appendTo="body"
+              />
+            </div>
+            <div class="flex flex-col gap-1.5">
+              <label for="reportProjects">Projects</label>
+              <p-multiselect
+                inputId="reportProjects"
+                appendTo="body"
+                [formControl]="reportFilterForm.controls.projectIds"
+                [options]="projectOptions()"
+                optionLabel="name"
+                optionValue="id"
+                placeholder="All projects"
+                display="chip"
+                [loading]="isLoadingProjects()"
+              />
+            </div>
+            <div class="flex flex-col gap-1.5">
+              <label for="reportUsers">Users</label>
+              <p-multiselect
+                inputId="reportUsers"
+                appendTo="body"
+                [formControl]="reportFilterForm.controls.userIds"
+                [options]="userOptions()"
+                optionLabel="email"
+                optionValue="id"
+                placeholder="All users"
+                display="chip"
+                [loading]="isLoadingUsers()"
+              />
+            </div>
+          </div>
+
+          @if (reportDateRangeError()) {
+            <p-message severity="error">{{ reportDateRangeError() }}</p-message>
+          }
+
+          <div class="flex flex-col gap-2">
+            <span class="text-sm font-medium">Grouping</span>
+            <p-selectbutton
+              [formControl]="reportFilterForm.controls.groupingMode"
+              [options]="timeReportGroupingModes()"
+              optionLabel="label"
+              optionValue="value"
+            />
+          </div>
+
+          <div>
+            <p-button
+              label="Run report"
+              icon="pi pi-chart-bar"
+              [loading]="isRunningReport()"
+              (onClick)="runReport()"
+            />
+          </div>
+        </form>
+
+        @if (reportError()) {
+          <p-message severity="error" class="mt-4">{{ reportError() }}</p-message>
+        }
+
+        @if (isRunningReport()) {
+          <div class="mt-6 flex flex-col items-center gap-2 py-8">
+            <p-progressSpinner ariaLabel="Running report" />
+          </div>
+        } @else if (reportResult(); as result) {
+          <div class="mt-6 flex flex-col gap-4">
+            <div class="flex flex-wrap items-start justify-between gap-3">
+              <p-card>
+                <div class="flex flex-col gap-1">
+                  <p class="text-muted-color m-0 text-sm">Total time</p>
+                  <p class="m-0 text-xl font-semibold">
+                    {{ result.totalDurationFormatted }}
+                  </p>
+                </div>
+              </p-card>
+              <p-button
+                label="Export CSV"
+                icon="pi pi-download"
+                severity="secondary"
+                [outlined]="true"
+                [loading]="isExporting()"
+                (onClick)="exportReport()"
+              />
+            </div>
+
+            @if (result.groupingMode === TimeReportGroupingMode.Overall) {
+              <p class="text-muted-color m-0">
+                Overall summary for the selected filters.
+              </p>
+            } @else if (
+              result.groupingMode === TimeReportGroupingMode.PersonAndProject &&
+              result.matrix
+            ) {
+              <p-table [value]="result.matrix.rows" stripedRows>
+                <ng-template #header>
+                  <tr>
+                    <th>User</th>
+                    @for (label of result.matrix.columnLabels; track label) {
+                      <th>{{ label }}</th>
+                    }
+                    <th>Total</th>
+                  </tr>
+                </ng-template>
+                <ng-template #body let-row>
+                  <tr>
+                    <td>{{ row.userLabel }}</td>
+                    @for (cell of row.cells; track $index) {
+                      <td>{{ cell.totalDurationFormatted }}</td>
+                    }
+                    <td class="font-medium">
+                      {{ row.rowTotal.totalDurationFormatted }}
+                    </td>
+                  </tr>
+                </ng-template>
+                <ng-template #footer>
+                  <tr>
+                    <td class="font-medium">Total</td>
+                    @for (total of result.matrix.columnTotals; track $index) {
+                      <td class="font-medium">{{ total.totalDurationFormatted }}</td>
+                    }
+                    <td class="font-medium">
+                      {{ result.matrix.grandTotal.totalDurationFormatted }}
+                    </td>
+                  </tr>
+                </ng-template>
+              </p-table>
+            } @else if (result.rows.length === 0 && !result.matrix?.rows?.length) {
+              <p class="text-muted-color m-0">{{ TimeMessages.noReportResults }}</p>
+            } @else {
+              <p-table [value]="result.rows" stripedRows>
+                <ng-template #header>
+                  <tr>
+                    @if (result.groupingMode === TimeReportGroupingMode.ByPerson) {
+                      <th>User</th>
+                    } @else if (
+                      result.groupingMode === TimeReportGroupingMode.ByProject
+                    ) {
+                      <th>Project</th>
+                    } @else {
+                      <th>Issue</th>
+                      <th>Project</th>
+                    }
+                    <th>Total time</th>
+                  </tr>
+                </ng-template>
+                <ng-template #body let-row>
+                  <tr
+                    [class.cursor-pointer]="
+                      result.groupingMode === TimeReportGroupingMode.ByPerson &&
+                      row.userId
+                    "
+                    (click)="
+                      result.groupingMode === TimeReportGroupingMode.ByPerson &&
+                        togglePersonRow(row)
+                    "
+                  >
+                    @if (result.groupingMode === TimeReportGroupingMode.ByPerson) {
+                      <td>
+                        <span class="inline-flex items-center gap-2">
+                          @if (row.userId) {
+                            <i
+                              class="pi"
+                              [class.pi-chevron-down]="
+                                expandedPersonUserId() === row.userId
+                              "
+                              [class.pi-chevron-right]="
+                                expandedPersonUserId() !== row.userId
+                              "
+                              aria-hidden="true"
+                            ></i>
+                          }
+                          {{ row.label }}
+                        </span>
+                      </td>
+                    } @else if (
+                      result.groupingMode === TimeReportGroupingMode.ByProject
+                    ) {
+                      <td>{{ row.label }}</td>
+                    } @else {
+                      <td>{{ row.label }}</td>
+                      <td>{{ row.secondaryLabel || TimeMessages.emptyDescription }}</td>
+                    }
+                    <td>{{ row.totalDurationFormatted }}</td>
+                  </tr>
+                  @if (
+                    result.groupingMode === TimeReportGroupingMode.ByPerson &&
+                    row.userId &&
+                    expandedPersonUserId() === row.userId
+                  ) {
+                    <tr>
+                      <td [attr.colspan]="2">
+                        <div class="rounded-lg border border-surface-200 p-4">
+                          <p class="m-0 mb-3 font-medium">Person time details</p>
+                          @if (
+                            isLoadingPersonEntries() && personEntries().length === 0
+                          ) {
+                            <p-progressSpinner
+                              ariaLabel="Loading entries"
+                              styleClass="h-8 w-8"
+                            />
+                          } @else if (personEntries().length === 0) {
+                            <p class="text-muted-color m-0">
+                              {{ TimeMessages.noReportResults }}
+                            </p>
+                          } @else {
+                            <p-table [value]="personEntries()" stripedRows>
+                              <ng-template #header>
+                                <tr>
+                                  <th>Work date</th>
+                                  <th>Project</th>
+                                  <th>Issue</th>
+                                  <th>Duration</th>
+                                  <th>Description</th>
+                                </tr>
+                              </ng-template>
+                              <ng-template #body let-entry>
+                                <tr>
+                                  <td>{{ entry.workDate | date: 'dd.MM.yyyy' }}</td>
+                                  <td>{{ entry.projectName }}</td>
+                                  <td>
+                                    @if (entry.issueId && entry.issueTitle) {
+                                      <a
+                                        class="text-primary hover:underline"
+                                        [routerLink]="['/issues', entry.issueId]"
+                                      >
+                                        {{ entry.issueTitle }}
+                                      </a>
+                                    } @else {
+                                      {{ TimeMessages.emptyDescription }}
+                                    }
+                                  </td>
+                                  <td>{{ entry.durationFormatted }}</td>
+                                  <td>
+                                    @if (entry.description) {
+                                      <span
+                                        [pTooltip]="entry.description"
+                                        tooltipPosition="top"
+                                      >
+                                        {{ truncateDescription(entry.description) }}
+                                      </span>
+                                    } @else {
+                                      {{ TimeMessages.emptyDescription }}
+                                    }
+                                  </td>
+                                </tr>
+                              </ng-template>
+                            </p-table>
+                            @if (personEntriesHasNext()) {
+                              <div class="mt-3 flex justify-center">
+                                <p-button
+                                  label="Show more"
+                                  [text]="true"
+                                  [loading]="isLoadingPersonEntries()"
+                                  (onClick)="showMorePersonEntries()"
+                                />
+                              </div>
+                            }
+                          }
+                        </div>
+                      </td>
+                    </tr>
+                  }
+                </ng-template>
+              </p-table>
+            }
+          </div>
+        }
+      </p-tabpanel>
+
+      <p-tabpanel value="audit-log">
+        <form
+          class="p-fluid mt-4"
+          [formGroup]="auditFilterForm"
+          (ngSubmit)="applyAuditFilters()"
+        >
+          <p-panel
+            header="Filters"
+            [toggleable]="true"
+            [collapsed]="auditFiltersCollapsed()"
+            (collapsedChange)="auditFiltersCollapsed.set($event ?? false)"
+          >
+            <div class="mb-4 flex flex-wrap gap-2">
+              @for (preset of reportDateFilterPresets; track preset.value) {
+                <p-button
+                  type="button"
+                  [label]="preset.label"
+                  size="small"
+                  severity="secondary"
+                  [outlined]="true"
+                  (onClick)="applyAuditDatePreset(preset.value)"
+                />
+              }
+            </div>
+
+            <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+              <div class="flex flex-col gap-1.5">
+                <label for="auditDateFrom">Date from</label>
+                <p-datepicker
+                  inputId="auditDateFrom"
+                  [formControl]="auditFilterForm.controls.dateFrom"
+                  dateFormat="yy-mm-dd"
+                  [showIcon]="true"
+                  appendTo="body"
+                />
+              </div>
+              <div class="flex flex-col gap-1.5">
+                <label for="auditDateTo">Date to</label>
+                <p-datepicker
+                  inputId="auditDateTo"
+                  [formControl]="auditFilterForm.controls.dateTo"
+                  dateFormat="yy-mm-dd"
+                  [showIcon]="true"
+                  appendTo="body"
+                />
+              </div>
+              <div class="flex flex-col gap-1.5">
+                <label for="auditActingUser">Acting user</label>
+                <p-select
+                  inputId="auditActingUser"
+                  appendTo="body"
+                  [formControl]="auditFilterForm.controls.actingUserId"
+                  [options]="userOptions()"
+                  optionLabel="email"
+                  optionValue="id"
+                  placeholder="All users"
+                  [showClear]="true"
+                  [loading]="isLoadingUsers()"
+                />
+              </div>
+              <div class="flex flex-col gap-1.5">
+                <label for="auditEntryAuthor">Entry author</label>
+                <p-select
+                  inputId="auditEntryAuthor"
+                  appendTo="body"
+                  [formControl]="auditFilterForm.controls.entryAuthorUserId"
+                  [options]="userOptions()"
+                  optionLabel="email"
+                  optionValue="id"
+                  placeholder="All users"
+                  [showClear]="true"
+                  [loading]="isLoadingUsers()"
+                />
+              </div>
+              <div class="flex flex-col gap-1.5">
+                <label for="auditProject">Project</label>
+                <p-select
+                  inputId="auditProject"
+                  appendTo="body"
+                  [formControl]="auditFilterForm.controls.projectId"
+                  [options]="projectOptions()"
+                  optionLabel="name"
+                  optionValue="id"
+                  placeholder="All projects"
+                  [showClear]="true"
+                  [loading]="isLoadingProjects()"
+                />
+              </div>
+              <div class="flex flex-col gap-1.5">
+                <label for="auditOperations">Operation</label>
+                <p-multiselect
+                  inputId="auditOperations"
+                  appendTo="body"
+                  [formControl]="auditFilterForm.controls.operations"
+                  [options]="auditOperationOptions()"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="All operations"
+                  display="chip"
+                />
+              </div>
+            </div>
+
+            @if (auditDateRangeError()) {
+              <p-message severity="error" class="mt-3">
+                {{ auditDateRangeError() }}
+              </p-message>
+            }
+
+            <div class="mt-4 flex flex-wrap gap-2">
+              <p-button type="submit" label="Apply filters" icon="pi pi-filter" />
+              <p-button
+                type="button"
+                label="Clear filters"
+                severity="secondary"
+                [outlined]="true"
+                (onClick)="clearAuditFilters()"
+              />
+            </div>
+          </p-panel>
+        </form>
+
+        @if (auditError()) {
+          <p-message severity="error" class="mt-4">{{ auditError() }}</p-message>
+        }
+
+        @if (isLoadingAudit() && auditEntries().length === 0) {
+          <div class="mt-6 flex flex-col items-center gap-2 py-8">
+            <p-progressSpinner ariaLabel="Loading audit log" />
+          </div>
+        } @else if (auditEntries().length === 0) {
+          <p class="text-muted-color mt-6">{{ TimeMessages.noAuditRecords }}</p>
+        } @else {
+          <p-table [value]="auditEntries()" class="mt-4" stripedRows>
+            <ng-template #header>
+              <tr>
+                <th>Operation</th>
+                <th>Occurred at</th>
+                <th>Acting user</th>
+                <th>Entry author</th>
+                <th>Project</th>
+                <th>Duration</th>
+              </tr>
+            </ng-template>
+            <ng-template #body let-entry>
+              <tr class="cursor-pointer" (click)="toggleAuditExpanded(entry.id)">
+                <td>
+                  <p-tag
+                    [value]="getAuditOperationLabel(entry.operation)"
+                    [severity]="getAuditOperationSeverity(entry.operation)"
+                  />
+                </td>
+                <td>{{ entry.occurredAt | date: 'dd.MM.yyyy HH:mm' }}</td>
+                <td>{{ entry.actingUserName || entry.actingUserId }}</td>
+                <td>{{ entry.entryAuthorName || entry.entryAuthorUserId }}</td>
+                <td>{{ entry.projectName }}</td>
+                <td>{{ entry.durationFormatted }}</td>
+              </tr>
+              @if (isAuditExpanded(entry.id)) {
+                <tr>
+                  <td colspan="6">
+                    <div class="rounded-lg border border-surface-200 p-4 text-sm">
+                      @if (entry.operation === TimeEntryAuditOperation.CREATED) {
+                        <dl class="m-0 grid gap-2 sm:grid-cols-2">
+                          <div>
+                            <dt class="text-muted-color inline">Work date:</dt>
+                            <dd class="inline m-0">{{ entry.workDate }}</dd>
+                          </div>
+                          <div>
+                            <dt class="text-muted-color inline">Duration:</dt>
+                            <dd class="inline m-0">{{ entry.durationFormatted }}</dd>
+                          </div>
+                          <div class="sm:col-span-2">
+                            <dt class="text-muted-color inline">Description:</dt>
+                            <dd class="inline m-0">
+                              {{ entry.description || TimeMessages.emptyDescription }}
+                            </dd>
+                          </div>
+                          <div>
+                            <dt class="text-muted-color inline">Issue:</dt>
+                            <dd class="inline m-0">
+                              {{ entry.issueTitle || TimeMessages.emptyDescription }}
+                            </dd>
+                          </div>
+                        </dl>
+                      } @else if (entry.operation === TimeEntryAuditOperation.DELETED) {
+                        <dl class="m-0 grid gap-2 sm:grid-cols-2">
+                          <div>
+                            <dt class="text-muted-color inline">Work date:</dt>
+                            <dd class="inline m-0">
+                              {{ entry.previousWorkDate || entry.workDate }}
+                            </dd>
+                          </div>
+                          <div>
+                            <dt class="text-muted-color inline">Duration:</dt>
+                            <dd class="inline m-0">
+                              {{
+                                entry.previousDurationFormatted ||
+                                  entry.durationFormatted
+                              }}
+                            </dd>
+                          </div>
+                          <div class="sm:col-span-2">
+                            <dt class="text-muted-color inline">Description:</dt>
+                            <dd class="inline m-0">
+                              {{
+                                entry.previousDescription ||
+                                  entry.description ||
+                                  TimeMessages.emptyDescription
+                              }}
+                            </dd>
+                          </div>
+                          <div>
+                            <dt class="text-muted-color inline">Project:</dt>
+                            <dd class="inline m-0">
+                              {{ entry.previousProjectName || entry.projectName }}
+                            </dd>
+                          </div>
+                          <div>
+                            <dt class="text-muted-color inline">Issue:</dt>
+                            <dd class="inline m-0">
+                              {{
+                                entry.previousIssueTitle ||
+                                  entry.issueTitle ||
+                                  TimeMessages.emptyDescription
+                              }}
+                            </dd>
+                          </div>
+                        </dl>
+                      } @else {
+                        <div class="grid gap-4 sm:grid-cols-2">
+                          <div>
+                            <p class="m-0 mb-2 font-medium">Before</p>
+                            <dl class="m-0 grid gap-1">
+                              <div>
+                                <dt class="text-muted-color inline">Work date:</dt>
+                                <dd class="inline m-0">
+                                  {{ entry.previousWorkDate || '—' }}
+                                </dd>
+                              </div>
+                              <div>
+                                <dt class="text-muted-color inline">Duration:</dt>
+                                <dd class="inline m-0">
+                                  {{ entry.previousDurationFormatted || '—' }}
+                                </dd>
+                              </div>
+                              <div>
+                                <dt class="text-muted-color inline">Project:</dt>
+                                <dd class="inline m-0">
+                                  {{ entry.previousProjectName || '—' }}
+                                </dd>
+                              </div>
+                              <div>
+                                <dt class="text-muted-color inline">Issue:</dt>
+                                <dd class="inline m-0">
+                                  {{ entry.previousIssueTitle || '—' }}
+                                </dd>
+                              </div>
+                              <div>
+                                <dt class="text-muted-color inline">Description:</dt>
+                                <dd class="inline m-0">
+                                  {{ entry.previousDescription || '—' }}
+                                </dd>
+                              </div>
+                            </dl>
+                          </div>
+                          <div>
+                            <p class="m-0 mb-2 font-medium">After</p>
+                            <dl class="m-0 grid gap-1">
+                              <div>
+                                <dt class="text-muted-color inline">Work date:</dt>
+                                <dd class="inline m-0">{{ entry.workDate }}</dd>
+                              </div>
+                              <div>
+                                <dt class="text-muted-color inline">Duration:</dt>
+                                <dd class="inline m-0">
+                                  {{ entry.durationFormatted }}
+                                </dd>
+                              </div>
+                              <div>
+                                <dt class="text-muted-color inline">Project:</dt>
+                                <dd class="inline m-0">{{ entry.projectName }}</dd>
+                              </div>
+                              <div>
+                                <dt class="text-muted-color inline">Issue:</dt>
+                                <dd class="inline m-0">
+                                  {{
+                                    entry.issueTitle || TimeMessages.emptyDescription
+                                  }}
+                                </dd>
+                              </div>
+                              <div>
+                                <dt class="text-muted-color inline">Description:</dt>
+                                <dd class="inline m-0">
+                                  {{
+                                    entry.description || TimeMessages.emptyDescription
+                                  }}
+                                </dd>
+                              </div>
+                            </dl>
+                          </div>
+                        </div>
+                      }
+                    </div>
+                  </td>
+                </tr>
+              }
+            </ng-template>
+          </p-table>
+
+          @if (auditPagination()?.hasNext) {
+            <div class="mt-4 flex justify-center">
+              <p-button
+                label="Show more"
+                severity="secondary"
+                [outlined]="true"
+                [loading]="isLoadingMoreAudit()"
+                (onClick)="showMoreAudit()"
+              />
+            </div>
+          }
+        }
+      </p-tabpanel>
+
+      <p-tabpanel value="settings">
+        <div class="mt-4 flex flex-col gap-4">
+          <h3 class="m-0 text-lg font-semibold">Time settings</h3>
+
+          @if (isLoadingSettings()) {
+            <p-progressSpinner ariaLabel="Loading settings" styleClass="h-8 w-8" />
+          } @else {
+            <form
+              class="p-fluid max-w-md"
+              [formGroup]="settingsForm"
+              (ngSubmit)="saveSettings()"
+            >
+              @if (settingsError()) {
+                <p-message severity="error" class="mb-4">
+                  {{ settingsError() }}
+                </p-message>
+              }
+
+              <div class="flex flex-col gap-1.5">
+                <label for="backdatingLimitDays">Time backdating limit (days)</label>
+                <p-inputNumber
+                  inputId="backdatingLimitDays"
+                  [formControl]="settingsForm.controls.backdatingLimitDays"
+                  [min]="0"
+                  [max]="3650"
+                  [showButtons]="true"
+                />
+                <p class="text-muted-color m-0 text-sm">
+                  Maximum days before today that users can set as work date.
+                </p>
+                @if (
+                  settingsForm.controls.backdatingLimitDays.touched &&
+                  settingsForm.controls.backdatingLimitDays.errors
+                ) {
+                  <p-message severity="error">
+                    {{ TimeMessages.backdatingLimitInvalid }}
+                  </p-message>
+                }
+              </div>
+
+              @if (canManageSettings()) {
+                <div class="mt-4">
+                  <p-button type="submit" label="Save" [loading]="isSavingSettings()" />
+                </div>
+              }
+            </form>
+          }
+        </div>
+      </p-tabpanel>
+    </p-tabpanels>
+  </p-tabs>
+</p-card>

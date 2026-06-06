@@ -1,0 +1,132 @@
+<p-dialog
+  [header]="dialogHeader"
+  [visible]="visible()"
+  (visibleChange)="!$event && onHide()"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: 'min(32rem, calc(100vw - 2rem))' }"
+  (onHide)="onHide()"
+>
+  <form class="flex flex-col gap-3" [formGroup]="form" (ngSubmit)="save()">
+    @if (submitError()) {
+      <p-message severity="error">{{ submitError() }}</p-message>
+    }
+
+    @if (showUserField()) {
+      <div class="flex flex-col gap-1.5">
+        <label for="availabilityUser">User</label>
+        <p-select
+          inputId="availabilityUser"
+          formControlName="userId"
+          [options]="userOptions()"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Select user"
+          appendTo="body"
+          class="w-full"
+        />
+      </div>
+    }
+
+    <div class="grid gap-3 sm:grid-cols-2">
+      <div class="flex flex-col gap-1.5">
+        <label for="availabilityStartDate">Start date</label>
+        <p-datepicker
+          inputId="availabilityStartDate"
+          formControlName="startDate"
+          dateFormat="yy-mm-dd"
+          appendTo="body"
+          class="w-full"
+        />
+      </div>
+
+      <div class="flex flex-col gap-1.5">
+        <label for="availabilityEndDate">End date</label>
+        <p-datepicker
+          inputId="availabilityEndDate"
+          formControlName="endDate"
+          dateFormat="yy-mm-dd"
+          appendTo="body"
+          class="w-full"
+        />
+      </div>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <p-checkbox
+        inputId="availabilityAllDay"
+        formControlName="allDay"
+        [binary]="true"
+      />
+      <label for="availabilityAllDay">All day</label>
+    </div>
+
+    @if (showTimedFields()) {
+      <div class="grid gap-3 sm:grid-cols-2">
+        <div class="flex flex-col gap-1.5">
+          <label for="availabilityStartTime">Start time</label>
+          <input pInputText id="availabilityStartTime" formControlName="startTime" />
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <label for="availabilityEndTime">End time</label>
+          <input pInputText id="availabilityEndTime" formControlName="endTime" />
+        </div>
+      </div>
+    }
+
+    <div class="flex flex-col gap-1.5">
+      <label for="availabilityStatus">Availability status</label>
+      <p-select
+        inputId="availabilityStatus"
+        formControlName="status"
+        [options]="availabilityStatusOptions"
+        optionLabel="label"
+        optionValue="value"
+        appendTo="body"
+        class="w-full"
+      />
+    </div>
+
+    <div class="flex flex-col gap-1.5">
+      <label for="availabilityNotes">Notes</label>
+      <textarea
+        pTextarea
+        id="availabilityNotes"
+        formControlName="notes"
+        rows="3"
+      ></textarea>
+    </div>
+
+    <div class="flex flex-wrap justify-between gap-2">
+      @if (isEditMode) {
+        <p-button
+          label="Delete"
+          severity="danger"
+          [outlined]="true"
+          type="button"
+          (onClick)="deleteEntry()"
+          [disabled]="isSubmitting()"
+        />
+      } @else {
+        <span></span>
+      }
+
+      <div class="flex flex-wrap gap-2">
+        <p-button
+          label="Cancel"
+          severity="secondary"
+          [outlined]="true"
+          type="button"
+          (onClick)="onHide()"
+        />
+        <p-button
+          [label]="isEditMode ? 'Save changes' : 'Save'"
+          icon="pi pi-check"
+          type="submit"
+          [loading]="isSubmitting()"
+        />
+      </div>
+    </div>
+  </form>
+</p-dialog>

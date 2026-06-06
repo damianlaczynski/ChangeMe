@@ -37,9 +37,12 @@ public sealed class UpdateIssueEndpointTests(BackendWebApplicationFactory factor
       .Select(x => x.Id)
       .FirstAsync(cancellationToken);
 
+    var projectId = await ProjectTestHelper.GetIssueProjectIdAsync(factory, issueId, cancellationToken);
+
     var response = await client.PutAsJsonAsync($"/api/issues/{issueId}", new
     {
       Id = issueId,
+      ProjectId = projectId,
       Title = "Updated title",
       Description = "Updated description",
       Status = IssueStatus.IN_PROGRESS,
@@ -100,9 +103,12 @@ public sealed class UpdateIssueEndpointTests(BackendWebApplicationFactory factor
       cancellationToken,
       actorId: actor.UserId);
 
+    var projectId = await ProjectTestHelper.GetIssueProjectIdAsync(factory, issueId, cancellationToken);
+
     var updateResponse = await client.PutAsJsonAsync($"/api/issues/{issueId}", new
     {
       Id = issueId,
+      ProjectId = projectId,
       Title = "Issue with assignee change",
       Description = "Initial description",
       Status = IssueStatus.NEW,

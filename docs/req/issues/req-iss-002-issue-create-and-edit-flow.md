@@ -3,8 +3,9 @@ id: REQ-ISS-002
 title: Issue Create and Edit Flow
 domain: issues
 status: active
-depends_on: [REQ-ISS-003, REQ-USR-005]
+depends_on: [REQ-ISS-003, REQ-PRJ-003, REQ-PRJ-005, REQ-USR-005]
 ---
+
 ## Goal
 
 The user must be able to create a new issue and edit an existing one by providing the required core data, and after saving be taken to **Issue details**.
@@ -14,18 +15,19 @@ The user must be able to create a new issue and edit an existing one by providin
 ### Access
 
 - Screens: **Create issue**, **Edit issue**
-- Available only to authenticated users.
+- Available only to authenticated users with **Project.Issues.Manage** on the relevant project (REQ-PRJ-005).
 
 ### "Issue details" section (create and edit)
 
-| Field                    | Behavior                                                                                                                  |
-| ------------------------ | ------------------------------------------------------------------------------------------------------------------------- |
-| **Title**                | Text field, **required**; **3–255** characters.                                                                           |
-| **Description**          | Multiline text area, **required**; up to **2000** characters.                                                             |
-| **Status**               | Issue status dropdown; **required**; default on create: **New**.                                                          |
-| **Priority**             | Priority dropdown; **required**; default on create: **Medium**.                                                           |
-| **Assigned to**          | User selector from assignable users (REQ-USR-005); options show **Display label**; **not required** (clear = unassigned). |
-| **Watch after creation** | Checkbox on create only; selected by default; adds the author as a watcher when checked.                                  |
+| Field                    | Behavior                                                                                                                                                                 |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Title**                | Text field, **required**; **3–255** characters.                                                                                                                          |
+| **Project**              | Project dropdown from projects where the user has **Project.Issues.Manage** (REQ-PRJ-005); options show project **name**; **required**; no pre-selected value on create. |
+| **Description**          | Multiline text area, **required**; up to **2000** characters.                                                                                                            |
+| **Status**               | Issue status dropdown; **required**; default on create: **New**.                                                                                                         |
+| **Priority**             | Priority dropdown; **required**; default on create: **Medium**.                                                                                                          |
+| **Assigned to**          | User selector from assignable users (REQ-USR-005); options show **Display label**; **not required** (clear = unassigned).                                                |
+| **Watch after creation** | Checkbox on create only; selected by default; adds the author as a watcher when checked.                                                                                 |
 
 ### "Acceptance criteria" section
 
@@ -43,6 +45,8 @@ The user must be able to create a new issue and edit an existing one by providin
 ### Validation
 
 - **Title**: required; **3–255** characters.
+- **Project**: required; must be a project where the user has **Project.Issues.Manage**.
+- On edit, changing **Project** requires **Project.Issues.Manage** on both the current project and the selected target project.
 - **Description**: required; max **2000** characters.
 - **Status**: required; one of **New**, **In Progress**, **Resolved**, **Closed**.
 - **Priority**: required; one of **Low**, **Medium**, **High**, **Critical**.
@@ -66,7 +70,7 @@ The user must be able to create a new issue and edit an existing one by providin
 ### Consistency between create and edit
 
 - Edit uses the same core fields and validation as create, plus read-only system metadata.
-- On edit, the user can change **Title**, **Description**, **Status**, **Priority**, **Assigned to**, and all **acceptance criteria** rows.
+- On edit, the user can change **Title**, **Project**, **Description**, **Status**, **Priority**, **Assigned to**, and all **acceptance criteria** rows.
 - After create, the author is added to watchers when **Watch after creation** is checked.
 - Every create and edit writes entries to change history (REQ-ISS-003), including acceptance-criterion add, update, and remove events.
 

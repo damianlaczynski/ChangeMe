@@ -1,0 +1,185 @@
+<p-card header="Leave request details">
+  <div class="mb-4">
+    <app-back-button label="Back" [route]="backRoute()" />
+  </div>
+
+  @if (isLoading()) {
+    <div class="flex justify-center py-8">
+      <p-progressSpinner ariaLabel="Loading leave request" />
+    </div>
+  } @else if (errorMessage()) {
+    <p-message severity="error">{{ errorMessage() }}</p-message>
+  } @else if (request(); as details) {
+    <div class="mb-4 flex flex-wrap gap-2">
+      @if (details.canEdit) {
+        <p-button
+          label="Edit"
+          icon="pi pi-pencil"
+          severity="secondary"
+          [outlined]="true"
+          size="small"
+          (onClick)="openEdit()"
+        />
+      }
+      @if (details.canSubmit) {
+        <p-button
+          label="Submit"
+          icon="pi pi-check"
+          size="small"
+          (onClick)="submitRequest()"
+        />
+      }
+      @if (details.canApprove) {
+        <p-button
+          label="Approve"
+          icon="pi pi-check"
+          size="small"
+          (onClick)="approveRequest()"
+        />
+      }
+      @if (details.canReject) {
+        <p-button
+          label="Reject"
+          icon="pi pi-times"
+          severity="danger"
+          [outlined]="true"
+          size="small"
+          (onClick)="openRejectDialog()"
+        />
+      }
+      @if (details.canCancel) {
+        <p-button
+          label="Cancel request"
+          icon="pi pi-ban"
+          severity="danger"
+          [outlined]="true"
+          size="small"
+          (onClick)="confirmCancel()"
+        />
+      }
+      @if (details.canDelete) {
+        <p-button
+          label="Delete"
+          icon="pi pi-trash"
+          severity="danger"
+          [outlined]="true"
+          size="small"
+          (onClick)="confirmDelete()"
+        />
+      }
+    </div>
+
+    <p-panel header="Request">
+      <div class="mb-3">
+        <p-tag
+          [value]="details.status"
+          [severity]="getLeaveRequestStatusSeverity(details.status)"
+        />
+      </div>
+      <div class="grid gap-3 md:grid-cols-2">
+        <div>
+          <div class="text-muted-color text-sm">User</div>
+          <div>{{ details.userDisplayName }}</div>
+        </div>
+        <div>
+          <div class="text-muted-color text-sm">Leave type</div>
+          <div>{{ details.leaveTypeName }}</div>
+        </div>
+        <div>
+          <div class="text-muted-color text-sm">Start date</div>
+          <div>{{ details.startDate | date: 'dd.MM.yyyy' }}</div>
+        </div>
+        <div>
+          <div class="text-muted-color text-sm">End date</div>
+          <div>{{ details.endDate | date: 'dd.MM.yyyy' }}</div>
+        </div>
+        @if (details.startDate === details.endDate) {
+          <div>
+            <div class="text-muted-color text-sm">Day portion</div>
+            <div>{{ getLeaveDayPortionLabel(details.dayPortion) }}</div>
+          </div>
+        }
+        <div>
+          <div class="text-muted-color text-sm">Days</div>
+          <div>{{ details.days }}</div>
+        </div>
+        <div>
+          <div class="text-muted-color text-sm">Submitted at</div>
+          <div>
+            @if (details.submittedAt) {
+              {{ details.submittedAt | date: 'dd.MM.yyyy HH:mm' }}
+            } @else {
+              {{ BillingMessages.emptyField }}
+            }
+          </div>
+        </div>
+        <div>
+          <div class="text-muted-color text-sm">Decided at</div>
+          <div>
+            @if (details.decidedAt) {
+              {{ details.decidedAt | date: 'dd.MM.yyyy HH:mm' }}
+            } @else {
+              {{ BillingMessages.emptyField }}
+            }
+          </div>
+        </div>
+        <div>
+          <div class="text-muted-color text-sm">Decided by</div>
+          <div>{{ details.decidedByDisplayName || BillingMessages.emptyField }}</div>
+        </div>
+        <div class="md:col-span-2">
+          <div class="text-muted-color text-sm">Reason</div>
+          <div>{{ details.reason || BillingMessages.emptyField }}</div>
+        </div>
+        @if (details.rejectReason) {
+          <div class="md:col-span-2">
+            <div class="text-muted-color text-sm">Reject reason</div>
+            <div>{{ details.rejectReason }}</div>
+          </div>
+        }
+      </div>
+    </p-panel>
+  }
+
+  @if (editDialogVisible() && request(); as editRequest) {
+    <app-request-leave-dialog
+      [request]="editRequest"
+      [visible]="editDialogVisible()"
+      (visibleChange)="editDialogVisible.set($event)"
+      (saved)="onSaved()"
+    />
+  }
+
+  <p-dialog
+    header="Reject leave request"
+    [visible]="rejectDialogVisible()"
+    (visibleChange)="rejectDialogVisible.set($event)"
+    [modal]="true"
+    [style]="{ width: 'min(28rem, calc(100vw - 2rem))' }"
+  >
+    @if (rejectError()) {
+      <p-message severity="error" class="mb-3 block">{{ rejectError() }}</p-message>
+    }
+    <textarea
+      pTextarea
+      rows="4"
+      class="w-full"
+      [formControl]="rejectReasonControl"
+      placeholder="Reject reason"
+    ></textarea>
+    <div class="mt-4 flex justify-end gap-2">
+      <p-button
+        label="Cancel"
+        severity="secondary"
+        [outlined]="true"
+        (onClick)="rejectDialogVisible.set(false)"
+      />
+      <p-button
+        label="Reject"
+        severity="danger"
+        [loading]="isRejecting()"
+        (onClick)="rejectRequest()"
+      />
+    </div>
+  </p-dialog>
+</p-card>

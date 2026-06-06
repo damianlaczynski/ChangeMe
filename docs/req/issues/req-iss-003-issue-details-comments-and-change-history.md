@@ -3,8 +3,9 @@ id: REQ-ISS-003
 title: Issue Details, Comments, and Change History
 domain: issues
 status: active
-depends_on: [REQ-ISS-001, REQ-ISS-002, REQ-ISS-004]
+depends_on: [REQ-ISS-001, REQ-ISS-002, REQ-ISS-004, REQ-PRJ-005]
 ---
+
 ## Goal
 
 **Issue details** is the central view where the user reviews full issue data, adds comments, tracks change history, watches or unwatches, edits, or deletes the issue.
@@ -14,15 +15,16 @@ depends_on: [REQ-ISS-001, REQ-ISS-002, REQ-ISS-004]
 ### Access
 
 - Screen: **Issue details**
-- Available only to authenticated users.
+- Available only to authenticated users with **Project.Issues.View** on the issue's project (REQ-PRJ-005).
 
 ### Issue header and metadata
 
 - Page header shows issue **title**, or `**Issue Details`\*\* while loading.
-- Metadata block: **Author**, **Assigned to**, **Status**, **Priority**, **Created at**, **Last activity** (status and priority as badges).
+- Metadata block: **Project** (link to **Project details** when the user has **Project.View** on that project; plain text when not), **Author**, **Assigned to**, **Status**, **Priority**, **Logged time** (REQ-TIM-007; visible with **Project.Time.View**), **Created at**, **Last activity** (status and priority as badges).
 - Issue identifier is not shown as a separate labeled field; it is used in navigation and search (REQ-ISS-001).
 - Watch state is shown by the watch button icon, watcher count label, and tooltip — not by separate **Watching** / **Not watching** text.
-- **Edit** opens **Edit issue** (REQ-ISS-002).
+- **Edit** opens **Edit issue** (REQ-ISS-002); visible only with **Project.Issues.Manage** on the issue's project.
+- **Delete** is visible only with **Project.Issues.Manage** on the issue's project.
 - **Delete** confirmation: `**Delete "{issue title}"? This action cannot be undone.`** On confirm, delete the issue and navigate to **Issues list\*\*.
 
 ### Description section
@@ -36,7 +38,7 @@ depends_on: [REQ-ISS-001, REQ-ISS-002, REQ-ISS-004]
 
 ### Comments, attachments, and history tabs
 
-- Separate tabs: **Comments**, **Attachments**, and **History**.
+- Separate tabs: **Comments**, **Attachments**, **Time** (REQ-TIM-003), and **History**.
 
 ### Comments section
 
@@ -62,7 +64,7 @@ depends_on: [REQ-ISS-001, REQ-ISS-002, REQ-ISS-004]
 ### Change history section
 
 - **History** tab shows an activity timeline.
-- History includes: issue creation, status change, priority change, assignee change, title edit, description edit, acceptance-criterion add, update, and remove, attachment add, and attachment remove.
+- History includes: issue creation, project change, status change, priority change, assignee change, title edit, description edit, acceptance-criterion add, update, and remove, attachment add, and attachment remove.
 - Each entry: **summary** (event type), **acting user**, **date and time**, and **Before** / **After** when values apply.
 - **Description** changes show summary only (no before/after inline).
 - History is read-only.

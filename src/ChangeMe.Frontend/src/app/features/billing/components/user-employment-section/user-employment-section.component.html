@@ -1,0 +1,162 @@
+@if (canViewEmployment()) {
+  <p-panel
+    header="Employment"
+    [toggleable]="true"
+    [collapsed]="panelCollapsed()"
+    (collapsedChange)="onPanelCollapsedChange($event)"
+    class="mb-4"
+  >
+    <div class="mb-4 flex flex-wrap gap-2">
+      @if (canViewLeaveQuickLink()) {
+        <p-button
+          label="View leave"
+          icon="pi pi-calendar"
+          severity="secondary"
+          [outlined]="true"
+          size="small"
+          [routerLink]="['/leave-requests']"
+          [queryParams]="{ userId: userId() }"
+        />
+      }
+      @if (canViewAvailabilityQuickLink()) {
+        <p-button
+          label="View availability"
+          icon="pi pi-users"
+          severity="secondary"
+          [outlined]="true"
+          size="small"
+          [routerLink]="['/availability-calendar']"
+          [queryParams]="{ userId: userId() }"
+        />
+      }
+      @if (canManageEmployment() && profile().canManage) {
+        <p-button
+          label="Edit employment profile"
+          icon="pi pi-pencil"
+          severity="secondary"
+          [outlined]="true"
+          size="small"
+          (onClick)="openEditDialog()"
+        />
+      }
+      @if (canManageEmployment()) {
+        <p-button
+          label="Add contract"
+          icon="pi pi-plus"
+          severity="secondary"
+          [outlined]="true"
+          size="small"
+          [routerLink]="['/users', userId(), 'employment', 'contracts', 'create']"
+        />
+      }
+    </div>
+
+    @if (isLoading()) {
+      <div class="flex flex-col items-center gap-2 py-6">
+        <p-progressSpinner ariaLabel="Loading employment" />
+      </div>
+    } @else if (errorMessage()) {
+      <p-message severity="error">{{ errorMessage() }}</p-message>
+    } @else if (employment(); as data) {
+      <div class="mb-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+        <div>
+          <div class="text-muted-color text-sm">Employee ID</div>
+          <div>{{ formatEmploymentField(data.profile.employeeId) }}</div>
+        </div>
+        <div>
+          <div class="text-muted-color text-sm">National ID</div>
+          <div>{{ formatEmploymentField(data.profile.nationalId) }}</div>
+        </div>
+        <div>
+          <div class="text-muted-color text-sm">Tax ID</div>
+          <div>{{ formatEmploymentField(data.profile.taxId) }}</div>
+        </div>
+        <div>
+          <div class="text-muted-color text-sm">Bank account</div>
+          <div>{{ formatEmploymentField(data.profile.bankAccount) }}</div>
+        </div>
+        <div class="md:col-span-2 xl:col-span-2">
+          <div class="text-muted-color text-sm">Employment notes</div>
+          <div>{{ formatEmploymentField(data.profile.notes) }}</div>
+        </div>
+      </div>
+
+      <h3 class="mb-2 mt-0 text-base font-semibold">Contracts</h3>
+      <p-table [value]="data.contracts" stripedRows>
+        <ng-template #header>
+          <tr>
+            <th>Position</th>
+            <th>Contract type</th>
+            <th>Start date</th>
+            <th>End date</th>
+            <th>FTE</th>
+            <th>Monthly hours norm</th>
+            <th>Rate / salary</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </ng-template>
+        <ng-template #body let-contract>
+          <tr
+            class="cursor-pointer"
+            [routerLink]="['/users', userId(), 'employment', 'contracts', contract.id]"
+          >
+            <td>{{ contract.positionName }}</td>
+            <td>{{ getContractTypeLabel(contract.contractType) }}</td>
+            <td>{{ contract.startDate | date: 'dd.MM.yyyy' }}</td>
+            <td>
+              @if (contract.endDate) {
+                {{ contract.endDate | date: 'dd.MM.yyyy' }}
+              } @else {
+                {{ BillingMessages.emptyField }}
+              }
+            </td>
+            <td>{{ contract.fte | number: '1.2-2' }}</td>
+            <td>{{ formatMonthlyHoursNorm(contract.monthlyHoursNormMinutes) }}</td>
+            <td>{{ contract.rateOrSalaryDisplay }}</td>
+            <td>
+              <p-tag
+                [value]="contract.status"
+                [severity]="getContractStatusSeverity(contract.status)"
+              />
+            </td>
+            <td>
+              <p-button
+                label="View"
+                icon="pi pi-eye"
+                [text]="true"
+                size="small"
+                [routerLink]="[
+                  '/users',
+                  userId(),
+                  'employment',
+                  'contracts',
+                  contract.id
+                ]"
+              />
+            </td>
+          </tr>
+        </ng-template>
+        <ng-template #emptymessage>
+          <tr>
+            <td colspan="9">
+              <p class="text-muted-color m-0 py-4 text-center">
+                {{ BillingMessages.noContracts }}
+              </p>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    }
+
+    @if (editDialogVisible()) {
+      <app-edit-employment-profile-dialog
+        [userId]="userId()"
+        [profile]="profile()"
+        [visible]="editDialogVisible()"
+        (visibleChange)="editDialogVisible.set($event)"
+        (saved)="onProfileSaved()"
+      />
+    }
+  </p-panel>
+}

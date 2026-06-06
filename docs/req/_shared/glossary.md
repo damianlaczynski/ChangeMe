@@ -33,6 +33,33 @@ The following terms describe observable account state, not implementation detail
 | **Email verified** | When email verification is enabled in deployment settings, the user proved control of the mailbox (verification link, invitation acceptance, or administrator confirmation). When verification is disabled, every account is treated as verified for sign-in purposes. |
 | **Profile email**  | The **current email** on the ChangeMe account; used for sign-in, display, and all notifications (REQ-AUTH-014). Shown as **Email** on **My account** and admin screens.                                                                                                |
 
+## Issues and projects
+
+| Term               | Meaning                                                                                                                                                                                    |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Project**        | A named container for issues. Every issue belongs to exactly one project (REQ-PRJ-001). The seeded **Default** project is a system project that cannot be edited or deleted.               |
+| **Project member** | A user assigned to a project with exactly one **project role** (**Owner**, **Member**, or **Viewer**). Membership determines resource-scoped project permissions (REQ-PRJ-005).            |
+| **Project role**   | Fixed role on one project: **Owner** (full project access), **Member** (view and manage issues), or **Viewer** (read-only). A user may hold different project roles on different projects. |
+| **Time entry**     | A record of work performed by one user: required **Project**, optional **Issue**, **Work date**, **Duration** (whole minutes), and optional **Description**. See REQ-TIM-001.              |
+| **Running timer**  | A single active stopwatch per signed-in user that pre-fills **Duration** on **Log time** when stopped. See REQ-TIM-002.                                                                    |
+
+## Employment and billing
+
+| Term                         | Meaning                                                                                                                                                                                                    |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Position**                 | A named organizational role (for example **Developer**, **Project manager**) used on employment contracts. Managed in the position catalog (REQ-BIL-002).                                                  |
+| **Employment contract**      | A date-bounded agreement linking a user to a **Position** with **Contract type**, **FTE**, **Monthly hours norm**, and compensation (**Hourly rate** or **Monthly salary**). See REQ-BIL-001, REQ-BIL-003. |
+| **Contract type**            | One of **`Employment`**, **`Mandate`**, **`Work contract`**, or **`B2B`** — determines how the contract is labeled in settlements and reports.                                                             |
+| **Leave type**               | A category of absence (for example **Vacation**, **Sick leave**) with rules for paid time and allowance consumption (REQ-BIL-004).                                                                         |
+| **Leave request**            | A user's planned or taken absence with **Start date**, **End date**, optional half-day **Day portion**, and approval **Status** (REQ-BIL-005).                                                             |
+| **Leave allowance**          | Annual vacation entitlement in days derived from **Default annual leave days** and contract **FTE** (REQ-BIL-004).                                                                                         |
+| **Settlement period**        | One calendar month for which the system calculates **user settlements** from contracts, logged time, and approved leave (REQ-BIL-007).                                                                     |
+| **User settlement**          | Per-user monthly summary: **Expected minutes**, **Logged minutes**, **Leave days**, and **Balance minutes** (overtime or undertime). See REQ-BIL-001.                                                      |
+| **Availability entry**       | A date or time range declaring **Availability status** (**Available**, **Unavailable**, **Remote**, **On-site**) for one user. **Source** is **Manual**, **Recurring**, or **Leave** (REQ-BIL-010).        |
+| **Weekly recurring pattern** | Seven-row template (Monday–Sunday) defining baseline availability; generates **Recurring** entries (REQ-BIL-010).                                                                                          |
+| **Availability calendar**    | Combined view of **Leave**, **Manual**, and **Recurring** entries per user and day; **My availability** (REQ-BIL-011) or team **Availability calendar** (REQ-BIL-012).                                     |
+| **Default work hours**       | Organization-wide billing settings (**Default workday start/end**, **Half-day split time**, **Default workdays**, **Default availability status**) used to seed new weekly patterns (REQ-BIL-004).         |
+
 ## Cross-references
 
 - Invitation flows: `docs/req/invitations/`
@@ -41,5 +68,8 @@ The following terms describe observable account state, not implementation detail
 - Email verification: REQ-AUTH-011
 - Self-service email change: REQ-AUTH-015
 - Passkeys: `docs/req/passkeys/`
+- Projects: `docs/req/projects/`
+- Time tracking: `docs/req/time/`
+- Billing and settlements: `docs/req/billing/`
 - User **Status** rules: REQ-INV-005
 - Account model (admin UI): `docs/req/_shared/account-model.md`

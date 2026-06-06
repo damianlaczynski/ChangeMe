@@ -1,0 +1,141 @@
+<p-card header="User settlement details">
+  <div class="mb-4">
+    <app-back-button label="Back" [route]="backRoute()" />
+  </div>
+
+  @if (isLoading()) {
+    <div class="flex justify-center py-8">
+      <p-progressSpinner ariaLabel="Loading settlement details" />
+    </div>
+  } @else if (errorMessage()) {
+    <p-message severity="error">{{ errorMessage() }}</p-message>
+  } @else if (settlement(); as details) {
+    <p-panel [header]="details.periodLabel + ' — ' + details.userDisplayName" class="mb-4">
+      <div class="grid gap-3 md:grid-cols-2">
+        <div>
+          <div class="text-muted-color text-sm">User</div>
+          <div>{{ details.userDisplayName }}</div>
+        </div>
+        <div>
+          <div class="text-muted-color text-sm">Period</div>
+          <div>{{ details.periodLabel }}</div>
+        </div>
+      </div>
+    </p-panel>
+
+    <p-panel header="Contract" class="mb-4">
+      @if (details.contract; as contract) {
+        <div class="grid gap-3 md:grid-cols-2">
+          <div>
+            <div class="text-muted-color text-sm">Position</div>
+            <div>{{ contract.positionName }}</div>
+          </div>
+          <div>
+            <div class="text-muted-color text-sm">Contract type</div>
+            <div>{{ getContractTypeLabel(contract.contractType) }}</div>
+          </div>
+          <div>
+            <div class="text-muted-color text-sm">Start date</div>
+            <div>{{ contract.startDate | date: 'dd.MM.yyyy' }}</div>
+          </div>
+          <div>
+            <div class="text-muted-color text-sm">End date</div>
+            <div>
+              @if (contract.endDate) {
+                {{ contract.endDate | date: 'dd.MM.yyyy' }}
+              } @else {
+                {{ BillingMessages.emptyField }}
+              }
+            </div>
+          </div>
+          <div>
+            <div class="text-muted-color text-sm">FTE</div>
+            <div>{{ contract.fte | number: '1.2-2' }}</div>
+          </div>
+          <div>
+            <div class="text-muted-color text-sm">Monthly hours norm</div>
+            <div>{{ formatMonthlyHoursNorm(contract.monthlyHoursNormMinutes) }}</div>
+          </div>
+        </div>
+      } @else {
+        <p-message severity="info">{{ BillingMessages.noSettlementContract }}</p-message>
+      }
+    </p-panel>
+
+    <p-panel header="Expected time" class="mb-4">
+      <div class="grid gap-3 md:grid-cols-2">
+        <div>
+          <div class="text-muted-color text-sm">Monthly hours norm</div>
+          <div>
+            {{ formatMonthlyHoursNorm(details.expectedTime.monthlyHoursNormMinutes) }}
+          </div>
+        </div>
+        @if (details.expectedTime.prorationNote) {
+          <div class="md:col-span-2">
+            <div class="text-muted-color text-sm">Proration</div>
+            <div>{{ details.expectedTime.prorationNote }}</div>
+          </div>
+        }
+        <div>
+          <div class="text-muted-color text-sm">Paid leave deducted</div>
+          <div>
+            {{ formatMonthlyHoursNorm(details.expectedTime.paidLeaveMinutesDeducted) }}
+          </div>
+        </div>
+        <div>
+          <div class="text-muted-color text-sm">Expected time</div>
+          <div class="font-semibold">
+            {{ formatMonthlyHoursNorm(details.expectedTime.expectedMinutes) }}
+          </div>
+        </div>
+      </div>
+    </p-panel>
+
+    <p-panel header="Logged time" class="mb-4">
+      <div class="text-xl font-semibold">
+        {{ formatMonthlyHoursNorm(details.loggedMinutes) }}
+      </div>
+    </p-panel>
+
+    <p-panel header="Leave" class="mb-4">
+      @if (details.leaveItems.length === 0) {
+        <p-message severity="info">{{ BillingMessages.noSettlementLeave }}</p-message>
+      } @else {
+        <p-table [value]="details.leaveItems">
+          <ng-template #header>
+            <tr>
+              <th>Leave type</th>
+              <th>Dates</th>
+              <th>Days</th>
+            </tr>
+          </ng-template>
+          <ng-template #body let-item>
+            <tr>
+              <td>{{ item.leaveTypeName }}</td>
+              <td>{{ item.datesDisplay }}</td>
+              <td>{{ item.days }}</td>
+            </tr>
+          </ng-template>
+        </p-table>
+      }
+    </p-panel>
+
+    <p-panel header="Balance">
+      <div class="grid gap-3 md:grid-cols-2">
+        <div>
+          <div class="text-muted-color text-sm">Balance</div>
+          <div
+            class="text-xl font-semibold"
+            [class]="getSettlementBalanceClass(details.balanceMinutes)"
+          >
+            {{ formatMonthlyHoursNorm(details.balanceMinutes) }}
+          </div>
+        </div>
+        <div>
+          <div class="text-muted-color text-sm">Label</div>
+          <div>{{ details.balanceLabel }}</div>
+        </div>
+      </div>
+    </p-panel>
+  }
+</p-card>

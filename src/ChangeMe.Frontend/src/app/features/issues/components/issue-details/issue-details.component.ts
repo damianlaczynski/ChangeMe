@@ -14,8 +14,10 @@ import { ToastService } from '@core/toast/services/toast.service';
 import { IssueAttachmentsTabComponent } from '@features/issues/components/issue-attachments-tab/issue-attachments-tab.component';
 import { IssueCommentsTabComponent } from '@features/issues/components/issue-comments-tab/issue-comments-tab.component';
 import { IssueHistoryTabComponent } from '@features/issues/components/issue-history-tab/issue-history-tab.component';
+import { IssueTimeTabComponent } from '@features/time/components/issue-time-tab/issue-time-tab.component';
 import { IssueDetailsDto } from '@features/issues/models/issue.model';
 import { IssuesService } from '@features/issues/services/issues.service';
+import { TimeService } from '@features/time/services/time.service';
 import {
   getDeleteIssueConfirmMessage,
   getIssuePriorityLabel,
@@ -23,6 +25,7 @@ import {
   getIssueStatusLabel,
   getIssueStatusSeverity
 } from '@features/issues/utils/issue.utils';
+import { getTimeTabLabel } from '@features/time/utils/time.utils';
 import { BackButtonComponent } from '@shared/components/back-button/back-button.component';
 import { ConfirmationService } from 'primeng/api';
 import { Button } from 'primeng/button';
@@ -33,8 +36,9 @@ import { ProgressSpinner } from 'primeng/progressspinner';
 import { Tab, TabList, TabPanel, TabPanels, Tabs } from 'primeng/tabs';
 import { Tag } from 'primeng/tag';
 import { Tooltip } from 'primeng/tooltip';
+import { catchError, of } from 'rxjs';
 
-type IssueDetailsTab = 'comments' | 'attachments' | 'history';
+type IssueDetailsTab = 'comments' | 'attachments' | 'history' | 'time';
 
 @Component({
   selector: 'app-issue-details',
@@ -56,7 +60,8 @@ type IssueDetailsTab = 'comments' | 'attachments' | 'history';
     BackButtonComponent,
     IssueCommentsTabComponent,
     IssueAttachmentsTabComponent,
-    IssueHistoryTabComponent
+    IssueHistoryTabComponent,
+    IssueTimeTabComponent
   ],
   templateUrl: './issue-details.component.html'
 })
@@ -64,6 +69,7 @@ export class IssueDetailsComponent {
   readonly id = input<string>();
 
   private readonly issuesService = inject(IssuesService);
+  private readonly timeService = inject(TimeService);
   private readonly confirmationService = inject(ConfirmationService);
   private readonly toastService = inject(ToastService);
   private readonly route = inject(ActivatedRoute);
@@ -82,6 +88,12 @@ export class IssueDetailsComponent {
   readonly isTogglingWatch = signal(false);
   readonly isDeleting = signal(false);
   readonly activeTab = signal<IssueDetailsTab>('comments');
+  readonly issueTimeTotalMinutes = signal(0);
+  readonly issueTimeTotalFormatted = signal('0m');
+  readonly showIssueTimeTab = signal(false);
+  readonly timeTabLabel = computed(() =>
+    getTimeTabLabel(this.issueTimeTotalMinutes(), this.issueTimeTotalFormatted())
+  );
 
   private lastLoadedIssueId: string | null = null;
 
@@ -95,7 +107,9 @@ export class IssueDetailsComponent {
             ? 'history'
             : tab === 'attachments'
               ? 'attachments'
-              : 'comments'
+              : tab === 'time'
+                ? 'time'
+                : 'comments'
         );
       });
 
@@ -108,6 +122,9 @@ export class IssueDetailsComponent {
 
       if (id !== this.lastLoadedIssueId) {
         this.lastLoadedIssueId = id;
+        this.issueTimeTotalMinutes.set(0);
+        this.issueTimeTotalFormatted.set('0m');
+        this.showIssueTimeTab.set(false);
         this.loadIssue(id);
       }
     });
@@ -119,7 +136,9 @@ export class IssueDetailsComponent {
         ? 'history'
         : tab === 'attachments'
           ? 'attachments'
-          : 'comments';
+          : tab === 'time'
+            ? 'time'
+            : 'comments';
     if (this.activeTab() === value) {
       return;
     }
@@ -129,11 +148,24 @@ export class IssueDetailsComponent {
     void this.router.navigate([], {
       relativeTo: this.route,
       queryParams: {
-        tab: value === 'comments' ? null : value
+        tab:
+          value === 'comments'
+            ? null
+            : value
       },
       queryParamsHandling: 'merge',
       replaceUrl: true
     });
+  }
+
+  onIssueTimeSummaryLoaded(summary: {
+    totalDurationMinutes: number;
+    totalDurationFormatted: string;
+    hasAccess: boolean;
+  }): void {
+    this.issueTimeTotalMinutes.set(summary.totalDurationMinutes);
+    this.issueTimeTotalFormatted.set(summary.totalDurationFormatted);
+    this.showIssueTimeTab.set(summary.hasAccess);
   }
 
   getWatchTooltip(issue: IssueDetailsDto): string {
@@ -230,11 +262,38 @@ export class IssueDetailsComponent {
           this.issue.set(issue);
           this.isLoading.set(false);
           this.loadError.set(null);
+          this.probeTimeAccess(issueId);
         },
         error: (error: Error) => {
           this.loadError.set(error.message);
           this.isLoading.set(false);
         }
+      });
+  }
+
+  private probeTimeAccess(issueId: string): void {
+    this.timeService
+      .getIssueTimeEntries(issueId, {
+        pageNumber: 1,
+        pageSize: 1,
+        sortField: 'WorkDate',
+        ascending: false
+      })
+      .pipe(
+        catchError(() => {
+          this.showIssueTimeTab.set(false);
+          return of(null);
+        }),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe((result) => {
+        if (!result) {
+          return;
+        }
+
+        this.showIssueTimeTab.set(true);
+        this.issueTimeTotalMinutes.set(result.totalDurationMinutes);
+        this.issueTimeTotalFormatted.set(result.totalDurationFormatted);
       });
   }
 

@@ -32,8 +32,11 @@ public sealed class NotificationsEndpointTests(BackendWebApplicationFactory fact
       emailService.Clear();
     }
 
+    var defaultProjectId = await ProjectTestHelper.GetDefaultProjectIdAsync(factory, cancellationToken);
+
     var createResponse = await ownerClient.PostAsJsonAsync("/api/issues", new
     {
+      ProjectId = defaultProjectId,
       Title = "Issue that will notify watchers",
       Description = "Issue description",
       Status = IssueStatus.NEW,
@@ -55,6 +58,7 @@ public sealed class NotificationsEndpointTests(BackendWebApplicationFactory fact
     var updateResponse = await ownerClient.PutAsJsonAsync($"/api/issues/{issueId}", new
     {
       Id = issueId,
+      ProjectId = defaultProjectId,
       Title = "Issue that will notify watchers",
       Description = "Issue description",
       Status = IssueStatus.IN_PROGRESS,
@@ -105,8 +109,11 @@ public sealed class NotificationsEndpointTests(BackendWebApplicationFactory fact
       ((FakeEmailService)clearScope.ServiceProvider.GetRequiredService<IEmailService>()).Clear();
     }
 
+    var defaultProjectId = await ProjectTestHelper.GetDefaultProjectIdAsync(factory, cancellationToken);
+
     var createResponse = await ownerClient.PostAsJsonAsync("/api/issues", new
     {
+      ProjectId = defaultProjectId,
       Title = "Issue with acceptance criteria",
       Description = "Issue description",
       Status = IssueStatus.NEW,
@@ -142,6 +149,7 @@ public sealed class NotificationsEndpointTests(BackendWebApplicationFactory fact
     var updateResponse = await ownerClient.PutAsJsonAsync($"/api/issues/{issueId}", new
     {
       Id = issueId,
+      ProjectId = defaultProjectId,
       Title = "Issue with acceptance criteria",
       Description = "Issue description",
       Status = IssueStatus.NEW,

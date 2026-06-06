@@ -5,7 +5,7 @@ namespace ChangeMe.Backend.UseCases.Notifications.Dtos;
 public class NotificationDto
 {
   public Guid Id { get; set; }
-  public Guid IssueId { get; set; }
+  public Guid? IssueId { get; set; }
   public NotificationEventType EventType { get; set; }
   public string IssueTitle { get; set; } = string.Empty;
   public string Message { get; set; } = string.Empty;

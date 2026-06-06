@@ -1,0 +1,117 @@
+<p-card header="Create leave request">
+  <div class="mb-4">
+    <app-back-button label="Back" [route]="['/leave-requests']" />
+  </div>
+
+  <form
+    class="flex flex-col gap-4"
+    [formGroup]="form"
+    (ngSubmit)="$event.preventDefault()"
+  >
+    @if (submitError()) {
+      <p-message severity="error">{{ submitError() }}</p-message>
+    }
+
+    <p-panel header="Request details">
+      <div class="grid gap-3 md:grid-cols-2">
+        <div class="flex flex-col gap-1.5 md:col-span-2">
+          <label for="leaveUser">User</label>
+          <p-select
+            inputId="leaveUser"
+            appendTo="body"
+            formControlName="userId"
+            [options]="users()"
+            optionLabel="label"
+            optionValue="id"
+            placeholder="Select user"
+          />
+        </div>
+
+        <div class="flex flex-col gap-1.5 md:col-span-2">
+          <label for="createLeaveType">Leave type</label>
+          <p-select
+            inputId="createLeaveType"
+            appendTo="body"
+            formControlName="leaveTypeId"
+            [options]="leaveTypes()"
+            optionLabel="name"
+            optionValue="id"
+            placeholder="Select leave type"
+          />
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <label for="createStartDate">Start date</label>
+          <p-datepicker
+            inputId="createStartDate"
+            appendTo="body"
+            formControlName="startDate"
+            dateFormat="dd.mm.yy"
+            [showIcon]="true"
+          />
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <label for="createEndDate">End date</label>
+          <p-datepicker
+            inputId="createEndDate"
+            appendTo="body"
+            formControlName="endDate"
+            dateFormat="dd.mm.yy"
+            [showIcon]="true"
+          />
+        </div>
+
+        @if (showDayPortion) {
+          <div class="flex flex-col gap-1.5 md:col-span-2">
+            <label for="createDayPortion">Day portion</label>
+            <p-select
+              inputId="createDayPortion"
+              appendTo="body"
+              formControlName="dayPortion"
+              [options]="leaveDayPortionOptions"
+              optionLabel="label"
+              optionValue="value"
+            />
+          </div>
+        }
+
+        <div class="flex flex-col gap-1.5 md:col-span-2">
+          <label for="createReason">Reason</label>
+          <textarea
+            pTextarea
+            id="createReason"
+            rows="3"
+            formControlName="reason"
+            [maxlength]="constraints.REASON_MAX_LENGTH"
+          ></textarea>
+        </div>
+      </div>
+    </p-panel>
+
+    <div class="flex flex-wrap justify-end gap-2">
+      <p-button
+        label="Cancel"
+        severity="secondary"
+        [outlined]="true"
+        type="button"
+        (onClick)="cancel()"
+      />
+      <p-button
+        label="Save as draft"
+        severity="secondary"
+        [outlined]="true"
+        type="button"
+        [loading]="isSubmitting()"
+        (onClick)="save(false)"
+      />
+      <p-button
+        label="Submit"
+        icon="pi pi-check"
+        type="button"
+        [loading]="isSubmitting()"
+        (onClick)="save(true)"
+      />
+    </div>
+  </form>
+</p-card>

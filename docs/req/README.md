@@ -83,6 +83,19 @@ See [changes/](changes/) for open requirement deltas.
 | REQ-PKY-006 | Combined Compliance Gates and Cross-Auth Interaction | [req-pky-006-combined-compliance-gates-and-cross-auth-interaction.md](passkeys/req-pky-006-combined-compliance-gates-and-cross-auth-interaction.md) |
 | REQ-PKY-007 | Passkey Notification Emails | [req-pky-007-passkey-notification-emails.md](passkeys/req-pky-007-passkey-notification-emails.md) |
 
+## Projects (`projects/`)
+
+| ID | Title | File |
+| -- | ----- | ---- |
+| REQ-PRJ-001 | Seeded Default Project and Project Rules | [req-prj-001-seeded-default-project-and-project-rules.md](projects/req-prj-001-seeded-default-project-and-project-rules.md) |
+| REQ-PRJ-002 | Projects List | [req-prj-002-projects-list.md](projects/req-prj-002-projects-list.md) |
+| REQ-PRJ-003 | Create and Edit Project | [req-prj-003-create-and-edit-project.md](projects/req-prj-003-create-and-edit-project.md) |
+| REQ-PRJ-004 | Project Details | [req-prj-004-project-details.md](projects/req-prj-004-project-details.md) |
+| REQ-PRJ-005 | Project RBAC and Effective Permissions | [req-prj-005-project-rbac-and-effective-permissions.md](projects/req-prj-005-project-rbac-and-effective-permissions.md) |
+| REQ-PRJ-006 | Project Member Management | [req-prj-006-project-member-management.md](projects/req-prj-006-project-member-management.md) |
+| REQ-PRJ-007 | Project Membership History | [req-prj-007-project-membership-history.md](projects/req-prj-007-project-membership-history.md) |
+| REQ-PRJ-008 | Project Operation History | [req-prj-008-project-operation-history.md](projects/req-prj-008-project-operation-history.md) |
+
 ## Issues (`issues/`)
 
 | ID | Title | File |
@@ -93,6 +106,36 @@ See [changes/](changes/) for open requirement deltas.
 | REQ-ISS-004 | Watching Issues and Push / Email Notifications | [req-iss-004-watching-issues-and-push-email-notifications.md](issues/req-iss-004-watching-issues-and-push-email-notifications.md) |
 | REQ-ISS-005 | Notification Bell and Dropdown | [req-iss-005-notification-bell-and-dropdown.md](issues/req-iss-005-notification-bell-and-dropdown.md) |
 | REQ-ISS-006 | Issue Attachments | [req-iss-006-issue-attachments.md](issues/req-iss-006-issue-attachments.md) |
+
+## Time tracking (`time/`)
+
+| ID | Title | File |
+| -- | ----- | ---- |
+| REQ-TIM-001 | Time Tracking Policy and Permissions | [req-tim-001-time-tracking-policy-and-permissions.md](time/req-tim-001-time-tracking-policy-and-permissions.md) |
+| REQ-TIM-002 | Log Time — Manual Entry and Timer | [req-tim-002-log-time-manual-and-timer.md](time/req-tim-002-log-time-manual-and-timer.md) |
+| REQ-TIM-003 | Issue Details — Time Tab | [req-tim-003-issue-details-time-tab.md](time/req-tim-003-issue-details-time-tab.md) |
+| REQ-TIM-004 | My Time and Entry Management | [req-tim-004-my-time-and-entry-management.md](time/req-tim-004-my-time-and-entry-management.md) |
+| REQ-TIM-005 | Time Reports and CSV Export | [req-tim-005-time-reports-and-export.md](time/req-tim-005-time-reports-and-export.md) |
+| REQ-TIM-006 | Time Entry Operation Audit Log | [req-tim-006-time-entry-operation-audit-log.md](time/req-tim-006-time-entry-operation-audit-log.md) |
+| REQ-TIM-007 | Navigation, Shell, and Presentation | [req-tim-007-navigation-shell-and-presentation.md](time/req-tim-007-navigation-shell-and-presentation.md) |
+
+## Billing and settlements (`billing/`)
+
+| ID | Title | File |
+| -- | ----- | ---- |
+| REQ-BIL-001 | Billing Policy and Permissions | [req-bil-001-billing-policy-and-permissions.md](billing/req-bil-001-billing-policy-and-permissions.md) |
+| REQ-BIL-002 | Position Catalog | [req-bil-002-position-catalog.md](billing/req-bil-002-position-catalog.md) |
+| REQ-BIL-003 | User Employment Profile and Contracts | [req-bil-003-user-employment-profile-and-contracts.md](billing/req-bil-003-user-employment-profile-and-contracts.md) |
+| REQ-BIL-004 | Leave Types and Allowance Policy | [req-bil-004-leave-types-and-allowance-policy.md](billing/req-bil-004-leave-types-and-allowance-policy.md) |
+| REQ-BIL-005 | Leave Requests and Approval | [req-bil-005-leave-requests-and-approval.md](billing/req-bil-005-leave-requests-and-approval.md) |
+| REQ-BIL-006 | My Leave | [req-bil-006-my-leave.md](billing/req-bil-006-my-leave.md) |
+| REQ-BIL-007 | Settlement Periods and Calculation | [req-bil-007-settlement-periods-and-calculation.md](billing/req-bil-007-settlement-periods-and-calculation.md) |
+| REQ-BIL-008 | Billing Reports and Export | [req-bil-008-billing-reports-and-export.md](billing/req-bil-008-billing-reports-and-export.md) |
+| REQ-BIL-009 | Navigation, Shell, and Presentation | [req-bil-009-navigation-shell-and-presentation.md](billing/req-bil-009-navigation-shell-and-presentation.md) |
+| REQ-BIL-010 | Availability Policy and Entries | [req-bil-010-availability-policy-and-entries.md](billing/req-bil-010-availability-policy-and-entries.md) |
+| REQ-BIL-011 | My Availability Calendar | [req-bil-011-my-availability-calendar.md](billing/req-bil-011-my-availability-calendar.md) |
+| REQ-BIL-012 | Team Availability Calendar | [req-bil-012-team-availability-calendar.md](billing/req-bil-012-team-availability-calendar.md) |
+| REQ-BIL-013 | Billing Email and In-App Notifications | [req-bil-013-billing-email-and-in-app-notifications.md](billing/req-bil-013-billing-email-and-in-app-notifications.md) |
 
 ---
 

@@ -1,0 +1,38 @@
+<p-card header="My billing">
+  <p-panel header="Published settlements">
+    @if (errorMessage()) {
+      <p-message severity="error" class="mb-3 block">{{ errorMessage() }}</p-message>
+    }
+
+    @if (isLoading()) {
+      <div class="flex justify-center py-8">
+        <p-progressSpinner ariaLabel="Loading settlements" />
+      </div>
+    } @else if (settlements().length === 0) {
+      <p-message severity="info">{{ BillingMessages.noPublishedSettlements }}</p-message>
+    } @else {
+      <p-table [value]="settlements()" [rowHover]="true">
+        <ng-template #header>
+          <tr>
+            <th>Period</th>
+            <th>Expected time</th>
+            <th>Logged time</th>
+            <th>Leave days</th>
+            <th>Balance</th>
+          </tr>
+        </ng-template>
+        <ng-template #body let-settlement>
+          <tr class="cursor-pointer" (click)="onRowClick(settlement)">
+            <td>{{ settlement.periodLabel }}</td>
+            <td>{{ formatMonthlyHoursNorm(settlement.expectedMinutes) }}</td>
+            <td>{{ formatMonthlyHoursNorm(settlement.loggedMinutes) }}</td>
+            <td>{{ settlement.leaveDays }}</td>
+            <td [class]="getSettlementBalanceClass(settlement.balanceMinutes)">
+              {{ formatMonthlyHoursNorm(settlement.balanceMinutes) }}
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    }
+  </p-panel>
+</p-card>

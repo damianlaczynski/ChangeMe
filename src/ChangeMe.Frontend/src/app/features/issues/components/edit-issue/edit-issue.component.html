@@ -58,6 +58,23 @@
     >
       <p-panel header="Issue details" [toggleable]="true">
         <div class="flex flex-col gap-1.5">
+          <label for="projectId">Project</label>
+          <p-select
+            inputId="projectId"
+            [formControl]="form.controls.projectId"
+            [options]="manageableProjects()"
+            optionLabel="name"
+            optionValue="id"
+            placeholder="Select project"
+            [loading]="isLoadingManageableProjects()"
+            [invalid]="form.controls.projectId.touched && form.controls.projectId.errors"
+          />
+          @if (shouldShowError(form.controls.projectId)) {
+            <p-message severity="error" variant="simple">Project is required</p-message>
+          }
+        </div>
+
+        <div class="mt-4 flex flex-col gap-1.5">
           <label for="title">Title</label>
           <input
             id="title"

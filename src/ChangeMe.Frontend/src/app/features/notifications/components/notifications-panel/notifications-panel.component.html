@@ -112,18 +112,26 @@
                     ></span>
                     <span class="min-w-0 flex-1">
                       <span class="mb-0.5 flex items-baseline justify-between gap-2">
-                        <span class="text-color truncate text-sm font-medium">
-                          {{ notification.issueTitle }}
-                        </span>
+                        @if (!isBillingNotification(notification.eventType)) {
+                          <span class="text-color truncate text-sm font-medium">
+                            {{ notification.issueTitle }}
+                          </span>
+                        } @else {
+                          <span class="text-color truncate text-sm font-medium">
+                            {{ notification.message }}
+                          </span>
+                        }
                         <time class="text-muted-color shrink-0 text-xs tabular-nums">
                           {{ notification.createdAt | date: 'dd.MM HH:mm' }}
                         </time>
                       </span>
-                      <span
-                        class="text-muted-color line-clamp-2 block text-sm leading-snug"
-                      >
-                        {{ notification.message }}
-                      </span>
+                      @if (!isBillingNotification(notification.eventType)) {
+                        <span
+                          class="text-muted-color line-clamp-2 block text-sm leading-snug"
+                        >
+                          {{ notification.message }}
+                        </span>
+                      }
                     </span>
                   </button>
                   <div class="flex shrink-0 items-center pr-1">
@@ -180,18 +188,26 @@
                     <span class="mt-1.5 h-2 w-2 shrink-0" aria-hidden="true"></span>
                     <span class="min-w-0 flex-1">
                       <span class="mb-0.5 flex items-baseline justify-between gap-2">
-                        <span class="text-color truncate text-sm font-medium">
-                          {{ notification.issueTitle }}
-                        </span>
+                        @if (!isBillingNotification(notification.eventType)) {
+                          <span class="text-color truncate text-sm font-medium">
+                            {{ notification.issueTitle }}
+                          </span>
+                        } @else {
+                          <span class="text-color truncate text-sm font-medium">
+                            {{ notification.message }}
+                          </span>
+                        }
                         <time class="text-muted-color shrink-0 text-xs tabular-nums">
                           {{ notification.createdAt | date: 'dd.MM HH:mm' }}
                         </time>
                       </span>
-                      <span
-                        class="text-muted-color line-clamp-2 block text-sm leading-snug"
-                      >
-                        {{ notification.message }}
-                      </span>
+                      @if (!isBillingNotification(notification.eventType)) {
+                        <span
+                          class="text-muted-color line-clamp-2 block text-sm leading-snug"
+                        >
+                          {{ notification.message }}
+                        </span>
+                      }
                     </span>
                   </button>
                 </li>

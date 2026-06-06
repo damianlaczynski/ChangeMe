@@ -1,0 +1,36 @@
+@if (!isLoading() && summary(); as employment) {
+  <p-panel header="Employment summary" [toggleable]="true" class="mb-4">
+    <div class="grid gap-3 md:grid-cols-2">
+      <div>
+        <div class="text-muted-color text-sm">Position</div>
+        <div>{{ employment.positionName }}</div>
+      </div>
+      <div>
+        <div class="text-muted-color text-sm">Contract type</div>
+        <div>{{ getContractTypeLabel(employment.contractType) }}</div>
+      </div>
+      <div>
+        <div class="text-muted-color text-sm">Start date</div>
+        <div>{{ employment.startDate | date: 'dd.MM.yyyy' }}</div>
+      </div>
+      <div>
+        <div class="text-muted-color text-sm">End date</div>
+        <div>
+          @if (employment.endDate) {
+            {{ employment.endDate | date: 'dd.MM.yyyy' }}
+          } @else {
+            {{ BillingMessages.emptyField }}
+          }
+        </div>
+      </div>
+      <div>
+        <div class="text-muted-color text-sm">FTE</div>
+        <div>{{ employment.fte | number: '1.2-2' }}</div>
+      </div>
+      <div>
+        <div class="text-muted-color text-sm">Monthly hours norm</div>
+        <div>{{ formatMonthlyHoursNorm(employment.monthlyHoursNormMinutes) }}</div>
+      </div>
+    </div>
+  </p-panel>
+}

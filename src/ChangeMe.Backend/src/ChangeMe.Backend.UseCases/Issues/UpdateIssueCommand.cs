@@ -2,12 +2,14 @@
 using ChangeMe.Backend.Domain.Aggregates.Issue.Enums;
 using ChangeMe.Backend.UseCases.Issues.Dtos;
 using ChangeMe.Backend.UseCases.Issues.Services;
+using ChangeMe.Backend.Domain.Authorization;
 using ChangeMe.Backend.UseCases.Issues.Utils;
 
 namespace ChangeMe.Backend.UseCases.Issues;
 
 public record UpdateIssueCommand(
   Guid Id,
+  Guid ProjectId,
   string Title,
   string Description,
   IssueStatus Status,
@@ -37,6 +39,27 @@ public class UpdateIssueHandler(
     if (issue is null)
       return Result.NotFound();
 
+    var manageCurrentProjectResult = await IssuesUtils.ValidateProjectIssueAccessAsync(
+      context,
+      issue.ProjectId,
+      actorUserId,
+      ProjectPermissionCodes.IssuesManage,
+      cancellationToken);
+    if (!manageCurrentProjectResult.IsSuccess)
+      return manageCurrentProjectResult.Map();
+
+    if (command.ProjectId != issue.ProjectId)
+    {
+      var manageTargetProjectResult = await IssuesUtils.ValidateProjectIssueAccessAsync(
+        context,
+        command.ProjectId,
+        actorUserId,
+        ProjectPermissionCodes.IssuesManage,
+        cancellationToken);
+      if (!manageTargetProjectResult.IsSuccess)
+        return manageTargetProjectResult.Map();
+    }
+
     var assigneeValidation = await IssuesUtils.ValidateAssigneeExistsAsync(
       context,
       command.AssignedToUserId,
@@ -45,13 +68,29 @@ public class UpdateIssueHandler(
     if (!assigneeValidation.IsSuccess)
       return assigneeValidation.Map();
 
+    string? previousProjectName = null;
+    string? currentProjectName = null;
+    if (command.ProjectId != issue.ProjectId)
+    {
+      var projectNames = await context.Projects
+        .AsNoTracking()
+        .Where(p => p.Id == issue.ProjectId || p.Id == command.ProjectId)
+        .ToDictionaryAsync(p => p.Id, p => p.Name, cancellationToken);
+
+      previousProjectName = projectNames.GetValueOrDefault(issue.ProjectId);
+      currentProjectName = projectNames.GetValueOrDefault(command.ProjectId);
+    }
+
     var updateResult = issue.UpdateDetails(
+      command.ProjectId,
       command.Title,
       command.Description,
       command.Priority,
       command.Status,
       command.AssignedToUserId,
-      actorUserId);
+      actorUserId,
+      previousProjectName,
+      currentProjectName);
 
     if (!updateResult.IsSuccess)
       return updateResult.Map();

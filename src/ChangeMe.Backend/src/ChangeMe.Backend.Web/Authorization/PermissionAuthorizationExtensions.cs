@@ -15,6 +15,8 @@ public static class PermissionAuthorizationExtensions
         options.AddPolicy(permission, policy =>
           policy.RequireClaim(PermissionClaimTypes.Permission, permission));
       }
+
+      BillingAuthorizationPolicies.RegisterPolicies(options);
     });
 
     services.AddSingleton<IAuthorizationMiddlewareResultHandler, PermissionDeniedAuthorizationResultHandler>();

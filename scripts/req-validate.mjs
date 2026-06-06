@@ -15,7 +15,10 @@ const DOMAIN_DIRS = [
   "invitations",
   "access",
   "passkeys",
+  "projects",
   "issues",
+  "time",
+  "billing",
 ];
 const SHARED_FILES = [
   "glossary.md",
@@ -204,7 +207,7 @@ function main() {
         // Allow domain folder references like docs/req/passkeys/
         if (
           !target.match(
-            /docs\/req\/(identity|users|invitations|access|passkeys|issues|_shared)\/?$/,
+            /docs\/req\/(identity|users|invitations|access|passkeys|projects|issues|time|billing|_shared)\/?$/,
           )
         ) {
           error(`Broken path reference ${link} in docs/req/${domain}/${name}`);

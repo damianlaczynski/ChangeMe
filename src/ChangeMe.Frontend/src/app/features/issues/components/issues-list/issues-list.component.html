@@ -67,6 +67,20 @@
           />
         </div>
 
+        <div class="flex flex-col gap-1.5">
+          <label for="projectId">Project</label>
+          <p-select
+            inputId="projectId"
+            [formControl]="filtersForm.controls.projectId"
+            [options]="projectOptions()"
+            optionLabel="name"
+            optionValue="id"
+            placeholder="Any project"
+            [showClear]="true"
+            [loading]="isLoadingProjectOptions()"
+          />
+        </div>
+
         <div class="flex items-center gap-2">
           <p-checkbox
             [formControl]="filtersForm.controls.watchedByMe"
@@ -132,6 +146,7 @@
         </th>
         <th>Status</th>
         <th>Priority</th>
+        <th>Project</th>
         <th>Assigned to</th>
         <th pSortableColumn="CreatedAt">
           <div class="flex items-center gap-2">
@@ -170,6 +185,7 @@
             [severity]="getIssuePrioritySeverity(issue.priority)"
           />
         </td>
+        <td>{{ issue.projectName || '—' }}</td>
         <td>{{ issue.assignedToUserName || 'Unassigned' }}</td>
         <td>
           {{ issue.createdAt | date: 'dd.MM.yyyy HH:mm' }}
@@ -208,7 +224,7 @@
     </ng-template>
     <ng-template #emptymessage>
       <tr>
-        <td colspan="7">
+        <td colspan="8">
           <div class="flex flex-col items-center gap-2">
             <p class="text-center text-muted-color">No issues found</p>
             <div class="flex flex-wrap items-center gap-2">
