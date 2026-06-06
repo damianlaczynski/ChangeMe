@@ -73,20 +73,6 @@ The user must be able to create a new issue and edit an existing one by providin
 - After create, the author is added to watchers when **Watch after creation** is checked.
 - Every create and edit writes entries to change history (FR-ISS-003), including acceptance-criterion add, update, and remove events.
 
-## Acceptance scenarios
-
-| ID | Given | When | Then |
-| -- | ----- | ---- | ---- |
-| AC-ISS-002-01 | Guest or unauthenticated user                                 | User navigates to **Create issue** or **Edit issue** | User is redirected to **Login** (FR-AUTH-001)                                                          |
-| AC-ISS-002-02 | Authenticated user on **Create issue**                        | User views the **Issue details** section          | **Status** defaults to **New**; **Priority** defaults to **Medium**; **Watch after creation** is checked |
-| AC-ISS-002-03 | Authenticated user on **Create issue** with valid required fields and **Watch after creation** checked | User clicks **Create issue** | Issue is saved; **Issue details** opens; the author is added as a watcher                                 |
-| AC-ISS-002-04 | Authenticated user on **Create issue** with valid required fields and zero acceptance-criteria rows | User clicks **Create issue** | Issue is saved successfully and **Issue details** opens                                                 |
-| AC-ISS-002-05 | Authenticated user on **Create issue**                        | User clicks **Back to issues list**               | User navigates to **Issues list** without saving                                                          |
-| AC-ISS-002-06 | Authenticated user on **Edit issue** for an existing issue    | User clicks **Back to issue details**             | User navigates to **Issue details** for the edited issue without saving                                   |
-| AC-ISS-002-07 | Authenticated user on **Edit issue**                          | User views the form                               | **Author**, **Created at**, and **Last activity** are read-only; **Watch after creation** is not shown    |
-| AC-ISS-002-08 | Authenticated user on **Create issue** or **Edit issue** with **Title** shorter than 3 characters | User submits the form              | Inline validation error is shown on **Title**; form is not saved                                          |
-| AC-ISS-002-09 | Authenticated user on **Edit issue** with valid changes       | User clicks **Save changes**                      | Issue is saved and **Issue details** opens with refreshed data                                            |
-
 ## Non-functional requirements
 
 - Inherits `docs/requirements/_shared/non-functional/product-quality.md` (`NFR-QUAL-001`) and linked NFR documents.

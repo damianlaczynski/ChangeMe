@@ -47,20 +47,6 @@ The user must be able to review active sign-in sessions and revoke sessions they
 - **Sessions.ViewOwn**: required to show the **Active sessions** section and view the list.
 - **Sessions.ManageOwn**: required for **Revoke** on non-current rows and **Sign out everywhere**.
 
----
-
-## Acceptance scenarios
-
-| ID | Given | When | Then |
-| -- | ----- | ---- | ---- |
-| AC-AUTH-004-01 | Signed-in user with **Sessions.ViewOwn** on **My account** (FR-USR-001) | User expands **Active sessions** section | List shows active sessions with **Device / browser**, **IP address**, **Signed in at**, **Last activity**; current row has badge **`Current session`** |
-| AC-AUTH-004-02 | Signed-in user **without** **Sessions.ViewOwn**                       | User views **My account**          | **Active sessions** section is **not shown**                                       |
-| AC-AUTH-004-03 | Signed-in user with **Sessions.ViewOwn** and **Sessions.ManageOwn**; non-current session row visible | User clicks **Revoke** on a non-current row | Confirmation dialog `Revoke this session? That device will be signed out.` is shown |
-| AC-AUTH-004-04 | Signed-in user with **Sessions.ManageOwn**; **Revoke** confirmation confirmed for a non-current session | User confirms | That session is revoked; row removed from list without full screen reload |
-| AC-AUTH-004-05 | Signed-in user with **Sessions.ViewOwn** on **Active sessions** list  | User views the **Current session** row | **Revoke** button is **not shown** (user signs out current browser via **Logout** — FR-AUTH-003) |
-| AC-AUTH-004-06 | Signed-in user with **Sessions.ViewOwn**; user has no other active sessions | User views **Active sessions** section | Empty state `No active sessions.` |
-| AC-AUTH-004-07 | Signed-in user **without** **Sessions.ManageOwn**                     | User views **My account** header actions | **Sign out everywhere** is **not shown** (requires **Sessions.ManageOwn** per FR-AUTH-003) |
-
 ## Non-functional requirements
 
 - Inherits `docs/requirements/_shared/non-functional/product-quality.md` (`NFR-QUAL-001`) and linked NFR documents.

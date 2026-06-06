@@ -47,17 +47,6 @@ A user who forgot their password must be able to request a reset link by email a
 - On successful reset, all **recovery codes** are invalidated; the user must **Regenerate recovery codes** on **My account** after the next successful sign-in when **Two-factor enabled** is **true**.
 - The next sign-in after reset follows the normal flow: primary authentication, then **Two-factor verification** when **Two-factor enabled** is **true**, or **strict two-factor setup** when **Two-factor authentication required** is **true** and **Two-factor enabled** is **false** (unless **Trust identity provider MFA** applies on external sign-in).
 
----
-
-## Acceptance scenarios
-
-| ID | Given | When | Then |
-| -- | ----- | ---- | ---- |
-| AC-AUTH-006-01 | Guest on **Forgot password** (linked from **Login** footer **Forgot password?**) | User submits valid **Email** and clicks **Send reset link** | Success message `If an account exists for this email, a reset link has been sent.` shown; user remains on **Forgot password** (does not reveal whether the email exists) |
-| AC-AUTH-006-02 | Guest on **Reset password** with invalid or expired token in link | User opens the screen | Form-level error `This reset link is invalid or has expired. Request a new link from the sign-in page.` with link to **Forgot password** |
-| AC-AUTH-006-03 | Guest on **Reset password** with valid token; **New password** and **Confirm new password** satisfy **Password policy** (FR-AUTH-008) | User clicks **Reset password** | All sessions revoked; redirected to **Login** with message `Password reset. Sign in with your new password.`; **password last changed at** set (FR-AUTH-009); **Password reset completed** email sent (FR-AUTH-007) |
-| AC-AUTH-006-04 | Account with **Two-factor enabled** true; user completed **Reset password** successfully | User signs in next with new password (FR-AUTH-001) | **Two-factor enabled** remains true; all **recovery codes** invalidated; user must **Regenerate recovery codes** on **My account** after sign-in; sign-in follows normal two-factor flow (FR-AUTH-013) |
-
 ## Non-functional requirements
 
 - Inherits `docs/requirements/_shared/non-functional/product-quality.md` (`NFR-QUAL-001`) and linked NFR documents.

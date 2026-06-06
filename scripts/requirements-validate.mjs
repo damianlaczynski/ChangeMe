@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Validate docs/requirements structure: FR specs, NFR docs, acceptance scenarios, cross-references.
+ * Validate docs/requirements structure: FR specs, NFR docs, cross-references.
  * Run: npm run requirements:validate
  */
 
@@ -13,7 +13,6 @@ import {
   collectNfrDocs,
   collectReferenceDocs,
   collectSharedFunctionalDocs,
-  parseAcceptanceScenarios,
   parseFrontmatter,
 } from "./requirements-lib.mjs";
 
@@ -158,26 +157,14 @@ function main() {
     if (!body.includes("## Functional requirements")) {
       error(`Missing ## Functional requirements: functional/${domain}/${name}`);
     }
-    if (!body.includes("## Acceptance scenarios")) {
-      error(`Missing ## Acceptance scenarios: functional/${domain}/${name}`);
-    }
     if (!body.includes("## Non-functional requirements")) {
       error(
         `Missing ## Non-functional requirements: functional/${domain}/${name}`,
       );
     }
 
-    const scenarios = parseAcceptanceScenarios(body);
-    if (scenarios.length === 0) {
-      error(`No acceptance scenarios in table: functional/${domain}/${name}`);
-    }
-    for (const sc of scenarios) {
-      if (!sc.id?.startsWith("AC-")) {
-        error(`Invalid acceptance scenario id in ${domain}/${name}`);
-      }
-      if (!sc.given || !sc.when || !sc.then) {
-        error(`Incomplete acceptance scenario ${sc.id} in ${domain}/${name}`);
-      }
+    if (/\bAC-[A-Z0-9]+-\d{3}-\d{2}\b/.test(content)) {
+      error(`Legacy AC- reference found in functional/${domain}/${name}`);
     }
 
     if (/\bREQ-[A-Z]+-\d{3}\b/.test(content)) {
@@ -277,8 +264,6 @@ function main() {
         const filePath = path.join(ROOT, file);
         const content = fs.readFileSync(filePath, "utf8");
         const meta = parseFrontmatter(content);
-        const body = content.replace(/^---[\s\S]*?---\n/, "");
-        const scenarios = parseAcceptanceScenarios(body);
         return {
           id,
           title: meta?.title ?? "",
@@ -289,7 +274,6 @@ function main() {
           depends_on: meta?.depends_on ?? [],
           inherits_nfr: meta?.inherits_nfr ?? [],
           inherits_fr: meta?.inherits_fr ?? [],
-          acceptance_scenarios: scenarios.map((s) => s.id),
         };
       }),
     non_functional: nfrDocs

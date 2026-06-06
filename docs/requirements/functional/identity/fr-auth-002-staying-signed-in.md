@@ -47,18 +47,6 @@ The user must remain signed in during normal application use without repeated ma
 - A **revoked** session cannot be renewed.
 - Deactivating a user revokes all active sessions immediately (FR-USR-005); renewal attempts for that user fail and redirect to **Login**.
 
----
-
-## Acceptance scenarios
-
-| ID | Given | When | Then |
-| -- | ----- | ---- | ---- |
-| AC-AUTH-002-01 | Signed-in user with active session; **short-lived credential** within **30 minutes** of issuance | **60 seconds** before credential expiry | System renews credential automatically; updates **last activity** on current session; refreshes effective permissions (FR-ROL-001) |
-| AC-AUTH-002-02 | Signed-in user; session within **14-day** long-lived lifetime; browser closed and reopened | User returns to the application | Session can be renewed without manual sign-in |
-| AC-AUTH-002-03 | Signed-in user; **short-lived credential** expired; user triggers an authenticated action | Action fails due to expired credential | System attempts **one** automatic renewal and repeats the action once |
-| AC-AUTH-002-04 | Signed-in user; session **revoked** or past **14-day** lifetime, or user **Deactivated** is **true** (FR-USR-005) | Automatic renewal is attempted | Renewal fails; user is signed out and redirected to **Login** |
-| AC-AUTH-002-05 | Signed-in user with active session | Short-lived credential is renewed successfully | Open real-time views (issue list refresh and notifications per FR-ISS-004) continue without manual page reload |
-
 ## Non-functional requirements
 
 - Inherits `docs/requirements/_shared/non-functional/product-quality.md` (`NFR-QUAL-001`) and linked NFR documents.

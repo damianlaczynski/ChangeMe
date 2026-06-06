@@ -57,19 +57,6 @@ The signed-in user must be able to change their password securely.
 - Password rules follow **Password policy** (FR-AUTH-008).
 - On success, the system sends a **Password changed** email (FR-AUTH-007).
 
----
-
-## Acceptance scenarios
-
-| ID | Given | When | Then |
-| -- | ----- | ---- | ---- |
-| AC-AUTH-005-01 | Signed-in user with **Deactivated** false on **Change password** (linked from **My account**) | User opens the screen | Persistent notice `Changing your password will sign you out on all devices, including this one. You will need to sign in again with your new password.` is visible and not dismissible |
-| AC-AUTH-005-02 | Signed-in user on **Change password** with wrong **Current password** | User clicks **Change password** | Inline field error `Current password is incorrect.`; other field values retained; confirmation dialog does **not** open |
-| AC-AUTH-005-03 | Signed-in user on **Change password**; **New password** identical to current password | User clicks **Change password** | Inline field error `New password must differ from the current password.`; confirmation dialog does **not** open |
-| AC-AUTH-005-04 | Signed-in user on **Change password** with valid form fields          | User clicks **Change password** | Confirmation dialog `Change password and sign out everywhere? You will be signed out on every device and must sign in again with your new password.` is shown |
-| AC-AUTH-005-05 | Signed-in user; **Change password** confirmation dialog open; form validation passes | User clicks **Confirm** | New password saved; all active sessions revoked; redirected to **Login** with message `Password changed. Sign in with your new password.`; **Password changed** email sent (FR-AUTH-007); **password last changed at** updated (FR-AUTH-009) |
-| AC-AUTH-005-06 | Signed-in user; **Change password** confirmation dialog open          | User clicks **Cancel** | Dialog closes; entered field values remain unchanged; user stays signed in |
-
 ## Non-functional requirements
 
 - Inherits `docs/requirements/_shared/non-functional/product-quality.md` (`NFR-QUAL-001`) and linked NFR documents.

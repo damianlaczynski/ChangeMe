@@ -37,7 +37,7 @@ inherits_fr: [FR-UI-001]
 ### Acceptance criteria section
 
 - Lists all **acceptance criteria** for the issue.
-- Empty state: `**No acceptance criteria defined`\*\*
+- Empty state: **`No acceptance criteria defined`**
 
 ### Comments, attachments, and history tabs
 
@@ -89,21 +89,6 @@ inherits_fr: [FR-UI-001]
 
 - After deleting an issue from **Issue details**, the user is navigated to **Issues list**.
 - After deleting an issue from **Issues list**, the user remains on **Issues list** with the list refreshed.
-
-## Acceptance scenarios
-
-| ID | Given | When | Then |
-| -- | ----- | ---- | ---- |
-| AC-ISS-003-01 | Guest or unauthenticated user                                      | User navigates to **Issue details**               | User is redirected to **Login** (FR-AUTH-001)                                                                                                     |
-| AC-ISS-003-02 | Authenticated user opening **Issue details** while data is loading | User views the page header                        | Header shows **`Issue Details`** until the issue title loads                                                                                      |
-| AC-ISS-003-03 | Authenticated user on **Issue details** for a loaded issue         | User views the metadata block                     | **Author**, **Assigned to**, **Status**, **Priority**, **Created at**, and **Last activity** are shown; issue identifier is not a labeled field  |
-| AC-ISS-003-04 | Authenticated user on **Issue details** for an issue with no acceptance criteria | User views the acceptance criteria section | Empty state shows **`No acceptance criteria defined`**                                                                                            |
-| AC-ISS-003-05 | Authenticated user on **Issue details**                            | User clicks header **Edit**                       | **Edit issue** opens (FR-ISS-002)                                                                                                                 |
-| AC-ISS-003-06 | Authenticated user on **Issue details**                            | User clicks **Delete** and confirms the dialog    | Confirmation shows **`Delete "{issue title}"? This action cannot be undone.`**; issue is deleted; user navigates to **Issues list**               |
-| AC-ISS-003-07 | Authenticated user on **Issue details** **Comments** tab           | User submits the **Add a comment** form with empty content | Inline error on the comment field; the comment form stays open                                                                            |
-| AC-ISS-003-08 | Authenticated user on **Issue details** **Comments** tab           | User submits a valid comment via **Add comment**  | User stays on **Issue details**; the new comment appears at the top of the list; **Last activity** updates                                        |
-| AC-ISS-003-09 | Authenticated user on **Issue details**                            | User clicks **Back to issues list**               | User navigates to **Issues list**                                                                                                                 |
-| AC-ISS-003-10 | Authenticated user on **Issue details** **Comments** tab           | User views the section layout                     | **Add a comment** form (textarea and **Add comment** button) is above the comments list                                                           |
 
 ## Non-functional requirements
 

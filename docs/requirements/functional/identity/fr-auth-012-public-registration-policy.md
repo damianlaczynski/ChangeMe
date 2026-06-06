@@ -66,19 +66,6 @@ Deployments must be able to turn off self-service account registration so new us
 - Disabling public registration does not affect existing accounts, sessions, or pending invitation or verification links.
 - **Out of scope:** admin UI to change **Public registration enabled** at runtime (setting is deployment configuration only, same as other auth policy flags).
 
----
-
-## Acceptance scenarios
-
-| ID             | Given                                                              | When                                                                                    | Then                                                                                                          |
-| -------------- | ------------------------------------------------------------------ | --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| AC-AUTH-012-01 | **Public registration enabled** is **false**; guest on **Login**   | User views footer links                                                                 | **Create an account** link to **Register** is **not shown**                                                   |
-| AC-AUTH-012-02 | **Public registration enabled** is **false**; guest user           | Guest opens the **Register** URL directly                                               | Redirected to **Login** with message `Registration is disabled. Contact an administrator.`                    |
-| AC-AUTH-012-03 | **Public registration enabled** is **false**                       | Guest submits registration API request                                                  | Request rejected (for example **403 Forbidden**); UI does not expose registration                             |
-| AC-AUTH-012-04 | **Public registration enabled** is **true**                        | Guest uses **Register** (FR-AUTH-001)                                                   | Registration behavior matches FR-AUTH-001 (**Register** screen, **Create an account** link, registration API) |
-| AC-AUTH-012-05 | **Public registration enabled** is **false**                       | Guest uses **Login**, **Forgot password**, **Reset password**, or **Accept invitation** | Those flows remain available per unaffected-flows table                                                       |
-| AC-AUTH-012-06 | **Public registration enabled** changed from **true** to **false** | Existing accounts, sessions, and pending invitation or verification links               | Unaffected; disabling does not invalidate existing state                                                      |
-
 ## Non-functional requirements
 
 - Inherits `docs/requirements/_shared/non-functional/product-quality.md` (`NFR-QUAL-001`) and linked NFR documents.

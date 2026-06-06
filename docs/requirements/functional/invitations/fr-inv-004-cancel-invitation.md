@@ -38,17 +38,6 @@ An administrator must be able to **withdraw** a pending invitation when the invi
 
 - **Users.Manage**: required.
 
----
-
-## Acceptance scenarios
-
-| ID | Given | When | Then |
-| -- | ----- | ---- | ---- |
-| AC-INV-004-01 | Administrator with **Users.Manage**; user **Status** **`Invited`** | User clicks **Cancel invitation** in the **Invitation** panel | Confirmation **`Cancel invitation for "{email}"? They will not be able to use the current invitation link. You can send a new invitation later.`** is shown |
-| AC-INV-004-02 | Administrator confirms **Cancel invitation** | Confirm completes | Toast **`Invitation cancelled.`**; **User details** refreshes in place; all **pending** invitation rows are revoked; unused invitation tokens are invalidated; `pendingInvitation` is cleared; **Users list** shows `invitationPending` **false** |
-| AC-INV-004-03 | After **Cancel invitation**; account has **no local password** and **no** pending invitation | Administrator opens **User details** | **`Send invitation`** appears in the profile header |
-| AC-INV-004-04 | After **Cancel invitation** | User account state is inspected | User row **remains** in the directory with roles and email unchanged; user is **not** **awaiting invitation acceptance**; account is **not** deactivated |
-
 ## Non-functional requirements
 
 - Inherits `docs/requirements/_shared/non-functional/product-quality.md` (`NFR-QUAL-001`) and linked NFR documents.

@@ -31,18 +31,6 @@ The user must be able to sign out from the current browser or from all devices.
 - Repeating logout when already signed out redirects to **Login** without error.
 - A revoked session cannot access protected screens or renew credentials.
 
----
-
-## Acceptance scenarios
-
-| ID | Given | When | Then |
-| -- | ----- | ---- | ---- |
-| AC-AUTH-003-01 | Signed-in user | User clicks **Logout** in the application header | Current session is revoked; user redirected to **Login**; protected screens are inaccessible until sign-in |
-| AC-AUTH-003-02 | Signed-in user on **My account** (FR-USR-001) | User clicks **Sign out everywhere** | Confirmation dialog `Sign out from all devices? You will be signed out on every browser and device.` is shown |
-| AC-AUTH-003-03 | Signed-in user on **My account**; **Sign out everywhere** confirmation dialog open | User confirms | All active sessions for the user are revoked; current browser signed out; redirected to **Login** |
-| AC-AUTH-003-04 | User already signed out | User triggers **Logout** again | Redirected to **Login** without error |
-| AC-AUTH-003-05 | User with **revoked** session | User opens a protected screen or attempts credential renewal | Access denied; cannot reach protected screens or renew credentials |
-
 ## Non-functional requirements
 
 - Inherits `docs/requirements/_shared/non-functional/product-quality.md` (`NFR-QUAL-001`) and linked NFR documents.

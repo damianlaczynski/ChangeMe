@@ -54,19 +54,6 @@ Passkey step-up rules:
 - Passkey step-up does not issue a new application session; it only unlocks the pending action.
 - **Out of scope:** step-up for **Accept invitation** external onboarding (invitation email match per FR-AUTH-010 / FR-AUTH-014).
 
----
-
-## Acceptance scenarios
-
-| ID            | Given                                                                                                                                                                                                                 | When                                                       | Then                                                                                                                         |
-| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| AC-PKY-004-01 | Signed-in user with at least one passkey; **Passkeys authentication enabled** is **true**; **Two-factor enabled** is **false**; pending sensitive action (for example **Unlink** external provider on **My account**) | User chooses **Verify with passkey** and ceremony succeeds | **passkey step-up completed at** set; pending action can proceed without **Current password**                                |
-| AC-PKY-004-02 | Signed-in user with passkeys; **Two-factor enabled** is **true**; pending sensitive action requiring step-up                                                                                                          | User completes passkey step-up only                        | Action **not** unlocked; valid **TOTP** or **recovery code** still required in addition to passkey step-up (FR-AUTH-013)     |
-| AC-PKY-004-03 | Signed-in user with passkeys; passkey step-up completed more than **15 minutes** ago                                                                                                                                  | User attempts sensitive action                             | Passkey step-up no longer valid; user must verify again                                                                      |
-| AC-PKY-004-04 | Signed-in user on **Change password** (FR-AUTH-005) with existing local password                                                                                                                                      | User attempts step-up with passkey                         | **Current password** still required; passkey step-up does **not** replace password when a password exists                    |
-| AC-PKY-004-05 | Signed-in user with passkeys; step-up UI shown for **Add passkey**, **Rename passkey**, or **Remove passkey**                                                                                                         | User views step-up options                                 | **Verify with passkey** offered when user has at least one passkey and passkeys are enabled                                  |
-| AC-PKY-004-06 | Signed-in user; passkey step-up ceremony fails                                                                                                                                                                        | User retries                                               | Error `Passkey verification failed. Try again.`; attempt counts toward **5**-attempt limit per step-up session (FR-AUTH-013) |
-
 ## Non-functional requirements
 
 - Inherits `docs/requirements/_shared/non-functional/product-quality.md` (`NFR-QUAL-001`) and linked NFR documents.

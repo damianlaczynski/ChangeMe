@@ -13,6 +13,8 @@ depends_on: []
 
 When writing or reviewing a functional specification, link this document instead of repeating list, form, or feedback rules. Document only what differs from the patterns below.
 
+Do **not** add a separate acceptance-scenarios section to feature specifications. Put exact copy, visibility rules, and edge cases in **Functional requirements** bullets, or extend this document when the pattern applies to many screens.
+
 ## Scope
 
 These patterns apply to:

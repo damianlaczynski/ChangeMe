@@ -39,13 +39,13 @@ Deployments must be able to enable passkey authentication, optionally require ev
 
 A user may use passkey sign-in when **Passkeys authentication enabled** is **true** and at least one of the following holds:
 
-| Condition                                               | Passkey sign-in allowed when **Allow passkey-only accounts** is **false** | Passkey sign-in allowed when **Allow passkey-only accounts** is **true** |
-| ------------------------------------------------------- | ------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| User has **local password** and ≥1 passkey              | **Yes**                                                                   | **Yes**                                                                  |
-| User is **external-only** with ≥1 passkey               | **Yes** (external sign-in remains available per FR-AUTH-014)              | **Yes**                                                                  |
-| User has only passkeys (no password, no external login) | **No**                                                                    | **Yes**                                                                  |
-| User is **awaiting invitation acceptance**              | **No** (complete invitation first)                                        | **No**                                                                   |
-| User has zero passkeys                                  | **No** (enrollment only while signed in)                                  | **No**                                                                   |
+| Condition                                               | Passkey sign-in allowed when **Allow passkey-only accounts** is **false**                                                 | Passkey sign-in allowed when **Allow passkey-only accounts** is **true** |
+| ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| User has **local password** and ≥1 passkey              | **Yes**                                                                                                                   | **Yes**                                                                  |
+| User is **external-only** with ≥1 passkey               | **Yes** (external sign-in remains available per FR-AUTH-014)                                                              | **Yes**                                                                  |
+| User has only passkeys (no password, no external login) | **No** — passkey sign-in blocked with **`Set a password or use external sign-in before using passkeys on this account.`** | **Yes**                                                                  |
+| User is **awaiting invitation acceptance**              | **No** (complete invitation first)                                                                                        | **No**                                                                   |
+| User has zero passkeys                                  | **No** (enrollment only while signed in)                                                                                  | **No**                                                                   |
 
 - **Passkey-only account** means the user has at least one passkey, **no local password**, and **no external login** rows. Such accounts are allowed only when **Allow passkey-only accounts** is **true**.
 - Registering the first passkey does **not** remove an existing **local password** or **external login** unless the user explicitly removes those methods per FR-AUTH-005, FR-AUTH-014, FR-PKY-003.
@@ -75,21 +75,6 @@ Deployment settings are read on each sign-in, session refresh, and authenticated
 
 - Disabling passkeys deployment-wide does not delete stored credentials; re-enabling restores usability.
 - **Out of scope:** admin UI to change passkey deployment flags at runtime; per-role passkey requirement; hardware security key inventory UI beyond credential list; syncing passkeys across browsers without per-browser enrollment.
-
----
-
-## Acceptance scenarios
-
-| ID            | Given                                                                                                                                                  | When                                                                          | Then                                                                                                                 |
-| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| AC-PKY-001-01 | **Passkeys authentication enabled** is **true**; user has **local password** and at least one passkey                                                  | User views public auth settings or **Login**                                  | **Sign in with a passkey** and **Passkeys** section on **My account** are available per policy                       |
-| AC-PKY-001-02 | **Passkeys authentication enabled** is **true**; **Allow passkey-only accounts** is **false**; user has only passkeys (no password, no external login) | User attempts passkey sign-in                                                 | Sign-in blocked with `Set a password or use external sign-in before using passkeys on this account.`                 |
-| AC-PKY-001-03 | **Passkeys authentication enabled** is **true**; **Allow passkey-only accounts** is **true**; user has only passkeys                                   | User attempts passkey sign-in                                                 | Passkey sign-in allowed                                                                                              |
-| AC-PKY-001-04 | **Passkeys authentication enabled** is **true**; **Passkey satisfies two-factor** is **true**; account **Two-factor enabled** is **true**              | User completes passkey sign-in with assertion including **user verification** | **Two-factor verification** skipped for that sign-in (FR-AUTH-013)                                                   |
-| AC-PKY-001-05 | **Passkeys authentication enabled** is **true**; **Passkey satisfies two-factor** is **false**; account **Two-factor enabled** is **true**             | User completes passkey primary authentication                                 | User proceeds to **Two-factor verification** after passkey sign-in                                                   |
-| AC-PKY-001-06 | **Passkeys authentication required** turned **on** while user has zero passkeys (not **awaiting invitation acceptance**)                               | Next session refresh or blocked API response                                  | Client receives **`passkeySetupRequired`** and enters **strict passkey setup** (FR-PKY-006)                          |
-| AC-PKY-001-07 | **Passkeys authentication enabled** changed **true** → **false**                                                                                       | Signed-in user affected by policy                                             | Enforcement stops immediately; stored credentials remain but inactive; **strict passkey setup** ends                 |
-| AC-PKY-001-08 | **Allow passkey-only accounts** changed **true** → **false**; user is passkey-only                                                                     | User attempts sign-in                                                         | Cannot sign in until **Set password** (FR-AUTH-014) or external provider linked; existing passkeys remain on account |
 
 ## Non-functional requirements
 

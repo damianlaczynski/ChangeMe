@@ -167,7 +167,7 @@ The `docs/` directory contains guidance that is also shipped into generated solu
 - `docs/backend-coding-guidelines.md` - backend conventions
 - `docs/testing-playbook.md` - how to verify changes
 - `docs/feature-recipes.md` - implementation recipes for common feature work
-- `docs/requirements/` - functional specifications (`FR-*`), non-functional requirements (`NFR-*`), and acceptance scenarios (`AC-*`)
+- `docs/requirements/` - functional specifications (`FR-*`), non-functional requirements (`NFR-*`), and shared reference docs
 - `docs/templates/` - reusable document templates
 
 Maintainers of the template package: see [`CONTRIBUTING.md`](CONTRIBUTING.md).

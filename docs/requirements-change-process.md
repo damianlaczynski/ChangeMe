@@ -34,7 +34,7 @@ The validator and README index list domains that exist under `docs/requirements/
 
 1. Decide whether the change touches **shared concepts** (terms, gates, permissions, NFR, UI patterns). If yes, edit the matching file under `docs/requirements/_shared/` **once** instead of duplicating across functional specifications.
 2. Edit only the affected `FR-*` files under `docs/requirements/functional/<domain>/`.
-3. Add or update **acceptance scenarios** (`AC-{AREA}-{NNN}-{ss}`) for every new or changed flow.
+3. Put every testable outcome in **Functional requirements** (exact copy, visibility rules, defaults, edge cases) or in `_shared/` when it is a cross-screen pattern. Link `FR-UI-001` instead of repeating list or form rules.
 4. Create **one** file in `docs/requirements/changes/` from `docs/requirements/changes/_template.md` (filename: `YYYY-MM-DD-short-title.md`).
 5. List every touched `FR-*`, `NFR-*`, and shared doc in the change record; describe the **behavior delta** (not a copy of the specification).
 6. Run `npm run requirements:validate` before opening a PR.
@@ -42,8 +42,8 @@ The validator and README index list domains that exist under `docs/requirements/
 ### Developer
 
 1. Read pending files in `docs/requirements/changes/` (**Status:** `pending`).
-2. Read the linked `FR-*` files, their **acceptance scenarios**, and any `_shared/` docs referenced there.
-3. Implement and verify against functional requirements and `AC-*` scenarios (use `docs/feature-recipes.md` for technical steps).
+2. Read the linked `FR-*` files and any `_shared/` docs referenced there.
+3. Implement and verify against **Functional requirements** and inherited patterns (use `docs/feature-recipes.md` for technical steps; `docs/testing-playbook.md` for automated checks).
 4. When the work is merged, set **Status:** `done (YYYY-MM-DD)` on the change file or **delete** it.
 
 An empty changes queue (only `_template.md` and `README.md`) is normal.
@@ -54,9 +54,10 @@ An empty changes queue (only `_template.md` and `README.md`) is normal.
 | ------------------------------- | --------------------------------------------------------------------- |
 | **Goal**                        | Business outcome.                                                     |
 | **Functional requirements**     | User-visible behavior, fields, validations, messages, business rules. |
-| **Acceptance scenarios**        | Given / When / Then table (`AC-*`) for testable flows and edge cases. |
 | **Non-functional requirements** | Inherit `NFR-*` docs; document overrides only.                        |
 | **Out of scope**                | Deliberate exclusions.                                                |
+
+Do **not** add a separate acceptance-scenarios or Given/When/Then table. If a bullet would only restate inherited `FR-UI-001` behavior, omit it and keep the `inherits_fr` link.
 
 ## Sections in a change record
 
@@ -86,11 +87,11 @@ From the repository root:
 npm run requirements:validate
 ```
 
-Checks: `FR-*` / `NFR-*` frontmatter, acceptance scenario tables, broken cross-references, shared docs present, change records reference valid IDs. Regenerates `docs/requirements/README.md` and `.requirements-manifest.json`.
+Checks: `FR-*` / `NFR-*` frontmatter, required FR sections, broken cross-references, shared docs present, change records reference valid IDs. Regenerates `docs/requirements/README.md` and `.requirements-manifest.json`.
 
 ## For AI agents
 
-1. If `docs/requirements/changes/` has files with **Status:** `pending`, read them plus referenced `FR-*`, `AC-*`, and `_shared/` paths.
+1. If `docs/requirements/changes/` has files with **Status:** `pending`, read them plus referenced `FR-*` and `_shared/` paths.
 2. Otherwise use `docs/requirements/README.md` to locate relevant functional specifications.
 3. Cross-cutting terms and gate ordering: read `docs/requirements/_shared/reference/` before inferring behavior from a single `FR-*`.
 4. Shared UI and NFR defaults: read `docs/requirements/_shared/functional/ui-patterns.md` (`FR-UI-001`) and `docs/requirements/_shared/non-functional/product-quality.md` (`NFR-QUAL-001`).

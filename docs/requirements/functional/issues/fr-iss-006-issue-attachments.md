@@ -113,21 +113,6 @@ Authenticated users must be able to attach files to an issue, review them on **I
 - Virus scanning, image thumbnails, or inline preview in the browser.
 - Replacing an existing attachment in place (upload always adds a new row).
 
----
-
-## Acceptance scenarios
-
-| ID | Given | When | Then |
-| -- | ----- | ---- | ---- |
-| AC-ISS-006-01 | Guest or unauthenticated user                                      | User navigates to **Issue details** **Attachments** tab | User is redirected to **Login** (FR-AUTH-001)                                                                                             |
-| AC-ISS-006-02 | Authenticated user on **Issue details** **Attachments** tab with no files | User views the section                      | Empty state shows **`No attachments yet`**; **Upload file** control is above the attachments list                                                 |
-| AC-ISS-006-03 | Authenticated user on **Attachments** tab; issue has fewer than 10 attachments | User uploads a valid allowed file under 5 MB and clicks **Upload** | Attachment appears in the list; **Last activity** updates; user stays on **Attachments** tab without leaving the screen              |
-| AC-ISS-006-04 | Authenticated user on **Attachments** tab                          | User selects a file larger than **5 MB** and clicks **Upload** | Inline error **`File cannot exceed 5.0 MB.`** near the upload control; no new row appears in the list                                           |
-| AC-ISS-006-05 | Authenticated user on **Attachments** tab; issue already has **10** attachments | User attempts another upload               | Upload is rejected with an inline error near the upload control; attachment count remains **10**                                                  |
-| AC-ISS-006-06 | Authenticated user who uploaded an attachment on **Attachments** tab | User clicks **Delete** and confirms the dialog | Confirmation shows **`Delete "{file name}"? This action cannot be undone.`**; attachment is removed; change history is written; **Last activity** updates; list reloads from the first page |
-| AC-ISS-006-07 | Authenticated user viewing an attachment uploaded by another user on **Attachments** tab | User views row actions              | **Delete** is not shown; **Download** is available                                                                                                |
-| AC-ISS-006-08 | Authenticated user on **Attachments** tab                          | User clicks **Download** on an attachment row     | File is saved to the device under the **original file name** shown in the list                                                                    |
-
 ## Non-functional requirements
 
 - Inherits `docs/requirements/_shared/non-functional/product-quality.md` (`NFR-QUAL-001`) and linked NFR documents.

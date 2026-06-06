@@ -61,19 +61,6 @@ An authorized administrator must be able to **invite** a person by email: create
 - **Users.Manage**: required.
 - **Roles.Manage**: required to assign roles on invite.
 
----
-
-## Acceptance scenarios
-
-| ID | Given | When | Then |
-| -- | ----- | ---- | ---- |
-| AC-INV-001-01 | Signed-in user without **Users.Manage** | User attempts to open **Invite user** | Access is denied; **Invite user** screen is not available |
-| AC-INV-001-02 | Administrator with **Users.Manage** on **Users list** | User clicks **Invite user** | **Invite user** screen opens at **`/users/invite`**; breadcrumb **`Invite user`**; subheader explains email invitation setup |
-| AC-INV-001-03 | Administrator with **Users.Manage** on **Invite user** with valid **Email** and optional **First name** / **Last name** | User clicks **Send invitation** | Toast **`Invitation sent.`**; **User details** opens for the new user; **Account invitation** email is sent (FR-AUTH-007); **Email verified** is set when email verification is enabled (FR-AUTH-011) |
-| AC-INV-001-04 | Administrator on **Invite user** | User clicks **Back** or **Cancel** | **Users list** opens; no invitation is sent |
-| AC-INV-001-05 | Administrator with **Users.Manage** inviting their own account and attempting to remove the **Administrator** role | User submits **Send invitation** | Submission is blocked; administrator cannot remove their own **Administrator** role on invite |
-| AC-INV-001-06 | New user created via **Invite user** | Invitation is sent successfully | **Deactivated** is **false**; user remains **awaiting invitation acceptance** until **Accept invitation** (FR-AUTH-010) or matching external sign-in (FR-AUTH-014) |
-
 ## Non-functional requirements
 
 - Inherits `docs/requirements/_shared/non-functional/product-quality.md` (`NFR-QUAL-001`) and linked NFR documents.

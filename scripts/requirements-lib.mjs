@@ -91,18 +91,6 @@ export function collectSharedFunctionalDocs() {
   return collectSharedDocs("functional", "functional");
 }
 
-export function parseAcceptanceScenarios(body) {
-  const section = body.match(
-    /## Acceptance scenarios\s*\n+(\|[^\n]*\bID\b[^\n]*\bGiven\b[^\n]*\bWhen\b[^\n]*\bThen\b[^\n]*\|[\s\S]*?)(?=\n## |\n---\s*$|$)/,
-  );
-  if (!section) return [];
-  const rows = section[1].split("\n").filter((l) => l.startsWith("| AC-"));
-  return rows.map((row) => {
-    const cols = row.split("|").map((c) => c.trim());
-    return { id: cols[1], given: cols[2], when: cols[3], then: cols[4] };
-  });
-}
-
 export function formatDomainLabel(domain) {
   return domain
     .split(/[-_]/)

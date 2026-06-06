@@ -60,24 +60,6 @@ An authorized administrator must be able to browse roles, search and sort them, 
 - **Roles.View**: required for **Roles list** and **Open details**.
 - **Roles.Manage**: required for **Add role**, **Edit role**, and **Delete role**.
 
----
-
-## Acceptance scenarios
-
-| ID | Given | When | Then |
-| -- | ----- | ---- | ---- |
-| AC-ROL-002-01 | Signed-in user without **Roles.View** | User views the sidebar | **Roles** entry is **not shown** |
-| AC-ROL-002-02 | Signed-in user with **Roles.View** | User opens **Roles list** from the sidebar | Screen loads; table default sort is **Name**, ascending |
-| AC-ROL-002-03 | Signed-in user with **Roles.View** on **Roles list** | User enters a fragment matching a role **name** (any case) and clicks **Search** or submits the search form | Table shows only roles whose **name** or **description** contains that fragment (case-insensitive) |
-| AC-ROL-002-04 | Signed-in user with **Roles.View** on **Roles list** | User views the search field | Placeholder text is **`Search roles...`** |
-| AC-ROL-002-05 | Signed-in user with **Roles.Manage** on **Roles list** | User views the actions bar | **Add role** button is shown; clicking it opens **Create role** (FR-ROL-003) |
-| AC-ROL-002-06 | Signed-in user with **Roles.View** but without **Roles.Manage** on **Roles list** | User views the actions bar | **Add role** button is **not shown** |
-| AC-ROL-002-07 | Signed-in user with **Roles.View** on **Roles list** | User views a table row | **Name** links to **Role details**; **Description** shows text or **`—`** when empty; **Permissions** shows **`{n} permissions`**; **Users** shows **`{n} users`**; seeded roles show **`System`** badge |
-| AC-ROL-002-08 | Signed-in user with **Roles.View** on **Roles list** | User clicks a role **Name** link or chooses **Open details** from the row overflow menu | **Role details** opens for that role |
-| AC-ROL-002-09 | Signed-in user with **Roles.Manage** on a **custom** role row overflow menu | User opens the menu | **Open details**, **Edit role**, and **Delete role** are shown |
-| AC-ROL-002-10 | Signed-in user with **Roles.Manage** on **Administrator** or **User** system role row overflow menu | User opens the menu | **Open details** is shown; **Edit role** and **Delete role** are **not shown** |
-| AC-ROL-002-11 | Signed-in user with **Roles.View** on **Roles list** | User clicks a sortable column header (**Name**, **Users**, or **Permissions**) | Table re-sorts by the selected column |
-
 ## Non-functional requirements
 
 - Inherits `docs/requirements/_shared/non-functional/product-quality.md` (`NFR-QUAL-001`) and linked NFR documents.

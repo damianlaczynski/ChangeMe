@@ -83,26 +83,6 @@ An authorized administrator must be able to review a role's metadata, permission
 - **Roles.View**: required for **Role details**, **Permissions** section, and read-only **Assigned users** list.
 - **Roles.Manage**: required for **Edit role**, **Delete role**, and **Remove from role**.
 
----
-
-## Acceptance scenarios
-
-| ID | Given | When | Then |
-| -- | ----- | ---- | ---- |
-| AC-ROL-004-01 | Signed-in user without **Roles.View** | User navigates to **Role details** | Access is denied per FR-ROL-001 |
-| AC-ROL-004-02 | Administrator with **Roles.View** on **Roles list** | User clicks a role **Name** link or **Open details** in the overflow menu | **Role details** opens for that role |
-| AC-ROL-004-03 | Administrator with **Roles.View** on **Role details** | User views the role summary | Read-only **Name**, **Description** (or **`—`** when empty), **`{n} permissions`**, and **`{n} users`** are shown; seeded roles show **`System`** badge |
-| AC-ROL-004-04 | Administrator with **Roles.View** on **Role details** | User views the **Permissions** section | Section title is **`Permissions`**; every assigned permission is listed with **label** and **description** from FR-ROL-001, grouped by **Users**, **Roles**, and **Sessions** |
-| AC-ROL-004-05 | Administrator with **Roles.View** on **Role details** with assigned users | User views the **Assigned users** section | Table shows **Name**, **Email**, **Account** badge (**`Active`** or **`Deactivated`**), default sort **Name** ascending; search placeholder is **`Search assigned users...`** |
-| AC-ROL-004-06 | Administrator with **Roles.View** on **Role details** for a role with no assigned users | User views **Assigned users** | Empty state **`No users are assigned to this role.`** is shown |
-| AC-ROL-004-07 | Administrator with **Roles.Manage** on **Role details** for a **custom** role | User views header actions | **Edit role** and **Delete role** are shown |
-| AC-ROL-004-08 | Administrator with **Roles.View** without **Roles.Manage** on **Role details** | User views header and row actions | **Edit role**, **Delete role**, and **Remove from role** are **not shown** |
-| AC-ROL-004-09 | Administrator with **Roles.Manage** on **Role details** for **Administrator** or **User** | User views header actions | **Edit role** and **Delete role** are **not shown** |
-| AC-ROL-004-10 | Administrator with **Roles.Manage** on **Role details**; target user retains at least one other role | User clicks **Remove from role** and confirms | Dialog **`Remove "{full name}" from role "{role name}"? The user will lose permissions granted only through this role.`**; toast **`User removed from role.`**; **Assigned users** list refreshes in place |
-| AC-ROL-004-11 | Administrator with **Roles.Manage** on **Role details**; target user would have zero roles after removal | User clicks **Remove from role** and confirms | Removal is rejected with **`Each user must have at least one role. Assign another role before removing this one.`** |
-| AC-ROL-004-12 | Administrator with **Roles.View** on **Role details** | User clicks a user **Name** in **Assigned users** | **User details** opens for that user (FR-USR-004) |
-| AC-ROL-004-13 | Administrator with **Roles.View** on **Role details** | User clicks **Back** | Navigates to **Roles list** |
-
 ## Non-functional requirements
 
 - Inherits `docs/requirements/_shared/non-functional/product-quality.md` (`NFR-QUAL-001`) and linked NFR documents.

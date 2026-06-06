@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-06T19:42:16.558Z",
+  "generatedAt": "2026-06-06T21:43:56.042Z",
   "functional": [
     {
       "id": "FR-AUTH-001",
@@ -12,22 +12,6 @@
       "inherits_nfr": [],
       "inherits_fr": [
         "FR-UI-001"
-      ],
-      "acceptance_scenarios": [
-        "AC-AUTH-001-01",
-        "AC-AUTH-001-02",
-        "AC-AUTH-001-03",
-        "AC-AUTH-001-04",
-        "AC-AUTH-001-05",
-        "AC-AUTH-001-06",
-        "AC-AUTH-001-07",
-        "AC-AUTH-001-08",
-        "AC-AUTH-001-09",
-        "AC-AUTH-001-10",
-        "AC-AUTH-001-11",
-        "AC-AUTH-001-12",
-        "AC-AUTH-001-13",
-        "AC-AUTH-001-14"
       ]
     },
     {
@@ -51,13 +35,6 @@
       ],
       "inherits_fr": [
         "FR-UI-001"
-      ],
-      "acceptance_scenarios": [
-        "AC-AUTH-002-01",
-        "AC-AUTH-002-02",
-        "AC-AUTH-002-03",
-        "AC-AUTH-002-04",
-        "AC-AUTH-002-05"
       ]
     },
     {
@@ -79,13 +56,6 @@
       ],
       "inherits_fr": [
         "FR-UI-001"
-      ],
-      "acceptance_scenarios": [
-        "AC-AUTH-003-01",
-        "AC-AUTH-003-02",
-        "AC-AUTH-003-03",
-        "AC-AUTH-003-04",
-        "AC-AUTH-003-05"
       ]
     },
     {
@@ -102,15 +72,6 @@
       "inherits_nfr": [],
       "inherits_fr": [
         "FR-UI-001"
-      ],
-      "acceptance_scenarios": [
-        "AC-AUTH-004-01",
-        "AC-AUTH-004-02",
-        "AC-AUTH-004-03",
-        "AC-AUTH-004-04",
-        "AC-AUTH-004-05",
-        "AC-AUTH-004-06",
-        "AC-AUTH-004-07"
       ]
     },
     {
@@ -129,14 +90,6 @@
       "inherits_nfr": [],
       "inherits_fr": [
         "FR-UI-001"
-      ],
-      "acceptance_scenarios": [
-        "AC-AUTH-005-01",
-        "AC-AUTH-005-02",
-        "AC-AUTH-005-03",
-        "AC-AUTH-005-04",
-        "AC-AUTH-005-05",
-        "AC-AUTH-005-06"
       ]
     },
     {
@@ -161,12 +114,6 @@
       ],
       "inherits_fr": [
         "FR-UI-001"
-      ],
-      "acceptance_scenarios": [
-        "AC-AUTH-006-01",
-        "AC-AUTH-006-02",
-        "AC-AUTH-006-03",
-        "AC-AUTH-006-04"
       ]
     },
     {
@@ -180,15 +127,6 @@
       "inherits_nfr": [],
       "inherits_fr": [
         "FR-UI-001"
-      ],
-      "acceptance_scenarios": [
-        "AC-AUTH-007-01",
-        "AC-AUTH-007-02",
-        "AC-AUTH-007-03",
-        "AC-AUTH-007-04",
-        "AC-AUTH-007-05",
-        "AC-AUTH-007-06",
-        "AC-AUTH-007-07"
       ]
     },
     {
@@ -208,13 +146,6 @@
       ],
       "inherits_fr": [
         "FR-UI-001"
-      ],
-      "acceptance_scenarios": [
-        "AC-AUTH-008-01",
-        "AC-AUTH-008-02",
-        "AC-AUTH-008-03",
-        "AC-AUTH-008-04",
-        "AC-AUTH-008-05"
       ]
     },
     {
@@ -228,17 +159,6 @@
       "inherits_nfr": [],
       "inherits_fr": [
         "FR-UI-001"
-      ],
-      "acceptance_scenarios": [
-        "AC-AUTH-009-01",
-        "AC-AUTH-009-02",
-        "AC-AUTH-009-03",
-        "AC-AUTH-009-04",
-        "AC-AUTH-009-05",
-        "AC-AUTH-009-06",
-        "AC-AUTH-009-07",
-        "AC-AUTH-009-08",
-        "AC-AUTH-009-09"
       ]
     },
     {
@@ -248,35 +168,10 @@
       "type": "functional",
       "status": "active",
       "file": "functional/identity/fr-auth-010-accept-account-invitation.md",
-      "depends_on": [
-        "FR-AUTH-001",
-        "FR-AUTH-007",
-        "FR-AUTH-008",
-        "FR-AUTH-013",
-        "FR-AUTH-014",
-        "FR-INV-001",
-        "FR-INV-006",
-        "FR-INV-007",
-        "FR-USR-003"
-      ],
-      "inherits_nfr": [
-        "NFR-QUAL-001",
-        "NFR-A11Y-001",
-        "NFR-I18N-001",
-        "NFR-PERF-001",
-        "NFR-RSP-001"
-      ],
+      "depends_on": [],
+      "inherits_nfr": [],
       "inherits_fr": [
         "FR-UI-001"
-      ],
-      "acceptance_scenarios": [
-        "AC-AUTH-010-01",
-        "AC-AUTH-010-02",
-        "AC-AUTH-010-03",
-        "AC-AUTH-010-04",
-        "AC-AUTH-010-05",
-        "AC-AUTH-010-06",
-        "AC-AUTH-010-07"
       ]
     },
     {
@@ -286,33 +181,10 @@
       "type": "functional",
       "status": "active",
       "file": "functional/identity/fr-auth-011-email-verification.md",
-      "depends_on": [
-        "FR-AUTH-001",
-        "FR-AUTH-006",
-        "FR-AUTH-009",
-        "FR-AUTH-010",
-        "FR-AUTH-015",
-        "FR-INV-001",
-        "FR-ROL-006",
-        "FR-USR-005"
-      ],
-      "inherits_nfr": [
-        "NFR-QUAL-001",
-        "NFR-A11Y-001",
-        "NFR-I18N-001",
-        "NFR-PERF-001",
-        "NFR-RSP-001"
-      ],
+      "depends_on": [],
+      "inherits_nfr": [],
       "inherits_fr": [
         "FR-UI-001"
-      ],
-      "acceptance_scenarios": [
-        "AC-AUTH-011-01",
-        "AC-AUTH-011-02",
-        "AC-AUTH-011-03",
-        "AC-AUTH-011-04",
-        "AC-AUTH-011-05",
-        "AC-AUTH-011-06"
       ]
     },
     {
@@ -326,14 +198,6 @@
       "inherits_nfr": [],
       "inherits_fr": [
         "FR-UI-001"
-      ],
-      "acceptance_scenarios": [
-        "AC-AUTH-012-01",
-        "AC-AUTH-012-02",
-        "AC-AUTH-012-03",
-        "AC-AUTH-012-04",
-        "AC-AUTH-012-05",
-        "AC-AUTH-012-06"
       ]
     },
     {
@@ -347,20 +211,6 @@
       "inherits_nfr": [],
       "inherits_fr": [
         "FR-UI-001"
-      ],
-      "acceptance_scenarios": [
-        "AC-AUTH-013-01",
-        "AC-AUTH-013-02",
-        "AC-AUTH-013-03",
-        "AC-AUTH-013-04",
-        "AC-AUTH-013-05",
-        "AC-AUTH-013-06",
-        "AC-AUTH-013-07",
-        "AC-AUTH-013-08",
-        "AC-AUTH-013-09",
-        "AC-AUTH-013-10",
-        "AC-AUTH-013-11",
-        "AC-AUTH-013-12"
       ]
     },
     {
@@ -374,18 +224,6 @@
       "inherits_nfr": [],
       "inherits_fr": [
         "FR-UI-001"
-      ],
-      "acceptance_scenarios": [
-        "AC-AUTH-014-01",
-        "AC-AUTH-014-02",
-        "AC-AUTH-014-03",
-        "AC-AUTH-014-04",
-        "AC-AUTH-014-05",
-        "AC-AUTH-014-06",
-        "AC-AUTH-014-07",
-        "AC-AUTH-014-08",
-        "AC-AUTH-014-09",
-        "AC-AUTH-014-10"
       ]
     },
     {
@@ -399,18 +237,6 @@
       "inherits_nfr": [],
       "inherits_fr": [
         "FR-UI-001"
-      ],
-      "acceptance_scenarios": [
-        "AC-AUTH-015-01",
-        "AC-AUTH-015-02",
-        "AC-AUTH-015-03",
-        "AC-AUTH-015-04",
-        "AC-AUTH-015-05",
-        "AC-AUTH-015-06",
-        "AC-AUTH-015-07",
-        "AC-AUTH-015-08",
-        "AC-AUTH-015-09",
-        "AC-AUTH-015-10"
       ]
     },
     {
@@ -424,14 +250,6 @@
       "inherits_nfr": [],
       "inherits_fr": [
         "FR-UI-001"
-      ],
-      "acceptance_scenarios": [
-        "AC-INV-001-01",
-        "AC-INV-001-02",
-        "AC-INV-001-03",
-        "AC-INV-001-04",
-        "AC-INV-001-05",
-        "AC-INV-001-06"
       ]
     },
     {
@@ -455,14 +273,6 @@
       ],
       "inherits_fr": [
         "FR-UI-001"
-      ],
-      "acceptance_scenarios": [
-        "AC-INV-002-01",
-        "AC-INV-002-02",
-        "AC-INV-002-03",
-        "AC-INV-002-04",
-        "AC-INV-002-05",
-        "AC-INV-002-06"
       ]
     },
     {
@@ -485,12 +295,6 @@
       ],
       "inherits_fr": [
         "FR-UI-001"
-      ],
-      "acceptance_scenarios": [
-        "AC-INV-003-01",
-        "AC-INV-003-02",
-        "AC-INV-003-03",
-        "AC-INV-003-04"
       ]
     },
     {
@@ -512,12 +316,6 @@
       ],
       "inherits_fr": [
         "FR-UI-001"
-      ],
-      "acceptance_scenarios": [
-        "AC-INV-004-01",
-        "AC-INV-004-02",
-        "AC-INV-004-03",
-        "AC-INV-004-04"
       ]
     },
     {
@@ -527,36 +325,10 @@
       "type": "functional",
       "status": "active",
       "file": "functional/invitations/fr-inv-005-user-status.md",
-      "depends_on": [
-        "FR-AUTH-001",
-        "FR-AUTH-011",
-        "FR-AUTH-012",
-        "FR-AUTH-014",
-        "FR-INV-002",
-        "FR-INV-003",
-        "FR-INV-004",
-        "FR-USR-005"
-      ],
-      "inherits_nfr": [
-        "NFR-QUAL-001",
-        "NFR-A11Y-001",
-        "NFR-I18N-001",
-        "NFR-PERF-001",
-        "NFR-RSP-001"
-      ],
+      "depends_on": [],
+      "inherits_nfr": [],
       "inherits_fr": [
         "FR-UI-001"
-      ],
-      "acceptance_scenarios": [
-        "AC-INV-005-01",
-        "AC-INV-005-02",
-        "AC-INV-005-03",
-        "AC-INV-005-04",
-        "AC-INV-005-05",
-        "AC-INV-005-06",
-        "AC-INV-005-07",
-        "AC-INV-005-08",
-        "AC-INV-005-09"
       ]
     },
     {
@@ -579,13 +351,6 @@
       ],
       "inherits_fr": [
         "FR-UI-001"
-      ],
-      "acceptance_scenarios": [
-        "AC-INV-006-01",
-        "AC-INV-006-02",
-        "AC-INV-006-03",
-        "AC-INV-006-04",
-        "AC-INV-006-05"
       ]
     },
     {
@@ -608,10 +373,6 @@
       ],
       "inherits_fr": [
         "FR-UI-001"
-      ],
-      "acceptance_scenarios": [
-        "AC-INV-007-01",
-        "AC-INV-007-02"
       ]
     },
     {
@@ -629,17 +390,6 @@
       "inherits_nfr": [],
       "inherits_fr": [
         "FR-UI-001"
-      ],
-      "acceptance_scenarios": [
-        "AC-ISS-001-01",
-        "AC-ISS-001-02",
-        "AC-ISS-001-03",
-        "AC-ISS-001-04",
-        "AC-ISS-001-05",
-        "AC-ISS-001-06",
-        "AC-ISS-001-07",
-        "AC-ISS-001-08",
-        "AC-ISS-001-09"
       ]
     },
     {
@@ -656,17 +406,6 @@
       "inherits_nfr": [],
       "inherits_fr": [
         "FR-UI-001"
-      ],
-      "acceptance_scenarios": [
-        "AC-ISS-002-01",
-        "AC-ISS-002-02",
-        "AC-ISS-002-03",
-        "AC-ISS-002-04",
-        "AC-ISS-002-05",
-        "AC-ISS-002-06",
-        "AC-ISS-002-07",
-        "AC-ISS-002-08",
-        "AC-ISS-002-09"
       ]
     },
     {
@@ -684,18 +423,6 @@
       "inherits_nfr": [],
       "inherits_fr": [
         "FR-UI-001"
-      ],
-      "acceptance_scenarios": [
-        "AC-ISS-003-01",
-        "AC-ISS-003-02",
-        "AC-ISS-003-03",
-        "AC-ISS-003-04",
-        "AC-ISS-003-05",
-        "AC-ISS-003-06",
-        "AC-ISS-003-07",
-        "AC-ISS-003-08",
-        "AC-ISS-003-09",
-        "AC-ISS-003-10"
       ]
     },
     {
@@ -718,15 +445,6 @@
       ],
       "inherits_fr": [
         "FR-UI-001"
-      ],
-      "acceptance_scenarios": [
-        "AC-ISS-004-01",
-        "AC-ISS-004-02",
-        "AC-ISS-004-03",
-        "AC-ISS-004-04",
-        "AC-ISS-004-05",
-        "AC-ISS-004-06",
-        "AC-ISS-004-07"
       ]
     },
     {
@@ -740,16 +458,6 @@
       "inherits_nfr": [],
       "inherits_fr": [
         "FR-UI-001"
-      ],
-      "acceptance_scenarios": [
-        "AC-ISS-005-01",
-        "AC-ISS-005-02",
-        "AC-ISS-005-03",
-        "AC-ISS-005-04",
-        "AC-ISS-005-05",
-        "AC-ISS-005-06",
-        "AC-ISS-005-07",
-        "AC-ISS-005-08"
       ]
     },
     {
@@ -766,16 +474,6 @@
       "inherits_nfr": [],
       "inherits_fr": [
         "FR-UI-001"
-      ],
-      "acceptance_scenarios": [
-        "AC-ISS-006-01",
-        "AC-ISS-006-02",
-        "AC-ISS-006-03",
-        "AC-ISS-006-04",
-        "AC-ISS-006-05",
-        "AC-ISS-006-06",
-        "AC-ISS-006-07",
-        "AC-ISS-006-08"
       ]
     },
     {
@@ -789,16 +487,6 @@
       "inherits_nfr": [],
       "inherits_fr": [
         "FR-UI-001"
-      ],
-      "acceptance_scenarios": [
-        "AC-PKY-001-01",
-        "AC-PKY-001-02",
-        "AC-PKY-001-03",
-        "AC-PKY-001-04",
-        "AC-PKY-001-05",
-        "AC-PKY-001-06",
-        "AC-PKY-001-07",
-        "AC-PKY-001-08"
       ]
     },
     {
@@ -812,18 +500,6 @@
       "inherits_nfr": [],
       "inherits_fr": [
         "FR-UI-001"
-      ],
-      "acceptance_scenarios": [
-        "AC-PKY-002-01",
-        "AC-PKY-002-02",
-        "AC-PKY-002-03",
-        "AC-PKY-002-04",
-        "AC-PKY-002-05",
-        "AC-PKY-002-06",
-        "AC-PKY-002-07",
-        "AC-PKY-002-08",
-        "AC-PKY-002-09",
-        "AC-PKY-002-10"
       ]
     },
     {
@@ -843,17 +519,6 @@
       "inherits_nfr": [],
       "inherits_fr": [
         "FR-UI-001"
-      ],
-      "acceptance_scenarios": [
-        "AC-PKY-003-01",
-        "AC-PKY-003-02",
-        "AC-PKY-003-03",
-        "AC-PKY-003-04",
-        "AC-PKY-003-05",
-        "AC-PKY-003-06",
-        "AC-PKY-003-07",
-        "AC-PKY-003-08",
-        "AC-PKY-003-09"
       ]
     },
     {
@@ -873,14 +538,6 @@
       "inherits_nfr": [],
       "inherits_fr": [
         "FR-UI-001"
-      ],
-      "acceptance_scenarios": [
-        "AC-PKY-004-01",
-        "AC-PKY-004-02",
-        "AC-PKY-004-03",
-        "AC-PKY-004-04",
-        "AC-PKY-004-05",
-        "AC-PKY-004-06"
       ]
     },
     {
@@ -899,13 +556,6 @@
       "inherits_nfr": [],
       "inherits_fr": [
         "FR-UI-001"
-      ],
-      "acceptance_scenarios": [
-        "AC-PKY-005-01",
-        "AC-PKY-005-02",
-        "AC-PKY-005-03",
-        "AC-PKY-005-04",
-        "AC-PKY-005-05"
       ]
     },
     {
@@ -919,15 +569,6 @@
       "inherits_nfr": [],
       "inherits_fr": [
         "FR-UI-001"
-      ],
-      "acceptance_scenarios": [
-        "AC-PKY-006-01",
-        "AC-PKY-006-02",
-        "AC-PKY-006-03",
-        "AC-PKY-006-04",
-        "AC-PKY-006-05",
-        "AC-PKY-006-06",
-        "AC-PKY-006-07"
       ]
     },
     {
@@ -943,13 +584,6 @@
       "inherits_nfr": [],
       "inherits_fr": [
         "FR-UI-001"
-      ],
-      "acceptance_scenarios": [
-        "AC-PKY-007-01",
-        "AC-PKY-007-02",
-        "AC-PKY-007-03",
-        "AC-PKY-007-04",
-        "AC-PKY-007-05"
       ]
     },
     {
@@ -969,17 +603,6 @@
       "inherits_nfr": [],
       "inherits_fr": [
         "FR-UI-001"
-      ],
-      "acceptance_scenarios": [
-        "AC-ROL-001-01",
-        "AC-ROL-001-02",
-        "AC-ROL-001-03",
-        "AC-ROL-001-04",
-        "AC-ROL-001-05",
-        "AC-ROL-001-06",
-        "AC-ROL-001-07",
-        "AC-ROL-001-08",
-        "AC-ROL-001-09"
       ]
     },
     {
@@ -995,19 +618,6 @@
       "inherits_nfr": [],
       "inherits_fr": [
         "FR-UI-001"
-      ],
-      "acceptance_scenarios": [
-        "AC-ROL-002-01",
-        "AC-ROL-002-02",
-        "AC-ROL-002-03",
-        "AC-ROL-002-04",
-        "AC-ROL-002-05",
-        "AC-ROL-002-06",
-        "AC-ROL-002-07",
-        "AC-ROL-002-08",
-        "AC-ROL-002-09",
-        "AC-ROL-002-10",
-        "AC-ROL-002-11"
       ]
     },
     {
@@ -1024,24 +634,6 @@
       "inherits_nfr": [],
       "inherits_fr": [
         "FR-UI-001"
-      ],
-      "acceptance_scenarios": [
-        "AC-ROL-003-01",
-        "AC-ROL-003-02",
-        "AC-ROL-003-03",
-        "AC-ROL-003-04",
-        "AC-ROL-003-05",
-        "AC-ROL-003-06",
-        "AC-ROL-003-07",
-        "AC-ROL-003-08",
-        "AC-ROL-003-09",
-        "AC-ROL-003-10",
-        "AC-ROL-003-11",
-        "AC-ROL-003-12",
-        "AC-ROL-003-13",
-        "AC-ROL-003-14",
-        "AC-ROL-003-15",
-        "AC-ROL-003-16"
       ]
     },
     {
@@ -1059,21 +651,6 @@
       "inherits_nfr": [],
       "inherits_fr": [
         "FR-UI-001"
-      ],
-      "acceptance_scenarios": [
-        "AC-ROL-004-01",
-        "AC-ROL-004-02",
-        "AC-ROL-004-03",
-        "AC-ROL-004-04",
-        "AC-ROL-004-05",
-        "AC-ROL-004-06",
-        "AC-ROL-004-07",
-        "AC-ROL-004-08",
-        "AC-ROL-004-09",
-        "AC-ROL-004-10",
-        "AC-ROL-004-11",
-        "AC-ROL-004-12",
-        "AC-ROL-004-13"
       ]
     },
     {
@@ -1090,29 +667,9 @@
         "FR-USR-004",
         "FR-USR-005"
       ],
-      "inherits_nfr": [
-        "NFR-QUAL-001",
-        "NFR-A11Y-001",
-        "NFR-I18N-001",
-        "NFR-PERF-001",
-        "NFR-RSP-001"
-      ],
+      "inherits_nfr": [],
       "inherits_fr": [
         "FR-UI-001"
-      ],
-      "acceptance_scenarios": [
-        "AC-ROL-005-01",
-        "AC-ROL-005-02",
-        "AC-ROL-005-03",
-        "AC-ROL-005-04",
-        "AC-ROL-005-05",
-        "AC-ROL-005-06",
-        "AC-ROL-005-07",
-        "AC-ROL-005-08",
-        "AC-ROL-005-09",
-        "AC-ROL-005-10",
-        "AC-ROL-005-11",
-        "AC-ROL-005-12"
       ]
     },
     {
@@ -1126,16 +683,6 @@
       "inherits_nfr": [],
       "inherits_fr": [
         "FR-UI-001"
-      ],
-      "acceptance_scenarios": [
-        "AC-ROL-006-01",
-        "AC-ROL-006-02",
-        "AC-ROL-006-03",
-        "AC-ROL-006-04",
-        "AC-ROL-006-05",
-        "AC-ROL-006-06",
-        "AC-ROL-006-07",
-        "AC-ROL-006-08"
       ]
     },
     {
@@ -1149,15 +696,6 @@
       "inherits_nfr": [],
       "inherits_fr": [
         "FR-UI-001"
-      ],
-      "acceptance_scenarios": [
-        "AC-USR-001-01",
-        "AC-USR-001-02",
-        "AC-USR-001-03",
-        "AC-USR-001-04",
-        "AC-USR-001-05",
-        "AC-USR-001-06",
-        "AC-USR-001-07"
       ]
     },
     {
@@ -1176,14 +714,6 @@
       "inherits_nfr": [],
       "inherits_fr": [
         "FR-UI-001"
-      ],
-      "acceptance_scenarios": [
-        "AC-USR-002-01",
-        "AC-USR-002-02",
-        "AC-USR-002-03",
-        "AC-USR-002-04",
-        "AC-USR-002-05",
-        "AC-USR-002-06"
       ]
     },
     {
@@ -1197,15 +727,6 @@
       "inherits_nfr": [],
       "inherits_fr": [
         "FR-UI-001"
-      ],
-      "acceptance_scenarios": [
-        "AC-USR-003-01",
-        "AC-USR-003-02",
-        "AC-USR-003-03",
-        "AC-USR-003-04",
-        "AC-USR-003-05",
-        "AC-USR-003-06",
-        "AC-USR-003-07"
       ]
     },
     {
@@ -1219,14 +740,6 @@
       "inherits_nfr": [],
       "inherits_fr": [
         "FR-UI-001"
-      ],
-      "acceptance_scenarios": [
-        "AC-USR-004-01",
-        "AC-USR-004-02",
-        "AC-USR-004-03",
-        "AC-USR-004-04",
-        "AC-USR-004-05",
-        "AC-USR-004-06"
       ]
     },
     {
@@ -1244,14 +757,6 @@
       "inherits_nfr": [],
       "inherits_fr": [
         "FR-UI-001"
-      ],
-      "acceptance_scenarios": [
-        "AC-USR-005-01",
-        "AC-USR-005-02",
-        "AC-USR-005-03",
-        "AC-USR-005-04",
-        "AC-USR-005-05",
-        "AC-USR-005-06"
       ]
     },
     {
@@ -1269,13 +774,6 @@
       "inherits_nfr": [],
       "inherits_fr": [
         "FR-UI-001"
-      ],
-      "acceptance_scenarios": [
-        "AC-USR-006-01",
-        "AC-USR-006-02",
-        "AC-USR-006-03",
-        "AC-USR-006-04",
-        "AC-USR-006-05"
       ]
     },
     {
@@ -1294,13 +792,6 @@
       "inherits_nfr": [],
       "inherits_fr": [
         "FR-UI-001"
-      ],
-      "acceptance_scenarios": [
-        "AC-USR-007-01",
-        "AC-USR-007-02",
-        "AC-USR-007-03",
-        "AC-USR-007-04",
-        "AC-USR-007-05"
       ]
     }
   ],

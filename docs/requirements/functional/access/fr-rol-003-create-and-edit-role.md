@@ -79,29 +79,6 @@ An authorized administrator must be able to create custom roles and edit their n
 
 - **Roles.Manage**: required to open **Create role**, **Edit role**, and **Delete role**.
 
----
-
-## Acceptance scenarios
-
-| ID | Given | When | Then |
-| -- | ----- | ---- | ---- |
-| AC-ROL-003-01 | Signed-in user without **Roles.Manage** | User navigates to **Create role** or **Edit role** | Access is denied per FR-ROL-001 |
-| AC-ROL-003-02 | Administrator with **Roles.Manage** on **Create role** | User views the **Permissions** field | Checkboxes are grouped by **Users**, **Roles**, and **Sessions**; each shows permission **label** and **description** from FR-ROL-001 |
-| AC-ROL-003-03 | Administrator with **Roles.Manage** on **Create role** with valid **Name** (2–100 characters), optional **Description**, and at least one permission selected | User clicks **Create role** | Toast **`Role created.`**; **Role details** opens for the new role |
-| AC-ROL-003-04 | Administrator with **Roles.Manage** on **Create role** or **Edit role**; **Name** empty or outside 2–100 characters | User submits the form | Inline validation error on **Name**; role is not saved |
-| AC-ROL-003-05 | Administrator with **Roles.Manage** on **Create role** or **Edit role**; **Name** matches an existing role name (case-insensitive) | User submits the form | Inline error **`A role with this name already exists.`**; role is not saved |
-| AC-ROL-003-06 | Administrator with **Roles.Manage** on **Create role** or **Edit role**; **Description** exceeds 500 characters | User submits the form | Inline error **`Description cannot exceed 500 characters.`**; role is not saved |
-| AC-ROL-003-07 | Administrator with **Roles.Manage** on **Create role** or **Edit role**; no permission checkboxes selected | User submits the form | Form-level error **`At least one permission is required.`**; role is not saved |
-| AC-ROL-003-08 | Administrator with **Roles.Manage** on **Create role** | User clicks **Back** or **Cancel** | Navigates to **Roles list** without saving |
-| AC-ROL-003-09 | Administrator with **Roles.Manage** on **Edit role** for a **custom** role | User clicks **Back** or **Cancel** | Navigates to **Role details** without saving |
-| AC-ROL-003-10 | Administrator with **Roles.Manage** navigates to **Edit role** for **Administrator** or **User** system role | Screen loads | **Role details** opens in read-only mode with message **`System roles cannot be modified.`** and **Back** to **Roles list** |
-| AC-ROL-003-11 | Administrator with **Roles.Manage** on **Edit role** for a **custom** role with valid changes | User clicks **Save changes** | Toast **`Role saved.`**; **Role details** opens for the edited role |
-| AC-ROL-003-12 | Administrator with **Roles.Manage** on **Edit role** for a **custom** role | User saves permission changes | Assigned user count on **Role details** is unchanged; user assignments are managed separately (FR-ROL-005) |
-| AC-ROL-003-13 | Administrator with **Roles.Manage** triggers **Delete role** on an unassigned **custom** role from **Role details** or **Roles list** overflow | Confirmation dialog appears | Dialog text is **`Delete role "{role name}"? Users will lose permissions granted only through this role.`** |
-| AC-ROL-003-14 | Administrator with **Roles.Manage** confirms **Delete role** on an unassigned **custom** role | Deletion completes | Toast **`Role deleted.`**; user navigates to **Roles list** |
-| AC-ROL-003-15 | Administrator with **Roles.Manage** views **Administrator** or **User** on **Role details** or **Roles list** | User looks for **Delete role** | **Delete role** is **not shown** |
-| AC-ROL-003-16 | Administrator with **Roles.Manage** attempts **Delete role** on a **custom** role assigned to one or more users | User confirms deletion | Deletion is rejected with **`Role is assigned to one or more users. Remove all user assignments before deleting this role.`** |
-
 ## Non-functional requirements
 
 - Inherits `docs/requirements/_shared/non-functional/product-quality.md` (`NFR-QUAL-001`) and linked NFR documents.

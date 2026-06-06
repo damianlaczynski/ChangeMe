@@ -68,19 +68,6 @@ There is no separate **Notifications** screen or sidebar entry.
 - After opening from a notification, the user sees current issue state, comments, and history.
 - The notification dropdown does not replace change history on **Issue details**.
 
-## Acceptance scenarios
-
-| ID | Given | When | Then |
-| -- | ----- | ---- | ---- |
-| AC-ISS-005-01 | Authenticated user with one or more unread notifications           | User views the top application bar                | **Bell** icon shows a badge with the unread count                                                                                                 |
-| AC-ISS-005-02 | Authenticated user on any signed-in screen                         | User clicks the **Bell** icon                     | Notification dropdown opens anchored to the bell; the current screen does not navigate away                                                       |
-| AC-ISS-005-03 | Authenticated user with the notification dropdown open             | User presses **Escape**                           | Dropdown closes                                                                                                                                   |
-| AC-ISS-005-04 | Authenticated user on the **Unread** tab with unread notifications   | User clicks **Open** on a notification            | That notification is marked read; dropdown closes; **Issue details** opens for the linked issue                                                   |
-| AC-ISS-005-05 | Authenticated user with unread notifications in the dropdown       | User clicks **Mark all as read**                  | All unread notifications become read; bell badge updates without a full page reload                                                               |
-| AC-ISS-005-06 | Authenticated user with the notification dropdown open on **Unread** | User switches to the **Read** tab               | **Read** tab reloads from page 1, sorted newest first                                                                                             |
-| AC-ISS-005-07 | Authenticated user                                                 | User searches sidebar and main navigation         | No **Notifications** screen or sidebar entry exists                                                                                               |
-| AC-ISS-005-08 | Authenticated user; a notification has exceeded its retention period | User opens the notification dropdown              | That expired notification does not appear in the **Unread** or **Read** tab lists                                                                 |
-
 ## Non-functional requirements
 
 - Inherits `docs/requirements/_shared/non-functional/product-quality.md` (`NFR-QUAL-001`) and linked NFR documents.

@@ -4,10 +4,22 @@ title: User Status
 domain: invitations
 type: functional
 status: active
-depends_on: [FR-AUTH-001, FR-AUTH-011, FR-AUTH-012, FR-AUTH-014, FR-INV-002, FR-INV-003, FR-INV-004, FR-USR-005]
-inherits_nfr: [NFR-QUAL-001, NFR-A11Y-001, NFR-I18N-001, NFR-PERF-001, NFR-RSP-001]
+depends_on:
+  [
+    FR-AUTH-001,
+    FR-AUTH-011,
+    FR-AUTH-012,
+    FR-AUTH-014,
+    FR-INV-002,
+    FR-INV-003,
+    FR-INV-004,
+    FR-USR-005,
+  ]
+inherits_nfr:
+  [NFR-QUAL-001, NFR-A11Y-001, NFR-I18N-001, NFR-PERF-001, NFR-RSP-001]
 inherits_fr: [FR-UI-001]
 ---
+
 ## Goal
 
 Administrators must see one **Status** per user on **Users list** and **User details**, covering the full invitation and membership lifecycle. On **Users list**, the **Account** column is **replaced** by **Status**; the **Account state** column is **removed** (not renamed).
@@ -20,12 +32,12 @@ Mailbox verification is **not** part of **Status** — use **Email verified** (F
 
 ### Status values
 
-| Status                    | When shown                                                                                                         | Meaning                                                                                                                                                                                                                                                          |
-| ------------------------- | ------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **`Deactivated`**         | **Deactivated** **true**                                                                                           | Administrator disabled the account.                                                                                                                                                                                                                              |
+| Status                    | When shown                                                                                                         | Meaning                                                                                                                                                                                                                                                         |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`Deactivated`**         | **Deactivated** **true**                                                                                           | Administrator disabled the account.                                                                                                                                                                                                                             |
 | **`Invited`**             | Not deactivated and `invitationPending` **true**                                                                   | Invitation outstanding; onboarding not complete. Expired link is shown in the **Invitation** panel (FR-INV-002), not as a separate status.                                                                                                                      |
 | **`Invitation canceled`** | Not deactivated, `invitationPending` **false**, user **has no local password**, and **no** linked external sign-in | Directory account exists but the user cannot sign in with email/password yet (typical after **Cancel invitation**). Administrator may **Send invitation** (FR-INV-004). The invitee may still self-onboard when **public registration** is enabled (see below). |
-| **`Active`**              | Not deactivated, not **`Invited`**, not **`Invitation canceled`**                                                  | User can use the application (local password and/or completed external onboarding). Includes self-registered users awaiting email verification — they remain **`Active`** here; see **Email verified**.                                                          |
+| **`Active`**              | Not deactivated, not **`Invited`**, not **`Invitation canceled`**                                                  | User can use the application (local password and/or completed external onboarding). Includes self-registered users awaiting email verification — they remain **`Active`** here; see **Email verified**.                                                         |
 
 ### Evaluation order
 
@@ -36,11 +48,11 @@ Mailbox verification is **not** part of **Status** — use **Email verified** (F
 
 ### What is not a separate status
 
-| Situation                                       | **Status**    | Where shown                                         |
-| ----------------------------------------------- | ------------- | --------------------------------------------------- |
+| Situation                                       | **Status**    | Where shown                                        |
+| ----------------------------------------------- | ------------- | -------------------------------------------------- |
 | Invitation link expired, pending row still open | **`Invited`** | **Invitation** panel: **Expired** tag (FR-INV-002) |
-| Self-registration, mailbox not verified         | **`Active`**  | **Email verified** column / badge                   |
-| Fully onboarded member                          | **`Active`**  | —                                                   |
+| Self-registration, mailbox not verified         | **`Active`**  | **Email verified** column / badge                  |
+| Fully onboarded member                          | **`Active`**  | —                                                  |
 
 ### Users list
 
@@ -57,6 +69,7 @@ Mailbox verification is **not** part of **Status** — use **Email verified** (F
 
 - Optional **`status`** filter array: **`Invited`**, **`InvitationCanceled`**, **`Active`**, **`Deactivated`** (wire format may use PascalCase enum; UI labels as above).
 - **Users list** items expose at least: `deactivated`, `invitationPending`, `hasPasswordSet`, and whether the user has any **external login** (for **`Invitation canceled`**).
+- Applied filter chips use the format **`Status: {value}`** (for example **`Status: Invited`**).
 - Filter mapping:
   - **`Deactivated`** → `deactivated` = true
   - **`Invited`** → `deactivated` = false and `invitationPending` = true
@@ -71,11 +84,11 @@ Mailbox verification is **not** part of **Status** — use **Email verified** (F
 
 When **Public registration enabled** is **true** (FR-AUTH-012), **Cancel invitation** does **not** block the invitee from using guest self-service onboarding with the **same email** as the directory account:
 
-| Path                                                           | Behavior                                                                                                                                                                                                                                                                                                    |
-| -------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Path                                                          | Behavior                                                                                                                                                                                                                                                                                                    |
+| ------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Register** — **Continue with {Display name}** (FR-AUTH-014) | **Not** allowed to link or complete the canceled-invitation account via OIDC. Use **Register** with email and password (row below) or administrator **Send invitation**.                                                                                                                                    |
 | **Register** — email and password (FR-AUTH-001)               | Allowed to **complete** the existing account (set local password and profile fields) instead of returning duplicate-email conflict, when the account has **no local password**, is **not** **awaiting invitation acceptance**, and is **not** **deactivated**. On success, **Status** becomes **`Active`**. |
-| **Login** — external sign-in                                   | Same as **Register** OIDC: no auto-link; use password registration path or administrator invitation.                                                                                                                                                                                                        |
+| **Login** — external sign-in                                  | Same as **Register** OIDC: no auto-link; use password registration path or administrator invitation.                                                                                                                                                                                                        |
 
 - When **Public registration enabled** is **false**, the invitee cannot self-register; only **Send invitation** / **Resend invitation** (administrator) or a new **Invite user** path applies.
 - **Cancel invitation** does not delete the user row or change assigned roles.
@@ -89,22 +102,6 @@ When **Public registration enabled** is **true** (FR-AUTH-012), **Cancel invitat
 ### Permissions and visibility
 
 - **Users.View**: required to see **Status** and use the **Status** filter.
-
----
-
-## Acceptance scenarios
-
-| ID | Given | When | Then |
-| -- | ----- | ---- | ---- |
-| AC-INV-005-01 | User with **Deactivated** **true** | Administrator views **Users list** or **User details** | **Status** shows **`Deactivated`** with danger tag severity |
-| AC-INV-005-02 | User not deactivated; `invitationPending` **true** | Administrator views **Status** | **Status** shows **`Invited`** with warn tag severity |
-| AC-INV-005-03 | User not deactivated; `invitationPending` **false**; **no local password**; no linked external sign-in | Administrator views **Status** | **Status** shows **`Invitation canceled`** with warn tag severity |
-| AC-INV-005-04 | User not deactivated; not **`Invited`**; not **`Invitation canceled`** | Administrator views **Status** | **Status** shows **`Active`** with success tag severity |
-| AC-INV-005-05 | Administrator on **Users list** | User views table columns | **Account** column is replaced by **Status**; **Account state** column is **removed** |
-| AC-INV-005-06 | Administrator on **Users list** | User applies **Status** filter **`Invited`** | Only users with `deactivated` **false** and `invitationPending` **true** are shown; filter chip **`Status: Invited`** appears |
-| AC-INV-005-07 | **Public registration enabled** **true**; user **Status** **`Invitation canceled`**; **no local password**; not deactivated | Invitee completes **Register** with the same email and password (FR-AUTH-001) | Existing account is completed without duplicate-email conflict; **Status** becomes **`Active`** |
-| AC-INV-005-08 | **Public registration enabled** **false**; user **Status** **`Invitation canceled`** | Invitee attempts self-registration | Self-registration is unavailable; only administrator **Send invitation** or **Invite user** can onboard the account |
-| AC-INV-005-09 | User **Status** **`Invited`** with an expired invitation link | Administrator views **Status** on **Users list** or **User details** | **Status** remains **`Invited`**; expiry is shown only in the **Invitation** panel **`Expired`** tag (FR-INV-002) |
 
 ## Non-functional requirements
 

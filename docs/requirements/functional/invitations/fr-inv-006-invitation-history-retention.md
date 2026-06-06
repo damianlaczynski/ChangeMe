@@ -60,18 +60,6 @@ When onboarding completes (FR-AUTH-010, FR-AUTH-014):
 
 - Not user-facing; administrators see no invitation history UI (out of scope).
 
----
-
-## Acceptance scenarios
-
-| ID | Given | When | Then |
-| -- | ----- | ---- | ---- |
-| AC-INV-006-01 | **Revoked** invitation row with **RevokedAtUtc** older than **RevokedInvitationRetentionDays** (default **7**) | Background cleanup job runs | Row is **deleted** |
-| AC-INV-006-02 | **Pending** invitation row (not revoked, not accepted) | Background cleanup job runs | Row is **not deleted** |
-| AC-INV-006-03 | **Accepted** invitation row (**AcceptedAtUtc** set) | Background cleanup job runs | Row is **never deleted** (retained as audit history) |
-| AC-INV-006-04 | User completes invitation acceptance (FR-AUTH-010 or FR-AUTH-014) | Onboarding completes | **AcceptedAtUtc** is set on the pending row; `pendingInvitation` becomes **null**; **Invitation** panel is hidden; invitation rows are **not deleted** at accept time |
-| AC-INV-006-05 | Background cleanup job deletes old revoked invitation rows | Cleanup completes | User account, sessions, and auth tokens are **not deleted** by the retention job |
-
 ## Non-functional requirements
 
 - Inherits `docs/requirements/_shared/non-functional/product-quality.md` (`NFR-QUAL-001`) and linked NFR documents.

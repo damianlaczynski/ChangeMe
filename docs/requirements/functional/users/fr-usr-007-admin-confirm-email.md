@@ -41,16 +41,6 @@ When email verification is enabled, an authorized administrator must be able to 
 
 - **Users.Manage**: required for **Confirm email**.
 
-## Acceptance scenarios
-
-| ID            | Given                                                                                                                     | When                                       | Then                                                                                                                                                                                                                |
-| ------------- | ------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| AC-USR-007-01 | Email verification **enabled**; administrator with **Users.Manage**; target **Email verified** is false (self-registered) | User views **User details** header         | **Confirm email** is shown                                                                                                                                                                                          |
-| AC-USR-007-02 | Administrator with **Users.Manage**; target was invited via **Invite user** and is already verified (FR-INV-001)          | User views **User details** header         | **Confirm email** is **not shown**                                                                                                                                                                                  |
-| AC-USR-007-03 | Administrator with **Users.Manage**; target **Email verified** is already true                                            | User views **User details** header         | **Confirm email** is **not shown**                                                                                                                                                                                  |
-| AC-USR-007-04 | Administrator without **Users.Manage**                                                                                    | User views **User details** header         | **Confirm email** is **not shown**                                                                                                                                                                                  |
-| AC-USR-007-05 | Administrator with **Users.Manage**; target **Email verified** is false                                                   | User clicks **Confirm email** and confirms | Dialog **`Mark email as verified for "{full name}"?`**; **Email verified** true; **Email verified at** set; toast **`Email marked as verified.`**; **User details** refreshes in place; no email sent (FR-AUTH-007) |
-
 ## Non-functional requirements
 
 - Inherits `docs/requirements/_shared/non-functional/product-quality.md` (`NFR-QUAL-001`) and linked NFR documents.

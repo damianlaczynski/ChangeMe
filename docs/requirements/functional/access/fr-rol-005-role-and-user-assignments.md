@@ -5,9 +5,11 @@ domain: access
 type: functional
 status: active
 depends_on: [FR-INV-001, FR-ROL-004, FR-USR-003, FR-USR-004, FR-USR-005]
-inherits_nfr: [NFR-QUAL-001, NFR-A11Y-001, NFR-I18N-001, NFR-PERF-001, NFR-RSP-001]
+inherits_nfr:
+  [NFR-QUAL-001, NFR-A11Y-001, NFR-I18N-001, NFR-PERF-001, NFR-RSP-001]
 inherits_fr: [FR-UI-001]
 ---
+
 ## Goal
 
 An authorized administrator must be able to assign roles to users from **Invite user** and **Edit user**, and remove a user from a role from **Role details**, using consistent rules in both places.
@@ -30,6 +32,7 @@ An authorized administrator must be able to assign roles to users from **Invite 
 ### Entry point — Roles administration
 
 - **Role details** (FR-ROL-004) shows the **Assigned users** section and **Remove from role** per user.
+- On successful **Remove from role**, show toast **`User removed from role.`** and refresh the **Assigned users** list in place.
 - Adding a user to a role is done by editing the user (**Edit user**) and selecting the role in the **Roles** multi-select.
 
 ### Validation
@@ -54,25 +57,6 @@ An authorized administrator must be able to assign roles to users from **Invite 
 
 - **Roles.Manage**: required for the **Roles** field on **Invite user** / **Edit user** and for **Remove from role** on **Role details**.
 - **Roles.View**: allows read-only **Roles** and **Permissions** on **User details** and read-only **Assigned users** on **Role details** when the user lacks **Roles.Manage**.
-
----
-
-## Acceptance scenarios
-
-| ID | Given | When | Then |
-| -- | ----- | ---- | ---- |
-| AC-ROL-005-01 | Administrator with **Roles.Manage** on **Invite user** (FR-INV-001) or **Edit user** (FR-USR-003) | User views the **Roles** field | Multi-select lists all roles sorted by **name** ascending; **System** badge is shown for seeded roles |
-| AC-ROL-005-02 | Administrator with **Roles.Manage** on **Invite user** or **Edit user** | User saves with zero roles selected | Validation error **`At least one role is required.`**; save does not complete |
-| AC-ROL-005-03 | Administrator with **Roles.Manage** on **Edit user** for another user | User changes **Roles** selection and saves | Target user's entire role set is replaced with the selected set |
-| AC-ROL-005-04 | Administrator with **Users.Manage** but without **Roles.Manage** | User views user administration entry points | **Invite user** is **not available** |
-| AC-ROL-005-05 | Administrator with **Users.Manage** but without **Roles.Manage** on **Edit user** | User views the form | **Roles** field is **not shown** |
-| AC-ROL-005-06 | Administrator with **Roles.View** without **Roles.Manage** on **User details** (FR-USR-004) | User views **Roles** and **Permissions** | Assigned roles and effective permissions are read-only; role badges link to **Role details** |
-| AC-ROL-005-07 | Administrator with **Roles.Manage** editing **their own** account on **Edit user** | User views the form | **Roles** field and **Permissions** preview are **not shown** |
-| AC-ROL-005-08 | Administrator attempts to change **their own** roles from **Edit user**, **Invite user**, or **Remove from role** on **Role details** | Save or confirm is submitted | Change is rejected with **`You cannot change your own roles.`** |
-| AC-ROL-005-09 | Administrator with **Roles.Manage** on **Role details**; target user retains at least one other role | User confirms **Remove from role** | Role is removed from that user; toast **`User removed from role.`**; **Assigned users** list refreshes in place |
-| AC-ROL-005-10 | Administrator with **Roles.Manage** on **Role details**; target user would have zero roles after removal | User confirms **Remove from role** | Removal is rejected with **`Each user must have at least one role. Assign another role before removing this one.`** |
-| AC-ROL-005-11 | Administrator with **Roles.Manage** adds a role to a user on **Edit user** | Save completes | User appears in that role's **Assigned users** section on **Role details** |
-| AC-ROL-005-12 | Signed-in target user is active; administrator changes that user's role assignments on **Edit user** | Target user attempts a newly granted or revoked protected action before credential renewal or sign-in | Previous effective permissions still apply; active sessions are **not** revoked |
 
 ## Non-functional requirements
 

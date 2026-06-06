@@ -33,15 +33,6 @@ On **Accept invitation**, the invitee must see which account they are activating
 | **Cancel invitation**         | **Users.Manage**                                          |
 | View pending invitation panel | **Users.View**                                            |
 
----
-
-## Acceptance scenarios
-
-| ID | Given | When | Then |
-| -- | ----- | ---- | ---- |
-| AC-INV-007-01 | Guest opens **Accept invitation** with valid invitation preview (`isValid` **true**) | User views the screen | Read-only line **`Activating account for {email}`** is shown above the form using `preview.email` from invitation preview (FR-AUTH-010) |
-| AC-INV-007-02 | Guest opens **Accept invitation** with invalid or expired invitation preview | User views the screen | Error **`This invitation link is invalid or has expired. Contact your administrator.`** is shown; password form and external provider buttons behave unchanged per FR-AUTH-010 and FR-AUTH-014 |
-
 ## Non-functional requirements
 
 - Inherits `docs/requirements/_shared/non-functional/product-quality.md` (`NFR-QUAL-001`) and linked NFR documents.

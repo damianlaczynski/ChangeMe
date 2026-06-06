@@ -59,20 +59,6 @@ The user must be able to browse all issues, search, filter, sort, navigate to de
 - **Watched by me** filter: checkbox; when selected, shows only issues watched by the current user.
 - **My issues** filter: checkbox; when selected, shows only issues **created by** or **assigned to** the current user.
 
-## Acceptance scenarios
-
-| ID | Given | When | Then |
-| -- | ----- | ---- | ---- |
-| AC-ISS-001-01 | Guest or unauthenticated user                                         | User navigates to **Issues list**                 | User is redirected to **Login** (FR-AUTH-001)                                                                                                     |
-| AC-ISS-001-02 | Authenticated user on **Issues list**                                 | User clicks **Add issue**                         | **Create issue** opens (FR-ISS-002)                                                                                                               |
-| AC-ISS-001-03 | Authenticated user on **Issues list** with at least one issue         | User views the issues table on first load         | Default sort is **Last activity** descending (most recent first)                                                                                  |
-| AC-ISS-001-04 | Authenticated user on **Issues list**                                 | User clicks an issue **Title** link               | **Issue details** opens for that issue                                                                                                            |
-| AC-ISS-001-05 | Authenticated user on **Issues list**; current user is not a watcher  | User hovers the row **Watch** control             | Tooltip shows **`Watch this issue ({n} watchers)`** where `{n}` is the current watcher count                                                      |
-| AC-ISS-001-06 | Authenticated user on **Issues list**                                 | User opens a row overflow menu and chooses **Delete issue** | Confirmation dialog shows **`Delete "{issue title}"? This action cannot be undone.`**                                                     |
-| AC-ISS-001-07 | Authenticated user on **Issues list**                                 | User selects the **Watched by me** filter checkbox | Table shows only issues watched by the current user                                                                                               |
-| AC-ISS-001-08 | Authenticated user on **Issues list**                                 | User selects the **My issues** filter checkbox    | Table shows only issues **created by** or **assigned to** the current user                                                                        |
-| AC-ISS-001-09 | Authenticated user on **Issues list**; issue has no assignee          | User views the **Assigned to** column for that row | Cell shows **`Unassigned`**                                                                                                                       |
-
 ## Non-functional requirements
 
 - Inherits `docs/requirements/_shared/non-functional/product-quality.md` (`NFR-QUAL-001`) and linked NFR documents.

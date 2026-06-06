@@ -2,7 +2,7 @@
 
 > **Audience:** operators, administrators, and developers deploying or supporting **ChangeMe**.
 > **Scope:** deployment settings under `AuthOptions` in backend configuration, how each option affects sign-in and accounts, and how to connect external identity providers (OIDC).
-> **Related:** acceptance-level behaviour is defined in `docs/requirements/functional/identity/` and `docs/requirements/functional/users/` (see `docs/requirements/README.md`). **Passkeys (WebAuthn):** `docs/requirements/functional/passkeys/`. Cross-cutting terms: `docs/requirements/_shared/reference/`. This guide explains **operations**, not formal requirements.
+> **Related:** product behaviour is defined in `docs/requirements/functional/identity/` and `docs/requirements/functional/users/` (see `docs/requirements/README.md`). **Passkeys (WebAuthn):** `docs/requirements/functional/passkeys/`. Cross-cutting terms: `docs/requirements/_shared/reference/`. This guide explains **operations**, not formal requirements.
 
 ---
 

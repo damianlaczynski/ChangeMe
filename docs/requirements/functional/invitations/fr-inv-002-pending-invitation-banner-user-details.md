@@ -47,19 +47,6 @@ On **User details**, administrators must immediately see that the person was **i
 - **Users.View**: see the panel when data is present.
 - **Users.Manage**: **Resend** and **Cancel**.
 
----
-
-## Acceptance scenarios
-
-| ID | Given | When | Then |
-| -- | ----- | ---- | ---- |
-| AC-INV-002-01 | Administrator with **Users.View**; user **Status** **`Invited`** with `pendingInvitation` present | User opens **User details** | **Invitation** panel is the **first content block** above profile summary; section is **expanded by default**; intro explains the user was invited and cannot sign in until acceptance |
-| AC-INV-002-02 | Administrator with **Users.View**; user has accepted, cancelled, or was never invited (`pendingInvitation` **null**) | User opens **User details** | **Invitation** panel is **not shown** |
-| AC-INV-002-03 | **Invitation** panel visible; `pendingInvitation.isLinkExpired` is **true** | User views the panel | Tag **`Expired`** (warn severity) and message **`This invitation link may no longer work. Resend or cancel the invitation.`** are shown |
-| AC-INV-002-04 | **Invitation** panel visible; **First name** and **Last name** are both empty | User views **Profile name** in the panel | **`Not set`** is shown |
-| AC-INV-002-05 | Administrator with **Users.Manage**; user **Status** **`Invited`** | User views **User details** | **Resend invitation** and **Cancel invitation** appear in the **Invitation** panel only (not in the page header) |
-| AC-INV-002-06 | User with `pendingInvitation` present | User views the **Invitation** panel | **Last sent at**, **Link expires at**, and expiry note **`Based on the active invitation link. Changing Auth:Invitations:InvitationLinkLifetimeHours does not change an already-issued token.`** are shown; **Email verified** is **not shown** in this panel |
-
 ## Non-functional requirements
 
 - Inherits `docs/requirements/_shared/non-functional/product-quality.md` (`NFR-QUAL-001`) and linked NFR documents.

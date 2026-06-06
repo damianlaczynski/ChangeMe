@@ -144,19 +144,6 @@ Displays read-only:
 - **Sessions.ViewAny**: required to render the active sessions section.
 - **Sessions.ManageAny**: required for **Revoke** on session rows and **Revoke all sessions**.
 
----
-
-## Acceptance scenarios
-
-| ID            | Given                                                                                                   | When                                                     | Then                                                                                                                                  |
-| ------------- | ------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| AC-USR-004-01 | Signed-in user without **Users.View**                                                                   | User navigates to **User details**                       | Access denied per FR-ROL-001                                                                                                          |
-| AC-USR-004-02 | Administrator with **Users.View**; target user has **pending invitation**                               | User opens **User details**                              | **Invitation** panel is the **first** block above profile summary                                                                     |
-| AC-USR-004-03 | Administrator with **Users.Manage**; target user has **pending email change** and no pending invitation | User clicks **Cancel pending email change** and confirms | Pending change cleared; **`Pending email change cancelled.`** toast; **Email change cancelled** email sent; screen refreshes in place |
-| AC-USR-004-04 | Administrator with **Users.View** on **User details**                                                   | User clicks a role badge in **Roles**                    | **Role details** opens for that role (FR-ROL-004)                                                                                     |
-| AC-USR-004-05 | Administrator with **Sessions.ViewAny** and **Sessions.ManageAny**; target has active sessions          | User clicks **Revoke** on a session row and confirms     | Confirmation **`Revoke this session? That device will be signed out.`**; session removed from list on current page                    |
-| AC-USR-004-06 | Administrator with **Users.Deactivate**; target **Deactivated** is false                                | User views header actions                                | **Deactivate** is shown; **Activate** is **not shown**                                                                                |
-
 ## Non-functional requirements
 
 - Inherits `docs/requirements/_shared/non-functional/product-quality.md` (`NFR-QUAL-001`) and linked NFR documents.

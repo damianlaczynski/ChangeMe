@@ -104,20 +104,6 @@ The signed-in user must be able to view their own profile, edit it on a separate
 - **My account** does **not** expose role assignment or account status changes.
 - Self-service **Change email** is specified in FR-AUTH-015; FR-USR-001 links to it from header actions and the **Pending email change** panel.
 
----
-
-## Acceptance scenarios
-
-| ID            | Given                                                                                                                                          | When                                              | Then                                                                                                  |
-| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| AC-USR-001-01 | Signed-in user with **Deactivated** false on **My account**                                                                                    | User clicks header **Edit**                       | **Edit profile** opens; **Back to my account** is shown at the top                                    |
-| AC-USR-001-02 | Signed-in user; **Self-service email change enabled** is **true**; user is not **awaiting invitation acceptance**; no **pending email change** | User views **My account** header actions          | **Change email** is visible and opens **Change email** (FR-AUTH-015)                                  |
-| AC-USR-001-03 | Signed-in user **has a local password**                                                                                                        | User clicks header **Change password**            | **Change password** screen opens (FR-AUTH-005)                                                        |
-| AC-USR-001-04 | Signed-in **external-only** user (no local password)                                                                                           | User views **My account** header actions          | **Set password** is shown (not **Change password**); clicking it opens **Set password** (FR-AUTH-014) |
-| AC-USR-001-05 | Signed-in user on **Edit profile**                                                                                                             | User saves valid **First name** and **Last name** | Toast **`Profile updated.`**; user returns to **My account** with updated read-only profile           |
-| AC-USR-001-06 | Signed-in user on **Edit profile**                                                                                                             | User views the form                               | **Email** field is **not shown** (email remains read-only on **My account** only)                     |
-| AC-USR-001-07 | Signed-in user with a **pending email change** (FR-AUTH-015)                                                                                   | User opens **My account**                         | **Pending email change** panel is the **first** content block above the profile summary               |
-
 ## Non-functional requirements
 
 - Inherits `docs/requirements/_shared/non-functional/product-quality.md` (`NFR-QUAL-001`) and linked NFR documents.

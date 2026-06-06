@@ -55,19 +55,6 @@ An authorized administrator must be able to set **Deactivated** to **true** or *
 
 - **Users.Deactivate** is required for **Deactivate** and **Activate** actions.
 
----
-
-## Acceptance scenarios
-
-| ID            | Given                                                                                  | When                                                                      | Then                                                                                                                                                                                                                   |
-| ------------- | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| AC-USR-005-01 | Administrator with **Users.Deactivate**; target user **Deactivated** is false          | User clicks **Deactivate** on **User details** and confirms               | Dialog **`Deactivate "{full name}"? The user will be signed out and cannot sign in until reactivated.`**; on confirm: **Deactivated** true, sessions revoked, toast **`User deactivated.`**, screen refreshes in place |
-| AC-USR-005-02 | Administrator with **Users.Deactivate**; target user **Deactivated** is true           | User clicks **Activate** on **User details** and confirms                 | Dialog **`Activate "{full name}"? The user will be able to sign in again.`**; on confirm: **Deactivated** false, **Deactivated at** cleared, toast **`User activated.`**, screen refreshes in place                    |
-| AC-USR-005-03 | Administrator without **Users.Deactivate**                                             | User views **Deactivate** / **Activate** entry points                     | Actions are **not shown** on **Users list**, **User details**, and **Edit user**                                                                                                                                       |
-| AC-USR-005-04 | Administrator with **Users.Deactivate** attempting to deactivate **their own** account | User triggers **Deactivate**                                              | Action rejected with **`You cannot deactivate your own account.`**                                                                                                                                                     |
-| AC-USR-005-05 | User **Deactivated** is true                                                           | User appears in **Assigned to** selector on **Create issue** (FR-ISS-002) | User is **excluded** from assignable options                                                                                                                                                                           |
-| AC-USR-005-06 | Administrator activates a previously deactivated user                                  | Activation completes                                                      | Previously revoked sessions are **not** restored; invitation and email verification status unchanged                                                                                                                   |
-
 ## Non-functional requirements
 
 - Inherits `docs/requirements/_shared/non-functional/product-quality.md` (`NFR-QUAL-001`) and linked NFR documents.

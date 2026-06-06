@@ -88,20 +88,6 @@ An authorized administrator must be able to update an existing user's profile, r
 - **Roles.Manage**: required to view and edit the **Roles** field.
 - **Users.Deactivate**: required to view and edit the **Deactivated** field on **Edit user**.
 
----
-
-## Acceptance scenarios
-
-| ID            | Given                                                                                                             | When                             | Then                                                                                                                                                                        |
-| ------------- | ----------------------------------------------------------------------------------------------------------------- | -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| AC-USR-003-01 | Signed-in administrator with **Users.Manage** and **Roles.Manage** on **Edit user** for another user              | User changes **Roles** selection | **Permissions** preview updates immediately before save; rows show **From role(s)** labels                                                                                  |
-| AC-USR-003-02 | Signed-in administrator with **Users.Manage** but without **Roles.Manage**                                        | User opens **Edit user**         | **Roles** field and **Permissions** preview are **not shown**                                                                                                               |
-| AC-USR-003-03 | Signed-in administrator editing **their own** account on **Edit user**                                            | User views the form              | **Roles** field and **Permissions** preview are **not shown**                                                                                                               |
-| AC-USR-003-04 | Signed-in administrator on **Edit user** with duplicate **Email**                                                 | User clicks **Save changes**     | Form-level error **`A user with this email already exists.`**; form stays open                                                                                              |
-| AC-USR-003-05 | Signed-in administrator removes own **Administrator** role on another user's record (invalid self-rule via roles) | User clicks **Save changes**     | Save rejected with **`You cannot remove your own administrator access.`**                                                                                                   |
-| AC-USR-003-06 | Signed-in administrator on **Edit user** for **their own** account with **Deactivated** checked                   | User clicks **Save changes**     | Save rejected with **`You cannot deactivate your own account.`**                                                                                                            |
-| AC-USR-003-07 | Signed-in administrator changes **Email** on save for a target user                                               | Save succeeds                    | Pending email change cleared; new email applied; **Email verified** set when verification enabled; all user sessions revoked; **Email changed by admin** sent (FR-AUTH-007) |
-
 ## Non-functional requirements
 
 - Inherits `docs/requirements/_shared/non-functional/product-quality.md` (`NFR-QUAL-001`) and linked NFR documents.

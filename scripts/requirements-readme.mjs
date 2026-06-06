@@ -71,11 +71,10 @@ for (const domain of domainOrder) {
   const specs = byDomain[domain];
   if (!specs?.length) continue;
   const label = formatDomainLabel(domain);
-  md += `\n## ${label} (\`functional/${domain}/\`)\n\n| ID | Title | Scenarios | File |\n| -- | ----- | --------- | ---- |\n`;
+  md += `\n## ${label} (\`functional/${domain}/\`)\n\n| ID | Title | File |\n| -- | ----- | ---- |\n`;
   for (const s of specs.sort((a, b) => a.id.localeCompare(b.id))) {
     const fileName = s.file.split("/").pop();
-    const acCount = s.acceptance_scenarios?.length ?? 0;
-    md += `| ${s.id} | ${s.title} | ${acCount} | [${fileName}](${s.file}) |\n`;
+    md += `| ${s.id} | ${s.title} | [${fileName}](${s.file}) |\n`;
   }
 }
 

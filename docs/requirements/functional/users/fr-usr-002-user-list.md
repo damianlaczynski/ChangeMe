@@ -62,19 +62,6 @@ An authorized administrator must be able to browse users, search and filter them
 - **Users.Manage**: required for **Invite user** and **Edit**.
 - **Users.Deactivate**: required for **Deactivate** and **Activate**.
 
----
-
-## Acceptance scenarios
-
-| ID            | Given                                                                            | When                         | Then                                                                                  |
-| ------------- | -------------------------------------------------------------------------------- | ---------------------------- | ------------------------------------------------------------------------------------- |
-| AC-USR-002-01 | Signed-in user with **Users.View**                                               | User opens **Users list**    | Table loads with default sort **Name** ascending; sidebar entry **Users** is visible  |
-| AC-USR-002-02 | Signed-in user with **Users.Manage**                                             | User views the actions bar   | **Invite user** button is visible and opens **Invite user** (FR-INV-001)              |
-| AC-USR-002-03 | Signed-in user without **Users.Manage**                                          | User views the actions bar   | **Invite user** button is **not shown**                                               |
-| AC-USR-002-04 | Signed-in user with **Users.View**; target user has **Deactivated** false        | User opens row overflow menu | **Deactivate** is shown only with **Users.Deactivate**; **Activate** is **not shown** |
-| AC-USR-002-05 | Signed-in user with **Users.View**; target user has **Deactivated** true         | User opens row overflow menu | **Activate** is shown only with **Users.Deactivate**; **Deactivate** is **not shown** |
-| AC-USR-002-06 | Signed-in user applies **Status** filter **Active** and clicks **Apply filters** | Filters submit               | Table shows only users matching **Active**; list reloads from page **1**              |
-
 ## Non-functional requirements
 
 - Inherits `docs/requirements/_shared/non-functional/product-quality.md` (`NFR-QUAL-001`) and linked NFR documents.

@@ -44,13 +44,6 @@ The user must be able to `<main business outcome>`.
 
 - `<business rule>`
 
-## Acceptance scenarios
-
-| ID            | Given            | When       | Then                   |
-| ------------- | ---------------- | ---------- | ---------------------- |
-| AC-XXX-NNN-01 | `<precondition>` | `<action>` | `<observable outcome>` |
-| AC-XXX-NNN-02 | `<precondition>` | `<action>` | `<observable outcome>` |
-
 ## Non-functional requirements
 
 - Inherits `docs/requirements/_shared/non-functional/product-quality.md` (`NFR-QUAL-001`) and linked NFR documents.
@@ -77,7 +70,6 @@ The user must be able to `<main business outcome>`.
 - Keep identifiers in the `FR-<AREA>-NNN` format.
 - **Goal** states the business outcome.
 - **Functional requirements** states user-visible behavior, flows, validations, messages, and business rules.
-- **Acceptance scenarios** states testable Given/When/Then flows; use `AC-<AREA>-<NNN>-<ss>` IDs.
 - **Non-functional requirements** inherits global `NFR-*` docs; override only when this specification differs.
 - Deliberate exclusions use **Out of scope**.
 
@@ -90,7 +82,6 @@ Specifications must be **unambiguous**. A developer or tester must not need to g
 - **State exact defaults**, visibility rules, and navigation after success and failure.
 - **Use "not required"** for empty-allowed fields; **use "must not" / "cannot"** for prohibitions.
 - **One behavior, one bullet** in functional requirements.
-- **One testable outcome per row** in acceptance scenarios.
 
 ### No implementation details (mandatory)
 

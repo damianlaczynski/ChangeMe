@@ -61,20 +61,6 @@ The system must notify users by email about important account security events.
 - Email delivery uses the configured mail server (same as issue notifications).
 - Failed email delivery does not roll back the triggering action; the UI still shows the success message for the action.
 
----
-
-## Acceptance scenarios
-
-| ID             | Given                                                                                                                      | When                                                            | Then                                                                                                      |
-| -------------- | -------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| AC-AUTH-007-01 | User account with **Profile email** set; user has linked external provider with different **Provider email** (FR-AUTH-014) | Any auth notification specified in FR-AUTH-007 is triggered     | Email is sent to **Profile email** only; **Provider email** is never used as destination                  |
-| AC-AUTH-007-02 | Signed-in user with **pending email change** (FR-AUTH-015); **Profile email** is current email                             | A notification other than **Confirm email change** is triggered | Email sent to **Profile email** (current email), not the pending **new email**                            |
-| AC-AUTH-007-03 | Signed-in user submits **Change email** successfully (FR-AUTH-015)                                                         | Pending change is created                                       | **Email change requested** sent to **Profile email**; **Confirm email change** sent to **new email** only |
-| AC-AUTH-007-04 | Signed-in **Change password** succeeds (FR-AUTH-005)                                                                       | Password change completes                                       | **Password changed** email sent to **Profile email** with subject `Your password was changed`             |
-| AC-AUTH-007-05 | User enables two-factor on **My account** (FR-AUTH-013)                                                                    | **Confirm setup** succeeds                                      | **Two-factor enabled** email sent to **Profile email**                                                    |
-| AC-AUTH-007-06 | User completes **Add passkey** on **My account** (FR-PKY-003)                                                              | Passkey registration succeeds                                   | **Passkey added** email sent to **Profile email** with subject `Passkey added to your account`            |
-| AC-AUTH-007-07 | Mail server delivery fails for a triggered notification                                                                    | Triggering action completes in UI                               | Triggering action is **not** rolled back; UI still shows success message for the action                   |
-
 ## Non-functional requirements
 
 - Inherits `docs/requirements/_shared/non-functional/product-quality.md` (`NFR-QUAL-001`) and linked NFR documents.

@@ -34,18 +34,6 @@ An authorized administrator must be able to send a password reset link to a user
 
 - **Users.Manage**: required for **Send password reset**.
 
----
-
-## Acceptance scenarios
-
-| ID            | Given                                                                                                  | When                                             | Then                                                                                                                                       |
-| ------------- | ------------------------------------------------------------------------------------------------------ | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| AC-USR-006-01 | Administrator with **Users.Manage**; target user **has a local password** and **Deactivated** is false | User clicks **Send password reset** and confirms | Dialog **`Send a password reset link to "{email}"?`**; **Password reset** email sent (FR-AUTH-007); toast **`Password reset email sent.`** |
-| AC-USR-006-02 | Administrator without **Users.Manage**                                                                 | User views **User details** header actions       | **Send password reset** is **not shown**                                                                                                   |
-| AC-USR-006-03 | Administrator on **User details**; target **Deactivated** is true                                      | User views header actions                        | **Send password reset** is **not shown**                                                                                                   |
-| AC-USR-006-04 | Administrator on **User details**; target is **awaiting invitation acceptance**                        | User views header actions                        | **Send password reset** is **not shown**; administrator uses **Resend invitation** (FR-INV-003) instead                                    |
-| AC-USR-006-05 | Administrator sends **Send password reset** twice for the same user                                    | Second send completes                            | Previous unused reset tokens for that user are invalidated                                                                                 |
-
 ## Non-functional requirements
 
 - Inherits `docs/requirements/_shared/non-functional/product-quality.md` (`NFR-QUAL-001`) and linked NFR documents.
