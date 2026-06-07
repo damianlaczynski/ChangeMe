@@ -121,7 +121,7 @@ This starts the frontend, backend, MailHog, and the database service defined in 
 - `docs/testing-playbook.md` - how to verify changes
 - `docs/feature-recipes.md` - implementation recipes for common feature work
 - `docs/requirements/` - functional specifications (`FR-*`), non-functional requirements (`NFR-*`), and shared reference docs
-- `docs/templates/` - reusable document templates
+- `docs/templates/` - reusable document templates (for example `functional-specification-template.md` for new `FR-*` files)
 
 ## About `AGENTS.md`
 

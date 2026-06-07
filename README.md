@@ -168,7 +168,7 @@ The `docs/` directory contains guidance that is also shipped into generated solu
 - `docs/testing-playbook.md` - how to verify changes
 - `docs/feature-recipes.md` - implementation recipes for common feature work
 - `docs/requirements/` - functional specifications (`FR-*`), non-functional requirements (`NFR-*`), and shared reference docs
-- `docs/templates/` - reusable document templates
+- `docs/templates/` - reusable document templates (for example `functional-specification-template.md` for new `FR-*` files)
 
 Maintainers of the template package: see [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
