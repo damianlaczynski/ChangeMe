@@ -49,6 +49,7 @@
 # C# specific settings
 *.cs      diff=csharp
 *.sln     text eol=crlf
+*.slnx    text eol=crlf
 *.csproj  text eol=crlf
 *.vbproj  text eol=crlf
 *.vcxproj text eol=crlf
@@ -74,4 +75,4 @@
 *.inc     text
 *.scss    text
 *.sass    text
-*.css     text 
+*.css     text

@@ -80,7 +80,7 @@ dotnet ef migrations add InitialCreate --project src/ChangeMe.Backend/src/Change
 From `src/ChangeMe.Backend`:
 
 ```powershell
-dotnet build ChangeMe.Backend.sln
+dotnet build ChangeMe.Backend.slnx
 dotnet run --project src/ChangeMe.Backend.Web
 ```
 

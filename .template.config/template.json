@@ -48,7 +48,7 @@
       "identifier": "firstLowerCaseInvariant"
     }
   },
-  "primaryOutputs": [{ "path": "src/ChangeMe.Backend/ChangeMe.Backend.sln" }],
+  "primaryOutputs": [{ "path": "src/ChangeMe.Backend/ChangeMe.Backend.slnx" }],
   "specialCustomOperations": {
     "**/docker-compose.yml": {
       "operations": [

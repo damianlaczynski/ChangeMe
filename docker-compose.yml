@@ -121,7 +121,7 @@ services:
     environment:
       DOCKER_HOST: unix:///var/run/docker.sock
       TESTCONTAINERS_HOST_OVERRIDE: host.docker.internal
-    command: dotnet test ChangeMe.Backend.sln -c Release
+    command: dotnet test ChangeMe.Backend.slnx -c Release
 
 networks:
   app-network:

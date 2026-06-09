@@ -16,14 +16,14 @@
 
 After `npm install` in the repository root (for `concurrently`), you can run:
 
-- `npm run test:all` — in parallel: frontend tests once (`test:frontend:ci`, no watch) and **all** backend tests via `dotnet test` on `ChangeMe.Backend.sln`. Integration tests need Docker (Testcontainers).
+- `npm run test:all` — in parallel: frontend tests once (`test:frontend:ci`, no watch) and **all** backend tests via `dotnet test` on `ChangeMe.Backend.slnx`. Integration tests need Docker (Testcontainers).
 - `npm run test:backend` — same as `dotnet test` on the whole backend solution (unit + integration projects).
 - `npm run test:backend:unit` — unit project only.
 - `npm run test:backend:integration` — integration project only.
 
 ## Backend tests in Docker
 
-The `backend-tests` service in `docker-compose.yml` uses the .NET SDK image, mounts the repository at `/repo`, and runs `dotnet test ChangeMe.Backend.sln -c Release` from `src/ChangeMe.Backend`. The host Docker socket is mounted so Testcontainers can start the database for integration tests.
+The `backend-tests` service in `docker-compose.yml` uses the .NET SDK image, mounts the repository at `/repo`, and runs `dotnet test ChangeMe.Backend.slnx -c Release` from `src/ChangeMe.Backend`. The host Docker socket is mounted so Testcontainers can start the database for integration tests.
 
 ```powershell
 docker compose --profile test run --rm backend-tests

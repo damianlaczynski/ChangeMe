@@ -50,7 +50,7 @@ Each current feature follows a simple slice structure:
 
 ### Solution shape
 
-- `ChangeMe.Backend.sln` is the backend solution entry point.
+- `ChangeMe.Backend.slnx` is the backend solution entry point.
 - `Directory.Packages.props` manages package versions centrally.
 - `Directory.Build.props` enables central package version management.
 
