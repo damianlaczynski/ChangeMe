@@ -106,7 +106,7 @@
       "type": "process",
       "args": [
         "build",
-        "${workspaceFolder}/src/ChangeMe.Backend/ChangeMe.Backend.sln",
+        "${workspaceFolder}/src/ChangeMe.Backend/ChangeMe.Backend.slnx",
         "/property:GenerateFullPaths=true",
         "/consoleloggerparameters:NoSummary;ForceNoAlign"
       ],
@@ -126,7 +126,7 @@
       "command": "dotnet",
       "args": [
         "format",
-        "${workspaceFolder}/src/ChangeMe.Backend/ChangeMe.Backend.sln"
+        "${workspaceFolder}/src/ChangeMe.Backend/ChangeMe.Backend.slnx"
       ],
       "options": {
         "cwd": "${workspaceFolder}/src/ChangeMe.Backend"
@@ -142,7 +142,7 @@
       "command": "dotnet",
       "args": [
         "format",
-        "${workspaceFolder}/src/ChangeMe.Backend/ChangeMe.Backend.sln",
+        "${workspaceFolder}/src/ChangeMe.Backend/ChangeMe.Backend.slnx",
         "--verify-no-changes"
       ],
       "options": {

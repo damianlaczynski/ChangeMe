@@ -13,7 +13,7 @@ ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY src/ChangeMe.Backend/ ./src/ChangeMe.Backend/
 WORKDIR /src/src/ChangeMe.Backend/
-RUN dotnet restore ChangeMe.Backend.sln
+RUN dotnet restore ChangeMe.Backend.slnx
 RUN dotnet build src/ChangeMe.Backend.Web/ChangeMe.Backend.Web.csproj -c "$BUILD_CONFIGURATION" -o /app/build --no-restore
 
 FROM build AS publish

@@ -54,9 +54,9 @@ From the repository root, run `npm install` once to install root devDependencies
 ### Backend (in `src/ChangeMe.Backend`)
 
 - First-time migrations: add an EF migration from the solution root (`dotnet tool restore` then `dotnet ef migrations add ...`; see `docs/database-and-docker.md`).
-- Restore/build solution: `dotnet build ChangeMe.Backend.sln`
+- Restore/build solution: `dotnet build ChangeMe.Backend.slnx`
 - Run web app: `dotnet run --project src/ChangeMe.Backend.Web`
-- All tests in the solution: `dotnet test ChangeMe.Backend.sln`
+- All tests in the solution: `dotnet test ChangeMe.Backend.slnx`
 - Unit tests only: `dotnet test tests/ChangeMe.Backend.UnitTests`
 - Integration tests only: `dotnet test tests/ChangeMe.Backend.IntegrationTests`
 
