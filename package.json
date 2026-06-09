@@ -34,7 +34,8 @@
     "docker:down:volumes": "docker compose down -v",
     "docker:build": "docker compose build",
     "docker:logs": "docker compose logs -f",
-    "docker:test:backend": "docker compose --profile test run --rm backend-tests"
+    "docker:test:backend": "docker compose --profile test run --rm backend-tests",
+    "requirements:validate": "node scripts/requirements-validate.mjs"
   },
   "devDependencies": {
     "concurrently": "^9.2.0"

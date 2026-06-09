@@ -136,3 +136,5 @@ For any non-trivial change, prefer running the smallest relevant automated check
 - backend domain change: unit tests first
 - backend endpoint change: integration tests for the affected area, then broader tests if needed
 - cross-stack or wide regression: from repository root, `npm run test:all` when Docker is available; otherwise `npm run test:frontend:ci` plus `npm run test:backend:unit`, then integration tests separately when the stack is up
+
+Verify behavior against **Functional requirements** in the touched `FR-*` files and inherited `FR-UI-001` / `_shared/` docs — not a separate acceptance-scenarios table.

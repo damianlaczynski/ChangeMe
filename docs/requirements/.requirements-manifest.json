@@ -1,0 +1,858 @@
+{
+  "generatedAt": "2026-06-07T13:24:09.649Z",
+  "functional": [
+    {
+      "id": "FR-AUTH-001",
+      "title": "Login and Registration with Sessions",
+      "domain": "identity",
+      "type": "functional",
+      "status": "active",
+      "file": "functional/identity/fr-auth-001-login-and-registration-with-sessions.md",
+      "depends_on": [],
+      "inherits_nfr": [],
+      "inherits_fr": [
+        "FR-UI-001"
+      ]
+    },
+    {
+      "id": "FR-AUTH-002",
+      "title": "Staying Signed In",
+      "domain": "identity",
+      "type": "functional",
+      "status": "active",
+      "file": "functional/identity/fr-auth-002-staying-signed-in.md",
+      "depends_on": [
+        "FR-ISS-004",
+        "FR-ROL-001",
+        "FR-USR-005"
+      ],
+      "inherits_nfr": [
+        "NFR-QUAL-001",
+        "NFR-A11Y-001",
+        "NFR-I18N-001",
+        "NFR-PERF-001",
+        "NFR-RSP-001"
+      ],
+      "inherits_fr": [
+        "FR-UI-001"
+      ]
+    },
+    {
+      "id": "FR-AUTH-003",
+      "title": "Logout",
+      "domain": "identity",
+      "type": "functional",
+      "status": "active",
+      "file": "functional/identity/fr-auth-003-logout.md",
+      "depends_on": [
+        "FR-USR-001"
+      ],
+      "inherits_nfr": [
+        "NFR-QUAL-001",
+        "NFR-A11Y-001",
+        "NFR-I18N-001",
+        "NFR-PERF-001",
+        "NFR-RSP-001"
+      ],
+      "inherits_fr": [
+        "FR-UI-001"
+      ]
+    },
+    {
+      "id": "FR-AUTH-004",
+      "title": "My Sessions",
+      "domain": "identity",
+      "type": "functional",
+      "status": "active",
+      "file": "functional/identity/fr-auth-004-my-sessions.md",
+      "depends_on": [
+        "FR-AUTH-003",
+        "FR-USR-001"
+      ],
+      "inherits_nfr": [],
+      "inherits_fr": [
+        "FR-UI-001"
+      ]
+    },
+    {
+      "id": "FR-AUTH-005",
+      "title": "Change Password",
+      "domain": "identity",
+      "type": "functional",
+      "status": "active",
+      "file": "functional/identity/fr-auth-005-change-password.md",
+      "depends_on": [
+        "FR-AUTH-001",
+        "FR-AUTH-007",
+        "FR-AUTH-008",
+        "FR-AUTH-009"
+      ],
+      "inherits_nfr": [],
+      "inherits_fr": [
+        "FR-UI-001"
+      ]
+    },
+    {
+      "id": "FR-AUTH-006",
+      "title": "Forgot and Reset Password (Self-Service)",
+      "domain": "identity",
+      "type": "functional",
+      "status": "active",
+      "file": "functional/identity/fr-auth-006-forgot-and-reset-password-self-service.md",
+      "depends_on": [
+        "FR-AUTH-007",
+        "FR-AUTH-008",
+        "FR-AUTH-009",
+        "FR-AUTH-013"
+      ],
+      "inherits_nfr": [
+        "NFR-QUAL-001",
+        "NFR-A11Y-001",
+        "NFR-I18N-001",
+        "NFR-PERF-001",
+        "NFR-RSP-001"
+      ],
+      "inherits_fr": [
+        "FR-UI-001"
+      ]
+    },
+    {
+      "id": "FR-AUTH-007",
+      "title": "Auth Email Notifications",
+      "domain": "identity",
+      "type": "functional",
+      "status": "active",
+      "file": "functional/identity/fr-auth-007-auth-email-notifications.md",
+      "depends_on": [],
+      "inherits_nfr": [],
+      "inherits_fr": [
+        "FR-UI-001"
+      ]
+    },
+    {
+      "id": "FR-AUTH-008",
+      "title": "Password Policy",
+      "domain": "identity",
+      "type": "functional",
+      "status": "active",
+      "file": "functional/identity/fr-auth-008-password-policy.md",
+      "depends_on": [],
+      "inherits_nfr": [
+        "NFR-QUAL-001",
+        "NFR-A11Y-001",
+        "NFR-I18N-001",
+        "NFR-PERF-001",
+        "NFR-RSP-001"
+      ],
+      "inherits_fr": [
+        "FR-UI-001"
+      ]
+    },
+    {
+      "id": "FR-AUTH-009",
+      "title": "Password Expiration",
+      "domain": "identity",
+      "type": "functional",
+      "status": "active",
+      "file": "functional/identity/fr-auth-009-password-expiration.md",
+      "depends_on": [],
+      "inherits_nfr": [],
+      "inherits_fr": [
+        "FR-UI-001"
+      ]
+    },
+    {
+      "id": "FR-AUTH-010",
+      "title": "Accept Account Invitation",
+      "domain": "identity",
+      "type": "functional",
+      "status": "active",
+      "file": "functional/identity/fr-auth-010-accept-account-invitation.md",
+      "depends_on": [],
+      "inherits_nfr": [],
+      "inherits_fr": [
+        "FR-UI-001"
+      ]
+    },
+    {
+      "id": "FR-AUTH-011",
+      "title": "Email Verification",
+      "domain": "identity",
+      "type": "functional",
+      "status": "active",
+      "file": "functional/identity/fr-auth-011-email-verification.md",
+      "depends_on": [],
+      "inherits_nfr": [],
+      "inherits_fr": [
+        "FR-UI-001"
+      ]
+    },
+    {
+      "id": "FR-AUTH-012",
+      "title": "Public Registration Policy",
+      "domain": "identity",
+      "type": "functional",
+      "status": "active",
+      "file": "functional/identity/fr-auth-012-public-registration-policy.md",
+      "depends_on": [],
+      "inherits_nfr": [],
+      "inherits_fr": [
+        "FR-UI-001"
+      ]
+    },
+    {
+      "id": "FR-AUTH-013",
+      "title": "Two-Factor Authentication",
+      "domain": "identity",
+      "type": "functional",
+      "status": "active",
+      "file": "functional/identity/fr-auth-013-two-factor-authentication.md",
+      "depends_on": [],
+      "inherits_nfr": [],
+      "inherits_fr": [
+        "FR-UI-001"
+      ]
+    },
+    {
+      "id": "FR-AUTH-014",
+      "title": "External Identity Providers",
+      "domain": "identity",
+      "type": "functional",
+      "status": "active",
+      "file": "functional/identity/fr-auth-014-external-identity-providers.md",
+      "depends_on": [],
+      "inherits_nfr": [],
+      "inherits_fr": [
+        "FR-UI-001"
+      ]
+    },
+    {
+      "id": "FR-AUTH-015",
+      "title": "Self-Service Email Change",
+      "domain": "identity",
+      "type": "functional",
+      "status": "active",
+      "file": "functional/identity/fr-auth-015-self-service-email-change.md",
+      "depends_on": [],
+      "inherits_nfr": [],
+      "inherits_fr": [
+        "FR-UI-001"
+      ]
+    },
+    {
+      "id": "FR-INV-001",
+      "title": "Invite User (Administrator)",
+      "domain": "invitations",
+      "type": "functional",
+      "status": "active",
+      "file": "functional/invitations/fr-inv-001-invite-user-administrator.md",
+      "depends_on": [],
+      "inherits_nfr": [],
+      "inherits_fr": [
+        "FR-UI-001"
+      ]
+    },
+    {
+      "id": "FR-INV-002",
+      "title": "Pending Invitation Banner (User Details)",
+      "domain": "invitations",
+      "type": "functional",
+      "status": "active",
+      "file": "functional/invitations/fr-inv-002-pending-invitation-banner-user-details.md",
+      "depends_on": [
+        "FR-INV-003",
+        "FR-INV-004",
+        "FR-USR-004"
+      ],
+      "inherits_nfr": [
+        "NFR-QUAL-001",
+        "NFR-A11Y-001",
+        "NFR-I18N-001",
+        "NFR-PERF-001",
+        "NFR-RSP-001"
+      ],
+      "inherits_fr": [
+        "FR-UI-001"
+      ]
+    },
+    {
+      "id": "FR-INV-003",
+      "title": "Resend Invitation",
+      "domain": "invitations",
+      "type": "functional",
+      "status": "active",
+      "file": "functional/invitations/fr-inv-003-resend-invitation.md",
+      "depends_on": [
+        "FR-AUTH-007",
+        "FR-INV-002"
+      ],
+      "inherits_nfr": [
+        "NFR-QUAL-001",
+        "NFR-A11Y-001",
+        "NFR-I18N-001",
+        "NFR-PERF-001",
+        "NFR-RSP-001"
+      ],
+      "inherits_fr": [
+        "FR-UI-001"
+      ]
+    },
+    {
+      "id": "FR-INV-004",
+      "title": "Cancel Invitation",
+      "domain": "invitations",
+      "type": "functional",
+      "status": "active",
+      "file": "functional/invitations/fr-inv-004-cancel-invitation.md",
+      "depends_on": [
+        "FR-INV-002"
+      ],
+      "inherits_nfr": [
+        "NFR-QUAL-001",
+        "NFR-A11Y-001",
+        "NFR-I18N-001",
+        "NFR-PERF-001",
+        "NFR-RSP-001"
+      ],
+      "inherits_fr": [
+        "FR-UI-001"
+      ]
+    },
+    {
+      "id": "FR-INV-005",
+      "title": "User Status",
+      "domain": "invitations",
+      "type": "functional",
+      "status": "active",
+      "file": "functional/invitations/fr-inv-005-user-status.md",
+      "depends_on": [],
+      "inherits_nfr": [],
+      "inherits_fr": [
+        "FR-UI-001"
+      ]
+    },
+    {
+      "id": "FR-INV-006",
+      "title": "Invitation History Retention",
+      "domain": "invitations",
+      "type": "functional",
+      "status": "active",
+      "file": "functional/invitations/fr-inv-006-invitation-history-retention.md",
+      "depends_on": [
+        "FR-AUTH-010",
+        "FR-AUTH-014"
+      ],
+      "inherits_nfr": [
+        "NFR-QUAL-001",
+        "NFR-A11Y-001",
+        "NFR-I18N-001",
+        "NFR-PERF-001",
+        "NFR-RSP-001"
+      ],
+      "inherits_fr": [
+        "FR-UI-001"
+      ]
+    },
+    {
+      "id": "FR-INV-007",
+      "title": "Accept Invitation — Guest Screen Presentation",
+      "domain": "invitations",
+      "type": "functional",
+      "status": "active",
+      "file": "functional/invitations/fr-inv-007-accept-invitation-guest-screen-presentation.md",
+      "depends_on": [
+        "FR-AUTH-010",
+        "FR-AUTH-014"
+      ],
+      "inherits_nfr": [
+        "NFR-QUAL-001",
+        "NFR-A11Y-001",
+        "NFR-I18N-001",
+        "NFR-PERF-001",
+        "NFR-RSP-001"
+      ],
+      "inherits_fr": [
+        "FR-UI-001"
+      ]
+    },
+    {
+      "id": "FR-ISS-001",
+      "title": "Issue List",
+      "domain": "issues",
+      "type": "functional",
+      "status": "active",
+      "file": "functional/issues/fr-iss-001-issue-list.md",
+      "depends_on": [
+        "FR-AUTH-001",
+        "FR-ISS-002",
+        "FR-USR-005"
+      ],
+      "inherits_nfr": [],
+      "inherits_fr": [
+        "FR-UI-001"
+      ]
+    },
+    {
+      "id": "FR-ISS-002",
+      "title": "Issue Create and Edit Flow",
+      "domain": "issues",
+      "type": "functional",
+      "status": "active",
+      "file": "functional/issues/fr-iss-002-issue-create-and-edit-flow.md",
+      "depends_on": [
+        "FR-ISS-003",
+        "FR-USR-005"
+      ],
+      "inherits_nfr": [],
+      "inherits_fr": [
+        "FR-UI-001"
+      ]
+    },
+    {
+      "id": "FR-ISS-003",
+      "title": "Issue Details, Comments, and Change History",
+      "domain": "issues",
+      "type": "functional",
+      "status": "active",
+      "file": "functional/issues/fr-iss-003-issue-details-comments-and-change-history.md",
+      "depends_on": [
+        "FR-ISS-001",
+        "FR-ISS-002",
+        "FR-ISS-004"
+      ],
+      "inherits_nfr": [],
+      "inherits_fr": [
+        "FR-UI-001"
+      ]
+    },
+    {
+      "id": "FR-ISS-004",
+      "title": "Watching Issues and Push / Email Notifications",
+      "domain": "issues",
+      "type": "functional",
+      "status": "active",
+      "file": "functional/issues/fr-iss-004-watching-issues-and-push-email-notifications.md",
+      "depends_on": [
+        "FR-ISS-002",
+        "FR-ISS-006"
+      ],
+      "inherits_nfr": [
+        "NFR-QUAL-001",
+        "NFR-A11Y-001",
+        "NFR-I18N-001",
+        "NFR-PERF-001",
+        "NFR-RSP-001"
+      ],
+      "inherits_fr": [
+        "FR-UI-001"
+      ]
+    },
+    {
+      "id": "FR-ISS-005",
+      "title": "Notification Bell and Dropdown",
+      "domain": "issues",
+      "type": "functional",
+      "status": "active",
+      "file": "functional/issues/fr-iss-005-notification-bell-and-dropdown.md",
+      "depends_on": [],
+      "inherits_nfr": [],
+      "inherits_fr": [
+        "FR-UI-001"
+      ]
+    },
+    {
+      "id": "FR-ISS-006",
+      "title": "Issue Attachments",
+      "domain": "issues",
+      "type": "functional",
+      "status": "active",
+      "file": "functional/issues/fr-iss-006-issue-attachments.md",
+      "depends_on": [
+        "FR-ISS-003",
+        "FR-ISS-004"
+      ],
+      "inherits_nfr": [],
+      "inherits_fr": [
+        "FR-UI-001"
+      ]
+    },
+    {
+      "id": "FR-PKY-001",
+      "title": "Passkeys Policy and Deployment",
+      "domain": "passkeys",
+      "type": "functional",
+      "status": "active",
+      "file": "functional/passkeys/fr-pky-001-passkeys-policy-and-deployment.md",
+      "depends_on": [],
+      "inherits_nfr": [],
+      "inherits_fr": [
+        "FR-UI-001"
+      ]
+    },
+    {
+      "id": "FR-PKY-002",
+      "title": "Sign-In with Passkey",
+      "domain": "passkeys",
+      "type": "functional",
+      "status": "active",
+      "file": "functional/passkeys/fr-pky-002-sign-in-with-passkey.md",
+      "depends_on": [],
+      "inherits_nfr": [],
+      "inherits_fr": [
+        "FR-UI-001"
+      ]
+    },
+    {
+      "id": "FR-PKY-003",
+      "title": "Passkey Enrollment and My Account Management",
+      "domain": "passkeys",
+      "type": "functional",
+      "status": "active",
+      "file": "functional/passkeys/fr-pky-003-passkey-enrollment-and-my-account-management.md",
+      "depends_on": [
+        "FR-AUTH-014",
+        "FR-PKY-004",
+        "FR-PKY-006",
+        "FR-PKY-007",
+        "FR-USR-001"
+      ],
+      "inherits_nfr": [],
+      "inherits_fr": [
+        "FR-UI-001"
+      ]
+    },
+    {
+      "id": "FR-PKY-004",
+      "title": "Step-Up Authentication with Passkeys",
+      "domain": "passkeys",
+      "type": "functional",
+      "status": "active",
+      "file": "functional/passkeys/fr-pky-004-step-up-authentication-with-passkeys.md",
+      "depends_on": [
+        "FR-AUTH-005",
+        "FR-AUTH-010",
+        "FR-AUTH-013",
+        "FR-AUTH-014",
+        "FR-PKY-003"
+      ],
+      "inherits_nfr": [],
+      "inherits_fr": [
+        "FR-UI-001"
+      ]
+    },
+    {
+      "id": "FR-PKY-005",
+      "title": "Administrator Passkey Management",
+      "domain": "passkeys",
+      "type": "functional",
+      "status": "active",
+      "file": "functional/passkeys/fr-pky-005-administrator-passkey-management.md",
+      "depends_on": [
+        "FR-PKY-003",
+        "FR-PKY-006",
+        "FR-PKY-007",
+        "FR-USR-004"
+      ],
+      "inherits_nfr": [],
+      "inherits_fr": [
+        "FR-UI-001"
+      ]
+    },
+    {
+      "id": "FR-PKY-006",
+      "title": "Combined Compliance Gates and Cross-Auth Interaction",
+      "domain": "passkeys",
+      "type": "functional",
+      "status": "active",
+      "file": "functional/passkeys/fr-pky-006-combined-compliance-gates-and-cross-auth-interaction.md",
+      "depends_on": [],
+      "inherits_nfr": [],
+      "inherits_fr": [
+        "FR-UI-001"
+      ]
+    },
+    {
+      "id": "FR-PKY-007",
+      "title": "Passkey Notification Emails",
+      "domain": "passkeys",
+      "type": "functional",
+      "status": "active",
+      "file": "functional/passkeys/fr-pky-007-passkey-notification-emails.md",
+      "depends_on": [
+        "FR-AUTH-007"
+      ],
+      "inherits_nfr": [],
+      "inherits_fr": [
+        "FR-UI-001"
+      ]
+    },
+    {
+      "id": "FR-ROL-001",
+      "title": "Permission Catalog and Effective Permissions",
+      "domain": "access",
+      "type": "functional",
+      "status": "active",
+      "file": "functional/access/fr-rol-001-permission-catalog-and-effective-permissions.md",
+      "depends_on": [
+        "FR-AUTH-001",
+        "FR-AUTH-002",
+        "FR-ROL-005",
+        "FR-USR-001",
+        "FR-USR-005"
+      ],
+      "inherits_nfr": [],
+      "inherits_fr": [
+        "FR-UI-001"
+      ]
+    },
+    {
+      "id": "FR-ROL-002",
+      "title": "Roles List",
+      "domain": "access",
+      "type": "functional",
+      "status": "active",
+      "file": "functional/access/fr-rol-002-roles-list.md",
+      "depends_on": [
+        "FR-ROL-003"
+      ],
+      "inherits_nfr": [],
+      "inherits_fr": [
+        "FR-UI-001"
+      ]
+    },
+    {
+      "id": "FR-ROL-003",
+      "title": "Create and Edit Role",
+      "domain": "access",
+      "type": "functional",
+      "status": "active",
+      "file": "functional/access/fr-rol-003-create-and-edit-role.md",
+      "depends_on": [
+        "FR-ROL-001",
+        "FR-ROL-005"
+      ],
+      "inherits_nfr": [],
+      "inherits_fr": [
+        "FR-UI-001"
+      ]
+    },
+    {
+      "id": "FR-ROL-004",
+      "title": "Role Details",
+      "domain": "access",
+      "type": "functional",
+      "status": "active",
+      "file": "functional/access/fr-rol-004-role-details.md",
+      "depends_on": [
+        "FR-ROL-001",
+        "FR-ROL-003",
+        "FR-USR-004"
+      ],
+      "inherits_nfr": [],
+      "inherits_fr": [
+        "FR-UI-001"
+      ]
+    },
+    {
+      "id": "FR-ROL-005",
+      "title": "Role and User Assignments",
+      "domain": "access",
+      "type": "functional",
+      "status": "active",
+      "file": "functional/access/fr-rol-005-role-and-user-assignments.md",
+      "depends_on": [
+        "FR-INV-001",
+        "FR-ROL-004",
+        "FR-USR-003",
+        "FR-USR-004",
+        "FR-USR-005"
+      ],
+      "inherits_nfr": [],
+      "inherits_fr": [
+        "FR-UI-001"
+      ]
+    },
+    {
+      "id": "FR-ROL-006",
+      "title": "Initial Administrator and System Roles",
+      "domain": "access",
+      "type": "functional",
+      "status": "active",
+      "file": "functional/access/fr-rol-006-initial-administrator-and-system-roles.md",
+      "depends_on": [],
+      "inherits_nfr": [],
+      "inherits_fr": [
+        "FR-UI-001"
+      ]
+    },
+    {
+      "id": "FR-USR-001",
+      "title": "My Account Profile",
+      "domain": "users",
+      "type": "functional",
+      "status": "active",
+      "file": "functional/users/fr-usr-001-my-account-profile.md",
+      "depends_on": [],
+      "inherits_nfr": [],
+      "inherits_fr": [
+        "FR-UI-001"
+      ]
+    },
+    {
+      "id": "FR-USR-002",
+      "title": "User List",
+      "domain": "users",
+      "type": "functional",
+      "status": "active",
+      "file": "functional/users/fr-usr-002-user-list.md",
+      "depends_on": [
+        "FR-AUTH-011",
+        "FR-INV-001",
+        "FR-INV-005",
+        "FR-USR-005"
+      ],
+      "inherits_nfr": [],
+      "inherits_fr": [
+        "FR-UI-001"
+      ]
+    },
+    {
+      "id": "FR-USR-003",
+      "title": "Edit User (Admin)",
+      "domain": "users",
+      "type": "functional",
+      "status": "active",
+      "file": "functional/users/fr-usr-003-edit-user-admin.md",
+      "depends_on": [],
+      "inherits_nfr": [],
+      "inherits_fr": [
+        "FR-UI-001"
+      ]
+    },
+    {
+      "id": "FR-USR-004",
+      "title": "User Details and Session Administration",
+      "domain": "users",
+      "type": "functional",
+      "status": "active",
+      "file": "functional/users/fr-usr-004-user-details-and-session-administration.md",
+      "depends_on": [],
+      "inherits_nfr": [],
+      "inherits_fr": [
+        "FR-UI-001"
+      ]
+    },
+    {
+      "id": "FR-USR-005",
+      "title": "Deactivate and Activate Accounts",
+      "domain": "users",
+      "type": "functional",
+      "status": "active",
+      "file": "functional/users/fr-usr-005-deactivate-and-activate-accounts.md",
+      "depends_on": [
+        "FR-AUTH-011",
+        "FR-ISS-002",
+        "FR-ROL-006"
+      ],
+      "inherits_nfr": [],
+      "inherits_fr": [
+        "FR-UI-001"
+      ]
+    },
+    {
+      "id": "FR-USR-006",
+      "title": "Admin Send Password Reset",
+      "domain": "users",
+      "type": "functional",
+      "status": "active",
+      "file": "functional/users/fr-usr-006-admin-send-password-reset.md",
+      "depends_on": [
+        "FR-AUTH-007",
+        "FR-INV-003",
+        "FR-USR-004"
+      ],
+      "inherits_nfr": [],
+      "inherits_fr": [
+        "FR-UI-001"
+      ]
+    },
+    {
+      "id": "FR-USR-007",
+      "title": "Admin Confirm Email",
+      "domain": "users",
+      "type": "functional",
+      "status": "active",
+      "file": "functional/users/fr-usr-007-admin-confirm-email.md",
+      "depends_on": [
+        "FR-AUTH-007",
+        "FR-AUTH-011",
+        "FR-INV-001",
+        "FR-USR-004"
+      ],
+      "inherits_nfr": [],
+      "inherits_fr": [
+        "FR-UI-001"
+      ]
+    }
+  ],
+  "non_functional": [
+    {
+      "id": "NFR-A11Y-001",
+      "title": "Accessibility",
+      "file": "_shared/non-functional/accessibility.md",
+      "type": "non-functional",
+      "status": "active"
+    },
+    {
+      "id": "NFR-I18N-001",
+      "title": "Internationalization and Copy",
+      "file": "_shared/non-functional/internationalization.md",
+      "type": "non-functional",
+      "status": "active"
+    },
+    {
+      "id": "NFR-PERF-001",
+      "title": "Performance and Scale",
+      "file": "_shared/non-functional/performance-and-scale.md",
+      "type": "non-functional",
+      "status": "active"
+    },
+    {
+      "id": "NFR-QUAL-001",
+      "title": "Product Quality (Index)",
+      "file": "_shared/non-functional/product-quality.md",
+      "type": "non-functional",
+      "status": "active"
+    },
+    {
+      "id": "NFR-RSP-001",
+      "title": "Responsiveness and Layout",
+      "file": "_shared/non-functional/responsiveness.md",
+      "type": "non-functional",
+      "status": "active"
+    }
+  ],
+  "shared_functional": [
+    {
+      "id": "FR-UI-001",
+      "title": "Shared UI and UX Patterns",
+      "file": "_shared/functional/ui-patterns.md",
+      "type": "functional",
+      "status": "active"
+    }
+  ],
+  "reference": [
+    {
+      "file": "_shared/reference/account-model.md"
+    },
+    {
+      "file": "_shared/reference/compliance-gates.md"
+    },
+    {
+      "file": "_shared/reference/glossary.md"
+    },
+    {
+      "file": "_shared/reference/permissions.md"
+    }
+  ]
+}
