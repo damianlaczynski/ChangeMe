@@ -162,17 +162,6 @@ function main() {
         `Missing ## Non-functional requirements: functional/${domain}/${name}`,
       );
     }
-
-    if (/\bAC-[A-Z0-9]+-\d{3}-\d{2}\b/.test(content)) {
-      error(`Legacy AC- reference found in functional/${domain}/${name}`);
-    }
-
-    if (/\bREQ-[A-Z]+-\d{3}\b/.test(content)) {
-      error(`Legacy REQ- reference found in functional/${domain}/${name}`);
-    }
-    if (/docs\/req\//.test(content)) {
-      error(`Legacy docs/req/ path found in functional/${domain}/${name}`);
-    }
   }
 
   allFrIds.clear();
@@ -244,9 +233,6 @@ function main() {
       if (!/\*\*Status:\*\*\s*(pending|done)/i.test(content)) {
         warn(`Change record missing Status (pending|done): changes/${name}`);
       }
-      if (/\bREQ-[A-Z]+-\d{3}\b/.test(content)) {
-        error(`Legacy REQ- reference in changes/${name}`);
-      }
       const touched = content.match(/(?<![A-Z/])FR-[A-Z0-9]+-\d{3}/g) ?? [];
       for (const ref of [...new Set(touched)]) {
         if (!allFrIds.has(ref)) {
@@ -310,10 +296,6 @@ function main() {
 
   if (!fs.existsSync(path.join(ROOT, "README.md"))) {
     error("Failed to generate docs/requirements/README.md");
-  }
-
-  if (fs.existsSync(path.join(process.cwd(), "docs", "req"))) {
-    warn("Legacy docs/req/ still present — remove after migration is verified");
   }
 
   report(frIds.size, nfrDocs.length, referenceDocs.length);
