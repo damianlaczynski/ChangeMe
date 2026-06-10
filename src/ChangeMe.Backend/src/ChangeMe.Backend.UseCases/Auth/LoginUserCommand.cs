@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.Domain.Aggregates.Sessions;
+using ChangeMe.Backend.Domain.Aggregates.Sessions;
 using ChangeMe.Backend.Domain.Aggregates.Users;
 using ChangeMe.Backend.Domain.Aggregates.Users.Entities;
 using ChangeMe.Backend.Domain.Aggregates.Users.Interfaces;
@@ -25,7 +25,7 @@ public class LoginUserHandler(
   IOptions<AuthOptions> authOptions,
   IHttpContextAccessor httpContextAccessor) : ICommandHandler<LoginUserCommand, LoginResponseDto>
 {
-  public async Task<Result<LoginResponseDto>> Handle(LoginUserCommand command, CancellationToken cancellationToken)
+  public async ValueTask<Result<LoginResponseDto>> Handle(LoginUserCommand command, CancellationToken cancellationToken)
   {
     var normalizedEmail = User.NormalizeEmail(command.Email);
     var user = await context.Users

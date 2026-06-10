@@ -1,6 +1,6 @@
-﻿namespace ChangeMe.Backend.Web.Common;
+namespace ChangeMe.Backend.Web.Common;
 
-public class MediatRDomainEventDispatcher(IMediator mediator, ILogger<MediatRDomainEventDispatcher> logger) : IDomainEventDispatcher
+public class MediatorDomainEventDispatcher(IMediator mediator, ILogger<MediatorDomainEventDispatcher> logger) : IDomainEventDispatcher
 {
   public async Task DispatchAndClearEvents(IEnumerable<IHasDomainEvents> entitiesWithEvents)
   {
@@ -12,7 +12,7 @@ public class MediatRDomainEventDispatcher(IMediator mediator, ILogger<MediatRDom
         hasDomainEvents.ClearDomainEvents();
 
         foreach (DomainEventBase domainEvent in events)
-          await mediator.Publish(domainEvent).ConfigureAwait(false);
+          await mediator.Publish(domainEvent, CancellationToken.None).ConfigureAwait(false);
       }
       else
       {

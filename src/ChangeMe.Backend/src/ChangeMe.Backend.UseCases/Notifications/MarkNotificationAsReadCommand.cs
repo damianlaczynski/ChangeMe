@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.UseCases.Notifications.Dtos;
+using ChangeMe.Backend.UseCases.Notifications.Dtos;
 using ChangeMe.Backend.UseCases.Notifications.Services;
 
 namespace ChangeMe.Backend.UseCases.Notifications;
@@ -10,7 +10,7 @@ public class MarkNotificationAsReadHandler(
   IUserAccessor userAccessor,
   NotificationRetentionPolicy retentionPolicy) : ICommandHandler<MarkNotificationAsReadCommand, NotificationDto>
 {
-  public async Task<Result<NotificationDto>> Handle(MarkNotificationAsReadCommand command, CancellationToken cancellationToken)
+  public async ValueTask<Result<NotificationDto>> Handle(MarkNotificationAsReadCommand command, CancellationToken cancellationToken)
   {
     if (userAccessor.UserId is not Guid currentUserId)
       return Result.Unauthorized();

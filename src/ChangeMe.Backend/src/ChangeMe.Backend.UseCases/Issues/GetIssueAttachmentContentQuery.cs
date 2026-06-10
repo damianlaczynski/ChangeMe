@@ -10,7 +10,7 @@ public class GetIssueAttachmentContentHandler(
   IUserAccessor userAccessor,
   IFileStorageService fileStorageService) : IQueryHandler<GetIssueAttachmentContentQuery, IssueAttachmentContentDto>
 {
-  public async Task<Result<IssueAttachmentContentDto>> Handle(
+  public async ValueTask<Result<IssueAttachmentContentDto>> Handle(
     GetIssueAttachmentContentQuery query,
     CancellationToken cancellationToken)
   {

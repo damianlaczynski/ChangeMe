@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.UseCases.Issues.Dtos;
+using ChangeMe.Backend.UseCases.Issues.Dtos;
 using ChangeMe.Backend.UseCases.Issues.Utils;
 
 namespace ChangeMe.Backend.UseCases.Issues;
@@ -9,7 +9,7 @@ public class GetIssueByIdHandler(
   ApplicationDbContext context,
   IUserAccessor userAccessor) : IQueryHandler<GetIssueByIdQuery, IssueDetailsDto>
 {
-  public async Task<Result<IssueDetailsDto>> Handle(GetIssueByIdQuery query, CancellationToken cancellationToken)
+  public async ValueTask<Result<IssueDetailsDto>> Handle(GetIssueByIdQuery query, CancellationToken cancellationToken)
   {
     var issue = await context.Issues
       .AsNoTracking()

@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.Domain.Aggregates.Users;
+using ChangeMe.Backend.Domain.Aggregates.Users;
 using ChangeMe.Backend.UseCases.Users.Dtos;
 
 namespace ChangeMe.Backend.UseCases.Users.Utils;

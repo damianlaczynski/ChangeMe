@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.Infrastructure.Auth;
+using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UseCases.Auth.Utils;
 using Microsoft.Extensions.Options;
 
@@ -19,7 +19,7 @@ public class UnlinkExternalAccountHandler(
   IUserAccessor userAccessor,
   IOptions<AuthOptions> authOptions) : ICommandHandler<UnlinkExternalAccountCommand, bool>
 {
-  public async Task<Result<bool>> Handle(
+  public async ValueTask<Result<bool>> Handle(
     UnlinkExternalAccountCommand command,
     CancellationToken cancellationToken)
   {

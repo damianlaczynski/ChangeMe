@@ -1,4 +1,4 @@
-﻿
+
 namespace ChangeMe.Backend.UseCases.Users;
 
 public sealed record RevokeUserSessionCommand(Guid Id, Guid SessionId) : ICommand<bool>;
@@ -6,7 +6,7 @@ public sealed record RevokeUserSessionCommand(Guid Id, Guid SessionId) : IComman
 public class RevokeUserSessionHandler(
   ApplicationDbContext context) : ICommandHandler<RevokeUserSessionCommand, bool>
 {
-  public async Task<Result<bool>> Handle(RevokeUserSessionCommand command, CancellationToken cancellationToken)
+  public async ValueTask<Result<bool>> Handle(RevokeUserSessionCommand command, CancellationToken cancellationToken)
   {
     var session = await context.UserSessions
       .FirstOrDefaultAsync(

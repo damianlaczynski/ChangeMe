@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.UseCases.Auth;
+using ChangeMe.Backend.UseCases.Auth;
 using ChangeMe.Backend.UseCases.Auth.Utils;
 using ChangeMe.Backend.UseCases.Users.Dtos;
 using ChangeMe.Backend.UseCases.Users.Utils;
@@ -13,7 +13,7 @@ public class ResetUserTwoFactorHandler(
   IAuthEmailService authEmailService,
   IMediator mediator) : ICommandHandler<ResetUserTwoFactorCommand, UserDetailsDto>
 {
-  public async Task<Result<UserDetailsDto>> Handle(
+  public async ValueTask<Result<UserDetailsDto>> Handle(
     ResetUserTwoFactorCommand command,
     CancellationToken cancellationToken)
   {

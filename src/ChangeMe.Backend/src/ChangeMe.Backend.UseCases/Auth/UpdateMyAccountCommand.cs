@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.UseCases.Auth.Dtos;
+using ChangeMe.Backend.UseCases.Auth.Dtos;
 
 namespace ChangeMe.Backend.UseCases.Auth;
 
@@ -11,7 +11,7 @@ public class UpdateMyAccountHandler(
   ApplicationDbContext context,
   IUserAccessor userAccessor) : ICommandHandler<UpdateMyAccountCommand, MyAccountDto>
 {
-  public async Task<Result<MyAccountDto>> Handle(UpdateMyAccountCommand command, CancellationToken cancellationToken)
+  public async ValueTask<Result<MyAccountDto>> Handle(UpdateMyAccountCommand command, CancellationToken cancellationToken)
   {
     if (userAccessor.UserId is not Guid userId)
       return Result<MyAccountDto>.Unauthorized();

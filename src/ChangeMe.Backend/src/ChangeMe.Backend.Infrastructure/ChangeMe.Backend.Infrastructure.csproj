@@ -15,7 +15,6 @@
   </ItemGroup>
 
    <ItemGroup>
-   <PackageReference Include="MediatR" />
     <PackageReference Include="Hangfire.AspNetCore" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
     <PackageReference Include="Microsoft.Bcl.Memory" />

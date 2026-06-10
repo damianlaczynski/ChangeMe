@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.Domain.Aggregates.Users.Entities;
+using ChangeMe.Backend.Domain.Aggregates.Users.Entities;
 using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UseCases.Auth.Dtos;
 using ChangeMe.Backend.UseCases.Auth.Utils;
@@ -19,7 +19,7 @@ public class BeginTwoFactorSetupHandler(
   IUserAccessor userAccessor,
   IOptions<AuthOptions> authOptions) : ICommandHandler<BeginTwoFactorSetupCommand, BeginTwoFactorSetupResponseDto>
 {
-  public async Task<Result<BeginTwoFactorSetupResponseDto>> Handle(
+  public async ValueTask<Result<BeginTwoFactorSetupResponseDto>> Handle(
     BeginTwoFactorSetupCommand command,
     CancellationToken cancellationToken)
   {

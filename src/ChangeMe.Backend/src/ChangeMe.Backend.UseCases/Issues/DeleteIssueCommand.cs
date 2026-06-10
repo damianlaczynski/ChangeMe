@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.Infrastructure.FileStorage;
+using ChangeMe.Backend.Infrastructure.FileStorage;
 
 namespace ChangeMe.Backend.UseCases.Issues;
 
@@ -9,7 +9,7 @@ public class DeleteIssueHandler(
   ApplicationDbContext context,
   IFileStorageService fileStorageService) : ICommandHandler<DeleteIssueCommand, Guid>
 {
-  public async Task<Result<Guid>> Handle(DeleteIssueCommand command, CancellationToken cancellationToken)
+  public async ValueTask<Result<Guid>> Handle(DeleteIssueCommand command, CancellationToken cancellationToken)
   {
     var issue = await context.Issues
       .Include(i => i.Attachments)

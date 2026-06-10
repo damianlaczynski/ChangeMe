@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.UseCases.Auth.Dtos;
+using ChangeMe.Backend.UseCases.Auth.Dtos;
 
 namespace ChangeMe.Backend.UseCases.Auth;
 
@@ -7,7 +7,7 @@ public sealed record GetPasswordResetPreviewQuery(string Token) : IQuery<Passwor
 public class GetPasswordResetPreviewHandler(
   IUserAuthTokenService tokenService) : IQueryHandler<GetPasswordResetPreviewQuery, PasswordResetPreviewDto>
 {
-  public async Task<Result<PasswordResetPreviewDto>> Handle(
+  public async ValueTask<Result<PasswordResetPreviewDto>> Handle(
     GetPasswordResetPreviewQuery query,
     CancellationToken cancellationToken)
   {

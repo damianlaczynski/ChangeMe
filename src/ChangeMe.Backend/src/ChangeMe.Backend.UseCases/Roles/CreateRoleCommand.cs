@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.Domain.Aggregates.Roles;
+using ChangeMe.Backend.Domain.Aggregates.Roles;
 using ChangeMe.Backend.UseCases.Roles.Dtos;
 
 using ChangeMe.Backend.UseCases.Roles.Utils;
@@ -14,7 +14,7 @@ public class CreateRoleHandler(
   IMediator mediator,
   ApplicationDbContext context) : ICommandHandler<CreateRoleCommand, RoleDetailsDto>
 {
-  public async Task<Result<RoleDetailsDto>> Handle(CreateRoleCommand command, CancellationToken cancellationToken)
+  public async ValueTask<Result<RoleDetailsDto>> Handle(CreateRoleCommand command, CancellationToken cancellationToken)
   {
     if (await RolesUtils.IsNameTakenAsync(context, command.Name, null, cancellationToken))
       return Result<RoleDetailsDto>.Conflict(RolesUtils.DuplicateNameMessage);

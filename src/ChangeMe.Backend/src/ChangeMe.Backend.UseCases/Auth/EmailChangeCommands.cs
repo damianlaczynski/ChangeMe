@@ -31,7 +31,7 @@ public class RequestEmailChangeHandler(
   TimeProvider timeProvider,
   ILogger<RequestEmailChangeHandler> logger) : ICommandHandler<RequestEmailChangeCommand, MyAccountDto>
 {
-  public async Task<Result<MyAccountDto>> Handle(
+  public async ValueTask<Result<MyAccountDto>> Handle(
     RequestEmailChangeCommand command,
     CancellationToken cancellationToken)
   {
@@ -141,7 +141,7 @@ public class CancelEmailChangeHandler(
   TimeProvider timeProvider,
   ILogger<CancelEmailChangeHandler> logger) : ICommandHandler<CancelEmailChangeCommand, MyAccountDto>
 {
-  public async Task<Result<MyAccountDto>> Handle(
+  public async ValueTask<Result<MyAccountDto>> Handle(
     CancelEmailChangeCommand command,
     CancellationToken cancellationToken)
   {
@@ -211,7 +211,7 @@ public class ResendEmailChangeConfirmationHandler(
   TimeProvider timeProvider,
   ILogger<ResendEmailChangeConfirmationHandler> logger) : ICommandHandler<ResendEmailChangeConfirmationCommand, MyAccountDto>
 {
-  public async Task<Result<MyAccountDto>> Handle(
+  public async ValueTask<Result<MyAccountDto>> Handle(
     ResendEmailChangeConfirmationCommand command,
     CancellationToken cancellationToken)
   {
@@ -269,7 +269,7 @@ public class ConfirmEmailChangeHandler(
   TimeProvider timeProvider,
   ILogger<ConfirmEmailChangeHandler> logger) : ICommandHandler<ConfirmEmailChangeCommand, ConfirmEmailChangeResponseDto>
 {
-  public async Task<Result<ConfirmEmailChangeResponseDto>> Handle(
+  public async ValueTask<Result<ConfirmEmailChangeResponseDto>> Handle(
     ConfirmEmailChangeCommand command,
     CancellationToken cancellationToken)
   {

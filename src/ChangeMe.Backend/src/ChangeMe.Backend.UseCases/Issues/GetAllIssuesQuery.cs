@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.Domain.Aggregates.Issue.Enums;
+using ChangeMe.Backend.Domain.Aggregates.Issue.Enums;
 using ChangeMe.Backend.Domain.Aggregates.Users;
 using ChangeMe.Backend.UseCases.Issues.Dtos;
 
@@ -18,7 +18,7 @@ public class GetAllIssuesHandler(
   ApplicationDbContext context,
   IUserAccessor userAccessor) : IQueryHandler<GetAllIssuesQuery, PaginationResult<IssueDto>>
 {
-  public async Task<Result<PaginationResult<IssueDto>>> Handle(GetAllIssuesQuery query, CancellationToken cancellationToken)
+  public async ValueTask<Result<PaginationResult<IssueDto>>> Handle(GetAllIssuesQuery query, CancellationToken cancellationToken)
   {
     if (userAccessor.UserId is not Guid currentUserId)
       return Result.Unauthorized();

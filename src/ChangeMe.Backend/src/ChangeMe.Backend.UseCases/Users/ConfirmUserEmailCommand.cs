@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.UseCases.Users.Dtos;
+using ChangeMe.Backend.UseCases.Users.Dtos;
 using ChangeMe.Backend.UseCases.Users.Utils;
 
 namespace ChangeMe.Backend.UseCases.Users;
@@ -9,7 +9,7 @@ public class ConfirmUserEmailHandler(
   ApplicationDbContext context,
   IMediator mediator) : ICommandHandler<ConfirmUserEmailCommand, UserDetailsDto>
 {
-  public async Task<Result<UserDetailsDto>> Handle(
+  public async ValueTask<Result<UserDetailsDto>> Handle(
     ConfirmUserEmailCommand command,
     CancellationToken cancellationToken)
   {

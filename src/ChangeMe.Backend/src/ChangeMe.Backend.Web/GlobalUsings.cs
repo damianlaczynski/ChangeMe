@@ -8,5 +8,5 @@ global using ChangeMe.Backend.Web.Common;
 global using FastEndpoints;
 global using FastEndpoints.Swagger;
 global using FluentValidation;
-global using MediatR;
+global using Mediator;
 global using Serilog;

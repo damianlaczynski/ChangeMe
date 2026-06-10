@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.Infrastructure.Auth;
+using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UseCases.Issues.Dtos;
 using Microsoft.Extensions.Options;
 
@@ -11,7 +11,7 @@ public class GetAssignableUsersHandler(
   IOptions<AuthOptions> authOptions)
   : IQueryHandler<GetAssignableUsersQuery, List<IssueAssignableUserDto>>
 {
-  public async Task<Result<List<IssueAssignableUserDto>>> Handle(
+  public async ValueTask<Result<List<IssueAssignableUserDto>>> Handle(
     GetAssignableUsersQuery query,
     CancellationToken cancellationToken)
   {

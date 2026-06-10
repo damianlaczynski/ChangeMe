@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.UseCases.Auth.Utils;
+using ChangeMe.Backend.UseCases.Auth.Utils;
 
 namespace ChangeMe.Backend.UseCases.Auth;
 
@@ -15,7 +15,7 @@ public class AcceptInvitationHandler(
   IAuthEmailService authEmailService,
   TimeProvider timeProvider) : ICommandHandler<AcceptInvitationCommand, bool>
 {
-  public async Task<Result<bool>> Handle(AcceptInvitationCommand command, CancellationToken cancellationToken)
+  public async ValueTask<Result<bool>> Handle(AcceptInvitationCommand command, CancellationToken cancellationToken)
   {
     var validateResult = await tokenService.ValidateTokenAsync(
       command.Token,

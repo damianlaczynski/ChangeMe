@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.UseCases.Users.Dtos;
+using ChangeMe.Backend.UseCases.Users.Dtos;
 
 namespace ChangeMe.Backend.UseCases.Users;
 
@@ -7,7 +7,7 @@ public sealed record GetRolesForAssignmentQuery() : IQuery<IReadOnlyList<RoleAss
 public class GetRolesForAssignmentHandler(ApplicationDbContext context)
   : IQueryHandler<GetRolesForAssignmentQuery, IReadOnlyList<RoleAssignmentOptionDto>>
 {
-  public async Task<Result<IReadOnlyList<RoleAssignmentOptionDto>>> Handle(
+  public async ValueTask<Result<IReadOnlyList<RoleAssignmentOptionDto>>> Handle(
     GetRolesForAssignmentQuery query,
     CancellationToken cancellationToken)
   {

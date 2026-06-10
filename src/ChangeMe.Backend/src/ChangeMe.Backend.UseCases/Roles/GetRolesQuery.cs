@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.UseCases.Roles.Dtos;
+using ChangeMe.Backend.UseCases.Roles.Dtos;
 
 namespace ChangeMe.Backend.UseCases.Roles;
 
@@ -10,7 +10,7 @@ public sealed class GetRolesQuery : PaginationQuery<RoleListItemDto>
 public class GetRolesHandler(ApplicationDbContext context)
   : IQueryHandler<GetRolesQuery, PaginationResult<RoleListItemDto>>
 {
-  public async Task<Result<PaginationResult<RoleListItemDto>>> Handle(
+  public async ValueTask<Result<PaginationResult<RoleListItemDto>>> Handle(
     GetRolesQuery query,
     CancellationToken cancellationToken)
   {

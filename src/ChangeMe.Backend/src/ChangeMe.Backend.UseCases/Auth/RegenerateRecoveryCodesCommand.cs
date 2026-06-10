@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.Domain.Aggregates.Users;
+using ChangeMe.Backend.Domain.Aggregates.Users;
 using ChangeMe.Backend.Domain.Aggregates.Users.Entities;
 using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UseCases.Auth.Dtos;
@@ -22,7 +22,7 @@ public class RegenerateRecoveryCodesHandler(
   IUserAccessor userAccessor,
   IOptions<AuthOptions> authOptions) : ICommandHandler<RegenerateRecoveryCodesCommand, TwoFactorSetupCompletedDto>
 {
-  public async Task<Result<TwoFactorSetupCompletedDto>> Handle(
+  public async ValueTask<Result<TwoFactorSetupCompletedDto>> Handle(
     RegenerateRecoveryCodesCommand command,
     CancellationToken cancellationToken)
   {

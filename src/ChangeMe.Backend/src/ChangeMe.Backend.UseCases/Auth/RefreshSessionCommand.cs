@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.Domain.Aggregates.Users.Interfaces;
+using ChangeMe.Backend.Domain.Aggregates.Users.Interfaces;
 using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UseCases.Auth.Dtos;
 
@@ -16,7 +16,7 @@ public class RefreshSessionHandler(
   ITwoFactorPolicyEvaluator twoFactorPolicyEvaluator,
   IPasskeyPolicyEvaluator passkeyPolicyEvaluator) : ICommandHandler<RefreshSessionCommand, AuthResponseDto>
 {
-  public async Task<Result<AuthResponseDto>> Handle(RefreshSessionCommand command, CancellationToken cancellationToken)
+  public async ValueTask<Result<AuthResponseDto>> Handle(RefreshSessionCommand command, CancellationToken cancellationToken)
   {
     if (string.IsNullOrWhiteSpace(command.RefreshToken))
       return Result<AuthResponseDto>.Unauthorized();

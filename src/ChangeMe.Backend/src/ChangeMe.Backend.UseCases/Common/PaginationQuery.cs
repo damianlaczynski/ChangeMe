@@ -1,4 +1,4 @@
-﻿using FastEndpoints;
+using FastEndpoints;
 
 namespace ChangeMe.Backend.UseCases.Common;
 

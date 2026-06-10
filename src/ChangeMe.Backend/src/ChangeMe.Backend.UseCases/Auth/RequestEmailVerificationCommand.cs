@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.Domain.Aggregates.Users;
+using ChangeMe.Backend.Domain.Aggregates.Users;
 using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UseCases.Auth.Dtos;
 using ChangeMe.Backend.UseCases.Auth.Utils;
@@ -11,7 +11,7 @@ public class RequestEmailVerificationHandler(
   ApplicationDbContext context,
   UserEmailVerificationService emailVerificationService) : ICommandHandler<RequestEmailVerificationCommand, EmailVerificationAckDto>
 {
-  public async Task<Result<EmailVerificationAckDto>> Handle(
+  public async ValueTask<Result<EmailVerificationAckDto>> Handle(
     RequestEmailVerificationCommand command,
     CancellationToken cancellationToken)
   {

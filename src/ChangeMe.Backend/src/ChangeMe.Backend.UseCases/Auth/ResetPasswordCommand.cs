@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.UseCases.Auth.Utils;
+using ChangeMe.Backend.UseCases.Auth.Utils;
 using ChangeMe.Backend.UseCases.Users.Utils;
 
 namespace ChangeMe.Backend.UseCases.Auth;
@@ -11,7 +11,7 @@ public class ResetPasswordHandler(
   IUserAuthTokenService tokenService,
   IAuthEmailService authEmailService) : ICommandHandler<ResetPasswordCommand, bool>
 {
-  public async Task<Result<bool>> Handle(ResetPasswordCommand command, CancellationToken cancellationToken)
+  public async ValueTask<Result<bool>> Handle(ResetPasswordCommand command, CancellationToken cancellationToken)
   {
     var validateResult = await tokenService.ValidateTokenAsync(
       command.Token,

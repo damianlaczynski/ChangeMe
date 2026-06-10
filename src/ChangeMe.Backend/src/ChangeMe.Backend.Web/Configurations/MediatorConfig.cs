@@ -1,22 +1,19 @@
-﻿using System.Reflection;
-using ChangeMe.Backend.Domain.Aggregates.Issue;
-using ChangeMe.Backend.UseCases.Issues;
+﻿using ChangeMe.Backend.UseCases.Issues;
 
 namespace ChangeMe.Backend.Web.Configurations;
 
 public static class MediatorConfig
 {
-  public static IServiceCollection AddMediator(this IServiceCollection services)
+  public static IServiceCollection AddApplicationMediator(this IServiceCollection services)
   {
-    var mediatRAssemblies = new[]
-      {
-        Assembly.GetAssembly(typeof(Issue)), // Core
-        Assembly.GetAssembly(typeof(GetIssueByIdQuery)) // UseCases
-      };
+    services.AddMediator(static options =>
+    {
+      options.Assemblies = [typeof(GetIssueByIdQuery).Assembly];
+      options.ServiceLifetime = ServiceLifetime.Scoped;
+      options.PipelineBehaviors = [typeof(LoggingBehavior<,>)];
+    });
 
-    services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(mediatRAssemblies!))
-            .AddScoped(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>))
-            .AddScoped<IDomainEventDispatcher, MediatRDomainEventDispatcher>();
+    services.AddScoped<IDomainEventDispatcher, MediatorDomainEventDispatcher>();
 
     return services;
   }

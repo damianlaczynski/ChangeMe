@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.Domain.Aggregates.Users.Entities;
+using ChangeMe.Backend.Domain.Aggregates.Users.Entities;
 using ChangeMe.Backend.Domain.Aggregates.Users.Interfaces;
 using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UseCases.Auth.Dtos;
@@ -15,7 +15,7 @@ public class BeginExternalStepUpHandler(
   IUserAccessor userAccessor,
   IOptions<AuthOptions> authOptions) : ICommandHandler<BeginExternalStepUpCommand, BeginExternalSignInResponseDto>
 {
-  public async Task<Result<BeginExternalSignInResponseDto>> Handle(
+  public async ValueTask<Result<BeginExternalSignInResponseDto>> Handle(
     BeginExternalStepUpCommand command,
     CancellationToken cancellationToken)
   {

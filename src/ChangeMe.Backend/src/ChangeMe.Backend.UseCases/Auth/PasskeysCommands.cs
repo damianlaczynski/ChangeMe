@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using ChangeMe.Backend.Domain.Aggregates.Users;
 using ChangeMe.Backend.Domain.Aggregates.Users.Entities;
 using ChangeMe.Backend.Domain.Aggregates.Users.Interfaces;
@@ -21,7 +21,7 @@ public class BeginPasskeySignInHandler(
   IPasskeyPolicyEvaluator passkeyPolicy,
   IOptions<AuthOptions> authOptions) : ICommandHandler<BeginPasskeySignInCommand, PasskeyCeremonyBeginResponseDto>
 {
-  public async Task<Result<PasskeyCeremonyBeginResponseDto>> Handle(
+  public async ValueTask<Result<PasskeyCeremonyBeginResponseDto>> Handle(
     BeginPasskeySignInCommand command,
     CancellationToken cancellationToken)
   {
@@ -99,7 +99,7 @@ public class CompletePasskeySignInHandler(
   IHttpContextAccessor httpContextAccessor,
   IOptions<AuthOptions> authOptions) : ICommandHandler<CompletePasskeySignInCommand, LoginResponseDto>
 {
-  public async Task<Result<LoginResponseDto>> Handle(
+  public async ValueTask<Result<LoginResponseDto>> Handle(
     CompletePasskeySignInCommand command,
     CancellationToken cancellationToken)
   {
@@ -223,7 +223,7 @@ public class BeginPasskeyRegistrationHandler(
   IRecoveryCodeHasher recoveryCodeHasher,
   IOptions<AuthOptions> authOptions) : ICommandHandler<BeginPasskeyRegistrationCommand, PasskeyCeremonyBeginResponseDto>
 {
-  public async Task<Result<PasskeyCeremonyBeginResponseDto>> Handle(
+  public async ValueTask<Result<PasskeyCeremonyBeginResponseDto>> Handle(
     BeginPasskeyRegistrationCommand command,
     CancellationToken cancellationToken)
   {
@@ -312,7 +312,7 @@ public class CompletePasskeyRegistrationHandler(
   IAuthEmailService authEmailService,
   IOptions<AuthOptions> authOptions) : ICommandHandler<CompletePasskeyRegistrationCommand, MyAccountPasskeyDto>
 {
-  public async Task<Result<MyAccountPasskeyDto>> Handle(
+  public async ValueTask<Result<MyAccountPasskeyDto>> Handle(
     CompletePasskeyRegistrationCommand command,
     CancellationToken cancellationToken)
   {
@@ -431,7 +431,7 @@ public class RenamePasskeyHandler(
   IAuthEmailService authEmailService,
   IOptions<AuthOptions> authOptions) : ICommandHandler<RenamePasskeyCommand, MyAccountPasskeyDto>
 {
-  public async Task<Result<MyAccountPasskeyDto>> Handle(
+  public async ValueTask<Result<MyAccountPasskeyDto>> Handle(
     RenamePasskeyCommand command,
     CancellationToken cancellationToken)
   {
@@ -499,7 +499,7 @@ public class RemovePasskeyHandler(
   IAuthEmailService authEmailService,
   IOptions<AuthOptions> authOptions) : ICommandHandler<RemovePasskeyCommand, bool>
 {
-  public async Task<Result<bool>> Handle(RemovePasskeyCommand command, CancellationToken cancellationToken)
+  public async ValueTask<Result<bool>> Handle(RemovePasskeyCommand command, CancellationToken cancellationToken)
   {
     if (!passkeyPolicy.IsPasskeysEnabledForDeployment())
       return Result<bool>.Forbidden(AuthSessionUtils.PermissionDeniedMessage);
@@ -570,7 +570,7 @@ public class BeginPasskeyStepUpHandler(
   IPasskeyPolicyEvaluator passkeyPolicy,
   IOptions<AuthOptions> authOptions) : ICommandHandler<BeginPasskeyStepUpCommand, PasskeyCeremonyBeginResponseDto>
 {
-  public async Task<Result<PasskeyCeremonyBeginResponseDto>> Handle(
+  public async ValueTask<Result<PasskeyCeremonyBeginResponseDto>> Handle(
     BeginPasskeyStepUpCommand command,
     CancellationToken cancellationToken)
   {
@@ -618,7 +618,7 @@ public class CompletePasskeyStepUpHandler(
   IPasskeyPolicyEvaluator passkeyPolicy,
   IOptions<AuthOptions> authOptions) : ICommandHandler<CompletePasskeyStepUpCommand, bool>
 {
-  public async Task<Result<bool>> Handle(CompletePasskeyStepUpCommand command, CancellationToken cancellationToken)
+  public async ValueTask<Result<bool>> Handle(CompletePasskeyStepUpCommand command, CancellationToken cancellationToken)
   {
     if (!passkeyPolicy.IsPasskeysEnabledForDeployment())
       return Result<bool>.Forbidden(AuthSessionUtils.PermissionDeniedMessage);

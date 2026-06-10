@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.Domain.Aggregates.Roles;
+using ChangeMe.Backend.Domain.Aggregates.Roles;
 using ChangeMe.Backend.Domain.Aggregates.Sessions;
 using ChangeMe.Backend.Domain.Aggregates.Users;
 using ChangeMe.Backend.Domain.Aggregates.Users.Entities;
@@ -28,7 +28,7 @@ public class CompleteExternalSignInHandler(
   IPasskeyPolicyEvaluator passkeyPolicyEvaluator,
   TimeProvider timeProvider) : ICommandHandler<CompleteExternalSignInCommand, ExternalSignInResponseDto>
 {
-  public async Task<Result<ExternalSignInResponseDto>> Handle(
+  public async ValueTask<Result<ExternalSignInResponseDto>> Handle(
     CompleteExternalSignInCommand command,
     CancellationToken cancellationToken)
   {

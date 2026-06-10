@@ -9,6 +9,6 @@
 
   <ItemGroup>
     <PackageReference Include="Ardalis.Result" />
-    <PackageReference Include="MediatR" />
+    <PackageReference Include="Mediator.Abstractions" />
   </ItemGroup>
 </Project>

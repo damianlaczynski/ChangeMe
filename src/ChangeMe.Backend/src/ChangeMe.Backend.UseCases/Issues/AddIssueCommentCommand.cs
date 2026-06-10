@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.UseCases.Issues.Dtos;
+using ChangeMe.Backend.UseCases.Issues.Dtos;
 using ChangeMe.Backend.UseCases.Issues.Services;
 
 namespace ChangeMe.Backend.UseCases.Issues;
@@ -11,7 +11,7 @@ public class AddIssueCommentHandler(
   IUserAccessor userAccessor,
   IssueNotificationService issueNotificationService) : ICommandHandler<AddIssueCommentCommand, IssueDetailsDto>
 {
-  public async Task<Result<IssueDetailsDto>> Handle(AddIssueCommentCommand command, CancellationToken cancellationToken)
+  public async ValueTask<Result<IssueDetailsDto>> Handle(AddIssueCommentCommand command, CancellationToken cancellationToken)
   {
     if (userAccessor.UserId is not Guid actorUserId)
       return Result.Unauthorized();

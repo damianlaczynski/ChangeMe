@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.Domain.Aggregates.Users.Enums;
+using ChangeMe.Backend.Domain.Aggregates.Users.Enums;
 using ChangeMe.Backend.Domain.Aggregates.Users.Interfaces;
 using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UseCases.Auth.Utils;
@@ -18,7 +18,7 @@ public class GetUserByIdHandler(
   IPasskeyPolicyEvaluator passkeyPolicyEvaluator,
   TimeProvider timeProvider) : IQueryHandler<GetUserByIdQuery, UserDetailsDto>
 {
-  public async Task<Result<UserDetailsDto>> Handle(GetUserByIdQuery query, CancellationToken cancellationToken)
+  public async ValueTask<Result<UserDetailsDto>> Handle(GetUserByIdQuery query, CancellationToken cancellationToken)
   {
     var user = await context.Users
       .AsNoTracking()

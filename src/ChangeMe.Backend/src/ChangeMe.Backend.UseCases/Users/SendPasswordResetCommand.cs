@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.Infrastructure.Auth;
+using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UseCases.Users.Dtos;
 using ChangeMe.Backend.UseCases.Users.Utils;
 
@@ -11,7 +11,7 @@ public class SendPasswordResetHandler(
   ApplicationDbContext context,
   UserPasswordResetService passwordResetService) : ICommandHandler<SendPasswordResetCommand, UserDetailsDto>
 {
-  public async Task<Result<UserDetailsDto>> Handle(
+  public async ValueTask<Result<UserDetailsDto>> Handle(
     SendPasswordResetCommand command,
     CancellationToken cancellationToken)
   {

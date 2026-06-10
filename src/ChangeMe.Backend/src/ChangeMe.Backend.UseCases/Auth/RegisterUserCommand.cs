@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.Domain.Aggregates.Roles;
+using ChangeMe.Backend.Domain.Aggregates.Roles;
 using ChangeMe.Backend.Domain.Aggregates.Sessions;
 using ChangeMe.Backend.Domain.Aggregates.Users;
 using ChangeMe.Backend.Infrastructure.Auth;
@@ -27,7 +27,7 @@ public class RegisterUserHandler(
   IOptions<AuthOptions> authOptions,
   IHttpContextAccessor httpContextAccessor) : ICommandHandler<RegisterUserCommand, RegisterUserResponseDto>
 {
-  public async Task<Result<RegisterUserResponseDto>> Handle(
+  public async ValueTask<Result<RegisterUserResponseDto>> Handle(
     RegisterUserCommand command,
     CancellationToken cancellationToken)
   {

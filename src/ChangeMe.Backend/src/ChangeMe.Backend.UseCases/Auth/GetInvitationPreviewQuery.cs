@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.UseCases.Auth.Dtos;
+using ChangeMe.Backend.UseCases.Auth.Dtos;
 
 namespace ChangeMe.Backend.UseCases.Auth;
 
@@ -8,7 +8,7 @@ public class GetInvitationPreviewHandler(
   ApplicationDbContext context,
   IUserAuthTokenService tokenService) : IQueryHandler<GetInvitationPreviewQuery, InvitationPreviewDto>
 {
-  public async Task<Result<InvitationPreviewDto>> Handle(
+  public async ValueTask<Result<InvitationPreviewDto>> Handle(
     GetInvitationPreviewQuery query,
     CancellationToken cancellationToken)
   {

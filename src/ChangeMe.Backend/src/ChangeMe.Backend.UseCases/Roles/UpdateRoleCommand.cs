@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.UseCases.Roles.Dtos;
+using ChangeMe.Backend.UseCases.Roles.Dtos;
 
 using ChangeMe.Backend.UseCases.Roles.Utils;
 
@@ -14,7 +14,7 @@ public class UpdateRoleHandler(
   IMediator mediator,
   ApplicationDbContext context) : ICommandHandler<UpdateRoleCommand, RoleDetailsDto>
 {
-  public async Task<Result<RoleDetailsDto>> Handle(UpdateRoleCommand command, CancellationToken cancellationToken)
+  public async ValueTask<Result<RoleDetailsDto>> Handle(UpdateRoleCommand command, CancellationToken cancellationToken)
   {
     var role = await context.Roles
       .Include(x => x.Permissions)

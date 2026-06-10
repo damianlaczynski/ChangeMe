@@ -20,7 +20,7 @@ public class UploadIssueAttachmentHandler(
   IFileStorageService fileStorageService,
   IssueNotificationService issueNotificationService) : ICommandHandler<UploadIssueAttachmentCommand, IssueAttachmentDto>
 {
-  public async Task<Result<IssueAttachmentDto>> Handle(
+  public async ValueTask<Result<IssueAttachmentDto>> Handle(
     UploadIssueAttachmentCommand command,
     CancellationToken cancellationToken)
   {

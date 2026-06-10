@@ -12,7 +12,7 @@ public class DeleteIssueAttachmentHandler(
   IFileStorageService fileStorageService,
   IssueNotificationService issueNotificationService) : ICommandHandler<DeleteIssueAttachmentCommand, Guid>
 {
-  public async Task<Result<Guid>> Handle(
+  public async ValueTask<Result<Guid>> Handle(
     DeleteIssueAttachmentCommand command,
     CancellationToken cancellationToken)
   {

@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.UseCases.Users.Dtos;
+using ChangeMe.Backend.UseCases.Users.Dtos;
 
 using ChangeMe.Backend.UseCases.Users.Utils;
 
@@ -11,7 +11,7 @@ public class DeactivateUserHandler(
   ApplicationDbContext context,
   IUserAccessor userAccessor) : ICommandHandler<DeactivateUserCommand, UserDetailsDto>
 {
-  public async Task<Result<UserDetailsDto>> Handle(DeactivateUserCommand command, CancellationToken cancellationToken)
+  public async ValueTask<Result<UserDetailsDto>> Handle(DeactivateUserCommand command, CancellationToken cancellationToken)
   {
     if (userAccessor.UserId == command.Id)
       return Result<UserDetailsDto>.Error(UsersUtils.CannotDeactivateOwnAccountMessage);
