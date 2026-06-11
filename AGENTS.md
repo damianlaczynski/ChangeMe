@@ -13,19 +13,19 @@
 - `docker-compose.yml` - local full-stack environment with frontend, backend, SQL Server, and MailHog.
 <!--#endif-->
 - `.config/dotnet-tools.json` - pins **`dotnet-ef`** for `dotnet ef migrations add` (optional; see `docs/technical/database-and-docker.md`).
-- `docs/` - implementation guides, technical docs, and requirements (`docs/README.md` for the full index).
-- `docs/requirements/requirements-change-process.md` - analysts add **pending** deltas to `docs/requirements/changes/`; functional specifications (`FR-*`) under `docs/requirements/functional/<domain>/`; shared NFR and reference docs under `docs/requirements/_shared/`.
+- `docs/` - guides, technical, and requirements (`docs/README.md` for the full index).
+- `docs/guides/README.md`, `docs/technical/README.md`, `docs/requirements/requirements-change-process.md` - entry points per area.
 - Root `package.json` - optional npm scripts that run frontend and backend tasks from the repository root (see Commands).
 
 ## Start here by task
 
-- Frontend change: read `docs/guides/repo-map.md` and `docs/guides/frontend-guidelines.md`.
-- Backend change: read `docs/guides/repo-map.md` and `docs/guides/backend-guidelines.md`.
+- Frontend change: read `docs/guides/README.md`, then `repo-map.md` and `frontend-guidelines.md` under `docs/guides/`.
+- Backend change: read `docs/guides/README.md`, then `repo-map.md` and `backend-guidelines.md` under `docs/guides/`.
 - Test work or bugfix verification: read `docs/guides/testing-guidelines.md`.
 - Cross-stack feature: read all four docs above before editing.
-- Auth deployment, 2FA, or OIDC providers: read `docs/technical/auth-operations-guide.md`.
+- Auth deployment, 2FA, OIDC, Docker, CI, or local stack: read `docs/technical/README.md`, then the linked technical doc.
 - Passkeys / WebAuthn: read `docs/requirements/functional/passkeys/` (start with FR-PKY-001 in `docs/requirements/README.md`).
-- Requirement changes: read `docs/requirements/requirements-change-process.md`; pending deltas in `docs/requirements/changes/`; validate with `npm run requirements:validate`.
+- Requirement changes: read `docs/requirements/requirements-change-process.md`; new or updated `FR-*` authoring rules in `docs/requirements/requirements-authoring-guide.md`; pending deltas in `docs/requirements/changes/`; validate with `npm run requirements:validate`.
 
 ## Commands
 
@@ -39,6 +39,7 @@ From the repository root, run `npm install` once to install root devDependencies
 - Frontend quality: `npm run lint:frontend`, `npm run format:frontend`, `npm run test:frontend` (interactive watch when TTY), or `npm run test:frontend:ci` (single run, `--watch=false`)
 - Backend tests: `npm run test:backend` (entire solution — unit and integration projects), `npm run test:backend:unit`, or `npm run test:backend:integration`
 - Full automated check (frontend CI tests + full backend solution tests, parallel): `npm run test:all` — backend integration tests use Testcontainers and need a running Docker engine
+- CI workflow (GitHub Actions): see `docs/technical/ci.md`
 - EF Core (from repo root; run `npm run ef:restore` once after clone): `npm run ef:migrations:add -- <Name>`, `npm run ef:migrations:remove`, `npm run ef:database:update`
 - Demo data (after migrations; Development only): `npm run data:generate`, or `npm run data:generate -- --reset` — see `docs/technical/data-generator.md`
 - Requirements structure: `npm run requirements:validate` — checks `FR-*` / `NFR-*` specs, cross-references, and regenerates `docs/requirements/README.md`

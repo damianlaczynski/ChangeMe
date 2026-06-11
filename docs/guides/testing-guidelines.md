@@ -12,6 +12,17 @@
 
 **DataGenerator:** integration and unit tests do not use `ChangeMe.Backend.DataGenerator`; they seed data via `IssueTestHelper`, `TestAuthHelper`, and Testcontainers (see `docs/technical/data-generator.md`).
 
+## Continuous integration
+
+Pull requests and pushes to `main` / `master` run the GitHub Actions workflow in `.github/workflows/ci.yml` (requirements validation, frontend test + build, backend test + build). Details: `docs/technical/ci.md`.
+
+CI does **not** run ESLint or formatting checks — run these locally before opening a PR when you touched the matching code:
+
+```powershell
+npm run lint:frontend
+npm run format:check:all
+```
+
 ## From repository root
 
 After `npm install` in the repository root (for `concurrently`), you can run:

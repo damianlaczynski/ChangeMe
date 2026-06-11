@@ -161,10 +161,9 @@ This starts the frontend, backend, MailHog, and the database service defined in 
 
 The `docs/` directory contains guidance that is also shipped into generated solutions (with conditional sections for the selected database). See [`docs/README.md`](docs/README.md) for the full index.
 
-- `docs/guides/` - repo map, frontend/backend/testing guidelines, feature recipes
-- `docs/technical/` - database and Docker, demo data generator, auth operations
-- `docs/requirements/` - functional specifications (`FR-*`), non-functional requirements (`NFR-*`), and shared reference docs
-- `docs/templates/` - reusable document templates (for example `functional-specification-template.md` for new `FR-*` files)
+- `docs/guides/` - implementation conventions (start at `docs/guides/README.md`)
+- `docs/technical/` - run and configure the stack (start at `docs/technical/README.md`)
+- `docs/requirements/` - product specs and change workflow (start at `docs/requirements/requirements-change-process.md`; templates `_functional-specification-template.md`, `_changes-template.md`)
 
 Maintainers of the template package: see [`CONTRIBUTING.md`](CONTRIBUTING.md).
 

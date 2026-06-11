@@ -1,7 +1,7 @@
 # Requirements index
 
 > Functional specifications (`FR-*`), non-functional requirements (`NFR-*`), and reference docs.
-> Process: `docs/requirements/requirements-change-process.md`. Validate: `npm run requirements:validate`.
+> Start: `docs/requirements/requirements-change-process.md`. Authoring: `docs/requirements/requirements-authoring-guide.md`. Validate: `npm run requirements:validate`.
 
 ## Reference documents (`_shared/reference/`)
 
