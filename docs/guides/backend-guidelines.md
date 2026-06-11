@@ -1,4 +1,4 @@
-# Backend Coding Guidelines
+# Backend Guidelines
 
 > Scope: current conventions for implementing backend work in this repository.
 

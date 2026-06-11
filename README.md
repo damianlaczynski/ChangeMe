@@ -85,7 +85,7 @@ PostgreSQL persistence, Hangfire storage, Docker Compose, and integration tests.
 dotnet new changeme -n IssuesDemo -o IssuesDemo --Database SqlServer
 ```
 
-SQL Server persistence, Hangfire storage, Docker Compose, and integration tests. Add an EF Core migration before the first run (see `docs/database-and-docker.md` in the generated tree).
+SQL Server persistence, Hangfire storage, Docker Compose, and integration tests. Add an EF Core migration before the first run (see `docs/technical/database-and-docker.md` in the generated tree).
 
 <!--#endif-->
 
@@ -126,7 +126,7 @@ npm test
 
 ### Backend (this repository)
 
-Add EF Core migrations when working on a clone of this repo (see `docs/database-and-docker.md`). From the **repository root**:
+Add EF Core migrations when working on a clone of this repo (see `docs/technical/database-and-docker.md`). From the **repository root**:
 
 ```powershell
 dotnet tool restore
@@ -159,14 +159,10 @@ This starts the frontend, backend, MailHog, and the database service defined in 
 
 ## Documentation
 
-The `docs/` directory contains guidance that is also shipped into generated solutions (with conditional sections for the selected database):
+The `docs/` directory contains guidance that is also shipped into generated solutions (with conditional sections for the selected database). See [`docs/README.md`](docs/README.md) for the full index.
 
-- `docs/database-and-docker.md` - persistence, Compose, EF migration notes
-- `docs/repo-map.md` - where code lives and which layer owns what
-- `docs/frontend-coding-guidelines.md` - frontend conventions
-- `docs/backend-coding-guidelines.md` - backend conventions
-- `docs/testing-playbook.md` - how to verify changes
-- `docs/feature-recipes.md` - implementation recipes for common feature work
+- `docs/guides/` - repo map, frontend/backend/testing guidelines, feature recipes
+- `docs/technical/` - database and Docker, demo data generator, auth operations
 - `docs/requirements/` - functional specifications (`FR-*`), non-functional requirements (`NFR-*`), and shared reference docs
 - `docs/templates/` - reusable document templates (for example `functional-specification-template.md` for new `FR-*` files)
 
@@ -202,7 +198,7 @@ Use the smallest relevant test scope for the change:
 - backend domain change: unit tests
 - backend endpoint or auth change: integration tests
 
-For more detail, see `docs/testing-playbook.md`.
+For more detail, see `docs/guides/testing-guidelines.md`.
 
 ## License
 

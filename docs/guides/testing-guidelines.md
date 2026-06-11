@@ -1,4 +1,4 @@
-# Testing Playbook
+# Testing Guidelines
 
 > Scope: how to verify changes in this repository and where each kind of test belongs.
 
@@ -8,9 +8,9 @@
 - Backend integration tests: `src/ChangeMe.Backend/tests/ChangeMe.Backend.IntegrationTests`
 - Frontend tests: run through Angular with `npm test` in `src/ChangeMe.Frontend`
 
-**First-time EF migrations:** migration `.cs` files are not shipped. Ensure `Infrastructure/Persistence/Migrations` exists by adding a migration from the solution root before integration tests that call `MigrateAsync()` (see `docs/database-and-docker.md`).
+**First-time EF migrations:** migration `.cs` files are not shipped. Ensure `Infrastructure/Persistence/Migrations` exists by adding a migration from the solution root before integration tests that call `MigrateAsync()` (see `docs/technical/database-and-docker.md`).
 
-**DataGenerator:** integration and unit tests do not use `ChangeMe.Backend.DataGenerator`; they seed data via `IssueTestHelper`, `TestAuthHelper`, and Testcontainers (see `docs/data-generator.md`).
+**DataGenerator:** integration and unit tests do not use `ChangeMe.Backend.DataGenerator`; they seed data via `IssueTestHelper`, `TestAuthHelper`, and Testcontainers (see `docs/technical/data-generator.md`).
 
 ## From repository root
 

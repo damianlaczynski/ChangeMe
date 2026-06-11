@@ -78,7 +78,7 @@ Each current feature follows a simple slice structure:
   - persistence and infrastructure registrations
 - `tools/ChangeMe.Backend.DataGenerator`
   - dev-only console tool for demo/test data (`npm run data:generate`)
-  - see `docs/data-generator.md`
+  - see `docs/technical/data-generator.md`
 
 ### Endpoint flow
 
@@ -111,6 +111,8 @@ Current issue endpoints illustrate the standard flow:
 
 <!--#endif-->
 
-## Operations documentation
+## Technical documentation
 
-- `docs/auth-operations-guide.md` — `AuthOptions` configuration, sign-in flows, 2FA, and external OIDC provider setup.
+- `docs/technical/database-and-docker.md` — EF Core migrations, Docker Compose, file storage
+- `docs/technical/data-generator.md` — optional demo data for local development
+- `docs/technical/auth-operations-guide.md` — `AuthOptions` configuration, sign-in flows, 2FA, and external OIDC provider setup

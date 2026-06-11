@@ -1,4 +1,4 @@
-# Frontend Coding Guidelines
+# Frontend Guidelines
 
 > Scope: current conventions for writing Angular code in this frontend. This file is intentionally short and only documents patterns already present in the repository or immediately adjacent to them.
 

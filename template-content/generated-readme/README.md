@@ -70,7 +70,7 @@ npm test
 
 ### Backend
 
-Create the first EF Core migration before running the API or integration tests that apply the database (see `docs/database-and-docker.md`). From the **solution root**:
+Create the first EF Core migration before running the API or integration tests that apply the database (see `docs/technical/database-and-docker.md`). From the **solution root**:
 
 ```powershell
 dotnet tool restore
@@ -92,7 +92,7 @@ After migrations are applied, from the **repository root**:
 npm run data:generate
 ```
 
-Creates demo users (`user1@demo.local`, password in `DataGenerator:DefaultPassword`), issues, comments, and notifications. Use `npm run data:generate -- --reset` to refresh. See `docs/data-generator.md`.
+Creates demo users (`user1@demo.local`, password in `DataGenerator:DefaultPassword`), issues, comments, and notifications. Use `npm run data:generate -- --reset` to refresh. See `docs/technical/data-generator.md`.
 
 Useful commands:
 
@@ -113,13 +113,10 @@ This starts the frontend, backend, MailHog, and the database service defined in 
 
 ## Documentation
 
-- `docs/database-and-docker.md` - persistence, Compose, EF migration notes
-- `docs/data-generator.md` - optional demo data for local development
-- `docs/repo-map.md` - where code lives and which layer owns what
-- `docs/frontend-coding-guidelines.md` - frontend conventions
-- `docs/backend-coding-guidelines.md` - backend conventions
-- `docs/testing-playbook.md` - how to verify changes
-- `docs/feature-recipes.md` - implementation recipes for common feature work
+See [`docs/README.md`](docs/README.md) for the full index.
+
+- `docs/guides/` - repo map, frontend/backend/testing guidelines, feature recipes
+- `docs/technical/` - database and Docker, demo data generator, auth operations
 - `docs/requirements/` - functional specifications (`FR-*`), non-functional requirements (`NFR-*`), and shared reference docs
 - `docs/templates/` - reusable document templates (for example `functional-specification-template.md` for new `FR-*` files)
 
@@ -144,7 +141,7 @@ Use the smallest relevant test scope for the change:
 - backend domain change: unit tests
 - backend endpoint or auth change: integration tests
 
-See `docs/testing-playbook.md`.
+See `docs/guides/testing-guidelines.md`.
 
 ## License
 

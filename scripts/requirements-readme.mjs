@@ -21,7 +21,7 @@ for (const spec of manifest.functional ?? []) {
 let md = `# Requirements index
 
 > Functional specifications (\`FR-*\`), non-functional requirements (\`NFR-*\`), and reference docs.
-> Process: \`docs/requirements-change-process.md\`. Validate: \`npm run requirements:validate\`.
+> Process: \`docs/requirements/requirements-change-process.md\`. Validate: \`npm run requirements:validate\`.
 
 ## Reference documents (\`_shared/reference/\`)
 

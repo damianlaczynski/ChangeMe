@@ -5,7 +5,7 @@
 ## Add a backend endpoint
 
 1. Create or update the endpoint in `src/ChangeMe.Backend.Web/<Feature>/`.
-2. Pick the endpoint base type (see **Endpoint conventions** in [backend-coding-guidelines.md](backend-coding-guidelines.md)):
+2. Pick the endpoint base type (see **Endpoint conventions** in [backend-guidelines.md](backend-guidelines.md)):
    - `BaseEndpoint<TRequest, TResponse>` when FastEndpoints should bind body, query, or route into `TRequest`
    - `BaseEndpointWithoutRequest<TRequest, TResponse>` when there is no HTTP payload (use a parameterless `record` for `TRequest`)
    - a custom `Endpoint` / `EndpointWithoutRequest` only for multipart upload, binary download, or other non-standard responses
@@ -62,7 +62,7 @@ Use the **Issues attachments** slice as the template for new file features. Shar
    - binary download via `EndpointWithoutRequest`; set `Content-Disposition: attachment` and `X-Content-Type-Options: nosniff`, stream bytes to `Response.Body`; use `HttpContext.SendResultAsync` only for error `Result<T>` responses
 8. Cascade-delete stored files when the owning aggregate is removed.
 9. Add integration tests for happy path, validation failure, auth, and delete authorization.
-10. Document deployment storage (volume, backup, retention) in [database-and-docker.md](database-and-docker.md).
+10. Document deployment storage (volume, backup, retention) in [database-and-docker.md](../technical/database-and-docker.md).
 
 ### Frontend
 

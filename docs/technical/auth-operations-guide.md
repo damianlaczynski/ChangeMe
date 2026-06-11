@@ -553,7 +553,7 @@ Auth flows that send email:
 | Recovery code used                 | 2FA verification or step-up   |
 | External account linked / unlinked | My account / admin unlink     |
 
-Local Docker stack uses **MailHog** (see `docs/database-and-docker.md`). Without SMTP, users stay unverified or never receive links.
+Local Docker stack uses **MailHog** (see `docs/technical/database-and-docker.md`). Without SMTP, users stay unverified or never receive links.
 
 ---
 
