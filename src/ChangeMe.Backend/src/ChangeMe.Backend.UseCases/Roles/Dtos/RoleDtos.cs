@@ -1,4 +1,4 @@
-﻿namespace ChangeMe.Backend.UseCases.Roles.Dtos;
+namespace ChangeMe.Backend.UseCases.Roles.Dtos;
 
 public sealed record RoleListItemDto
 {

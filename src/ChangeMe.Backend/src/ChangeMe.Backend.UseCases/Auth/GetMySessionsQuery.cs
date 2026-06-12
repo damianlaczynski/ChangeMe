@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.Infrastructure.Auth;
+using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UseCases.Auth.Dtos;
 using ChangeMe.Backend.UseCases.Auth.Utils;
 using Microsoft.Extensions.Options;
@@ -13,7 +13,7 @@ public class GetMySessionsHandler(
   ISessionLifetimeService sessionLifetime,
   IOptions<AuthOptions> authOptions) : IQueryHandler<GetMySessionsQuery, PaginationResult<UserSessionDto>>
 {
-  public async Task<Result<PaginationResult<UserSessionDto>>> Handle(
+  public async ValueTask<Result<PaginationResult<UserSessionDto>>> Handle(
     GetMySessionsQuery query,
     CancellationToken cancellationToken)
   {

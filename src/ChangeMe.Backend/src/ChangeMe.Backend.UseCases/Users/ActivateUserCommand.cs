@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.UseCases.Users.Dtos;
+using ChangeMe.Backend.UseCases.Users.Dtos;
 
 namespace ChangeMe.Backend.UseCases.Users;
 
@@ -8,7 +8,7 @@ public class ActivateUserHandler(
   IMediator mediator,
   ApplicationDbContext context) : ICommandHandler<ActivateUserCommand, UserDetailsDto>
 {
-  public async Task<Result<UserDetailsDto>> Handle(ActivateUserCommand command, CancellationToken cancellationToken)
+  public async ValueTask<Result<UserDetailsDto>> Handle(ActivateUserCommand command, CancellationToken cancellationToken)
   {
     var user = await context.Users.FirstOrDefaultAsync(x => x.Id == command.Id, cancellationToken);
     if (user is null)

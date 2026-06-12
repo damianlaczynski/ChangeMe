@@ -4,7 +4,6 @@ using ChangeMe.Backend.Domain.Aggregates.Users.Enums;
 using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UnitTests.Support;
 using ChangeMe.Backend.UseCases.Auth;
-using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -34,7 +33,7 @@ public sealed class RequestEmailChangeHandlerTests
     await context.SaveChangesAsync(cancellationToken);
 
     var handler = new RequestEmailChangeHandler(
-      new UnusedMediator(),
+      new UnusedTestMediator(),
       context,
       passwordHasher,
       new FakeTotpService(),
@@ -66,39 +65,5 @@ public sealed class RequestEmailChangeHandlerTests
       x => x.UserId == user.Id && x.Type == UserAuthTokenType.EmailChangeConfirmation,
       cancellationToken);
     Assert.True(hasToken);
-  }
-
-  private sealed class UnusedMediator : IMediator, IPublisher
-  {
-    public Task<TResponse> Send<TResponse>(
-      IRequest<TResponse> request,
-      CancellationToken cancellationToken = default) =>
-      throw new InvalidOperationException();
-
-    public Task Send<TRequest>(TRequest request, CancellationToken cancellationToken = default)
-      where TRequest : IRequest =>
-      Task.CompletedTask;
-
-    public Task<object?> Send(object request, CancellationToken cancellationToken = default) =>
-      throw new InvalidOperationException();
-
-    public IAsyncEnumerable<TResponse> CreateStream<TResponse>(
-      IStreamRequest<TResponse> request,
-      CancellationToken cancellationToken = default) =>
-      throw new InvalidOperationException();
-
-    public IAsyncEnumerable<object?> CreateStream(
-      object request,
-      CancellationToken cancellationToken = default) =>
-      throw new InvalidOperationException();
-
-    public Task Publish(object notification, CancellationToken cancellationToken = default) =>
-      Task.CompletedTask;
-
-    public Task Publish<TNotification>(
-      TNotification notification,
-      CancellationToken cancellationToken = default)
-      where TNotification : INotification =>
-      Task.CompletedTask;
   }
 }

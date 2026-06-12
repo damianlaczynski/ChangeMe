@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.UseCases.Roles.Dtos;
+using ChangeMe.Backend.UseCases.Roles.Dtos;
 
 using ChangeMe.Backend.UseCases.Roles.Utils;
 
@@ -12,7 +12,7 @@ public sealed class GetRoleByIdQuery : IQuery<RoleDetailsDto>
 public class GetRoleByIdHandler(
   ApplicationDbContext context) : IQueryHandler<GetRoleByIdQuery, RoleDetailsDto>
 {
-  public async Task<Result<RoleDetailsDto>> Handle(GetRoleByIdQuery query, CancellationToken cancellationToken)
+  public async ValueTask<Result<RoleDetailsDto>> Handle(GetRoleByIdQuery query, CancellationToken cancellationToken)
   {
     var role = await context.Roles
       .AsNoTracking()

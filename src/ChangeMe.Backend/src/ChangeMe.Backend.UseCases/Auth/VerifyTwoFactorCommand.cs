@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.Domain.Aggregates.Sessions;
+using ChangeMe.Backend.Domain.Aggregates.Sessions;
 using ChangeMe.Backend.Domain.Aggregates.Users;
 using ChangeMe.Backend.Domain.Aggregates.Users.Entities;
 using ChangeMe.Backend.Domain.Aggregates.Users.Interfaces;
@@ -28,7 +28,7 @@ public class VerifyTwoFactorHandler(
   IOptions<AuthOptions> authOptions,
   IHttpContextAccessor httpContextAccessor) : ICommandHandler<VerifyTwoFactorCommand, AuthResponseDto>
 {
-  public async Task<Result<AuthResponseDto>> Handle(VerifyTwoFactorCommand command, CancellationToken cancellationToken)
+  public async ValueTask<Result<AuthResponseDto>> Handle(VerifyTwoFactorCommand command, CancellationToken cancellationToken)
   {
     var utcNow = DateTime.UtcNow;
     var maxAttempts = authOptions.Value.TwoFactor.MaxFailedVerificationAttempts;

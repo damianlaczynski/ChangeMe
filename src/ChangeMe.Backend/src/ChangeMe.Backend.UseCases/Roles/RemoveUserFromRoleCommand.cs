@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.UseCases.Roles.Utils;
+using ChangeMe.Backend.UseCases.Roles.Utils;
 
 namespace ChangeMe.Backend.UseCases.Roles;
 
@@ -7,7 +7,7 @@ public sealed record RemoveUserFromRoleCommand(Guid RoleId, Guid UserId) : IComm
 public class RemoveUserFromRoleHandler(
   ApplicationDbContext context) : ICommandHandler<RemoveUserFromRoleCommand, bool>
 {
-  public async Task<Result<bool>> Handle(RemoveUserFromRoleCommand command, CancellationToken cancellationToken)
+  public async ValueTask<Result<bool>> Handle(RemoveUserFromRoleCommand command, CancellationToken cancellationToken)
   {
     var roleExists = await context.Roles.AsNoTracking().AnyAsync(x => x.Id == command.RoleId, cancellationToken);
     if (!roleExists)

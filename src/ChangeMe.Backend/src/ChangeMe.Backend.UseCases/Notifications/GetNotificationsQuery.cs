@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.UseCases.Notifications.Dtos;
+using ChangeMe.Backend.UseCases.Notifications.Dtos;
 using ChangeMe.Backend.UseCases.Notifications.Services;
 using FastEndpoints;
 
@@ -18,7 +18,7 @@ public class GetNotificationsHandler(
   IUserAccessor userAccessor,
   NotificationRetentionPolicy retentionPolicy) : IQueryHandler<GetNotificationsQuery, NotificationListDto>
 {
-  public async Task<Result<NotificationListDto>> Handle(
+  public async ValueTask<Result<NotificationListDto>> Handle(
     GetNotificationsQuery query,
     CancellationToken cancellationToken)
   {

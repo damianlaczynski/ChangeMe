@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.Domain.Aggregates.Users;
+using ChangeMe.Backend.Domain.Aggregates.Users;
 using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UseCases.Users.Dtos;
 using ChangeMe.Backend.UseCases.Users.Utils;
@@ -16,7 +16,7 @@ public class InviteUserHandler(
   ApplicationDbContext context,
   UserInvitationService invitationService) : ICommandHandler<InviteUserCommand, UserDetailsDto>
 {
-  public async Task<Result<UserDetailsDto>> Handle(InviteUserCommand command, CancellationToken cancellationToken)
+  public async ValueTask<Result<UserDetailsDto>> Handle(InviteUserCommand command, CancellationToken cancellationToken)
   {
     var normalizedEmail = User.NormalizeEmail(command.Email);
     var emailExists = await context.Users.AnyAsync(x => x.NormalizedEmail == normalizedEmail, cancellationToken);

@@ -1,4 +1,4 @@
-﻿
+
 using ChangeMe.Backend.UseCases.Roles.Utils;
 
 namespace ChangeMe.Backend.UseCases.Roles;
@@ -8,7 +8,7 @@ public sealed record DeleteRoleCommand(Guid Id) : ICommand<bool>;
 public class DeleteRoleHandler(
   ApplicationDbContext context) : ICommandHandler<DeleteRoleCommand, bool>
 {
-  public async Task<Result<bool>> Handle(DeleteRoleCommand command, CancellationToken cancellationToken)
+  public async ValueTask<Result<bool>> Handle(DeleteRoleCommand command, CancellationToken cancellationToken)
   {
     var role = await context.Roles.FirstOrDefaultAsync(x => x.Id == command.Id, cancellationToken);
     if (role is null)

@@ -1,4 +1,4 @@
-﻿namespace ChangeMe.Backend.UseCases.Auth;
+namespace ChangeMe.Backend.UseCases.Auth;
 
 public sealed record LogoutCommand() : ICommand<bool>;
 
@@ -6,7 +6,7 @@ public class LogoutHandler(
   ApplicationDbContext context,
   IUserAccessor userAccessor) : ICommandHandler<LogoutCommand, bool>
 {
-  public async Task<Result<bool>> Handle(LogoutCommand command, CancellationToken cancellationToken)
+  public async ValueTask<Result<bool>> Handle(LogoutCommand command, CancellationToken cancellationToken)
   {
     if (userAccessor.SessionId is not Guid sessionId)
       return Result.Success(true);

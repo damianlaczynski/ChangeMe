@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.Infrastructure.Auth;
+using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UseCases.Auth.Utils;
 using ChangeMe.Backend.UseCases.Users.Dtos;
 using ChangeMe.Backend.UseCases.Users.Utils;
@@ -16,7 +16,7 @@ public class UnlinkUserExternalLoginHandler(
   IMediator mediator,
   IOptions<AuthOptions> authOptions) : ICommandHandler<UnlinkUserExternalLoginCommand, UserDetailsDto>
 {
-  public async Task<Result<UserDetailsDto>> Handle(
+  public async ValueTask<Result<UserDetailsDto>> Handle(
     UnlinkUserExternalLoginCommand command,
     CancellationToken cancellationToken)
   {

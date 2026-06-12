@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.Infrastructure.Auth;
+using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UseCases.Auth.Dtos;
 using ChangeMe.Backend.UseCases.Auth.Utils;
 using ChangeMe.Backend.UseCases.Users.Dtos;
@@ -14,7 +14,7 @@ public class GetMyAccountHandler(
   IUserAccessor userAccessor,
   IOptions<AuthOptions> authOptions) : IQueryHandler<GetMyAccountQuery, MyAccountDto>
 {
-  public async Task<Result<MyAccountDto>> Handle(GetMyAccountQuery query, CancellationToken cancellationToken)
+  public async ValueTask<Result<MyAccountDto>> Handle(GetMyAccountQuery query, CancellationToken cancellationToken)
   {
     if (userAccessor.UserId is not Guid userId)
       return Result<MyAccountDto>.Unauthorized();

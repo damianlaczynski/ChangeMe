@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.Domain.Aggregates.Users.Interfaces;
+using ChangeMe.Backend.Domain.Aggregates.Users.Interfaces;
 using ChangeMe.Backend.UseCases.Auth;
 using ChangeMe.Backend.UseCases.Auth.Utils;
 using ChangeMe.Backend.UseCases.Users.Dtos;
@@ -14,7 +14,7 @@ public class ResetUserPasskeysHandler(
   IAuthEmailService authEmailService,
   IMediator mediator) : ICommandHandler<ResetUserPasskeysCommand, UserDetailsDto>
 {
-  public async Task<Result<UserDetailsDto>> Handle(
+  public async ValueTask<Result<UserDetailsDto>> Handle(
     ResetUserPasskeysCommand command,
     CancellationToken cancellationToken)
   {

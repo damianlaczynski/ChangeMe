@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.UseCases.Roles.Dtos;
+using ChangeMe.Backend.UseCases.Roles.Dtos;
 
 using ChangeMe.Backend.UseCases.Roles.Utils;
 
@@ -9,7 +9,7 @@ public sealed record GetPermissionCatalogQuery() : IQuery<IReadOnlyList<Permissi
 public class GetPermissionCatalogHandler()
   : IQueryHandler<GetPermissionCatalogQuery, IReadOnlyList<PermissionCatalogItemDto>>
 {
-  public async Task<Result<IReadOnlyList<PermissionCatalogItemDto>>> Handle(
+  public async ValueTask<Result<IReadOnlyList<PermissionCatalogItemDto>>> Handle(
     GetPermissionCatalogQuery query,
     CancellationToken cancellationToken)
   {

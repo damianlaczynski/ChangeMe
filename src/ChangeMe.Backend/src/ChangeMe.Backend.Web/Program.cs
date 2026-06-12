@@ -17,7 +17,7 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddDatabase(builder, logger);
 builder.Services.AddHangfire(builder, logger);
 builder.Services.AddInfrastructureServices(builder.Configuration, logger);
-builder.Services.AddMediator();
+builder.Services.AddApplicationMediator();
 builder.Services.AddNotifications(builder, logger);
 builder.Services.AddFileStorage(builder, logger);
 

@@ -14,7 +14,7 @@ public class CancelUserPendingEmailChangeHandler(
   IAuthEmailService authEmailService,
   IUserAuthTokenService tokenService) : ICommandHandler<CancelUserPendingEmailChangeCommand, UserDetailsDto>
 {
-  public async Task<Result<UserDetailsDto>> Handle(
+  public async ValueTask<Result<UserDetailsDto>> Handle(
     CancelUserPendingEmailChangeCommand command,
     CancellationToken cancellationToken)
   {

@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.Infrastructure.Auth;
+using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UseCases.Users.Dtos;
 using ChangeMe.Backend.UseCases.Users.Utils;
 
@@ -11,7 +11,7 @@ public class ResendInvitationHandler(
   ApplicationDbContext context,
   UserInvitationService invitationService) : ICommandHandler<ResendInvitationCommand, UserDetailsDto>
 {
-  public async Task<Result<UserDetailsDto>> Handle(
+  public async ValueTask<Result<UserDetailsDto>> Handle(
     ResendInvitationCommand command,
     CancellationToken cancellationToken)
   {

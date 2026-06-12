@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.Domain.Aggregates.Roles;
+using ChangeMe.Backend.Domain.Aggregates.Roles;
 using ChangeMe.Backend.Domain.Aggregates.Users;
 using ChangeMe.Backend.Domain.Aggregates.Users.Enums;
 using ChangeMe.Backend.Domain.Aggregates.Users.Interfaces;
@@ -26,7 +26,7 @@ public class UpdateUserHandler(
   IUserAuthTokenService tokenService,
   IOptions<AuthOptions> authOptions) : ICommandHandler<UpdateUserCommand, UserDetailsDto>
 {
-  public async Task<Result<UserDetailsDto>> Handle(UpdateUserCommand command, CancellationToken cancellationToken)
+  public async ValueTask<Result<UserDetailsDto>> Handle(UpdateUserCommand command, CancellationToken cancellationToken)
   {
     var user = await context.Users.Include(x => x.Roles).FirstOrDefaultAsync(x => x.Id == command.Id, cancellationToken);
     if (user is null)

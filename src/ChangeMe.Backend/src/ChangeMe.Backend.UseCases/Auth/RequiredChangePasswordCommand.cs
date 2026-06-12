@@ -1,4 +1,4 @@
-﻿
+
 namespace ChangeMe.Backend.UseCases.Auth;
 
 public sealed record RequiredChangePasswordCommand(string NewPassword) : ICommand<bool>;
@@ -9,7 +9,7 @@ public class RequiredChangePasswordHandler(
   IUserAccessor userAccessor,
   IAuthEmailService authEmailService) : ICommandHandler<RequiredChangePasswordCommand, bool>
 {
-  public async Task<Result<bool>> Handle(RequiredChangePasswordCommand command, CancellationToken cancellationToken)
+  public async ValueTask<Result<bool>> Handle(RequiredChangePasswordCommand command, CancellationToken cancellationToken)
   {
     if (userAccessor.UserId is not Guid userId || userAccessor.SessionId is not Guid sessionId)
       return Result<bool>.Unauthorized();

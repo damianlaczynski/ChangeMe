@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.UseCases.Notifications.Services;
+using ChangeMe.Backend.UseCases.Notifications.Services;
 
 namespace ChangeMe.Backend.UseCases.Notifications;
 
@@ -9,7 +9,7 @@ public class MarkAllNotificationsAsReadHandler(
   IUserAccessor userAccessor,
   NotificationRetentionPolicy retentionPolicy) : ICommandHandler<MarkAllNotificationsAsReadCommand, bool>
 {
-  public async Task<Result<bool>> Handle(
+  public async ValueTask<Result<bool>> Handle(
     MarkAllNotificationsAsReadCommand command,
     CancellationToken cancellationToken)
   {

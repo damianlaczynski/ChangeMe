@@ -1,4 +1,4 @@
-﻿namespace ChangeMe.Backend.UseCases.Issues;
+namespace ChangeMe.Backend.UseCases.Issues;
 
 public record WatchIssueCommand(Guid IssueId) : ICommand<IssueWatchStateDto>;
 public record UnwatchIssueCommand(Guid IssueId) : ICommand<IssueWatchStateDto>;
@@ -14,7 +14,7 @@ public class WatchIssueHandler(
   ApplicationDbContext context,
   IUserAccessor userAccessor) : ICommandHandler<WatchIssueCommand, IssueWatchStateDto>
 {
-  public async Task<Result<IssueWatchStateDto>> Handle(WatchIssueCommand command, CancellationToken cancellationToken)
+  public async ValueTask<Result<IssueWatchStateDto>> Handle(WatchIssueCommand command, CancellationToken cancellationToken)
   {
     if (userAccessor.UserId is not Guid actorUserId)
       return Result.Unauthorized();
@@ -46,7 +46,7 @@ public class UnwatchIssueHandler(
   ApplicationDbContext context,
   IUserAccessor userAccessor) : ICommandHandler<UnwatchIssueCommand, IssueWatchStateDto>
 {
-  public async Task<Result<IssueWatchStateDto>> Handle(UnwatchIssueCommand command, CancellationToken cancellationToken)
+  public async ValueTask<Result<IssueWatchStateDto>> Handle(UnwatchIssueCommand command, CancellationToken cancellationToken)
   {
     if (userAccessor.UserId is not Guid actorUserId)
       return Result<IssueWatchStateDto>.Unauthorized();

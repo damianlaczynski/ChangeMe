@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.Domain.Aggregates.Users;
+using ChangeMe.Backend.Domain.Aggregates.Users;
 using ChangeMe.Backend.UseCases.Users.Dtos;
 using ChangeMe.Backend.UseCases.Users.Utils;
 
@@ -15,7 +15,7 @@ public class GetUsersQuery : PaginationQuery<UserListItemDto>
 public class GetUsersHandler(ApplicationDbContext context)
   : IQueryHandler<GetUsersQuery, PaginationResult<UserListItemDto>>
 {
-  public async Task<Result<PaginationResult<UserListItemDto>>> Handle(
+  public async ValueTask<Result<PaginationResult<UserListItemDto>>> Handle(
     GetUsersQuery query,
     CancellationToken cancellationToken)
   {

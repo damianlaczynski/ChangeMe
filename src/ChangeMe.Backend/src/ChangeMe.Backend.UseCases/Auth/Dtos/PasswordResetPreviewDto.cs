@@ -1,4 +1,4 @@
-﻿namespace ChangeMe.Backend.UseCases.Auth.Dtos;
+namespace ChangeMe.Backend.UseCases.Auth.Dtos;
 
 public sealed record PasswordResetPreviewDto
 {

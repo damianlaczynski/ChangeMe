@@ -12,7 +12,7 @@ public class GetIssueAttachmentsHandler(
   ApplicationDbContext context,
   IUserAccessor userAccessor) : IQueryHandler<GetIssueAttachmentsQuery, PaginationResult<IssueAttachmentDto>>
 {
-  public async Task<Result<PaginationResult<IssueAttachmentDto>>> Handle(
+  public async ValueTask<Result<PaginationResult<IssueAttachmentDto>>> Handle(
     GetIssueAttachmentsQuery query,
     CancellationToken cancellationToken)
   {

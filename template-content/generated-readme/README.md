@@ -16,7 +16,7 @@ This codebase gives you:
 ## Tech Stack
 
 - Frontend: Angular 21, TypeScript, RxJS
-- Backend: ASP.NET Core, FastEndpoints, MediatR-style use case flow
+- Backend: ASP.NET Core, FastEndpoints, Mediator source generator use case flow
 <!--#if (PostgreSQL) -->
 - Database: PostgreSQL
   <!--#endif-->

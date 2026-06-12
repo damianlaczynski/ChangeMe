@@ -13,7 +13,7 @@
 
   <ItemGroup>
     <PackageReference Include="Ardalis.Result" />
-    <PackageReference Include="MediatR" />
+    <PackageReference Include="Mediator.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Options" />
     <PackageReference Include="FastEndpoints" />
     <PackageReference Include="Hangfire.Core" />

@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.Domain.Aggregates.Issue;
+using ChangeMe.Backend.Domain.Aggregates.Issue;
 using ChangeMe.Backend.Domain.Aggregates.Issue.Enums;
 using ChangeMe.Backend.UseCases.Issues.Dtos;
 using ChangeMe.Backend.UseCases.Issues.Services;
@@ -23,7 +23,7 @@ public class UpdateIssueHandler(
   IUserAccessor userAccessor,
   IssueNotificationService issueNotificationService) : ICommandHandler<UpdateIssueCommand, IssueDetailsDto>
 {
-  public async Task<Result<IssueDetailsDto>> Handle(UpdateIssueCommand command, CancellationToken cancellationToken)
+  public async ValueTask<Result<IssueDetailsDto>> Handle(UpdateIssueCommand command, CancellationToken cancellationToken)
   {
     if (userAccessor.UserId is not Guid actorUserId)
       return Result.Unauthorized();

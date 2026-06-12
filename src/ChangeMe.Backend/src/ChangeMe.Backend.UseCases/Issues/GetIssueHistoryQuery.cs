@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.UseCases.Issues.Dtos;
+using ChangeMe.Backend.UseCases.Issues.Dtos;
 using ChangeMe.Backend.UseCases.Issues.Utils;
 
 namespace ChangeMe.Backend.UseCases.Issues;
@@ -11,7 +11,7 @@ public sealed class GetIssueHistoryQuery : PaginationQuery<IssueHistoryEntryDto>
 public class GetIssueHistoryHandler(ApplicationDbContext context)
   : IQueryHandler<GetIssueHistoryQuery, PaginationResult<IssueHistoryEntryDto>>
 {
-  public async Task<Result<PaginationResult<IssueHistoryEntryDto>>> Handle(
+  public async ValueTask<Result<PaginationResult<IssueHistoryEntryDto>>> Handle(
     GetIssueHistoryQuery query,
     CancellationToken cancellationToken)
   {

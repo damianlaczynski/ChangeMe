@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.UseCases.Users.Dtos;
+using ChangeMe.Backend.UseCases.Users.Dtos;
 using ChangeMe.Backend.UseCases.Users.Utils;
 
 namespace ChangeMe.Backend.UseCases.Users;
@@ -11,7 +11,7 @@ public sealed class PreviewEffectivePermissionsQuery : IQuery<IReadOnlyList<Effe
 public class PreviewEffectivePermissionsHandler(ApplicationDbContext context)
   : IQueryHandler<PreviewEffectivePermissionsQuery, IReadOnlyList<EffectivePermissionDto>>
 {
-  public async Task<Result<IReadOnlyList<EffectivePermissionDto>>> Handle(
+  public async ValueTask<Result<IReadOnlyList<EffectivePermissionDto>>> Handle(
     PreviewEffectivePermissionsQuery query,
     CancellationToken cancellationToken)
   {

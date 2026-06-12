@@ -1,4 +1,4 @@
-﻿namespace ChangeMe.Backend.UseCases.Auth;
+namespace ChangeMe.Backend.UseCases.Auth;
 
 public sealed record RevokeMySessionCommand(Guid SessionId) : ICommand<bool>;
 
@@ -6,7 +6,7 @@ public class RevokeMySessionHandler(
   ApplicationDbContext context,
   IUserAccessor userAccessor) : ICommandHandler<RevokeMySessionCommand, bool>
 {
-  public async Task<Result<bool>> Handle(RevokeMySessionCommand command, CancellationToken cancellationToken)
+  public async ValueTask<Result<bool>> Handle(RevokeMySessionCommand command, CancellationToken cancellationToken)
   {
     if (userAccessor.UserId is not Guid userId)
       return Result<bool>.Unauthorized();

@@ -7,7 +7,7 @@ global using ChangeMe.Backend.Domain.Common;
 global using ChangeMe.Backend.Infrastructure.Common;
 global using ChangeMe.Backend.Infrastructure.Persistence;
 global using ChangeMe.Backend.UseCases.Common;
-global using MediatR;
+global using IMediator = Mediator.IMediator;
 global using Microsoft.EntityFrameworkCore;
 
 

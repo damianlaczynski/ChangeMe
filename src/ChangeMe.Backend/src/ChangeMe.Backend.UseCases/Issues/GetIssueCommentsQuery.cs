@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.UseCases.Issues.Dtos;
+using ChangeMe.Backend.UseCases.Issues.Dtos;
 using ChangeMe.Backend.UseCases.Issues.Utils;
 
 namespace ChangeMe.Backend.UseCases.Issues;
@@ -11,7 +11,7 @@ public sealed class GetIssueCommentsQuery : PaginationQuery<IssueCommentDto>
 public class GetIssueCommentsHandler(ApplicationDbContext context)
   : IQueryHandler<GetIssueCommentsQuery, PaginationResult<IssueCommentDto>>
 {
-  public async Task<Result<PaginationResult<IssueCommentDto>>> Handle(
+  public async ValueTask<Result<PaginationResult<IssueCommentDto>>> Handle(
     GetIssueCommentsQuery query,
     CancellationToken cancellationToken)
   {

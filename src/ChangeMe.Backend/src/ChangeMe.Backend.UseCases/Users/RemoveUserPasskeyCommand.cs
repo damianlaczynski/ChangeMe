@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.Domain.Aggregates.Users.Interfaces;
+using ChangeMe.Backend.Domain.Aggregates.Users.Interfaces;
 using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UseCases.Auth;
 using ChangeMe.Backend.UseCases.Auth.Utils;
@@ -16,7 +16,7 @@ public class RemoveUserPasskeyHandler(
   IOptions<AuthOptions> authOptions,
   IMediator mediator) : ICommandHandler<RemoveUserPasskeyCommand, UserDetailsDto>
 {
-  public async Task<Result<UserDetailsDto>> Handle(
+  public async ValueTask<Result<UserDetailsDto>> Handle(
     RemoveUserPasskeyCommand command,
     CancellationToken cancellationToken)
   {

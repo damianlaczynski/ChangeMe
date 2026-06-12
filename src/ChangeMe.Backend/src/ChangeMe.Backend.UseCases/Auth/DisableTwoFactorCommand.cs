@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.Infrastructure.Auth;
+using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UseCases.Auth.Utils;
 using Microsoft.Extensions.Options;
 
@@ -19,7 +19,7 @@ public class DisableTwoFactorHandler(
   IUserAccessor userAccessor,
   IOptions<AuthOptions> authOptions) : ICommandHandler<DisableTwoFactorCommand, bool>
 {
-  public async Task<Result<bool>> Handle(DisableTwoFactorCommand command, CancellationToken cancellationToken)
+  public async ValueTask<Result<bool>> Handle(DisableTwoFactorCommand command, CancellationToken cancellationToken)
   {
     if (userAccessor.UserId is not Guid userId)
       return Result<bool>.Unauthorized();

@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.Infrastructure.Auth;
+using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.Infrastructure.Auth.Passkey;
 using ChangeMe.Backend.UseCases.Auth.Dtos;
 using Microsoft.Extensions.Options;
@@ -10,7 +10,7 @@ public sealed record GetAuthSettingsQuery() : IQuery<AuthSettingsDto>;
 public class GetAuthSettingsHandler(IOptions<AuthOptions> options)
   : IQueryHandler<GetAuthSettingsQuery, AuthSettingsDto>
 {
-  public Task<Result<AuthSettingsDto>> Handle(GetAuthSettingsQuery query, CancellationToken cancellationToken)
+  public ValueTask<Result<AuthSettingsDto>> Handle(GetAuthSettingsQuery query, CancellationToken cancellationToken)
   {
     var auth = options.Value;
     var policy = auth.PasswordPolicy;
@@ -73,6 +73,6 @@ public class GetAuthSettingsHandler(IOptions<AuthOptions> options)
       }
     };
 
-    return Task.FromResult(Result.Success(dto));
+    return ValueTask.FromResult(Result.Success(dto));
   }
 }

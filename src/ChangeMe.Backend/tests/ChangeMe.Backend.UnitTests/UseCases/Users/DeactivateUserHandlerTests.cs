@@ -1,14 +1,10 @@
 ﻿using Ardalis.Result;
 using ChangeMe.Backend.Domain.Aggregates.Roles;
 using ChangeMe.Backend.Domain.Aggregates.Users;
-using ChangeMe.Backend.Domain.Aggregates.Users.Enums;
-using ChangeMe.Backend.Domain.Aggregates.Users.Interfaces;
 using ChangeMe.Backend.Infrastructure.Auth;
-using ChangeMe.Backend.Infrastructure.Persistence;
 using ChangeMe.Backend.UnitTests.Support;
 using ChangeMe.Backend.UseCases.Users;
 using ChangeMe.Backend.UseCases.Users.Utils;
-using MediatR;
 using Microsoft.EntityFrameworkCore;
 
 namespace ChangeMe.Backend.UnitTests.UseCases.Users;
@@ -40,7 +36,7 @@ public sealed class DeactivateUserHandlerTests
     await context.SaveChangesAsync(cancellationToken);
 
     var handler = new DeactivateUserHandler(
-      new StubMediator(context),
+      new GetUserByIdDispatchingTestMediator(context),
       context,
       new FakeUserAccessor { UserId = actingAdminId });
 
@@ -82,7 +78,7 @@ public sealed class DeactivateUserHandlerTests
     await context.SaveChangesAsync(cancellationToken);
 
     var handler = new DeactivateUserHandler(
-      new StubMediator(context),
+      new GetUserByIdDispatchingTestMediator(context),
       context,
       new FakeUserAccessor { UserId = otherAdmin.Id });
 
@@ -116,7 +112,7 @@ public sealed class DeactivateUserHandlerTests
     await context.SaveChangesAsync(cancellationToken);
 
     var handler = new DeactivateUserHandler(
-      new StubMediator(context),
+      new GetUserByIdDispatchingTestMediator(context),
       context,
       new FakeUserAccessor { UserId = Guid.NewGuid() });
 
@@ -124,85 +120,5 @@ public sealed class DeactivateUserHandlerTests
 
     Assert.True(result.IsSuccess);
     Assert.False((await context.Users.FindAsync([user.Id], cancellationToken))!.IsActive);
-  }
-
-  private sealed class StubUserAuthTokenService : IUserAuthTokenService
-  {
-    public Task<DateTime?> GetActiveUnusedTokenExpiresAtUtcAsync(
-      Guid userId,
-      UserAuthTokenType type,
-      CancellationToken cancellationToken = default) =>
-      Task.FromResult<DateTime?>(null);
-
-    public Task<Result<string>> IssueTokenAsync(
-      Guid userId,
-      UserAuthTokenType type,
-      DateTime? issuedAtUtc = null,
-      CancellationToken cancellationToken = default) =>
-      throw new NotSupportedException();
-
-    public Task<Result<Guid>> ValidateTokenAsync(
-      string plainToken,
-      UserAuthTokenType type,
-      CancellationToken cancellationToken = default) =>
-      throw new NotSupportedException();
-
-    public Task MarkTokenUsedAsync(string plainToken, CancellationToken cancellationToken = default) =>
-      throw new NotSupportedException();
-
-    public Task InvalidateUnusedTokensAsync(
-      Guid userId,
-      UserAuthTokenType type,
-      CancellationToken cancellationToken = default) =>
-      throw new NotSupportedException();
-  }
-
-  private sealed class StubMediator(ApplicationDbContext context) : IMediator, IPublisher
-  {
-    public async Task<TResponse> Send<TResponse>(
-      IRequest<TResponse> request,
-      CancellationToken cancellationToken = default)
-    {
-      if (request is GetUserByIdQuery getUserQuery)
-      {
-        var handler = new GetUserByIdHandler(
-          context,
-          new PasswordExpirationEvaluator(TestAuthOptions.Create()),
-          new StubUserAuthTokenService(),
-          TestAuthOptions.Create(),
-          new PasskeyPolicyEvaluator(TestAuthOptions.Create()),
-          TimeProvider.System);
-        var result = await handler.Handle(getUserQuery, cancellationToken);
-        return (TResponse)(object)result;
-      }
-
-      throw new NotSupportedException($"Unsupported request: {request.GetType().Name}");
-    }
-
-    public Task Send<TRequest>(TRequest request, CancellationToken cancellationToken = default)
-      where TRequest : IRequest =>
-      Task.CompletedTask;
-
-    public Task<object?> Send(object request, CancellationToken cancellationToken = default) =>
-      throw new NotSupportedException();
-
-    public IAsyncEnumerable<TResponse> CreateStream<TResponse>(
-      IStreamRequest<TResponse> request,
-      CancellationToken cancellationToken = default) =>
-      throw new NotSupportedException();
-
-    public IAsyncEnumerable<object?> CreateStream(
-      object request,
-      CancellationToken cancellationToken = default) =>
-      throw new NotSupportedException();
-
-    public Task Publish(object notification, CancellationToken cancellationToken = default) =>
-      Task.CompletedTask;
-
-    public Task Publish<TNotification>(
-      TNotification notification,
-      CancellationToken cancellationToken = default)
-      where TNotification : INotification =>
-      Task.CompletedTask;
   }
 }
