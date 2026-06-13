@@ -34,7 +34,7 @@
       <p-panel header="Profile" [toggleable]="true">
         <div class="grid gap-4 sm:grid-cols-2">
           <div class="flex flex-col gap-1.5">
-            <label for="firstName">{{ firstNameLabel() }}</label>
+            <label for="firstName">First name</label>
             <input
               id="firstName"
               type="text"
@@ -44,7 +44,7 @@
             />
           </div>
           <div class="flex flex-col gap-1.5">
-            <label for="lastName">{{ lastNameLabel() }}</label>
+            <label for="lastName">Last name</label>
             <input
               id="lastName"
               type="text"
@@ -54,12 +54,6 @@
             />
           </div>
         </div>
-
-        @if (showExternalLoginEmailWarning()) {
-          <p-message severity="warn" class="mt-4">
-            {{ UserMessages.externalLoginEmailWarning }}
-          </p-message>
-        }
 
         <div class="mt-4 flex flex-col gap-1.5">
           <label for="email">Email</label>

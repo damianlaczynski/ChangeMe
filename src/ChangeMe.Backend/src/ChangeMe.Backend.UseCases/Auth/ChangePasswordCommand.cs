@@ -7,8 +7,7 @@ public sealed record ChangePasswordCommand(
 public class ChangePasswordHandler(
   ApplicationDbContext context,
   IPasswordHasher passwordHasher,
-  IUserAccessor userAccessor,
-  IAuthEmailService authEmailService) : ICommandHandler<ChangePasswordCommand, bool>
+  IUserAccessor userAccessor) : ICommandHandler<ChangePasswordCommand, bool>
 {
   public async ValueTask<Result<bool>> Handle(ChangePasswordCommand command, CancellationToken cancellationToken)
   {
@@ -40,8 +39,6 @@ public class ChangePasswordHandler(
 
     await LogoutAllSessionsHandler.RevokeAllActiveSessionsAsync(context, userId, cancellationToken);
     await context.SaveChangesAsync(cancellationToken);
-
-    await authEmailService.SendPasswordChangedAsync(user, cancellationToken);
 
     return Result.Success(true);
   }

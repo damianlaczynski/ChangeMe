@@ -4,7 +4,7 @@ title: Deactivate and Activate Accounts
 domain: users
 type: functional
 status: active
-depends_on: [FR-AUTH-011, FR-ISS-002, FR-ROL-006]
+depends_on: [FR-ISS-002, FR-ROL-006]
 inherits_nfr:
   [NFR-QUAL-001, NFR-A11Y-001, NFR-I18N-001, NFR-PERF-001, NFR-RSP-001]
 inherits_fr: [FR-UI-001]
@@ -36,7 +36,7 @@ An authorized administrator must be able to set **Deactivated** to **true** or *
   - **Deactivated at** is cleared;
   - show message **`User activated.`**;
   - refresh the current screen in place.
-- Activation does **not** restore previously revoked sessions and does **not** by itself complete invitation or email verification.
+- Activation does **not** restore previously revoked sessions.
 
 ### Business rules
 
@@ -48,7 +48,6 @@ An authorized administrator must be able to set **Deactivated** to **true** or *
 ### Assignable users
 
 - Assignable-user lists include only users with **Deactivated** false.
-- When email verification is enabled (FR-AUTH-011), assignable users must also have a **verified email** and a **local password**.
 - Each option shows **Display label** (`displayLabel`): **`{first name} {last name} ({email})`** or **Email** only when both names are empty.
 
 ### Permissions and visibility

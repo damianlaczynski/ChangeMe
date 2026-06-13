@@ -6,9 +6,9 @@ namespace ChangeMe.Backend.UnitTests;
 public sealed class UserTests
 {
   [Fact]
-  public void CreateWithPassword_WhenInputIsValid_ShouldTrimValuesAndSetAccountFields()
+  public void Create_WhenInputIsValid_ShouldTrimValuesAndSetAccountFields()
   {
-    var result = User.CreateWithPassword("  John  ", "  Doe  ", " Test@Example.com ", "  hashed-password  ");
+    var result = User.Create("  John  ", "  Doe  ", " Test@Example.com ", "  hashed-password  ");
 
     Assert.True(result.IsSuccess);
     var user = result.Value;
@@ -17,81 +17,44 @@ public sealed class UserTests
     Assert.Equal("Test@Example.com", user.Email);
     Assert.Equal("TEST@EXAMPLE.COM", user.NormalizedEmail);
     Assert.Equal("hashed-password", user.PasswordHash);
-    Assert.True(user.HasPasswordSet);
-    Assert.True(user.EmailVerified);
-    Assert.NotNull(user.EmailVerifiedAt);
-    Assert.NotNull(user.PasswordLastChangedAt);
     Assert.False(user.Deactivated);
+    Assert.True(user.IsActive);
     Assert.Equal("John Doe (Test@Example.com)", user.DisplayLabel);
-  }
-
-  [Fact]
-  public void CreateInvited_WhenNamesAreOmitted_ShouldAllowPendingProfile()
-  {
-    var result = User.CreateInvited("invite@example.com");
-
-    Assert.True(result.IsSuccess);
-    var user = result.Value;
-    Assert.Equal(string.Empty, user.FirstName);
-    Assert.Equal(string.Empty, user.LastName);
-    Assert.False(user.HasPasswordSet);
-    Assert.Equal(string.Empty, user.PasswordHash);
-    Assert.Equal("invite@example.com", user.DisplayLabel);
-    Assert.True(user.EmailVerified);
   }
 
   [Fact]
   public void DisplayLabel_WhenProfileIsComplete_ShouldIncludeNameAndEmail()
   {
-    var user = User.CreateWithPassword("Jan", "Kowalski", "jan@example.com", "hash").Value;
+    var user = User.Create("Jan", "Kowalski", "jan@example.com", "hash").Value;
 
     Assert.Equal("Jan Kowalski (jan@example.com)", user.DisplayLabel);
-  }
-
-  [Fact]
-  public void DisplayLabel_WhenOnlyFirstNameIsSet_ShouldIncludeFirstNameAndEmail()
-  {
-    var user = User.CreateInvited("jan@example.com", "Jan").Value;
-
-    Assert.Equal("Jan (jan@example.com)", user.DisplayLabel);
-  }
-
-  [Fact]
-  public void CreateInvited_WhenOptionalNamesProvided_ShouldTrimValues()
-  {
-    var result = User.CreateInvited("invite@example.com", "  Ada  ", "  Lovelace  ");
-
-    Assert.True(result.IsSuccess);
-    Assert.Equal("Ada", result.Value.FirstName);
-    Assert.Equal("Lovelace", result.Value.LastName);
-    Assert.Equal("Ada Lovelace (invite@example.com)", result.Value.DisplayLabel);
   }
 
   [Theory]
   [InlineData("")]
   [InlineData(" ")]
   [InlineData("invalid-email")]
-  public void CreateWithPassword_WhenEmailIsInvalid_ShouldReturnInvalidResult(string email)
+  public void Create_WhenEmailIsInvalid_ShouldReturnInvalidResult(string email)
   {
-    var result = User.CreateWithPassword("John", "Doe", email, "hashed-password");
+    var result = User.Create("John", "Doe", email, "hashed-password");
 
     Assert.False(result.IsSuccess);
     Assert.Equal(ResultStatus.Invalid, result.Status);
   }
 
   [Fact]
-  public void CreateWithPassword_WhenNamesAreMissing_ShouldReturnInvalidResult()
+  public void Create_WhenNamesAreMissing_ShouldReturnInvalidResult()
   {
-    var result = User.CreateWithPassword("", " ", "john@example.com", "hashed-password");
+    var result = User.Create("", " ", "john@example.com", "hashed-password");
 
     Assert.False(result.IsSuccess);
     Assert.Equal(ResultStatus.Invalid, result.Status);
   }
 
   [Fact]
-  public void CreateWithPassword_WhenPasswordHashIsMissing_ShouldReturnInvalidResult()
+  public void Create_WhenPasswordHashIsMissing_ShouldReturnInvalidResult()
   {
-    var result = User.CreateWithPassword("John", "Doe", "john@example.com", " ");
+    var result = User.Create("John", "Doe", "john@example.com", " ");
 
     Assert.False(result.IsSuccess);
     Assert.Equal(ResultStatus.Invalid, result.Status);
@@ -101,7 +64,7 @@ public sealed class UserTests
   [Fact]
   public void Deactivate_WhenCalled_ShouldSetDeactivatedAt()
   {
-    var user = User.CreateWithPassword("John", "Doe", "john@example.com", "hash").Value;
+    var user = User.Create("John", "Doe", "john@example.com", "hash").Value;
 
     user.Deactivate();
 
@@ -113,13 +76,14 @@ public sealed class UserTests
   [Fact]
   public void Activate_WhenCalled_ShouldClearDeactivatedAt()
   {
-    var user = User.CreateWithPassword("John", "Doe", "john@example.com", "hash").Value;
+    var user = User.Create("John", "Doe", "john@example.com", "hash").Value;
     user.Deactivate();
 
     user.Activate();
 
     Assert.False(user.Deactivated);
     Assert.Null(user.DeactivatedAt);
+    Assert.True(user.IsActive);
   }
 
   [Theory]
@@ -133,151 +97,36 @@ public sealed class UserTests
   }
 
   [Fact]
-  public void CompleteInvitationViaExternalSignIn_WhenInvitationPending_ShouldClearInvitationAndFillProfile()
+  public void UpdateProfile_WhenInputIsValid_ShouldTrimValues()
   {
-    var utcNow = DateTime.UtcNow;
-    var user = User.CreateInvited("invite@example.com").Value;
-    user.RecordInvitationIssued(utcNow, utcNow.AddHours(72));
+    var user = User.Create("John", "Doe", "john@example.com", "hash").Value;
 
-    var result = user.CompleteInvitationViaExternalSignIn("Oidc", "User", utcNow);
+    var result = user.UpdateProfile("  Jane  ", "  Smith  ");
 
     Assert.True(result.IsSuccess);
-    Assert.False(user.HasPendingInvitation);
-    Assert.True(user.EmailVerified);
-    Assert.Equal("Oidc", user.FirstName);
-    Assert.Equal("User", user.LastName);
+    Assert.Equal("Jane", user.FirstName);
+    Assert.Equal("Smith", user.LastName);
   }
 
   [Fact]
-  public void CompleteInvitationViaExternalSignIn_WhenProfileAlreadyComplete_ShouldKeepExistingNames()
+  public void SetPasswordHash_WhenHashIsValid_ShouldUpdatePasswordHash()
   {
-    var utcNow = DateTime.UtcNow;
-    var user = User.CreateInvited("invite@example.com", "Admin", "Created").Value;
-    user.RecordInvitationIssued(utcNow, utcNow.AddHours(72));
+    var user = User.Create("John", "Doe", "john@example.com", "old-hash").Value;
 
-    var result = user.CompleteInvitationViaExternalSignIn("Oidc", "User", utcNow);
+    var result = user.SetPasswordHash("new-hash");
 
     Assert.True(result.IsSuccess);
-    Assert.Equal("Admin", user.FirstName);
-    Assert.Equal("Created", user.LastName);
+    Assert.Equal("new-hash", user.PasswordHash);
   }
 
   [Fact]
-  public void CompleteInvitationViaExternalSignIn_WhenPasswordAlreadySet_ShouldFail()
+  public void SetPasswordHash_WhenHashIsMissing_ShouldReturnInvalidResult()
   {
-    var user = User.CreateWithPassword("John", "Doe", "john@example.com", "hash").Value;
+    var user = User.Create("John", "Doe", "john@example.com", "hash").Value;
 
-    var result = user.CompleteInvitationViaExternalSignIn("Oidc", "User", DateTime.UtcNow);
+    var result = user.SetPasswordHash(" ");
 
     Assert.False(result.IsSuccess);
-  }
-
-  [Fact]
-  public void CompleteInvitationViaExternalSignIn_WhenNoInvitationPending_ShouldFail()
-  {
-    var user = User.CreateInvited("invite@example.com").Value;
-
-    var result = user.CompleteInvitationViaExternalSignIn("Oidc", "User", DateTime.UtcNow);
-
-    Assert.False(result.IsSuccess);
-  }
-
-  [Fact]
-  public void GetPendingInvitationExpiry_WhenTokenMissing_UsesSnapshotAndMarksLinkExpired()
-  {
-    var utcNow = DateTime.UtcNow;
-    var linkExpiresAtUtc = utcNow.AddHours(72);
-    var user = User.CreateInvited("invite@example.com").Value;
-    user.RecordInvitationIssued(utcNow, linkExpiresAtUtc);
-
-    var expiry = user.GetPendingInvitationExpiry(utcNow, null);
-
-    Assert.NotNull(expiry);
-    Assert.Equal(utcNow, expiry.Value.LastSentAtUtc);
-    Assert.Equal(linkExpiresAtUtc, expiry.Value.ExpiresAtUtc);
-    Assert.True(expiry.Value.IsLinkExpired);
-  }
-
-  [Fact]
-  public void GetPendingInvitationExpiry_WhenTokenExpired_UsesSnapshotExpiry()
-  {
-    var utcNow = new DateTime(2026, 5, 25, 12, 0, 0, DateTimeKind.Utc);
-    var sentAt = utcNow.AddHours(-48);
-    var tokenExpiresAt = sentAt.AddHours(24);
-    var user = User.CreateInvited("invite@example.com").Value;
-    user.RecordInvitationIssued(sentAt, tokenExpiresAt);
-
-    var expiry = user.GetPendingInvitationExpiry(utcNow, tokenExpiresAt);
-
-    Assert.NotNull(expiry);
-    Assert.Equal(sentAt, expiry.Value.LastSentAtUtc);
-    Assert.Equal(tokenExpiresAt, expiry.Value.ExpiresAtUtc);
-    Assert.True(expiry.Value.IsLinkExpired);
-  }
-
-  [Fact]
-  public void GetPendingInvitationExpiry_WhenTokenValid_ShouldNotMarkLinkExpired()
-  {
-    var utcNow = DateTime.UtcNow;
-    var linkExpiresAtUtc = utcNow.AddHours(72);
-    var user = User.CreateInvited("invite@example.com").Value;
-    user.RecordInvitationIssued(utcNow, linkExpiresAtUtc);
-
-    var expiry = user.GetPendingInvitationExpiry(utcNow, linkExpiresAtUtc);
-
-    Assert.NotNull(expiry);
-    Assert.False(expiry.Value.IsLinkExpired);
-  }
-
-  [Fact]
-  public void RecordInvitationIssued_WhenResent_ShouldRevokePreviousAndKeepSinglePending()
-  {
-    var utcNow = DateTime.UtcNow;
-    var user = User.CreateInvited("invite@example.com").Value;
-
-    user.RecordInvitationIssued(utcNow, utcNow.AddHours(72));
-    user.RecordInvitationIssued(utcNow.AddMinutes(5), utcNow.AddMinutes(5).AddHours(72));
-
-    Assert.Equal(utcNow.AddMinutes(5), user.PendingInvitationSentAtUtc);
-    Assert.Equal(1, user.AccountInvitations.Count(x => x.IsPending));
-    Assert.Equal(1, user.AccountInvitations.Count(x => !x.IsPending));
-  }
-
-  [Fact]
-  public void CancelPendingInvitations_WhenPendingExists_ShouldRevokeAllPending()
-  {
-    var utcNow = DateTime.UtcNow;
-    var user = User.CreateInvited("invite@example.com").Value;
-    user.RecordInvitationIssued(utcNow, utcNow.AddHours(72));
-
-    var result = user.CancelPendingInvitations(utcNow.AddMinutes(1));
-
-    Assert.True(result.IsSuccess);
-    Assert.False(user.HasPendingInvitation);
-    Assert.Null(user.PendingInvitationSentAtUtc);
-  }
-
-  [Fact]
-  public void CancelPendingInvitations_WhenNoPending_ShouldFail()
-  {
-    var user = User.CreateInvited("invite@example.com").Value;
-
-    var result = user.CancelPendingInvitations(DateTime.UtcNow);
-
-    Assert.False(result.IsSuccess);
-  }
-
-  [Fact]
-  public void AcceptPendingInvitation_WhenPendingExists_ShouldMarkAccepted()
-  {
-    var utcNow = DateTime.UtcNow;
-    var user = User.CreateInvited("invite@example.com").Value;
-    user.RecordInvitationIssued(utcNow, utcNow.AddHours(72));
-
-    var result = user.AcceptPendingInvitation(utcNow);
-
-    Assert.True(result.IsSuccess);
-    Assert.Null(user.PendingInvitationSentAtUtc);
-    Assert.All(user.AccountInvitations, invitation => Assert.False(invitation.IsPending));
+    Assert.Equal(ResultStatus.Invalid, result.Status);
   }
 }

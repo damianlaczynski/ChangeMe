@@ -19,7 +19,7 @@ status: active
 ## Security presentation
 
 - Error messages do not reveal whether an account exists when the functional specification requires ambiguity (for example login — FR-AUTH-001).
-- Sensitive actions use **step-up authentication** when the functional specification references it (passkeys, two-factor).
+- Sensitive actions use confirmation dialogs when the functional specification requires them (for example password change — FR-AUTH-005).
 - Permission denial copy is uniform: **`You do not have permission to perform this action.`**
 
 ## How to reference in a functional specification

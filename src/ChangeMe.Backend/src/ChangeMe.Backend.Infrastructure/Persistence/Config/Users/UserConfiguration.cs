@@ -35,34 +35,6 @@ public class UserConfiguration : BaseEntityTypeConfiguration<User>
 
     builder.Property(x => x.DeactivatedAt);
 
-    builder.Property(x => x.HasPasswordSet)
-      .IsRequired();
-
-    builder.Property(x => x.EmailVerified)
-      .IsRequired();
-
-    builder.Property(x => x.EmailVerifiedAt);
-    builder.Property(x => x.PasswordLastChangedAt);
-
-    builder.Property(x => x.TwoFactorEnabled)
-      .IsRequired();
-
-    builder.Property(x => x.TwoFactorEnabledAt);
-
-    builder.Property(x => x.TwoFactorSecretCiphertext)
-      .IsRequired()
-      .HasMaxLength(TwoFactorConstraints.ENCRYPTED_SECRET_MAX_LENGTH);
-
-    builder.Property(x => x.PasskeyStepUpCompletedAt);
-
-    builder.Property(x => x.PendingNewEmail)
-      .HasMaxLength(UserConstraints.EMAIL_MAX_LENGTH);
-
-    builder.Property(x => x.PendingNewEmailNormalized)
-      .HasMaxLength(UserConstraints.EMAIL_MAX_LENGTH);
-
-    builder.Property(x => x.PendingEmailChangeRequestedAtUtc);
-
     builder.HasIndex(x => x.NormalizedEmail)
       .IsUnique();
 
@@ -72,38 +44,6 @@ public class UserConfiguration : BaseEntityTypeConfiguration<User>
       .OnDelete(DeleteBehavior.Cascade);
 
     builder.Navigation(x => x.Roles)
-      .UsePropertyAccessMode(PropertyAccessMode.Field);
-
-    builder.HasMany(x => x.ExternalLogins)
-      .WithOne(x => x.User)
-      .HasForeignKey(x => x.UserId)
-      .OnDelete(DeleteBehavior.Cascade);
-
-    builder.Navigation(x => x.ExternalLogins)
-      .UsePropertyAccessMode(PropertyAccessMode.Field);
-
-    builder.HasMany(x => x.RecoveryCodes)
-      .WithOne(x => x.User)
-      .HasForeignKey(x => x.UserId)
-      .OnDelete(DeleteBehavior.Cascade);
-
-    builder.Navigation(x => x.RecoveryCodes)
-      .UsePropertyAccessMode(PropertyAccessMode.Field);
-
-    builder.HasMany(x => x.AccountInvitations)
-      .WithOne()
-      .HasForeignKey(x => x.UserId)
-      .OnDelete(DeleteBehavior.Cascade);
-
-    builder.Navigation(x => x.AccountInvitations)
-      .UsePropertyAccessMode(PropertyAccessMode.Field);
-
-    builder.HasMany(x => x.Passkeys)
-      .WithOne(x => x.User)
-      .HasForeignKey(x => x.UserId)
-      .OnDelete(DeleteBehavior.Cascade);
-
-    builder.Navigation(x => x.Passkeys)
       .UsePropertyAccessMode(PropertyAccessMode.Field);
   }
 }

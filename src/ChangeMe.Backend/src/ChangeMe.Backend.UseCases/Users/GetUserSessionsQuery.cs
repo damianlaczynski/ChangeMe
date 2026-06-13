@@ -1,7 +1,6 @@
 using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UseCases.Users.Dtos;
 using ChangeMe.Backend.UseCases.Users.Utils;
-using Microsoft.Extensions.Options;
 
 namespace ChangeMe.Backend.UseCases.Users;
 
@@ -12,8 +11,7 @@ public sealed class GetUserSessionsQuery : PaginationQuery<AdminUserSessionDto>
 
 public class GetUserSessionsHandler(
   ApplicationDbContext context,
-  ISessionLifetimeService sessionLifetime,
-  IOptions<AuthOptions> authOptions) : IQueryHandler<GetUserSessionsQuery, PaginationResult<AdminUserSessionDto>>
+  ISessionLifetimeService sessionLifetime) : IQueryHandler<GetUserSessionsQuery, PaginationResult<AdminUserSessionDto>>
 {
   public async ValueTask<Result<PaginationResult<AdminUserSessionDto>>> Handle(
     GetUserSessionsQuery query,
@@ -33,7 +31,7 @@ public class GetUserSessionsHandler(
       .Where(x => x.UserId == query.Id && x.RevokedAt == null)
       .ToListAsync(cancellationToken);
 
-    var activeSessions = UsersUtils.MapActiveSessions(sessions, utcNow, sessionLifetime, authOptions.Value).AsQueryable();
+    var activeSessions = UsersUtils.MapActiveSessions(sessions, utcNow, sessionLifetime).AsQueryable();
 
     query.PaginationParameters.SortField = MapSortField(query.PaginationParameters.SortField);
 

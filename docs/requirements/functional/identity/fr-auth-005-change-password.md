@@ -4,7 +4,7 @@ title: Change Password
 domain: identity
 type: functional
 status: active
-depends_on: [FR-AUTH-001, FR-AUTH-007, FR-AUTH-008, FR-AUTH-009]
+depends_on: [FR-AUTH-001, FR-AUTH-008]
 inherits_nfr:
   [NFR-QUAL-001, NFR-A11Y-001, NFR-I18N-001, NFR-PERF-001, NFR-RSP-001]
 inherits_fr: [FR-UI-001]
@@ -53,9 +53,7 @@ The signed-in user must be able to change their password securely.
 
 - Only authenticated users with **Deactivated** false can access **Change password**.
 - After a successful password change, the user is signed out on **every device** and must sign in again with the new password (FR-AUTH-001).
-- On success, **password last changed at** is updated (FR-AUTH-009).
 - Password rules follow **Password policy** (FR-AUTH-008).
-- On success, the system sends a **Password changed** email (FR-AUTH-007).
 
 ## Non-functional requirements
 

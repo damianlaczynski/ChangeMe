@@ -8,64 +8,35 @@ namespace ChangeMe.Backend.UnitTests.UseCases.Issues;
 public sealed class GetAssignableUsersHandlerTests
 {
   [Fact]
-  public async Task Handle_WhenEmailVerificationDisabled_IncludesUnverifiedUsersWithPassword()
+  public async Task Handle_ReturnsActiveUsersOrderedByName()
   {
     var cancellationToken = TestContext.Current.CancellationToken;
-    await using var context = UseCasesTestDb.Create(
-      nameof(Handle_WhenEmailVerificationDisabled_IncludesUnverifiedUsersWithPassword));
+    await using var context = UseCasesTestDb.Create(nameof(Handle_ReturnsActiveUsersOrderedByName));
 
     var passwordHasher = new PasswordHasherAdapter();
-    var unverified = User.CreateWithPassword(
-      "Unverified",
+    var activeUser = User.Create(
+      "Active",
       "User",
-      "unverified@example.com",
-      passwordHasher.HashPassword("StrongPass123!"),
-      emailVerified: false).Value;
+      "active@example.com",
+      passwordHasher.HashPassword("StrongPass123!")).Value;
+    var deactivatedUser = User.Create(
+      "Deactivated",
+      "User",
+      "deactivated@example.com",
+      passwordHasher.HashPassword("StrongPass123!")).Value;
+    deactivatedUser.Deactivate();
 
-    await context.Users.AddAsync(unverified, cancellationToken);
+    await context.Users.AddRangeAsync(activeUser, deactivatedUser);
     await context.SaveChangesAsync(cancellationToken);
 
-    var handler = new GetAssignableUsersHandler(context, TestAuthOptions.Create());
+    var handler = new GetAssignableUsersHandler(context);
     var result = await handler.Handle(new GetAssignableUsersQuery(), cancellationToken);
 
     Assert.True(result.IsSuccess);
-    Assert.Contains(result.Value, x => x.Id == unverified.Id);
-  }
-
-  [Fact]
-  public async Task Handle_WhenEmailVerificationEnabled_ExcludesUnverifiedUsers()
-  {
-    var cancellationToken = TestContext.Current.CancellationToken;
-    await using var context = UseCasesTestDb.Create(
-      nameof(Handle_WhenEmailVerificationEnabled_ExcludesUnverifiedUsers));
-
-    var passwordHasher = new PasswordHasherAdapter();
-    var unverified = User.CreateWithPassword(
-      "Unverified",
-      "User",
-      "unverified@example.com",
-      passwordHasher.HashPassword("StrongPass123!"),
-      emailVerified: false).Value;
-    var verified = User.CreateWithPassword(
-      "Verified",
-      "User",
-      "verified@example.com",
-      passwordHasher.HashPassword("StrongPass123!"),
-      emailVerified: true).Value;
-
-    await context.Users.AddRangeAsync([unverified, verified], cancellationToken);
-    await context.SaveChangesAsync(cancellationToken);
-
-    var handler = new GetAssignableUsersHandler(
-      context,
-      TestAuthOptions.Create(emailVerificationEnabled: true));
-    var result = await handler.Handle(new GetAssignableUsersQuery(), cancellationToken);
-
-    Assert.True(result.IsSuccess);
-    Assert.DoesNotContain(result.Value, x => x.Id == unverified.Id);
-    Assert.Contains(result.Value, x => x.Id == verified.Id);
+    Assert.Contains(result.Value, x => x.Id == activeUser.Id);
+    Assert.DoesNotContain(result.Value, x => x.Id == deactivatedUser.Id);
     Assert.Equal(
-      "Verified User (verified@example.com)",
-      result.Value.Single(x => x.Id == verified.Id).DisplayLabel);
+      "Active User (active@example.com)",
+      result.Value.Single(x => x.Id == activeUser.Id).DisplayLabel);
   }
 }

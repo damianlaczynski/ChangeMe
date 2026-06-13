@@ -9,7 +9,6 @@ import {
   Validators
 } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { PasswordPolicySettings } from '@features/auth/models/auth.model';
 import { AuthService } from '@features/auth/services/auth.service';
 import { AuthMessages } from '@features/auth/utils/auth.utils';
 import {
@@ -66,17 +65,6 @@ export class ChangePasswordComponent {
     { validators: [newPasswordMatchValidator] }
   );
 
-  constructor() {
-    this.applyPasswordPolicy(defaultPasswordPolicySettings());
-
-    this.authService
-      .getAuthSettings()
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (settings) => this.applyPasswordPolicy(settings.passwordPolicy)
-      });
-  }
-
   onSubmit(): void {
     this.submitError.set(null);
 
@@ -124,11 +112,6 @@ export class ChangePasswordComponent {
 
   shouldShowError(control: FormControl<string>): boolean {
     return control.touched && control.invalid;
-  }
-
-  private applyPasswordPolicy(policy: PasswordPolicySettings): void {
-    this.form.controls.newPassword.setValidators(buildPasswordPolicyValidators(policy));
-    this.form.controls.newPassword.updateValueAndValidity();
   }
 }
 

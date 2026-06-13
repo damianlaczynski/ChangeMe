@@ -6,18 +6,10 @@ namespace ChangeMe.Backend.Domain.Aggregates.Users;
 public class User : Entity, IAggregateRoot
 {
   private readonly List<UserRole> roles = [];
-  private readonly List<ExternalLogin> externalLogins = [];
-  private readonly List<UserRecoveryCode> recoveryCodes = [];
-  private readonly List<AccountInvitation> accountInvitations = [];
-  private readonly List<PasskeyCredential> passkeys = [];
 
   private User() { }
 
   public IReadOnlyCollection<UserRole> Roles => roles;
-  public IReadOnlyCollection<ExternalLogin> ExternalLogins => externalLogins;
-  public IReadOnlyCollection<UserRecoveryCode> RecoveryCodes => recoveryCodes;
-  public IReadOnlyCollection<AccountInvitation> AccountInvitations => accountInvitations;
-  public IReadOnlyCollection<PasskeyCredential> Passkeys => passkeys;
 
   public string FirstName { get; private set; } = string.Empty;
   public string LastName { get; private set; } = string.Empty;
@@ -26,38 +18,21 @@ public class User : Entity, IAggregateRoot
   public string PasswordHash { get; private set; } = string.Empty;
   public bool Deactivated { get; private set; }
   public DateTime? DeactivatedAt { get; private set; }
-  public bool HasPasswordSet { get; private set; }
-  public bool EmailVerified { get; private set; }
-  public DateTime? EmailVerifiedAt { get; private set; }
-  public DateTime? PasswordLastChangedAt { get; private set; }
-  public bool TwoFactorEnabled { get; private set; }
-  public DateTime? TwoFactorEnabledAt { get; private set; }
-  public string TwoFactorSecretCiphertext { get; private set; } = string.Empty;
-  public DateTime? PasskeyStepUpCompletedAt { get; private set; }
-  public string? PendingNewEmail { get; private set; }
-  public string? PendingNewEmailNormalized { get; private set; }
-  public DateTime? PendingEmailChangeRequestedAtUtc { get; private set; }
-
-  public bool HasPendingEmailChange => !string.IsNullOrWhiteSpace(PendingNewEmail);
 
   public bool IsActive => !Deactivated;
-  public bool HasCompleteProfile =>
-    !string.IsNullOrWhiteSpace(FirstName) && !string.IsNullOrWhiteSpace(LastName);
 
   public string DisplayLabel => UserDisplayFormat.DisplayLabel(FirstName, LastName, Email);
 
-  public static Result<User> CreateWithPassword(
+  public static Result<User> Create(
     string firstName,
     string lastName,
     string email,
-    string passwordHash,
-    bool emailVerified = true)
+    string passwordHash)
   {
     var validationErrors = ValidateWithPassword(firstName, lastName, email, passwordHash);
     if (validationErrors.Count > 0)
       return Result.Invalid(validationErrors);
 
-    var utcNow = DateTime.UtcNow;
     var user = new User
     {
       FirstName = firstName.Trim(),
@@ -65,41 +40,6 @@ public class User : Entity, IAggregateRoot
       Email = email.Trim(),
       NormalizedEmail = NormalizeEmail(email),
       PasswordHash = passwordHash.Trim(),
-      HasPasswordSet = true,
-      PasswordLastChangedAt = utcNow,
-      EmailVerified = emailVerified,
-      EmailVerifiedAt = emailVerified ? utcNow : null,
-      CreatedBy = Guid.Empty,
-      UpdatedBy = Guid.Empty,
-    };
-
-    return Result.Success(user);
-  }
-
-  public static Result<User> CreateInvited(
-    string email,
-    string? firstName = null,
-    string? lastName = null,
-    bool emailVerified = true)
-  {
-    var validationErrors = new List<ValidationError>();
-    ValidateEmail(email, validationErrors);
-    ValidateOptionalName(firstName, nameof(FirstName), validationErrors);
-    ValidateOptionalName(lastName, nameof(LastName), validationErrors);
-
-    if (validationErrors.Count > 0)
-      return Result.Invalid(validationErrors);
-
-    var utcNow = DateTime.UtcNow;
-    var user = new User
-    {
-      FirstName = firstName?.Trim() ?? string.Empty,
-      LastName = lastName?.Trim() ?? string.Empty,
-      Email = email.Trim(),
-      NormalizedEmail = NormalizeEmail(email),
-      HasPasswordSet = false,
-      EmailVerified = emailVerified,
-      EmailVerifiedAt = emailVerified ? utcNow : null,
       CreatedBy = Guid.Empty,
       UpdatedBy = Guid.Empty,
     };
@@ -124,25 +64,15 @@ public class User : Entity, IAggregateRoot
   public Result UpdateAdminProfile(string firstName, string lastName, string email)
   {
     var validationErrors = new List<ValidationError>();
-
-    if (HasPasswordSet)
-    {
-      ValidateName(firstName, nameof(FirstName), validationErrors);
-      ValidateName(lastName, nameof(LastName), validationErrors);
-    }
-    else
-    {
-      ValidateOptionalName(firstName, nameof(FirstName), validationErrors);
-      ValidateOptionalName(lastName, nameof(LastName), validationErrors);
-    }
-
+    ValidateName(firstName, nameof(FirstName), validationErrors);
+    ValidateName(lastName, nameof(LastName), validationErrors);
     ValidateEmail(email, validationErrors);
 
     if (validationErrors.Count > 0)
       return Result.Invalid(validationErrors);
 
-    FirstName = firstName?.Trim() ?? string.Empty;
-    LastName = lastName?.Trim() ?? string.Empty;
+    FirstName = firstName.Trim();
+    LastName = lastName.Trim();
     Email = email.Trim();
     NormalizedEmail = NormalizeEmail(email);
     return Result.Success();
@@ -154,8 +84,6 @@ public class User : Entity, IAggregateRoot
       return Result.Invalid(new ValidationError(nameof(PasswordHash), "cannot be null or empty"));
 
     PasswordHash = newPasswordHash.Trim();
-    HasPasswordSet = true;
-    PasswordLastChangedAt = DateTime.UtcNow;
     return Result.Success();
   }
 
@@ -172,149 +100,6 @@ public class User : Entity, IAggregateRoot
   {
     Deactivated = false;
     DeactivatedAt = null;
-  }
-
-  public void MarkEmailVerified()
-  {
-    if (EmailVerified)
-      return;
-
-    EmailVerified = true;
-    EmailVerifiedAt = DateTime.UtcNow;
-  }
-
-  public bool HasPendingInvitation => GetActivePendingInvitation() is not null;
-
-  public DateTime? PendingInvitationSentAtUtc => GetActivePendingInvitation()?.SentAtUtc;
-
-  public (DateTime LastSentAtUtc, DateTime ExpiresAtUtc, bool IsLinkExpired)? GetPendingInvitationExpiry(
-    DateTime utcNow,
-    DateTime? unusedInvitationTokenExpiresAtUtc)
-  {
-    var pending = GetActivePendingInvitation();
-    if (pending is null)
-      return null;
-
-    var hasValidUnusedToken = unusedInvitationTokenExpiresAtUtc is not null
-      && utcNow < unusedInvitationTokenExpiresAtUtc.Value;
-
-    return (pending.SentAtUtc, pending.LinkExpiresAtUtc, !hasValidUnusedToken);
-  }
-
-  public Result<AccountInvitation> RecordInvitationIssued(
-    DateTime sentAtUtc,
-    DateTime linkExpiresAtUtc)
-  {
-    foreach (var invitation in accountInvitations.Where(x => x.IsPending))
-      invitation.Revoke(sentAtUtc);
-
-    var createResult = AccountInvitation.Create(Id, sentAtUtc, linkExpiresAtUtc);
-    if (!createResult.IsSuccess)
-      return createResult.Map();
-
-    accountInvitations.Add(createResult.Value);
-    return createResult;
-  }
-
-  public Result CancelPendingInvitations(DateTime revokedAtUtc)
-  {
-    var pendingInvitations = accountInvitations.Where(x => x.IsPending).ToList();
-    if (pendingInvitations.Count == 0)
-      return Result.Error("No invitation is pending.");
-
-    foreach (var invitation in pendingInvitations)
-      invitation.Revoke(revokedAtUtc);
-
-    return Result.Success();
-  }
-
-  public Result AcceptPendingInvitation(DateTime acceptedAtUtc)
-  {
-    var pending = GetActivePendingInvitation();
-    if (pending is null)
-      return Result.Error("No invitation is pending.");
-
-    pending.Accept(acceptedAtUtc);
-    return Result.Success();
-  }
-
-  public Result CompleteInvitationViaExternalSignIn(string? firstName, string? lastName, DateTime acceptedAtUtc)
-  {
-    if (HasPasswordSet)
-      return Result.Error("Invitation was already accepted.");
-
-    if (!HasCompleteProfile
-        && !string.IsNullOrWhiteSpace(firstName)
-        && !string.IsNullOrWhiteSpace(lastName))
-    {
-      var profileResult = UpdateProfile(firstName, lastName);
-      if (!profileResult.IsSuccess)
-        return profileResult;
-    }
-
-    var acceptResult = AcceptPendingInvitation(acceptedAtUtc);
-    if (!acceptResult.IsSuccess)
-      return acceptResult;
-
-    MarkEmailVerified();
-    return Result.Success();
-  }
-
-  private AccountInvitation? GetActivePendingInvitation() =>
-    accountInvitations
-      .Where(x => x.IsPending)
-      .OrderByDescending(x => x.SentAtUtc)
-      .FirstOrDefault();
-
-  public Result EnableTwoFactor(string encryptedSecret, DateTime utcNow)
-  {
-    if (string.IsNullOrWhiteSpace(encryptedSecret))
-      return Result.Invalid(new ValidationError(nameof(TwoFactorSecretCiphertext), "cannot be null or empty"));
-
-    if (encryptedSecret.Length > TwoFactorConstraints.ENCRYPTED_SECRET_MAX_LENGTH)
-      return Result.Invalid(new ValidationError(
-        nameof(TwoFactorSecretCiphertext),
-        $"cannot be longer than {TwoFactorConstraints.ENCRYPTED_SECRET_MAX_LENGTH} characters"));
-
-    TwoFactorEnabled = true;
-    TwoFactorEnabledAt = utcNow;
-    TwoFactorSecretCiphertext = encryptedSecret.Trim();
-    return Result.Success();
-  }
-
-  public void DisableTwoFactor()
-  {
-    TwoFactorEnabled = false;
-    TwoFactorEnabledAt = null;
-    TwoFactorSecretCiphertext = string.Empty;
-    recoveryCodes.Clear();
-  }
-
-  public Result AddExternalLogin(ExternalLogin externalLogin)
-  {
-    if (externalLogins.Any(x =>
-          x.ProviderKey.Equals(externalLogin.ProviderKey, StringComparison.OrdinalIgnoreCase)))
-      return Result.Error("This provider is already linked to the account.");
-
-    externalLogins.Add(externalLogin);
-    return Result.Success();
-  }
-
-  public Result RemoveExternalLogin(string providerKey)
-  {
-    var login = externalLogins.FirstOrDefault(x =>
-      x.ProviderKey.Equals(providerKey, StringComparison.OrdinalIgnoreCase));
-    if (login is null)
-      return Result.NotFound();
-
-    externalLogins.Remove(login);
-    return Result.Success();
-  }
-
-  public void ReplaceRecoveryCodes(IEnumerable<UserRecoveryCode> codes)
-  {
-    recoveryCodes.Clear();
-    recoveryCodes.AddRange(codes);
   }
 
   public Result ReplaceRoles(IEnumerable<Guid> roleIds)
@@ -351,7 +136,7 @@ public class User : Entity, IAggregateRoot
       return Result.NotFound();
 
     if (roles.Count <= 1)
-      return Result.Error("Each user must have at least one role.Assign another role before removing this one.");
+      return Result.Error("Each user must have at least one role. Assign another role before removing this one.");
 
     roles.Remove(assignment);
     return Result.Success();
@@ -410,62 +195,6 @@ public class User : Entity, IAggregateRoot
     if (value.Trim().Length > UserConstraints.NAME_MAX_LENGTH)
       validationErrors.Add(new ValidationError(propertyName, $"cannot be longer than {UserConstraints.NAME_MAX_LENGTH} characters"));
   }
-
-  private static void ValidateOptionalName(
-    string? value,
-    string propertyName,
-    ICollection<ValidationError> validationErrors)
-  {
-    if (string.IsNullOrWhiteSpace(value))
-      return;
-
-    if (value.Trim().Length > UserConstraints.NAME_MAX_LENGTH)
-      validationErrors.Add(new ValidationError(propertyName, $"cannot be longer than {UserConstraints.NAME_MAX_LENGTH} characters"));
-  }
-
-  public Result BeginPendingEmailChange(string newEmail, DateTime requestedAtUtc)
-  {
-    var validationErrors = new List<ValidationError>();
-    ValidateEmail(newEmail, validationErrors);
-
-    if (validationErrors.Count > 0)
-      return Result.Invalid(validationErrors);
-
-    var normalizedNew = NormalizeEmail(newEmail);
-    if (normalizedNew == NormalizedEmail)
-      return Result.Error("New email must differ from your current email.");
-
-    PendingNewEmail = newEmail.Trim();
-    PendingNewEmailNormalized = normalizedNew;
-    PendingEmailChangeRequestedAtUtc = requestedAtUtc;
-    return Result.Success();
-  }
-
-  public void CancelPendingEmailChange()
-  {
-    PendingNewEmail = null;
-    PendingNewEmailNormalized = null;
-    PendingEmailChangeRequestedAtUtc = null;
-  }
-
-  public Result ConfirmPendingEmailChange(DateTime confirmedAtUtc)
-  {
-    if (!HasPendingEmailChange || PendingNewEmail is null)
-      return Result.Error("No email change is pending.");
-
-    Email = PendingNewEmail;
-    NormalizedEmail = PendingNewEmailNormalized!;
-    CancelPendingEmailChange();
-    EmailVerified = true;
-    EmailVerifiedAt = confirmedAtUtc;
-    return Result.Success();
-  }
-
-  public void RecordPasskeyStepUp(DateTime utcNow) => PasskeyStepUpCompletedAt = utcNow;
-
-  public bool IsPasskeyStepUpFresh(DateTime utcNow, int validityMinutes) =>
-    PasskeyStepUpCompletedAt.HasValue
-    && PasskeyStepUpCompletedAt.Value.AddMinutes(validityMinutes) > utcNow;
 }
 
 public static class UserConstraints

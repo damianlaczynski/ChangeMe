@@ -1,16 +1,13 @@
 ---
 id: FR-USR-003
-title: Edit User (Admin)
+title: Create and Edit User (Admin)
 domain: users
 type: functional
 status: active
 depends_on:
   [
-    FR-AUTH-007,
-    FR-AUTH-011,
-    FR-AUTH-014,
-    FR-AUTH-015,
-    FR-INV-001,
+    FR-AUTH-001,
+    FR-AUTH-008,
     FR-ROL-001,
     FR-ROL-005,
   ]
@@ -21,13 +18,11 @@ inherits_fr: [FR-UI-001]
 
 ## Goal
 
-An authorized administrator must be able to update an existing user's profile, role assignments, and deactivation state.
-
-**Invite user** (new account + first invitation): FR-INV-001.
+An authorized administrator must be able to create a new user with a password and role assignments, and update an existing user's profile, role assignments, and deactivation state.
 
 ## Functional requirements
 
-### Permissions preview (edit)
+### Permissions preview (create and edit)
 
 - Below the **Roles** field, a read-only section **Permissions** shows the union of permissions from the currently selected roles (FR-ROL-001).
 - Each permission row shows:
@@ -41,51 +36,62 @@ An authorized administrator must be able to update an existing user's profile, r
 - The section is read-only; it does not replace the **Roles** field for assignment.
 - The preview is shown only when the **Roles** field is visible (requires **Roles.Manage**).
 
+### Create user screen
+
+- Screen: **Create user**
+- Requires permission **Users.Manage** and **Roles.Manage** (FR-ROL-005).
+
+| Field                | Behavior                                                                       |
+| -------------------- | ------------------------------------------------------------------------------ |
+| **First name**       | Text field, **required**; max **100** characters.                              |
+| **Last name**        | Text field, **required**; max **100** characters.                              |
+| **Email**            | Text field, **required**; valid email; max **320** characters; must be unique. |
+| **Password**         | Password field, **required**; **8–128** characters.                            |
+| **Confirm password** | **Required**; must match **Password**.                                         |
+| **Roles**            | Same rules as edit (FR-ROL-005); visible and editable only with **Roles.Manage**. |
+
+- Password rules follow **Password policy** (FR-AUTH-008).
+- **Deactivated** is **not** shown on **Create user**; new users are created with **Deactivated** false.
+
 ### Edit user screen
 
 - Screen: **Edit user**
 - Requires permission **Users.Manage**.
 
-| Field           | Behavior                                                                                                                            |
-| --------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| **First name**  | **Required** once the user **has a local password**; **optional** while **awaiting invitation acceptance**; max **100** characters. |
-| **Last name**   | **Required** once the user **has a local password**; **optional** while **awaiting invitation acceptance**; max **100** characters. |
-| **Email**       | **Required**; valid email; unique; max **320** characters.                                                                          |
-| **Roles**       | Same rules as create (FR-ROL-005); visible and editable only with **Roles.Manage**.                                                 |
-| **Deactivated** | Checkbox; editable only with **Users.Deactivate**; label **`Deactivated`**. When checked, **Status** becomes **`Deactivated`**.     |
+| Field           | Behavior                                                                                        |
+| --------------- | ----------------------------------------------------------------------------------------------- |
+| **First name**  | **Required**; max **100** characters.                                                           |
+| **Last name**   | **Required**; max **100** characters.                                                           |
+| **Email**       | **Required**; valid email; unique; max **320** characters.                                      |
+| **Roles**       | Same rules as create (FR-ROL-005); visible and editable only with **Roles.Manage**.             |
+| **Deactivated** | Checkbox; editable only with **Users.Deactivate**; label **`Deactivated`**. When checked, **Status** becomes **`Deactivated`**. |
 
-- **Password** fields are **not shown** on **Edit user**.
-- When **External providers enabled** is **true** and the edited user has at least one **External login**, show persistent notice: **`External sign-in stays linked. Profile email is used for notifications; provider addresses may differ.`** (FR-AUTH-014).
+- **Password** fields are **not shown** on **Edit user**; password changes are self-service via **Change password** (FR-AUTH-005).
 - **Edit user** is the screen for managing a user's role assignments; there is no separate role-assignment screen in **Users** administration.
 
 ### Validation and form behavior
 
-- Inherits `FR-UI-001` (**Create and edit form screens**) for validation presentation, **Back** / **Cancel** → **User details**, and form-area loading unless stated below.
+- Inherits `FR-UI-001` (**Create and edit form screens**) for validation presentation, **Back** / **Cancel** → **User details** (edit) or **Users list** (create), and form-area loading unless stated below.
 - Duplicate email shows form-level error: **`A user with this email already exists.`**
 - **Roles**: validation and save behavior per FR-ROL-005 (entry point — Users administration).
 - Other field errors are inline on the relevant field.
 
 ### Form actions
 
-- **Save changes** button: on success show message **`User saved.`** and open **User details** for the edited user.
+- **Create user** — **Create user** button: on success show message **`User created.`** and open **User details** for the new user.
+- **Edit user** — **Save changes** button: on success show message **`User saved.`** and open **User details** for the edited user.
 
 ### Business rules
 
 - An administrator **cannot** remove their own **Administrator** role assignment; save is rejected with message **`You cannot remove your own administrator access.`**
 - On **Edit user**, when the administrator edits **their own** account, the **Roles** field is **not shown**; **Permissions** preview is **not shown**.
 - An administrator **cannot** set their own **Deactivated** to **true**; save is rejected with message **`You cannot deactivate your own account.`**
-- When **Email** is changed on save:
-  - cancel any **pending email change** on that user (FR-AUTH-015);
-  - apply the new **Email** immediately as **current email**;
-  - set **Email verified** true and **Email verified at** to the current date and time when email verification is enabled (FR-AUTH-011);
-  - revoke **all active sessions** for that user;
-  - send **Email changed by admin** to the previous **current email** and to the new **Email** (FR-AUTH-007).
-- When **Email** is unchanged on save, admin email rules above do **not** run.
+- When **Email** is changed on save, revoke **all active sessions** for that user.
 
 ### Permissions and visibility
 
-- **Users.Manage**: required to open **Edit user** and save profile fields.
-- **Roles.Manage**: required to view and edit the **Roles** field.
+- **Users.Manage**: required to open **Create user** / **Edit user** and save profile fields.
+- **Roles.Manage**: required to view and edit the **Roles** field and to open **Create user**.
 - **Users.Deactivate**: required to view and edit the **Deactivated** field on **Edit user**.
 
 ## Non-functional requirements

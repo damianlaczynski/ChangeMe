@@ -1,11 +1,14 @@
-import {
-  AbstractControl,
-  ValidationErrors,
-  ValidatorFn,
-  Validators
-} from '@angular/forms';
-import { PasswordPolicySettings } from '@features/auth/models/auth.model';
+import { AbstractControl, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { AuthConstraints } from '@features/auth/utils/auth.utils';
+
+export interface PasswordPolicySettings {
+  minimumLength: number;
+  maximumLength: number;
+  requireUppercase: boolean;
+  requireLowercase: boolean;
+  requireDigit: boolean;
+  requireSpecialCharacter: boolean;
+}
 
 export function defaultPasswordPolicySettings(): PasswordPolicySettings {
   return {

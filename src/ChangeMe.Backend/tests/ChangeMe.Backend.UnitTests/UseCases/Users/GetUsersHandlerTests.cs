@@ -9,41 +9,40 @@ namespace ChangeMe.Backend.UnitTests.UseCases.Users;
 public sealed class GetUsersHandlerTests
 {
   [Fact]
-  public async Task Handle_WhenEmailVerifiedFilterIsSet_ReturnsOnlyMatchingUsers()
+  public async Task Handle_WhenStatusFilterIsSet_ReturnsOnlyMatchingUsers()
   {
     var cancellationToken = TestContext.Current.CancellationToken;
     await using var context = UseCasesTestDb.Create(
-      nameof(Handle_WhenEmailVerifiedFilterIsSet_ReturnsOnlyMatchingUsers));
+      nameof(Handle_WhenStatusFilterIsSet_ReturnsOnlyMatchingUsers));
 
     var passwordHasher = new PasswordHasherAdapter();
-    var verified = User.CreateWithPassword(
-      "Verified",
+    var activeUser = User.Create(
+      "Active",
       "User",
-      "verified@example.com",
-      passwordHasher.HashPassword("hash"),
-      emailVerified: true).Value;
-    var unverified = User.CreateWithPassword(
-      "Unverified",
+      "active@example.com",
+      passwordHasher.HashPassword("hash")).Value;
+    var deactivatedUser = User.Create(
+      "Deactivated",
       "User",
-      "unverified@example.com",
-      passwordHasher.HashPassword("hash"),
-      emailVerified: false).Value;
+      "deactivated@example.com",
+      passwordHasher.HashPassword("hash")).Value;
+    deactivatedUser.Deactivate();
 
-    await context.Users.AddRangeAsync([verified, unverified], cancellationToken);
+    await context.Users.AddRangeAsync(activeUser, deactivatedUser);
     await context.SaveChangesAsync(cancellationToken);
 
     var handler = new GetUsersHandler(context);
     var result = await handler.Handle(
       new GetUsersQuery
       {
-        EmailVerified = [false],
+        Status = [UserMembershipStatus.Deactivated],
         PaginationParameters = PaginationParameters<UserListItemDto>.Create()
       },
       cancellationToken);
 
     Assert.True(result.IsSuccess);
     Assert.Single(result.Value.Items);
-    Assert.Equal(unverified.Id, result.Value.Items[0].Id);
-    Assert.False(result.Value.Items[0].EmailVerified);
+    Assert.Equal(deactivatedUser.Id, result.Value.Items[0].Id);
+    Assert.Equal(UserMembershipStatus.Deactivated, result.Value.Items[0].Status);
   }
 }

@@ -21,7 +21,7 @@ The user must remain signed in during normal application use without repeated ma
 | **Short-lived credential**      | **30 minutes** |
 | **Long-lived session lifetime** | **14 days**    |
 
-- Every successful sign-in (password, external provider, or registration when email verification is disabled) creates a session with the **long-lived session lifetime** of **14 days**, counted from **signed in at**.
+- Every successful sign-in (FR-AUTH-001) creates a session with the **long-lived session lifetime** of **14 days**, counted from **signed in at**.
 - The client stores session credentials in **browser local storage** so the user remains signed in after closing and reopening the browser, within the configured lifetime.
 - The **short-lived credential** expires **30 minutes** after issuance.
 
