@@ -24,7 +24,7 @@ public sealed class DeactivateUserHandlerTests
       .SingleAsync(cancellationToken);
 
     var passwordHasher = new PasswordHasherAdapter();
-    var admin = User.CreateWithPassword(
+    var admin = User.Create(
       "Admin",
       "User",
       "only-admin@example.com",
@@ -60,14 +60,14 @@ public sealed class DeactivateUserHandlerTests
       .SingleAsync(cancellationToken);
 
     var passwordHasher = new PasswordHasherAdapter();
-    var targetAdmin = User.CreateWithPassword(
+    var targetAdmin = User.Create(
       "Target",
       "Admin",
       "target-admin@example.com",
       passwordHasher.HashPassword("StrongPass123!")).Value;
     targetAdmin.AssignRole(administratorRoleId);
 
-    var otherAdmin = User.CreateWithPassword(
+    var otherAdmin = User.Create(
       "Other",
       "Admin",
       "other-admin@example.com",
@@ -101,7 +101,7 @@ public sealed class DeactivateUserHandlerTests
       .SingleAsync(cancellationToken);
 
     var passwordHasher = new PasswordHasherAdapter();
-    var user = User.CreateWithPassword(
+    var user = User.Create(
       "Regular",
       "User",
       "regular-user@example.com",

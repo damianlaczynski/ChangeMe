@@ -15,17 +15,7 @@ export class AuthStorageService {
     }
 
     try {
-      const parsed = JSON.parse(rawValue) as AuthResponse;
-      return {
-        ...parsed,
-        passwordChangeRequired: parsed.passwordChangeRequired === true,
-        passwordChangeStrict: parsed.passwordChangeStrict === true,
-        passwordExpiresAtUtc: parsed.passwordExpiresAtUtc ?? null,
-        twoFactorSetupRequired: parsed.twoFactorSetupRequired === true,
-        twoFactorSetupStrict: parsed.twoFactorSetupStrict === true,
-        passkeySetupRequired: parsed.passkeySetupRequired === true,
-        passkeySetupStrict: parsed.passkeySetupStrict === true
-      };
+      return JSON.parse(rawValue) as AuthResponse;
     } catch {
       this.clearSession();
       return null;

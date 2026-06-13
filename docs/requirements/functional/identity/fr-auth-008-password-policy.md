@@ -10,7 +10,7 @@ inherits_fr: [FR-UI-001]
 ---
 ## Goal
 
-Password strength rules must be consistent across registration, user creation flows, password change, and reset, and configurable per deployment.
+Password strength rules must be consistent across user creation and password change, and configurable per deployment.
 
 ## Functional requirements
 

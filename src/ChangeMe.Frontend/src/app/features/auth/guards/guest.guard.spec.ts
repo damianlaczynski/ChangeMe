@@ -15,9 +15,6 @@ describe('guestGuard', () => {
   let router: Router;
   let authService: {
     isAuthenticated: ReturnType<typeof vi.fn>;
-    passwordChangeRequired: ReturnType<typeof vi.fn>;
-    requiresTwoFactorSetupScreen: ReturnType<typeof vi.fn>;
-    requiresPasskeySetupScreen: ReturnType<typeof vi.fn>;
     clearLocalSession: ReturnType<typeof vi.fn>;
   };
 
@@ -36,9 +33,6 @@ describe('guestGuard', () => {
   beforeEach(() => {
     authService = {
       isAuthenticated: vi.fn(() => false),
-      passwordChangeRequired: vi.fn(() => false),
-      requiresTwoFactorSetupScreen: vi.fn(() => false),
-      requiresPasskeySetupScreen: vi.fn(() => false),
       clearLocalSession: vi.fn()
     };
 
@@ -59,26 +53,5 @@ describe('guestGuard', () => {
 
     expectUrl(runGuard(), '/issues');
     expect(authService.clearLocalSession).not.toHaveBeenCalled();
-  });
-
-  it('redirects authenticated users with required password change', () => {
-    authService.isAuthenticated.mockReturnValue(true);
-    authService.passwordChangeRequired.mockReturnValue(true);
-
-    expectUrl(runGuard(), '/required-password-change');
-  });
-
-  it('redirects authenticated users with required two-factor setup', () => {
-    authService.isAuthenticated.mockReturnValue(true);
-    authService.requiresTwoFactorSetupScreen.mockReturnValue(true);
-
-    expectUrl(runGuard(), '/required-two-factor-setup');
-  });
-
-  it('redirects authenticated users with required passkey setup', () => {
-    authService.isAuthenticated.mockReturnValue(true);
-    authService.requiresPasskeySetupScreen.mockReturnValue(true);
-
-    expectUrl(runGuard(), '/required-passkey-setup');
   });
 });

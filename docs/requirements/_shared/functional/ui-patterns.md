@@ -20,7 +20,7 @@ Do **not** add a separate acceptance-scenarios section to feature specifications
 These patterns apply to:
 
 - Authenticated screens inside the application shell (sidebar, header, content area).
-- Guest screens (login, invitation acceptance, password reset) follow the same **feedback** and **validation** rules where applicable; layout chrome may differ per functional specification.
+- Guest screens (login) follow the same **feedback** and **validation** rules where applicable; layout chrome may differ per functional specification.
 
 Out of scope here: email templates, push notification payloads, and API error shapes — those belong in the relevant functional specification or `_shared/non-functional/`.
 
@@ -168,8 +168,7 @@ Use the correct channel so behavior stays consistent across modules.
 | **Inline screen message** (`p-message`) | Load failures, form-level errors not tied to one field                                                                                          | Until the user retries or navigates away |
 | **Toast**                               | Successful mutations; action failures not tied to a single field; background policy warnings                                                    | Auto-dismiss; see below                  |
 | **Confirmation dialog**                 | Destructive or irreversible actions before execution                                                                                            | Until confirm or cancel                  |
-| **Modal dialog**                        | Short secondary flows that need input (for example reject reason, name a passkey)                                                               | Until submit, cancel, or close           |
-| **Sticky toast**                        | Active compliance gates (`docs/requirements/_shared/reference/compliance-gates.md`) and session-blocking policy (password expiry, strict setup) | Until the gate is cleared                |
+| **Modal dialog**                        | Short secondary flows that need input (for example reject reason)                                                                              | Until submit, cancel, or close           |
 
 ### Toast conventions
 

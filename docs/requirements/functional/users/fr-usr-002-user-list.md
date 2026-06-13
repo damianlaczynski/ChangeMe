@@ -4,7 +4,7 @@ title: User List
 domain: users
 type: functional
 status: active
-depends_on: [FR-AUTH-011, FR-INV-001, FR-INV-005, FR-USR-005]
+depends_on: [FR-USR-003, FR-USR-005]
 inherits_nfr:
   [NFR-QUAL-001, NFR-A11Y-001, NFR-I18N-001, NFR-PERF-001, NFR-RSP-001]
 inherits_fr: [FR-UI-001]
@@ -20,20 +20,19 @@ An authorized administrator must be able to browse users, search and filter them
 
 - Screen: **Users list**
 - Sidebar entry **Users** is visible only with permission **Users.View**.
-- **Invite user** button opens **Invite user** (FR-INV-001); visible only with permission **Users.Manage**.
+- **Create user** button opens **Create user** (FR-USR-003); visible only with permission **Users.Manage**.
 
 ### Users table
 
-| Column             | Description                                                                                                                                        |
-| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Name**           | **First name** and **Last name** when set; **`—`** when both empty; link to **User details**.                                                      |
-| **Email**          | User email address.                                                                                                                                |
-| **Status**         | **`Invited`**, **`Invitation canceled`**, **`Active`**, or **`Deactivated`** (FR-INV-005). Replaces **Account**; **Account state** column removed. |
-| **Email verified** | Badge **`Verified`** or **`Unverified`** when email verification is enabled (FR-AUTH-011); omitted when verification is disabled.                  |
-| **Roles**          | One status badge per assigned role showing the role name.                                                                                          |
-| **Last sign-in**   | Most recent session **signed in at** across all sessions; **`Never`** when the user has no sessions.                                               |
-| **Created at**     | Account creation date and time.                                                                                                                    |
-| **Actions**        | Overflow menu (see below).                                                                                                                         |
+| Column           | Description                                                                                   |
+| ---------------- | --------------------------------------------------------------------------------------------- |
+| **Name**         | **First name** and **Last name** when set; **`—`** when both empty; link to **User details**. |
+| **Email**        | User email address.                                                                           |
+| **Status**       | **`Active`** or **`Deactivated`**.                                                            |
+| **Roles**        | One status badge per assigned role showing the role name.                                     |
+| **Last sign-in** | Most recent session **signed in at** across all sessions; **`Never`** when the user has no sessions. |
+| **Created at**   | Account creation date and time.                                                               |
+| **Actions**      | Overflow menu (see below).                                                                    |
 
 ### Sorting
 
@@ -43,9 +42,8 @@ An authorized administrator must be able to browse users, search and filter them
 ### Search and filters
 
 - Inherits `FR-UI-001` (**Administrative list screens**) for filters panel, applied filter chips, pagination, loading, and overflow menu visibility unless stated below.
-- **Status** multi-select: **`Invited`**, **`Invitation canceled`**, **`Active`**, **`Deactivated`** (FR-INV-005). Empty selection means no restriction. Replaces the former **Account** filter.
-- **Email verified** multi-select: **`Verified`**, **`Unverified`**. Shown only when email verification is enabled (FR-AUTH-011). Empty selection means no restriction.
-- Default filter state: **no status restriction**; **no email verified restriction** when that filter is shown.
+- **Status** multi-select: **`Active`**, **`Deactivated`**. Empty selection means no restriction.
+- Default filter state: **no status restriction**.
 
 ### Row overflow menu
 
@@ -59,7 +57,7 @@ An authorized administrator must be able to browse users, search and filter them
 ### Permissions and visibility
 
 - **Users.View**: required for **Users list** and **Open details**.
-- **Users.Manage**: required for **Invite user** and **Edit**.
+- **Users.Manage**: required for **Create user** and **Edit**.
 - **Users.Deactivate**: required for **Deactivate** and **Activate**.
 
 ## Non-functional requirements

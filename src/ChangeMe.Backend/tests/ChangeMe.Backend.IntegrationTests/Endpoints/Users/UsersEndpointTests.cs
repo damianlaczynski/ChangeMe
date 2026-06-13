@@ -38,14 +38,16 @@ public sealed class UsersEndpointTests(BackendWebApplicationFactory factory)
     var cancellationToken = TestContext.Current.CancellationToken;
     var admin = await TestAuthHelper.CreateAdministratorUserAsync(factory, cancellationToken);
 
-    var userRoleId = await GetRoleIdByNameAsync(factory, "User", cancellationToken);
+    var userRoleId = await RolesTestHelper.GetRoleIdByNameAsync(factory, "User", cancellationToken);
     var email = $"managed-{Guid.NewGuid():N}@example.com";
+    const string password = TestAuthHelper.DefaultUserPassword;
 
     var response = await admin.Client.PostAsJsonAsync("/api/users", new
     {
       FirstName = "Managed",
       LastName = "User",
       Email = email,
+      Password = password,
       RoleIds = new[] { userRoleId }
     }, cancellationToken);
 
@@ -56,61 +58,41 @@ public sealed class UsersEndpointTests(BackendWebApplicationFactory factory)
 
     await using var scope = factory.Services.CreateAsyncScope();
     var dbContext = scope.ServiceProvider.GetRequiredService<ChangeMe.Backend.Infrastructure.Persistence.ApplicationDbContext>();
-    var createdUser = await dbContext.Users
-      .Include(x => x.AccountInvitations)
-      .SingleAsync(x => x.Email == email, cancellationToken);
-    Assert.False(createdUser.HasPasswordSet);
-    Assert.True(createdUser.HasPendingInvitation);
-    Assert.Single(createdUser.AccountInvitations);
-
-    var fakeEmail = scope.ServiceProvider.GetRequiredService<ChangeMe.Backend.Domain.Common.IEmailService>()
-      as ChangeMe.Backend.IntegrationTests.Support.Fakes.FakeEmailService;
-    Assert.NotNull(fakeEmail);
-    Assert.Contains(fakeEmail.SentEmails, e => e.Subject == "You're invited to ChangeMe");
+    var createdUser = await dbContext.Users.SingleAsync(x => x.Email == email, cancellationToken);
+    Assert.False(string.IsNullOrWhiteSpace(createdUser.PasswordHash));
+    Assert.True(createdUser.IsActive);
   }
 
   [Fact]
-  public async Task PutUsers_WhenInvitedUserHasNoPassword_ShouldAllowEmptyNames()
+  public async Task PutUsers_WhenAdministratorUpdatesUser_ShouldReturnOk()
   {
     var cancellationToken = TestContext.Current.CancellationToken;
     var admin = await TestAuthHelper.CreateAdministratorUserAsync(factory, cancellationToken);
-    var userRoleId = await GetRoleIdByNameAsync(factory, "User", cancellationToken);
-    var email = $"invited-{Guid.NewGuid():N}@example.com";
+    var userRoleId = await RolesTestHelper.GetRoleIdByNameAsync(factory, "User", cancellationToken);
+    var email = $"updated-{Guid.NewGuid():N}@example.com";
 
-    var inviteResponse = await admin.Client.PostAsJsonAsync("/api/users", new
+    var createResponse = await admin.Client.PostAsJsonAsync("/api/users", new
     {
-      FirstName = "",
-      LastName = "",
+      FirstName = "Original",
+      LastName = "User",
       Email = email,
+      Password = TestAuthHelper.DefaultUserPassword,
       RoleIds = new[] { userRoleId }
     }, cancellationToken);
 
-    inviteResponse.EnsureSuccessStatusCode();
-    var inviteBody = await inviteResponse.Content.ReadAsStringAsync(cancellationToken);
-    var userId = RolesTestHelper.ReadGuidFromResultBody(inviteBody, "id");
+    createResponse.EnsureSuccessStatusCode();
+    var createBody = await createResponse.Content.ReadAsStringAsync(cancellationToken);
+    var userId = RolesTestHelper.ReadGuidFromResultBody(createBody, "id");
 
     var updateResponse = await admin.Client.PutAsJsonAsync($"/api/users/{userId}", new
     {
       Id = userId,
-      FirstName = "",
-      LastName = "",
-      Email = email
+      FirstName = "Updated",
+      LastName = "User",
+      Email = email,
+      RoleIds = new[] { userRoleId }
     }, cancellationToken);
 
     Assert.Equal(HttpStatusCode.OK, updateResponse.StatusCode);
-  }
-
-  private static async Task<Guid> GetRoleIdByNameAsync(
-    BackendWebApplicationFactory factory,
-    string roleName,
-    CancellationToken cancellationToken)
-  {
-    await using var scope = factory.Services.GetRequiredService<IServiceScopeFactory>().CreateAsyncScope();
-    var dbContext = scope.ServiceProvider.GetRequiredService<ChangeMe.Backend.Infrastructure.Persistence.ApplicationDbContext>();
-    return await dbContext.Roles
-      .AsNoTracking()
-      .Where(x => x.Name == roleName)
-      .Select(x => x.Id)
-      .SingleAsync(cancellationToken);
   }
 }

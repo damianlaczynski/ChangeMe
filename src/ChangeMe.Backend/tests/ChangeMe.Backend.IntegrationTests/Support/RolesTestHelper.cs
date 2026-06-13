@@ -57,6 +57,7 @@ internal static class RolesTestHelper
       FirstName = "Role",
       LastName = "Assignee",
       Email = email,
+      Password = TestAuthHelper.DefaultUserPassword,
       RoleIds = new[] { userRoleId }
     }, cancellationToken);
 

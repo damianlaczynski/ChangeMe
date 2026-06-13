@@ -1,7 +1,5 @@
 using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UseCases.Auth.Dtos;
-using ChangeMe.Backend.UseCases.Auth.Utils;
-using Microsoft.Extensions.Options;
 
 namespace ChangeMe.Backend.UseCases.Auth;
 
@@ -10,8 +8,7 @@ public sealed class GetMySessionsQuery : PaginationQuery<UserSessionDto> { }
 public class GetMySessionsHandler(
   ApplicationDbContext context,
   IUserAccessor userAccessor,
-  ISessionLifetimeService sessionLifetime,
-  IOptions<AuthOptions> authOptions) : IQueryHandler<GetMySessionsQuery, PaginationResult<UserSessionDto>>
+  ISessionLifetimeService sessionLifetime) : IQueryHandler<GetMySessionsQuery, PaginationResult<UserSessionDto>>
 {
   public async ValueTask<Result<PaginationResult<UserSessionDto>>> Handle(
     GetMySessionsQuery query,
@@ -34,7 +31,6 @@ public class GetMySessionsHandler(
         x.Id,
         x.DeviceBrowserLabel,
         x.SignInMethod,
-        SignInMethodDisplay.Format(x.SignInMethod, authOptions.Value),
         x.IpAddress,
         x.SignedInAt,
         x.LastActivityAt,

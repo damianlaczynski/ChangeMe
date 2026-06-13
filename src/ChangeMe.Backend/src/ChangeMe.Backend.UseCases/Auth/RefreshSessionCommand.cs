@@ -1,7 +1,6 @@
 using ChangeMe.Backend.Domain.Aggregates.Users.Interfaces;
 using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UseCases.Auth.Dtos;
-
 using ChangeMe.Backend.UseCases.Auth.Utils;
 
 namespace ChangeMe.Backend.UseCases.Auth;
@@ -11,10 +10,7 @@ public sealed record RefreshSessionCommand(string RefreshToken) : ICommand<AuthR
 public class RefreshSessionHandler(
   ApplicationDbContext context,
   IJwtTokenGenerator jwtTokenGenerator,
-  ISessionLifetimeService sessionLifetime,
-  IPasswordExpirationEvaluator passwordExpirationEvaluator,
-  ITwoFactorPolicyEvaluator twoFactorPolicyEvaluator,
-  IPasskeyPolicyEvaluator passkeyPolicyEvaluator) : ICommandHandler<RefreshSessionCommand, AuthResponseDto>
+  ISessionLifetimeService sessionLifetime) : ICommandHandler<RefreshSessionCommand, AuthResponseDto>
 {
   public async ValueTask<Result<AuthResponseDto>> Handle(RefreshSessionCommand command, CancellationToken cancellationToken)
   {
@@ -31,7 +27,6 @@ public class RefreshSessionHandler(
       return Result<AuthResponseDto>.Unauthorized();
 
     var user = await context.Users
-      .Include(x => x.AccountInvitations)
       .FirstOrDefaultAsync(x => x.Id == session.UserId, cancellationToken);
     if (user is null || !user.IsActive)
       return Result<AuthResponseDto>.Unauthorized();
@@ -43,25 +38,12 @@ public class RefreshSessionHandler(
 
     await context.SaveChangesAsync(cancellationToken);
 
-    var passwordChangeRequired = passwordExpirationEvaluator.IsPasswordChangeRequired(user, utcNow);
-    var passwordExpiresAtUtc = passwordExpirationEvaluator.GetPasswordExpiresAtUtc(user);
-    var twoFactorSetupRequired = !passwordChangeRequired
-      && twoFactorPolicyEvaluator.IsTwoFactorSetupRequired(user);
-    var passkeyCount = await context.PasskeyCredentials.CountAsync(x => x.UserId == user.Id, cancellationToken);
-    var passkeySetupRequired = !passwordChangeRequired
-      && !twoFactorSetupRequired
-      && passkeyPolicyEvaluator.IsPasskeySetupRequired(user, passkeyCount);
-
     return await AuthSessionUtils.CreateAuthResponseAsync(
       context,
       jwtTokenGenerator,
       user,
       session,
       newRefreshToken,
-      passwordChangeRequired,
-      passwordExpiresAtUtc,
-      twoFactorSetupRequired,
-      cancellationToken,
-      passkeySetupRequired);
+      cancellationToken);
   }
 }

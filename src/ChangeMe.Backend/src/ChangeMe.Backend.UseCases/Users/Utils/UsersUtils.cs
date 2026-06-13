@@ -3,7 +3,6 @@ using ChangeMe.Backend.Domain.Aggregates.Sessions;
 using ChangeMe.Backend.Domain.Aggregates.Users;
 using ChangeMe.Backend.Domain.Authorization;
 using ChangeMe.Backend.Infrastructure.Auth;
-using ChangeMe.Backend.UseCases.Auth.Utils;
 using ChangeMe.Backend.UseCases.Users.Dtos;
 
 namespace ChangeMe.Backend.UseCases.Users.Utils;
@@ -18,23 +17,6 @@ public static class UsersUtils
   public const string CannotChangeOwnRolesMessage = "You cannot change your own roles.";
   public const string AtLeastOneRoleRequiredMessage = "At least one role is required.";
   public const string PermissionDeniedMessage = "You do not have permission to perform this action.";
-  public const string InvitationAlreadyAcceptedMessage = "This account has already been activated.";
-  public const string CannotSendPasswordResetToDeactivatedMessage =
-    "Password reset cannot be sent to a deactivated account.";
-  public const string CannotSendPasswordResetToInvitePendingMessage =
-    "Password reset cannot be sent while the invitation is pending. Resend the invitation instead.";
-  public const string CannotSendPasswordResetWithoutLocalPasswordMessage =
-    "Password reset cannot be sent to an account without a local password.";
-  public const string CannotManageInvitationForDeactivatedMessage =
-    "Invitation cannot be managed for a deactivated account.";
-
-  public const string NoPendingInvitationMessage =
-    "This account has no pending invitation.";
-
-  public const string PendingInvitationAlreadyExistsMessage =
-    "This account already has a pending invitation. Resend the invitation instead.";
-  public const string EmailAlreadyVerifiedMessage = "This email is already verified.";
-  public const string EmailMarkedAsVerifiedMessage = "Email marked as verified.";
 
   public static async Task<DateTime?> GetLastSignInAtAsync(
     ApplicationDbContext context,
@@ -153,8 +135,7 @@ public static class UsersUtils
   public static IReadOnlyList<AdminUserSessionDto> MapActiveSessions(
     IEnumerable<UserSession> sessions,
     DateTime utcNow,
-    ISessionLifetimeService sessionLifetime,
-    AuthOptions auth)
+    ISessionLifetimeService sessionLifetime)
   {
     return sessions
       .Where(x => sessionLifetime.IsActive(x, utcNow))
@@ -163,7 +144,6 @@ public static class UsersUtils
         x.Id,
         x.DeviceBrowserLabel,
         x.SignInMethod,
-        SignInMethodDisplay.Format(x.SignInMethod, auth),
         x.IpAddress,
         x.SignedInAt,
         x.LastActivityAt))

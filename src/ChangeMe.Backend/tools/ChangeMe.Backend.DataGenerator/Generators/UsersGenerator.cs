@@ -30,7 +30,7 @@ internal sealed class UsersGenerator(
       var lastName = faker.Name.LastName();
       var email = $"user{index}@{config.EmailDomain.Trim().ToLowerInvariant()}";
 
-      var createResult = DomainUser.CreateWithPassword(firstName, lastName, email, passwordHash);
+      var createResult = DomainUser.Create(firstName, lastName, email, passwordHash);
       if (!createResult.IsSuccess)
         throw new InvalidOperationException($"Failed to create demo user {email}: {string.Join(", ", createResult.ValidationErrors.Select(e => e.ErrorMessage))}");
 

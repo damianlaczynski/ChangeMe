@@ -1,28 +1,19 @@
-using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UseCases.Issues.Dtos;
-using Microsoft.Extensions.Options;
 
 namespace ChangeMe.Backend.UseCases.Issues;
 
 public sealed record GetAssignableUsersQuery() : IQuery<List<IssueAssignableUserDto>>;
 
-public class GetAssignableUsersHandler(
-  ApplicationDbContext context,
-  IOptions<AuthOptions> authOptions)
+public class GetAssignableUsersHandler(ApplicationDbContext context)
   : IQueryHandler<GetAssignableUsersQuery, List<IssueAssignableUserDto>>
 {
   public async ValueTask<Result<List<IssueAssignableUserDto>>> Handle(
     GetAssignableUsersQuery query,
     CancellationToken cancellationToken)
   {
-    var emailVerificationEnabled = authOptions.Value.EmailVerification.Enabled;
-
     var users = await context.Users
       .AsNoTracking()
-      .Where(u =>
-        !u.Deactivated
-        && u.HasPasswordSet
-        && (!emailVerificationEnabled || u.EmailVerified))
+      .Where(u => !u.Deactivated)
       .OrderBy(u => u.LastName)
       .ThenBy(u => u.FirstName)
       .ToListAsync(cancellationToken);

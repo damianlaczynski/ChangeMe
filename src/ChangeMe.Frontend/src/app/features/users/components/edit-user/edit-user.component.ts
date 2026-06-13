@@ -74,21 +74,12 @@ export class EditUserComponent {
     return name ? `Edit ${name}` : 'Edit User';
   });
   readonly isEditingSelf = signal(false);
-  readonly namesRequired = signal(true);
-  readonly firstNameLabel = computed(() =>
-    this.namesRequired() ? 'First name' : 'First name (optional)'
-  );
-  readonly lastNameLabel = computed(() =>
-    this.namesRequired() ? 'Last name' : 'Last name (optional)'
-  );
 
   readonly canManageRoles = this.authService.hasPermission(PermissionCodes.rolesManage);
   readonly canDeactivateUsers = this.authService.hasPermission(
     PermissionCodes.usersDeactivate
   );
   readonly showRolesField = signal(false);
-  readonly showExternalLoginEmailWarning = signal(false);
-  readonly externalProvidersEnabled = signal(false);
   readonly showStatusField = signal(false);
 
   readonly form = new FormGroup({
@@ -164,16 +155,14 @@ export class EditUserComponent {
     this.loadError.set(null);
 
     forkJoin({
-      settings: this.authService.getAuthSettings(),
-      user: this.usersService.getUserById(userId)
+      user: this.usersService.getUserById(userId),
+      roles: this.showRolesField()
+        ? this.usersService.getRolesForAssignment()
+        : of([])
     })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: ({ settings, user }) => {
-          this.externalProvidersEnabled.set(settings.externalProvidersEnabled);
-          this.showExternalLoginEmailWarning.set(
-            settings.externalProvidersEnabled && user.externalLogins.length > 0
-          );
+        next: ({ user, roles }) => {
           this.form.patchValue({
             firstName: user.firstName,
             lastName: user.lastName,
@@ -182,28 +171,9 @@ export class EditUserComponent {
             deactivated: user.deactivated
           });
 
-          this.namesRequired.set(user.hasPasswordSet);
-
-          const nameValidators = user.hasPasswordSet
-            ? [
-                Validators.required,
-                Validators.maxLength(UserConstraints.NAME_MAX_LENGTH)
-              ]
-            : [Validators.maxLength(UserConstraints.NAME_MAX_LENGTH)];
-
-          this.form.controls.firstName.setValidators(nameValidators);
-          this.form.controls.lastName.setValidators(nameValidators);
-          this.form.controls.firstName.updateValueAndValidity();
-          this.form.controls.lastName.updateValueAndValidity();
-
           if (this.showRolesField()) {
+            this.roleOptions.set(roles);
             this.effectivePermissions.set(user.effectivePermissions);
-            this.usersService
-              .getRolesForAssignment()
-              .pipe(takeUntilDestroyed(this.destroyRef))
-              .subscribe({
-                next: (roles) => this.roleOptions.set(roles)
-              });
           }
 
           this.isLoading.set(false);
