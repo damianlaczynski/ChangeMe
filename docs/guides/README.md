@@ -6,13 +6,13 @@
 
 ## Documents
 
-| Document                                         | Read when you need to…                                |
-| ------------------------------------------------ | ----------------------------------------------------- |
-| [repo-map.md](repo-map.md)                       | Find where code lives and which layer owns what       |
-| [frontend-guidelines.md](frontend-guidelines.md) | Angular components, forms, routing, PrimeNG, Tailwind |
-| [backend-guidelines.md](backend-guidelines.md)   | Layers, endpoints, use cases, validation, EF          |
-| [testing-guidelines.md](testing-guidelines.md)   | Which tests to run and where they live                |
-| [feature-recipes.md](feature-recipes.md)         | Step-by-step recipes for common feature work          |
+| Document                                         | Read when you need to…                                   |
+| ------------------------------------------------ | -------------------------------------------------------- |
+| [repo-map.md](repo-map.md)                       | Find where code lives and which layer owns what          |
+| [frontend-guidelines.md](frontend-guidelines.md) | Angular components, forms, routing, PrimeNG, Tailwind    |
+| [backend-guidelines.md](backend-guidelines.md)   | Layers, endpoints, use cases, validation, EF             |
+| [testing-guidelines.md](testing-guidelines.md)   | Which test layer owns which behavior; when to skip tests |
+| [feature-recipes.md](feature-recipes.md)         | Step-by-step recipes for common feature work             |
 
 ## Start here by task
 

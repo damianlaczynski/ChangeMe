@@ -101,3 +101,72 @@ jobs:
 
       - name: Build
         run: dotnet build src/ChangeMe.Backend/ChangeMe.Backend.slnx -c Release --no-restore
+
+  e2e:
+    name: E2E
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      CI: true
+      ConnectionStrings__DefaultConnection: Host=localhost;Database=ChangeMe;Username=postgres;Password=postgres
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: ChangeMe
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d ChangeMe"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    defaults:
+      run:
+        working-directory: src/ChangeMe.Frontend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: src/ChangeMe.Frontend/package-lock.json
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Restore .NET
+        working-directory: .
+        run: dotnet restore src/ChangeMe.Backend/ChangeMe.Backend.slnx
+
+      - name: Create EF migrations for E2E
+        working-directory: .
+        shell: bash
+        run: |
+          migrations_dir="src/ChangeMe.Backend/src/ChangeMe.Backend.Infrastructure/Persistence/Migrations"
+          if compgen -G "${migrations_dir}/*.cs" > /dev/null; then
+            echo "Migrations already present; skipping dotnet ef migrations add."
+            exit 0
+          fi
+
+          dotnet tool install --global dotnet-ef --version 10.0.7
+          dotnet ef migrations add InitialCreate \
+            --project src/ChangeMe.Backend/src/ChangeMe.Backend.Infrastructure/ChangeMe.Backend.Infrastructure.csproj \
+            --startup-project src/ChangeMe.Backend/src/ChangeMe.Backend.Web/ChangeMe.Backend.Web.csproj \
+            --output-dir Persistence/Migrations
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: E2E smoke tests
+        run: npm run e2e

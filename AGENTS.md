@@ -39,6 +39,7 @@ From the repository root, run `npm install` once to install root devDependencies
 - Frontend quality: `npm run lint:frontend`, `npm run format:frontend`, `npm run test:frontend` (interactive watch when TTY), or `npm run test:frontend:ci` (single run, `--watch=false`)
 - Backend tests: `npm run test:backend` (entire solution — unit and integration projects), `npm run test:backend:unit`, or `npm run test:backend:integration`
 - Full automated check (frontend CI tests + full backend solution tests, parallel): `npm run test:all` — backend integration tests use Testcontainers and need a running Docker engine
+- E2E (Playwright): `npm run test:e2e` (Playwright can start the stack; needs PostgreSQL on `localhost`); `npm run test:e2e:ui` for interactive debugging — also runs in CI on every PR (`docs/technical/ci.md`)
 - CI workflow (GitHub Actions): see `docs/technical/ci.md`
 - EF Core (from repo root; run `npm run ef:restore` once after clone): `npm run ef:migrations:add -- <Name>`, `npm run ef:migrations:remove`, `npm run ef:database:update`
 - Demo data (after migrations; Development only): `npm run data:generate`, or `npm run data:generate -- --reset` — see `docs/technical/data-generator.md`
@@ -51,6 +52,7 @@ From the repository root, run `npm install` once to install root devDependencies
 - Lint: `npm run lint`
 - Format: `npm run format`
 - Tests: `npm test`
+- E2E: `npm run e2e` (from repo root: `npm run test:e2e`, or `npm run test:e2e:ui` for Playwright UI)
 
 ### Backend (in `src/ChangeMe.Backend`)
 
