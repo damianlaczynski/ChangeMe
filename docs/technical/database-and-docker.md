@@ -76,6 +76,40 @@ npm run data:generate -- --reset
 
 See [data-generator.md](data-generator.md) for architecture, configuration, and troubleshooting.
 
+## Hangfire and background jobs
+
+**Hangfire** stores job state in the **same database** as the application (`ConnectionStrings:DefaultConnection`). The API host runs a Hangfire server and registers recurring jobs at startup.
+
+### Dashboard
+
+| Setting                         | Default     | Purpose                                 |
+| ------------------------------- | ----------- | --------------------------------------- |
+| `HangfireOptions:DashboardPath` | `/hangfire` | Browser UI for job history and failures |
+
+Open `https://<api-host><DashboardPath>` (for local dev: `http://localhost:<backend-port>/hangfire`).
+
+The template ships **without dashboard authentication**. Restrict or disable the dashboard in production (reverse proxy, network policy, or Hangfire authorization filters).
+
+### Recurring jobs
+
+| Hangfire job id                   | Configuration                                             | Default schedule     | Purpose                                      |
+| --------------------------------- | --------------------------------------------------------- | -------------------- | -------------------------------------------- |
+| `attachment-storage-cleanup`      | `FileStorageOptions:CleanupCronExpression`                | `0 * * * *` (hourly) | Delete orphaned attachment files on disk     |
+| `notifications-retention-cleanup` | `NotificationRetentionOptions:CleanupCronExpression`      | `0 3 * * *`          | Purge old in-app notifications               |
+| `invitations-retention-cleanup`   | `AuthOptions:Invitations:Retention:CleanupCronExpression` | `0 4 * * *`          | Delete old revoked/cancelled invitation rows |
+
+Notification retention days: `NotificationRetentionOptions` (`UnreadRetentionDays`, `ReadRetentionDays`, `AbsoluteRetentionDays`) in `appsettings.json`.
+
+Invitation retention: `AuthOptions:Invitations:Retention` — see [auth-operations-guide.md](auth-operations-guide.md) §4.8.
+
+Cron expressions use standard five-field syntax (minute hour day month weekday). Changing a schedule requires an API restart so `RecurringJob.AddOrUpdate` runs again.
+
+### Production notes
+
+- Hangfire tables live in the application database — include them in backup/restore with the rest of the schema.
+- Run **at least one** API instance with `AddHangfireServer()` (default in this template) so recurring jobs execute.
+- Failed jobs appear in the dashboard; fix the underlying issue and retry or delete stale jobs there.
+
 ## File storage (issue attachments)
 
 Issue attachment **file bytes** are stored on disk under **`FileStorage:RootPath`**, not in the database. **Metadata** (file name, size, content type, opaque storage key) lives in the shared **`attachments`** table using **TPH** inheritance: the **`Type`** column (EF discriminator, `AttachmentType` enum stored as string) distinguishes types; **`IssueAttachment`** (`Type` = `Issue`) is the current derived type. New attachment owners add another enum value, subclass, and storage container name.
@@ -109,12 +143,12 @@ Settings live under **`FileStorage`** in `appsettings.json` / environment variab
 | `CleanupCronExpression`                    | `0 * * * *`     | Schedule for orphaned-file reconciliation             |
 | `CleanupConcurrentExecutionTimeoutSeconds` | `3600`          | Hangfire lock timeout for cleanup job (avoid overlap) |
 
-Per-feature upload limits (for example issue attachments: **5 MB**, **10** files per issue, allowed extensions) live in domain constraints such as **`IssueConstraints`** in `Domain/Aggregates/Issue/Issue.cs`, not in `FileStorage` options. Content inspection uses **`IFileContentValidator`** (Mime-Detective).
+Per-feature upload limits (count, size, allowed extensions) live in domain constraints such as **`IssueConstraints`** in `Domain/Aggregates/Issue/Issue.cs`, not in `FileStorage` options. Content inspection uses **`IFileContentValidator`** (Mime-Detective).
 
 ### Retention and cleanup
 
 - Attachment metadata and stored files are kept until the attachment is deleted or the owning issue is deleted.
-- **`AttachmentStorageCleanupJob`** (Hangfire) deletes **orphaned files** on disk that have no matching row in **`attachments`** (for example after a failed upload or process crash between storage write and DB commit).
+- **`AttachmentStorageCleanupJob`** (Hangfire) deletes **orphaned files** on disk that have no matching row in **`attachments`** (for example after a failed upload or process crash between storage write and DB commit). Schedule and dashboard: [Hangfire and background jobs](#hangfire-and-background-jobs).
 - Deleting an issue cascades attachment metadata and deletes all stored files for that issue.
 
 ### Backup (production)

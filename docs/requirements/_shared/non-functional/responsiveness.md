@@ -4,12 +4,13 @@ title: Responsiveness and Layout
 type: non-functional
 status: active
 ---
+
 ## Responsiveness and layout
 
 ### Target viewports
 
 - Primary design target: **desktop** and **large tablet** (viewport width **≥ 1024** px).
-- Layout uses the existing shell: sidebar, top bar, scrollable content (`docs/frontend-coding-guidelines.md`).
+- Layout uses the existing shell: sidebar, top bar, scrollable content (`docs/guides/frontend-guidelines.md`).
 
 ### Smaller viewports
 

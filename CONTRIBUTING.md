@@ -34,6 +34,6 @@ Package readme lives in **`template-pack/NuGetPackageREADME.md`**.
 - `.template.config/template.json` – symbols, sources, `specialCustomOperations` for `docker-compose.yml`.
 - `template-content/generated-readme/README.md` – becomes the generated solution’s root **`README.md`** (root **`README.md`** is excluded from the template payload and stays maintainer-facing on GitHub).
 - `template-content/sqlserver-web/` – overlays **`appsettings.Development.json`** for `--Database SqlServer` (canonical PostgreSQL dev JSON lives on main tree).
-- **`src/ChangeMe.Backend/.../Persistence/Migrations/*.cs`** – excluded from the template payload; consumers add migrations with **`dotnet ef`** (see **`docs/database-and-docker.md`** in the generated tree).
+- **`src/ChangeMe.Backend/.../Persistence/Migrations/*.cs`** – excluded from the template payload; consumers add migrations with **`dotnet ef`** (see **`docs/technical/database-and-docker.md`** in the generated tree).
 
 When adjusting persistence across variants, keep **`README.md` / `AGENTS.md` / `docs/`** oriented toward the **generated product**, not this repo.

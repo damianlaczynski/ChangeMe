@@ -5,9 +5,11 @@ domain: invitations
 type: functional
 status: active
 depends_on: [FR-AUTH-010, FR-AUTH-014]
-inherits_nfr: [NFR-QUAL-001, NFR-A11Y-001, NFR-I18N-001, NFR-PERF-001, NFR-RSP-001]
+inherits_nfr:
+  [NFR-QUAL-001, NFR-A11Y-001, NFR-I18N-001, NFR-PERF-001, NFR-RSP-001]
 inherits_fr: [FR-UI-001]
 ---
+
 ## Goal
 
 **Revoked** and **cancelled** **account invitation** rows (same storage: **RevokedAtUtc** set) must not accumulate indefinitely. **Accepted** rows are **audit history** and are **never** deleted by retention. Configuration lives under **AuthOptions**, similar in spirit to notification retention (`NotificationRetentionOptions`).
@@ -38,7 +40,7 @@ Section: **`AuthOptions:Invitations:Retention`**
 }
 ```
 
-- Operational reference: `docs/auth-operations-guide.md` (§ Invitation retention).
+- Operational reference: `docs/technical/auth-operations-guide.md` (§ Invitation retention).
 
 ## Functional requirements
 

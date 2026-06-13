@@ -13,7 +13,7 @@
 
 ## Prerequisites
 
-1. Database is reachable (see `docs/database-and-docker.md`).
+1. Database is reachable (see `docs/technical/database-and-docker.md`).
 2. EF Core migrations exist and are applied:
 
    ```powershell
@@ -47,7 +47,7 @@ All inserts go through domain factories (`User.Create`, `Issue.Create`, etc.) an
 
 ## Configuration
 
-Settings live in the Web project `appsettings.Development.json` under `DataGenerator` (also documented in the tool [README](../src/ChangeMe.Backend/tools/ChangeMe.Backend.DataGenerator/README.md)).
+Settings live in the Web project `appsettings.Development.json` under `DataGenerator` (also documented in the tool [README](../../src/ChangeMe.Backend/tools/ChangeMe.Backend.DataGenerator/README.md)).
 
 The generator copies `appsettings.json` and `appsettings.Development.json` from `ChangeMe.Backend.Web` at build output time.
 
@@ -66,11 +66,11 @@ npm run data:generate
 
 | Problem                  | Action                                                                                                              |
 | ------------------------ | ------------------------------------------------------------------------------------------------------------------- |
-| No migrations found      | Add and apply migrations (`docs/database-and-docker.md`)                                                            |
+| No migrations found      | Add and apply migrations (`docs/technical/database-and-docker.md`)                                                  |
 | Connection refused       | Start Docker Compose or local DB; verify connection string                                                          |
 | Demo data already exists | Run with `--reset` or delete demo users manually                                                                    |
 | Wrong provider           | Regenerate template with the intended `--Database` option; do not mix PostgreSQL and SQL Server migration histories |
 
 ## Tests
 
-Integration tests use their own helpers (`IssueTestHelper`, `TestAuthHelper`) and Testcontainers — they do **not** invoke DataGenerator. See `docs/testing-playbook.md`.
+Integration tests use their own helpers (`IssueTestHelper`, `TestAuthHelper`) and Testcontainers — they do **not** invoke DataGenerator. See `docs/guides/testing-guidelines.md`.

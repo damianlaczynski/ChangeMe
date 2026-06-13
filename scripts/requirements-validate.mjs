@@ -90,8 +90,8 @@ function main() {
     }
   }
 
-  if (!fs.existsSync(path.join(ROOT, "changes", "_template.md"))) {
-    error("Missing docs/requirements/changes/_template.md");
+  if (!fs.existsSync(path.join(ROOT, "_changes-template.md"))) {
+    error("Missing docs/requirements/_changes-template.md");
   }
 
   const frFiles = collectFunctionalFiles();
@@ -223,12 +223,7 @@ function main() {
   const changesDir = path.join(ROOT, "changes");
   if (fs.existsSync(changesDir)) {
     for (const name of fs.readdirSync(changesDir)) {
-      if (
-        !name.endsWith(".md") ||
-        name === "_template.md" ||
-        name === "README.md"
-      )
-        continue;
+      if (!name.endsWith(".md") || name === "README.md") continue;
       const content = fs.readFileSync(path.join(changesDir, name), "utf8");
       if (!/\*\*Status:\*\*\s*(pending|done)/i.test(content)) {
         warn(`Change record missing Status (pending|done): changes/${name}`);

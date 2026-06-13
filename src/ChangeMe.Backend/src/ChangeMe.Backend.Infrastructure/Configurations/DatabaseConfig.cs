@@ -121,7 +121,7 @@ public static class DatabaseConfig
       throw new InvalidOperationException(
         """
         No EF Core migrations were found in the Infrastructure assembly. MigrateAsync() succeeds with zero migrations but creates no tables.
-        Add an initial migration from the solution root (see docs/database-and-docker.md):
+        Add an initial migration from the solution root (see docs/technical/database-and-docker.md):
           dotnet tool restore
           dotnet ef migrations add InitialCreate --project src/ChangeMe.Backend/src/ChangeMe.Backend.Infrastructure/ChangeMe.Backend.Infrastructure.csproj --startup-project src/ChangeMe.Backend/src/ChangeMe.Backend.Web/ChangeMe.Backend.Web.csproj --output-dir Persistence/Migrations
         Then set Database:ApplyMigrationsOnStartup to true in appsettings.Development.json, or run dotnet ef database update.

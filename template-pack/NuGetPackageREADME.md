@@ -9,7 +9,7 @@ It generates:
 - **PostgreSQL** (default) or **SQL Server** for EF Core, Hangfire, integration tests, and Docker Compose
 - MailHog for local email capture
 - backend unit and integration test projects
-- `docs/` with database and Docker notes (`docs/database-and-docker.md`)
+- `docs/` with guides, technical notes (`docs/technical/database-and-docker.md`), and requirements
 
 ## Install
 
@@ -35,7 +35,7 @@ Parameter: `--Database` (`PostgreSQL` or `SqlServer`).
 
 ## After generation
 
-- Read `docs/database-and-docker.md` for the first `dotnet ef migrations add`, Compose, `ApplyMigrationsOnStartup`, and production migration guidance.
+- Read `docs/technical/database-and-docker.md` for the first `dotnet ef migrations add`, Compose, `ApplyMigrationsOnStartup`, and production migration guidance.
 
 ## Verify the install
 
