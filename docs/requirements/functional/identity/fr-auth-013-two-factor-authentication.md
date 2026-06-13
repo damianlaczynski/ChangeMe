@@ -138,7 +138,7 @@ Step-up rules (all that apply must succeed):
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
 | **Verification code** | **Required**; **6** digits for TOTP, or a recovery code in the same field (recovery codes are alphanumeric, case-insensitive). |
 
-- **Verify** button: on success creates the session per FR-AUTH-001 / FR-AUTH-014 and continues the normal post-sign-in flow (password expiration, **Issues list**, etc.). When a **recovery code** was used, sends **Recovery code used** email (FR-AUTH-007).
+- **Verify** button: on success creates the session per FR-AUTH-001 / FR-AUTH-014 and continues the normal post-sign-in flow (password expiration, **Projects list**, etc.). When a **recovery code** was used, sends **Recovery code used** email (FR-AUTH-007).
 - Invalid code shows form-level error: **`Invalid verification code.`**
 - **Use a recovery code** helper text explains that a recovery code may be entered instead of a TOTP code.
 - Pending sign-in challenge expires after **10 minutes**; expired challenge redirects to **Login** with message **`Sign-in timed out. Try again.`**
@@ -157,7 +157,7 @@ Step-up rules (all that apply must succeed):
 - When **Two-factor authentication required** is **true**, the user has **Two-factor enabled** false, and IdP MFA does not satisfy policy (**Trust identity provider MFA** is **false**, or external sign-in was not used, or the IdP did not assert MFA), the system issues an **enrollment bootstrap session** after successful primary authentication (password or external provider).
 - The client enters **strict two-factor setup** mode: the user cannot navigate to other application screens until setup completes (except **Logout**); the application shows only minimal chrome.
 - **Strict two-factor setup** uses the same **Set up two-factor authentication** flow as voluntary enrollment on **My account**.
-- After successful setup, the application opens **Issues list**, subject to **Combined account compliance gates** (password expiration is resolved before two-factor setup when both apply on the same sign-in). See `docs/requirements/_shared/reference/compliance-gates.md`.
+- After successful setup, the application opens **Projects list**, subject to **Combined account compliance gates** (password expiration is resolved before two-factor setup when both apply on the same sign-in). See `docs/requirements/_shared/reference/compliance-gates.md`.
 
 ### Deployment policy changes
 

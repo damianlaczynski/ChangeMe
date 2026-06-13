@@ -1,4 +1,6 @@
 ﻿using ChangeMe.Backend.Domain.Aggregates.Roles;
+using ChangeMe.Backend.Domain.Aggregates.Projects;
+using ChangeMe.Backend.Domain.Aggregates.Projects.Enums;
 using ChangeMe.Backend.Domain.Aggregates.Users;
 using ChangeMe.Backend.Domain.Authorization;
 
@@ -55,7 +57,29 @@ public static class ApplicationDataSeeder
         userRole.AddPermissionIfMissing(permission);
     }
 
+    await EnsureDefaultProjectAsync(context, cancellationToken);
+
     return administratorRole;
+  }
+
+  private static async Task EnsureDefaultProjectAsync(ApplicationDbContext context, CancellationToken cancellationToken)
+  {
+    if (await context.Projects.AnyAsync(cancellationToken))
+      return;
+
+    var projectResult = Project.Create(
+      "General",
+      "GEN",
+      "Default workspace for issues without an explicit project assignment.",
+      ProjectVisibility.INTERNAL);
+
+    if (!projectResult.IsSuccess)
+      return;
+
+    var project = projectResult.Value;
+    project.CreatedBy = Guid.Empty;
+    project.UpdatedBy = Guid.Empty;
+    await context.Projects.AddAsync(project, cancellationToken);
   }
 
   private static async Task EnsureInitialAdministratorAsync(

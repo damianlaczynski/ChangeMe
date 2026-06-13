@@ -22,6 +22,9 @@ public sealed class CreateIssueCommandValidator : Validator<CreateIssueCommand>
 {
   public CreateIssueCommandValidator()
   {
+    RuleFor(x => x.ProjectId)
+      .NotEmpty();
+
     RuleFor(x => x.Title)
       .NotEmpty()
       .MinimumLength(IssueConstraints.TITLE_MIN_LENGTH)

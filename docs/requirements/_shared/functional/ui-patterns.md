@@ -28,7 +28,7 @@ Out of scope here: email templates, push notification payloads, and API error sh
 
 ## Administrative list screens
 
-Examples: **Issues list**, **Users list**, **Roles list**.
+Examples: **Projects list**, **Project issues list**, **Users list**, **Roles list**.
 
 Unless a functional specification specifies otherwise:
 

@@ -6,6 +6,8 @@ namespace ChangeMe.Backend.UnitTests;
 
 public sealed class IssueTests
 {
+  private static readonly Guid TestProjectId = Guid.CreateVersion7();
+
   [Theory]
   [InlineData("  Sample issue  ", "  Needs details  ", "Sample issue", "Needs details")]
   [InlineData("  Another issue", "Description  ", "Another issue", "Description")]
@@ -15,7 +17,7 @@ public sealed class IssueTests
     string expectedTitle,
     string expectedDescription)
   {
-    var result = Issue.Create(title, description);
+    var result = Issue.Create(TestProjectId, title, description);
 
     Assert.True(result.IsSuccess);
     Assert.Equal(expectedTitle, result.Value.Title);
@@ -30,7 +32,7 @@ public sealed class IssueTests
   [InlineData("ab")]
   public void Create_WhenTitleIsInvalid_ShouldReturnInvalidResult(string title)
   {
-    var result = Issue.Create(title, "Valid description");
+    var result = Issue.Create(TestProjectId, title, "Valid description");
 
     Assert.False(result.IsSuccess);
     Assert.Equal(ResultStatus.Invalid, result.Status);
@@ -41,7 +43,7 @@ public sealed class IssueTests
   [InlineData(" ")]
   public void Create_WhenDescriptionIsEmpty_ShouldReturnInvalidResult(string description)
   {
-    var result = Issue.Create("Valid title", description);
+    var result = Issue.Create(TestProjectId, "Valid title", description);
 
     Assert.False(result.IsSuccess);
     Assert.Equal(ResultStatus.Invalid, result.Status);
@@ -52,7 +54,7 @@ public sealed class IssueTests
   [InlineData((IssuePriority)(-1))]
   public void Create_WhenPriorityIsInvalid_ShouldReturnInvalidResult(IssuePriority priority)
   {
-    var result = Issue.Create("Valid title", "Valid description", priority);
+    var result = Issue.Create(TestProjectId, "Valid title", "Valid description", priority);
 
     Assert.False(result.IsSuccess);
     Assert.Equal(ResultStatus.Invalid, result.Status);
@@ -63,7 +65,7 @@ public sealed class IssueTests
   [InlineData((IssueStatus)(-1))]
   public void Create_WhenStatusIsInvalid_ShouldReturnInvalidResult(IssueStatus status)
   {
-    var result = Issue.Create("Valid title", "Valid description", IssuePriority.MEDIUM, status);
+    var result = Issue.Create(TestProjectId, "Valid title", "Valid description", IssuePriority.MEDIUM, status);
 
     Assert.False(result.IsSuccess);
     Assert.Equal(ResultStatus.Invalid, result.Status);
@@ -73,7 +75,7 @@ public sealed class IssueTests
   public void RecordCreation_ShouldAddHistoryEntry()
   {
     var actorId = Guid.CreateVersion7();
-    var issueResult = Issue.Create("Initial title", "Initial description");
+    var issueResult = Issue.Create(TestProjectId, "Initial title", "Initial description");
 
     var result = issueResult.Value.RecordCreation(actorId);
 
@@ -86,7 +88,7 @@ public sealed class IssueTests
   public void UpdateDetails_WhenInputIsValid_ShouldUpdateValuesAndCreateHistoryEntries()
   {
     var actorId = Guid.CreateVersion7();
-    var issueResult = Issue.Create("Initial title", "Initial description", IssuePriority.LOW, IssueStatus.NEW);
+    var issueResult = Issue.Create(TestProjectId, "Initial title", "Initial description", IssuePriority.LOW, IssueStatus.NEW);
     issueResult.Value.RecordCreation(actorId);
 
     var result = issueResult.Value.UpdateDetails(
@@ -114,7 +116,7 @@ public sealed class IssueTests
   [Fact]
   public void UpdateDetails_WhenTitleIsInvalid_ShouldReturnInvalidResultAndKeepPreviousValues()
   {
-    var issueResult = Issue.Create("Initial title", "Initial description", IssuePriority.MEDIUM);
+    var issueResult = Issue.Create(TestProjectId, "Initial title", "Initial description", IssuePriority.MEDIUM);
 
     var result = issueResult.Value.UpdateDetails(
       "",
@@ -135,7 +137,7 @@ public sealed class IssueTests
   [Fact]
   public void AddAcceptanceCriterion_WhenContentIsValid_ShouldAddAcceptanceCriterionToCollection()
   {
-    var issueResult = Issue.Create("Valid title", "Valid description");
+    var issueResult = Issue.Create(TestProjectId, "Valid title", "Valid description");
 
     var result = issueResult.Value.AddAcceptanceCriterion("First acceptance criterion");
 
@@ -147,7 +149,7 @@ public sealed class IssueTests
   [Fact]
   public void AddComment_WhenContentIsValid_ShouldAddCommentWithoutCreatingHistoryEntry()
   {
-    var issueResult = Issue.Create("Valid title", "Valid description");
+    var issueResult = Issue.Create(TestProjectId, "Valid title", "Valid description");
     var result = issueResult.Value.AddComment("  First comment  ");
 
     Assert.True(result.IsSuccess);
@@ -159,7 +161,7 @@ public sealed class IssueTests
   [Fact]
   public void StartWatching_WhenUserAlreadyWatchesIssue_ShouldReturnConflict()
   {
-    var issueResult = Issue.Create("Valid title", "Valid description");
+    var issueResult = Issue.Create(TestProjectId, "Valid title", "Valid description");
     var userId = Guid.CreateVersion7();
 
     var firstResult = issueResult.Value.StartWatching(userId);
@@ -173,7 +175,7 @@ public sealed class IssueTests
   [Fact]
   public void StopWatching_WhenWatcherExists_ShouldRemoveWatcher()
   {
-    var issueResult = Issue.Create("Valid title", "Valid description");
+    var issueResult = Issue.Create(TestProjectId, "Valid title", "Valid description");
     var userId = Guid.CreateVersion7();
     issueResult.Value.StartWatching(userId);
 
@@ -186,7 +188,7 @@ public sealed class IssueTests
   [Fact]
   public void UpdateAcceptanceCriterion_WhenAcceptanceCriterionDoesNotExist_ShouldReturnNotFound()
   {
-    var issueResult = Issue.Create("Valid title", "Valid description");
+    var issueResult = Issue.Create(TestProjectId, "Valid title", "Valid description");
 
     var result = issueResult.Value.UpdateAcceptanceCriterion(Guid.NewGuid(), "Updated acceptance criterion");
 
@@ -197,7 +199,7 @@ public sealed class IssueTests
   [Fact]
   public void RemoveAcceptanceCriterion_WhenAcceptanceCriterionDoesNotExist_ShouldReturnNotFound()
   {
-    var issueResult = Issue.Create("Valid title", "Valid description");
+    var issueResult = Issue.Create(TestProjectId, "Valid title", "Valid description");
 
     var result = issueResult.Value.RemoveAcceptanceCriterion(Guid.NewGuid());
 
@@ -209,7 +211,7 @@ public sealed class IssueTests
   public void AddAcceptanceCriterion_WithActor_ShouldAddHistoryEntryAndUpdateLastActivity()
   {
     var actorId = Guid.CreateVersion7();
-    var issueResult = Issue.Create("Valid title", "Valid description");
+    var issueResult = Issue.Create(TestProjectId, "Valid title", "Valid description");
     var initialLastActivityAt = issueResult.Value.LastActivityAt;
 
     var result = issueResult.Value.AddAcceptanceCriterion("First acceptance criterion", actorId);
@@ -225,7 +227,7 @@ public sealed class IssueTests
   public void UpdateAcceptanceCriterion_WithActor_ShouldAddHistoryEntryWhenContentChanges()
   {
     var actorId = Guid.CreateVersion7();
-    var issueResult = Issue.Create("Valid title", "Valid description");
+    var issueResult = Issue.Create(TestProjectId, "Valid title", "Valid description");
     var criterion = issueResult.Value.AddAcceptanceCriterion("Initial criterion").Value;
 
     var result = issueResult.Value.UpdateAcceptanceCriterion(criterion.Id, "Updated criterion", actorId);
@@ -241,7 +243,7 @@ public sealed class IssueTests
   public void RemoveAcceptanceCriterion_WithActor_ShouldAddHistoryEntry()
   {
     var actorId = Guid.CreateVersion7();
-    var issueResult = Issue.Create("Valid title", "Valid description");
+    var issueResult = Issue.Create(TestProjectId, "Valid title", "Valid description");
     var criterion = issueResult.Value.AddAcceptanceCriterion("Criterion to remove").Value;
 
     var result = issueResult.Value.RemoveAcceptanceCriterion(criterion.Id, actorId);

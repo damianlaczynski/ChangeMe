@@ -21,7 +21,8 @@ import {
   getIssuePriorityLabel,
   getIssuePrioritySeverity,
   getIssueStatusLabel,
-  getIssueStatusSeverity
+  getIssueStatusSeverity,
+  projectIssueRoutes
 } from '@features/issues/utils/issue.utils';
 import { BackButtonComponent } from '@shared/components/back-button/back-button.component';
 import { ConfirmationService } from 'primeng/api';
@@ -33,6 +34,7 @@ import { ProgressSpinner } from 'primeng/progressspinner';
 import { Tab, TabList, TabPanel, TabPanels, Tabs } from 'primeng/tabs';
 import { Tag } from 'primeng/tag';
 import { Tooltip } from 'primeng/tooltip';
+import { filter, map } from 'rxjs';
 
 type IssueDetailsTab = 'comments' | 'attachments' | 'history';
 
@@ -82,10 +84,23 @@ export class IssueDetailsComponent {
   readonly isTogglingWatch = signal(false);
   readonly isDeleting = signal(false);
   readonly activeTab = signal<IssueDetailsTab>('comments');
+  readonly projectId = signal('');
+  readonly issueRoutes = computed(() => projectIssueRoutes(this.projectId()));
 
   private lastLoadedIssueId: string | null = null;
 
   constructor() {
+    const parentRoute = this.route.parent;
+    if (parentRoute) {
+      parentRoute.paramMap
+        .pipe(
+          map((params) => params.get('projectId') ?? ''),
+          filter((projectId) => projectId.length > 0),
+          takeUntilDestroyed(this.destroyRef)
+        )
+        .subscribe((projectId) => this.projectId.set(projectId));
+    }
+
     this.route.queryParamMap
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((params) => {
@@ -209,7 +224,7 @@ export class IssueDetailsComponent {
       .subscribe({
         next: () => {
           this.toastService.success('Issue deleted');
-          void this.router.navigate(['/issues']);
+          void this.router.navigate(this.issueRoutes().list);
         },
         error: (error: Error) => {
           this.toastService.showApiError(error, 'Could not delete issue');
@@ -228,6 +243,7 @@ export class IssueDetailsComponent {
       .subscribe({
         next: (issue) => {
           this.issue.set(issue);
+          this.projectId.set(issue.projectId);
           this.isLoading.set(false);
           this.loadError.set(null);
         },

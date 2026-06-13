@@ -38,6 +38,11 @@ import { CreateIssueComponent } from '@features/issues/components/create-issue/c
 import { EditIssueComponent } from '@features/issues/components/edit-issue/edit-issue.component';
 import { IssueDetailsComponent } from '@features/issues/components/issue-details/issue-details.component';
 import { IssuesComponent } from '@features/issues/components/issues-list/issues-list.component';
+import { CreateProjectComponent } from '@features/projects/components/create-project/create-project.component';
+import { ProjectOverviewComponent } from '@features/projects/components/project-overview/project-overview.component';
+import { ProjectSettingsComponent } from '@features/projects/components/project-settings/project-settings.component';
+import { ProjectShellComponent } from '@features/projects/components/project-shell/project-shell.component';
+import { ProjectsListComponent } from '@features/projects/components/projects-list/projects-list.component';
 import { CreateRoleComponent } from '@features/roles/components/create-role/create-role.component';
 import { EditRoleComponent } from '@features/roles/components/edit-role/edit-role.component';
 import { RoleDetailsComponent } from '@features/roles/components/role-details/role-details.component';
@@ -51,7 +56,7 @@ import { PermissionCodes } from '@shared/authorization/permission-codes';
 export const routes: Routes = [
   {
     path: '',
-    redirectTo: 'issues',
+    redirectTo: 'projects',
     pathMatch: 'full'
   },
   {
@@ -119,24 +124,69 @@ export const routes: Routes = [
     canActivate: [optionalPasskeyEnrollmentGuard]
   },
   {
+    path: 'projects',
+    canActivate: [authGuard, permissionGuard(PermissionCodes.projectsView)],
+    children: [
+      {
+        path: '',
+        component: ProjectsListComponent
+      },
+      {
+        path: 'create',
+        component: CreateProjectComponent,
+        canActivate: [permissionGuard(PermissionCodes.projectsManage)]
+      },
+      {
+        path: ':projectId',
+        component: ProjectShellComponent,
+        children: [
+          {
+            path: '',
+            component: ProjectOverviewComponent
+          },
+          {
+            path: 'issues',
+            component: IssuesComponent
+          },
+          {
+            path: 'issues/create',
+            component: CreateIssueComponent
+          },
+          {
+            path: 'issues/:id',
+            component: IssueDetailsComponent
+          },
+          {
+            path: 'issues/:id/edit',
+            component: EditIssueComponent
+          },
+          {
+            path: 'settings',
+            component: ProjectSettingsComponent
+          }
+        ]
+      }
+    ]
+  },
+  {
     path: 'issues',
-    component: IssuesComponent,
-    canActivate: [authGuard]
+    redirectTo: 'projects',
+    pathMatch: 'full'
   },
   {
     path: 'issues/create',
-    component: CreateIssueComponent,
-    canActivate: [authGuard]
+    redirectTo: 'projects',
+    pathMatch: 'full'
   },
   {
     path: 'issues/:id',
-    component: IssueDetailsComponent,
-    canActivate: [authGuard]
+    redirectTo: 'projects',
+    pathMatch: 'full'
   },
   {
     path: 'issues/:id/edit',
-    component: EditIssueComponent,
-    canActivate: [authGuard]
+    redirectTo: 'projects',
+    pathMatch: 'full'
   },
   {
     path: 'account',

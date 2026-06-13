@@ -6,6 +6,9 @@ export interface IssueDto {
   description: string;
   status: IssueStatus;
   priority: IssuePriority;
+  projectId: string;
+  projectKey: string;
+  projectName: string;
   createdBy: string;
   createdByName?: string | null;
   assignedToUserId?: string | null;
@@ -28,6 +31,9 @@ export interface IssueDetailsDto {
   description: string;
   status: IssueStatus;
   priority: IssuePriority;
+  projectId: string;
+  projectKey: string;
+  projectName: string;
   createdBy: string;
   createdByName?: string | null;
   assignedToUserId?: string | null;
@@ -97,6 +103,7 @@ export interface IssueHistoryEntryDto {
 }
 
 export interface CreateIssueRequest {
+  projectId: string;
   title: string;
   description: string;
   status: IssueStatus;
@@ -126,6 +133,7 @@ export interface UpdateIssueAcceptanceCriterionPayload {
 }
 
 export interface IssueSearchParameters extends PaginationParameters {
+  projectId?: string;
   searchText?: string;
   statuses?: IssueStatus[];
   priorities?: IssuePriority[];

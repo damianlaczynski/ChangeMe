@@ -61,7 +61,7 @@ Signed-in users must be able to register, name, and remove passkeys on their acc
 ### Strict passkey setup (signed-in enrollment)
 
 - When **Passkeys authentication required** is **true** and the user has zero passkeys, **strict passkey setup** (FR-PKY-006) uses the same **Add passkey** ceremony without step-up (first credential).
-- After the first passkey is registered during strict setup, the application opens **Issues list** subject to remaining gates (two-factor, password expiration).
+- After the first passkey is registered during strict setup, the application opens **Projects list** subject to remaining gates (two-factor, password expiration).
 
 ### States and business rules
 

@@ -9,7 +9,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ToastService } from '@core/toast/services/toast.service';
 import {
   IssueAssignableUserDto,
@@ -27,7 +27,8 @@ import {
   getIssueStatusSeverity,
   issueDeleteMenuItemDangerClasses,
   issuePriorities,
-  issueStatuses
+  issueStatuses,
+  projectIssueRoutes
 } from '@features/issues/utils/issue.utils';
 import { AppliedFiltersChipsComponent } from '@shared/components/applied-filters-chips/applied-filters-chips.component';
 import { PaginationResult } from '@shared/data/models/pagination-result.model';
@@ -48,7 +49,7 @@ import { TableModule } from 'primeng/table';
 import { Tag } from 'primeng/tag';
 import { Tooltip } from 'primeng/tooltip';
 import { PaginatorState } from 'primeng/types/paginator';
-import { catchError, of, switchMap, tap } from 'rxjs';
+import { catchError, filter, map, of, switchMap, tap } from 'rxjs';
 
 type IssuesFilterForm = {
   searchText: FormControl<string>;
@@ -86,6 +87,7 @@ type IssueSortField = 'Id' | 'Title' | 'CreatedAt' | 'LastActivityAt';
 })
 export class IssuesComponent {
   private readonly issuesService = inject(IssuesService);
+  private readonly route = inject(ActivatedRoute);
   private readonly confirmationService = inject(ConfirmationService);
   private readonly toastService = inject(ToastService);
   private readonly destroyRef = inject(DestroyRef);
@@ -115,6 +117,9 @@ export class IssuesComponent {
   readonly filtersCollapsed = signal(true);
   readonly issueActionItems = signal<MenuItem[]>([]);
   private readonly issueActionsMenu = viewChild.required<Menu>('issueActionsMenu');
+
+  readonly projectId = signal('');
+  readonly issueRoutes = computed(() => projectIssueRoutes(this.projectId()));
 
   readonly appliedFilterChips = computed(() => {
     const query = this.query();
@@ -172,6 +177,20 @@ export class IssuesComponent {
   });
 
   constructor() {
+    const parentRoute = this.route.parent;
+    if (parentRoute) {
+      parentRoute.paramMap
+        .pipe(
+          map((params) => params.get('projectId') ?? ''),
+          filter((projectId) => projectId.length > 0),
+          takeUntilDestroyed(this.destroyRef)
+        )
+        .subscribe((projectId) => {
+          this.projectId.set(projectId);
+          this.query.update((current) => ({ ...current, projectId, pageNumber: 1 }));
+        });
+    }
+
     this.loadAssignableUsers();
 
     toObservable(this.query)
@@ -208,6 +227,7 @@ export class IssuesComponent {
     this.query.set({
       ...this.query(),
       pageNumber: 1,
+      projectId: this.projectId() || this.query().projectId,
       searchText: formValue.searchText.trim() || undefined,
       statuses: formValue.statuses.length > 0 ? formValue.statuses : undefined,
       priorities: formValue.priorities.length > 0 ? formValue.priorities : undefined,
@@ -337,13 +357,13 @@ export class IssuesComponent {
       {
         label: 'Open details',
         icon: 'pi pi-eye',
-        routerLink: ['/issues', issue.id]
+        routerLink: this.issueRoutes().details(issue.id)
       },
       { separator: true },
       {
         label: 'Edit issue',
         icon: 'pi pi-pencil',
-        routerLink: ['/issues', issue.id, 'edit']
+        routerLink: this.issueRoutes().edit(issue.id)
       },
       {
         label: 'Delete issue',

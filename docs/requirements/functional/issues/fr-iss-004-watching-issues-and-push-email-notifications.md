@@ -5,9 +5,11 @@ domain: issues
 type: functional
 status: active
 depends_on: [FR-ISS-002, FR-ISS-006]
-inherits_nfr: [NFR-QUAL-001, NFR-A11Y-001, NFR-I18N-001, NFR-PERF-001, NFR-RSP-001]
+inherits_nfr:
+  [NFR-QUAL-001, NFR-A11Y-001, NFR-I18N-001, NFR-PERF-001, NFR-RSP-001]
 inherits_fr: [FR-UI-001]
 ---
+
 ## Goal
 
 The user must be able to watch selected issues and receive in-app push notifications and email about related activity.
@@ -16,7 +18,7 @@ The user must be able to watch selected issues and receive in-app push notificat
 
 ### Watch management
 
-- Start watching from **Issues list** and **Issue details**.
+- Start watching from **Project issues list** and **Issue details**.
 - Stop watching from the same places.
 - Watch state is stored per user and per issue; duplicate watches for the same user and issue are not created.
 - Watch button shows **watcher count** and whether the current user watches the issue.
@@ -41,7 +43,7 @@ Notifications are sent to watchers (excluding the acting user) for:
 - Each notification includes: **notification id**, **event type**, **issue id**, **issue title**, **message**, **event time**, and **link** to the issue.
 - When signed in, new notifications update the top-bar bell badge and, when the notification panel is open, the list inside the panel.
 - After connection loss, the user can continue working; when the push connection resumes, the notification bell and open panel resynchronize.
-- **Issues list** and **Issue details** do not auto-refresh from push events; the user refreshes or navigates to see current issue data.
+- **Project issues list** and **Issue details** do not auto-refresh from push events; the user refreshes or navigates to see current issue data.
 
 ### Email notifications
 

@@ -18,6 +18,7 @@ public class Issue : Entity, IAggregateRoot
   public IssueStatus Status { get; private set; } = IssueStatus.NEW;
   public IssuePriority Priority { get; private set; } = IssuePriority.MEDIUM;
   public Guid? AssignedToUserId { get; private set; }
+  public Guid ProjectId { get; private set; }
   public DateTime LastActivityAt { get; private set; }
 
   public IReadOnlyCollection<IssueAcceptanceCriterion> AcceptanceCriteria => acceptanceCriteria.AsReadOnly();
@@ -27,18 +28,20 @@ public class Issue : Entity, IAggregateRoot
   public IReadOnlyCollection<IssueWatcher> Watchers => watchers.AsReadOnly();
 
   public static Result<Issue> Create(
+    Guid projectId,
     string title,
     string description,
     IssuePriority priority = IssuePriority.MEDIUM,
     IssueStatus status = IssueStatus.NEW,
     Guid? assignedToUserId = null)
   {
-    var validationErrors = Validate(title, description, priority, status);
+    var validationErrors = Validate(projectId, title, description, priority, status);
     if (validationErrors.Count > 0)
       return Result.Invalid(validationErrors);
 
     var issue = new Issue
     {
+      ProjectId = projectId,
       Title = title.Trim(),
       Description = description.Trim(),
       Priority = priority,
@@ -71,7 +74,7 @@ public class Issue : Entity, IAggregateRoot
     Guid? assignedToUserId,
     Guid actorUserId)
   {
-    var validationErrors = Validate(title, description, priority, status);
+    var validationErrors = Validate(ProjectId, title, description, priority, status);
     if (validationErrors.Count > 0)
       return Result.Invalid(validationErrors);
 
@@ -380,12 +383,16 @@ public class Issue : Entity, IAggregateRoot
   }
 
   private static List<ValidationError> Validate(
+    Guid projectId,
     string title,
     string description,
     IssuePriority priority,
     IssueStatus status)
   {
     var validationErrors = new List<ValidationError>();
+
+    if (projectId == Guid.Empty)
+      validationErrors.Add(new ValidationError(nameof(ProjectId), "cannot be empty"));
 
     if (string.IsNullOrWhiteSpace(title))
       validationErrors.Add(new ValidationError(nameof(Title), "cannot be empty"));

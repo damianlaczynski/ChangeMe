@@ -5,7 +5,10 @@
 >
   <div class="mb-4 flex flex-wrap items-center gap-2">
     @if (id(); as issueId) {
-      <app-back-button label="Back to issue details" [route]="['/issues', issueId]" />
+      <app-back-button
+        label="Back to issue details"
+        [route]="issueRoutes().details(issueId)"
+      />
     }
   </div>
 

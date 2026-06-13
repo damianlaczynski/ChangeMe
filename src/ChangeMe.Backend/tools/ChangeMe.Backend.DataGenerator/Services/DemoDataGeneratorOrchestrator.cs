@@ -9,6 +9,7 @@ namespace ChangeMe.Backend.DataGenerator.Services;
 internal sealed class DemoDataGeneratorOrchestrator(
   ApplicationDbContext dbContext,
   UsersGenerator usersGenerator,
+  ProjectsGenerator projectsGenerator,
   IssuesGenerator issuesGenerator,
   NotificationsGenerator notificationsGenerator,
   IOptions<DataGeneratorOptions> options,
@@ -19,8 +20,11 @@ internal sealed class DemoDataGeneratorOrchestrator(
     var config = options.Value;
 
     var users = await usersGenerator.GenerateAsync(cancellationToken);
-    var issues = issuesGenerator.Generate(users);
+    var projects = projectsGenerator.Generate(users);
+    var issues = issuesGenerator.Generate(users, projects);
 
+    dbContext.Projects.AddRange(projects);
+    dbContext.ProjectMembers.AddRange(projects.SelectMany(p => p.Members));
     dbContext.Issues.AddRange(issues);
     await dbContext.SaveChangesAsync(cancellationToken);
 
@@ -33,6 +37,7 @@ internal sealed class DemoDataGeneratorOrchestrator(
 
     var summary = new GenerationSummary(
       users.Count,
+      projects.Count,
       issues.Count,
       issues.Sum(i => i.Comments.Count),
       notifications.Count,
@@ -40,8 +45,9 @@ internal sealed class DemoDataGeneratorOrchestrator(
       config.DefaultPassword);
 
     logger.LogInformation(
-      "Demo data generated: {UserCount} users, {IssueCount} issues, {CommentCount} comments, {NotificationCount} notifications",
+      "Demo data generated: {UserCount} users, {ProjectCount} projects, {IssueCount} issues, {CommentCount} comments, {NotificationCount} notifications",
       summary.UserCount,
+      summary.ProjectCount,
       summary.IssueCount,
       summary.CommentCount,
       summary.NotificationCount);
@@ -55,6 +61,7 @@ internal sealed class DemoDataGeneratorOrchestrator(
 
 internal sealed record GenerationSummary(
   int UserCount,
+  int ProjectCount,
   int IssueCount,
   int CommentCount,
   int NotificationCount,

@@ -17,9 +17,18 @@ import { PasskeySetupNoticeService } from '@features/auth/services/passkey-setup
 import { PasswordExpirationNoticeService } from '@features/auth/services/password-expiration-notice.service';
 import { TwoFactorSetupNoticeService } from '@features/auth/services/two-factor-setup-notice.service';
 import { NotificationsBellComponent } from '@features/notifications/components/notifications-bell/notifications-bell.component';
+import {
+  isProjectWorkspaceUrl,
+  ProjectWorkspaceService
+} from '@features/projects/services/project-workspace.service';
+import {
+  getProjectStatusLabel,
+  getProjectStatusSeverity
+} from '@features/projects/utils/projects.utils';
 import { PermissionCodes } from '@shared/authorization/permission-codes';
 import { Button } from 'primeng/button';
 import { Drawer } from 'primeng/drawer';
+import { Tag } from 'primeng/tag';
 import { filter, map } from 'rxjs/operators';
 
 @Component({
@@ -36,7 +45,8 @@ import { filter, map } from 'rxjs/operators';
     TwoFactorSetupDialogComponent,
     PasskeySetupDialogComponent,
     Button,
-    Drawer
+    Drawer,
+    Tag
   ],
   templateUrl: './app-shell.component.html'
 })
@@ -47,6 +57,10 @@ export class AppShellComponent {
   private readonly destroyRef = inject(DestroyRef);
 
   readonly layoutService = inject(LayoutService);
+  readonly projectWorkspace = inject(ProjectWorkspaceService);
+
+  readonly getProjectStatusLabel = getProjectStatusLabel;
+  readonly getProjectStatusSeverity = getProjectStatusSeverity;
 
   readonly currentUser = this.authService.currentUser;
   readonly formatUserReference = formatUserReference;
@@ -54,12 +68,31 @@ export class AppShellComponent {
   readonly requiresPasswordChangeScreen = this.authService.requiresPasswordChangeScreen;
   readonly requiresTwoFactorSetupScreen = this.authService.requiresTwoFactorSetupScreen;
   readonly requiresPasskeySetupScreen = this.authService.requiresPasskeySetupScreen;
-  readonly showAuthenticatedChrome = computed(
+  readonly isProjectWorkspace = toSignal(
+    this.router.events.pipe(
+      filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+      map(() => isProjectWorkspaceUrl(this.router.url)),
+      takeUntilDestroyed(this.destroyRef)
+    ),
+    { initialValue: isProjectWorkspaceUrl(this.router.url) }
+  );
+
+  readonly showGlobalAuthenticatedChrome = computed(
     () =>
       this.isAuthenticated() &&
       !this.requiresPasswordChangeScreen() &&
       !this.requiresTwoFactorSetupScreen() &&
-      !this.requiresPasskeySetupScreen()
+      !this.requiresPasskeySetupScreen() &&
+      !this.isProjectWorkspace()
+  );
+
+  readonly showProjectWorkspaceChrome = computed(
+    () =>
+      this.isAuthenticated() &&
+      !this.requiresPasswordChangeScreen() &&
+      !this.requiresTwoFactorSetupScreen() &&
+      !this.requiresPasskeySetupScreen() &&
+      this.isProjectWorkspace()
   );
   readonly isDesktop = toSignal(
     this.breakpointObserver
@@ -70,8 +103,7 @@ export class AppShellComponent {
 
   readonly authenticatedNavItems = computed<LayoutNavItem[]>(() => {
     const items: LayoutNavItem[] = [
-      { label: 'Issues', icon: 'pi pi-list', routerLink: '/issues', exact: true },
-      { label: 'Create issue', icon: 'pi pi-plus', routerLink: '/issues/create' }
+      { label: 'Projects', icon: 'pi pi-folder', routerLink: '/projects', exact: true }
     ];
 
     if (this.authService.hasPermission(PermissionCodes.usersView)) {

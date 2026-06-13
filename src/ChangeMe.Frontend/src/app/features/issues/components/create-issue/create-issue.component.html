@@ -4,7 +4,7 @@
   subheader="Create a new issue and move to its details page after saving"
 >
   <div class="mb-4 flex flex-wrap items-center gap-2">
-    <app-back-button label="Back to issues list" [route]="['/issues']" />
+    <app-back-button label="Back to issues list" [route]="issueRoutes().list" />
   </div>
 
   <form class="p-fluid flex flex-col gap-4" [formGroup]="form" (ngSubmit)="onSubmit()">

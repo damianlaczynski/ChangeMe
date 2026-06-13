@@ -1,11 +1,13 @@
 using ChangeMe.Backend.Domain.Aggregates.Issue.Enums;
 using ChangeMe.Backend.Domain.Aggregates.Users;
 using ChangeMe.Backend.UseCases.Issues.Dtos;
+using ChangeMe.Backend.UseCases.Projects.Utils;
 
 namespace ChangeMe.Backend.UseCases.Issues;
 
 public class GetAllIssuesQuery : PaginationQuery<IssueDto>
 {
+  public Guid? ProjectId { get; set; }
   public string? SearchText { get; set; }
   public List<IssueStatus>? Statuses { get; set; }
   public List<IssuePriority>? Priorities { get; set; }
@@ -26,6 +28,20 @@ public class GetAllIssuesHandler(
     var issuesQuery = context.Issues
       .AsNoTracking()
       .AsQueryable();
+
+    if (query.ProjectId.HasValue)
+    {
+      var projectAccess = await ProjectsUtils.GetAccessibleProjectReadOnlyAsync(
+        context,
+        query.ProjectId.Value,
+        currentUserId,
+        cancellationToken);
+
+      if (!projectAccess.IsSuccess)
+        return projectAccess.Map();
+
+      issuesQuery = issuesQuery.Where(i => i.ProjectId == query.ProjectId.Value);
+    }
 
     if (!string.IsNullOrWhiteSpace(query.SearchText))
     {
@@ -71,6 +87,9 @@ public class GetAllIssuesHandler(
         Description = i.Description,
         Status = i.Status,
         Priority = i.Priority,
+        ProjectId = i.ProjectId,
+        ProjectKey = context.Projects.Where(p => p.Id == i.ProjectId).Select(p => p.Key).FirstOrDefault() ?? string.Empty,
+        ProjectName = context.Projects.Where(p => p.Id == i.ProjectId).Select(p => p.Name).FirstOrDefault() ?? string.Empty,
         CreatedBy = i.CreatedBy,
         CreatedByName = context.Users
           .Where(u => u.Id == i.CreatedBy)

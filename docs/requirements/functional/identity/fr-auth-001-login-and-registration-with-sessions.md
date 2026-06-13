@@ -25,7 +25,7 @@ The user must be able to sign in with email and password and begin an authentica
 | **Email**    | Text field, **required**; valid email format; max **320** characters.             |
 | **Password** | Password field, **required**; **8–128** characters (same bounds as registration). |
 
-- Successful sign-in opens the **Issues list** screen with the user authenticated, unless a post-authentication gate applies: **Required password change** (FR-AUTH-009), **Two-factor verification** (FR-AUTH-013), or **strict two-factor setup** (FR-AUTH-013).
+- Successful sign-in opens the **Projects list** screen with the user authenticated, unless a post-authentication gate applies: **Required password change** (FR-AUTH-009), **Two-factor verification** (FR-AUTH-013), or **strict two-factor setup** (FR-AUTH-013).
 - The system creates a **session** (full or enrollment bootstrap per FR-AUTH-013) only after all gates for the sign-in path succeed; **pending sign-in challenge** (two-factor verification before any JWT) is not a session.
 - Each created session records **signed in at**, **device / browser label**, and **IP address**.
 - The system provides the user’s effective permissions defined in FR-ROL-001.
@@ -33,7 +33,7 @@ The user must be able to sign in with email and password and begin an authentica
 - Sign-in attempt when the account is **deactivated** shows form-level error: **`This account has been deactivated. Contact an administrator.`**
 - Sign-in attempt when the user is **awaiting invitation acceptance** shows form-level error: **`Complete your account setup using the invitation link sent to your email.`** (External sign-in with a matching verified email completes the invitation instead; see FR-AUTH-010.)
 - Sign-in attempt when email verification is **enabled** and the mailbox is **not yet verified** shows form-level error: **`Verify your email before signing in.`** with link **Resend verification email** → **Verify email** (FR-AUTH-011).
-- Successful sign-in when the password has **expired** (FR-AUTH-009) opens **Required password change** instead of **Issues list**.
+- Successful sign-in when the password has **expired** (FR-AUTH-009) opens **Required password change** instead of **Projects list**.
 - When two-factor authentication is enabled for the account (FR-AUTH-013), successful password validation opens **Two-factor verification** (pending challenge) instead of issuing a session immediately, unless **strict two-factor setup** or **Required password change** applies per **Combined account compliance gates** (`docs/requirements/_shared/reference/compliance-gates.md`).
 - When email verification is **enabled**, successful sign-in is allowed only if the mailbox is **verified** (evaluated before password expiration).
 - Footer link on **Login**: **Forgot password?** → **Forgot password** (FR-AUTH-006).
@@ -53,7 +53,7 @@ The user must be able to sign in with email and password and begin an authentica
 | **Password**         | Password field, **required**; **8–128** characters.                            |
 | **Confirm password** | **Required**; must match **Password**.                                         |
 
-- When **Email verification enabled** is **false** (FR-AUTH-011), successful registration creates a user with **Deactivated** false, **Email verified** true, assigns the default **User** role (FR-ROL-006), sets **password last changed at**, creates a session, and opens **Issues list**.
+- When **Email verification enabled** is **false** (FR-AUTH-011), successful registration creates a user with **Deactivated** false, **Email verified** true, assigns the default **User** role (FR-ROL-006), sets **password last changed at**, creates a session, and opens **Projects list**.
 - When **Email verification enabled** is **true**, successful registration creates a user with **Deactivated** false, **Email verified** false, assigns the **User** role, sets **password last changed at**, sends **Verify your email**, does **not** create a session, and opens **Verify email** with message **`Account created. Check your email to verify your address before signing in.`**
 - Duplicate email shows form-level error: **`An account with this email already exists.`**, **except** when the email belongs to an existing account that may be completed via public registration (**Invitation canceled** path — FR-INV-005): no local password, not **awaiting invitation acceptance**, not **deactivated**. In that case registration **sets the password** and profile on the existing row (does not create a second user).
 
@@ -75,8 +75,8 @@ The user must be able to sign in with email and password and begin an authentica
 
 ### Form actions
 
-- **Sign in** button: on success navigate to **Issues list**; on failure remain on **Login**.
-- **Create account** button: on success navigate to **Issues list** when email verification is disabled; navigate to **Verify email** when email verification is enabled; on failure remain on **Register**.
+- **Sign in** button: on success navigate to **Projects list**; on failure remain on **Login**.
+- **Create account** button: on success navigate to **Projects list** when email verification is disabled; navigate to **Verify email** when email verification is enabled; on failure remain on **Register**.
 - Footer link on **Register**: **Sign in** → **Login**.
 - While submit is in progress, the submit button shows a loading state; the form remains visible.
 

@@ -31,9 +31,11 @@ The catalog contains exactly these permissions:
 | **Sessions.ManageOwn** | Manage own sessions  | Revoke non-current own sessions and use **Sign out everywhere**.              | Sessions |
 | **Sessions.ViewAny**   | View user sessions   | View active sessions of any user in **User details**.                         | Sessions |
 | **Sessions.ManageAny** | Manage user sessions | Revoke sessions of any user, including **Revoke all sessions**.               | Sessions |
+| **Projects.View**      | View projects        | View **Projects list**, open project workspaces, and browse project issues.   | Projects |
+| **Projects.Manage**    | Manage projects      | Create new projects.                                                          | Projects |
 
 - New permissions are added only by updating requirements and a subsequent release; administrators cannot create new permission codes in the UI.
-- **Out of scope:** issue-level permissions. Issues remain available to all authenticated users with **Deactivated** false until a separate functional specification introduces issue permissions.
+- **Out of scope:** issue-level permissions. Issue actions inside a project workspace remain available to authenticated users who can access the project (FR-PRJ-001) until a separate functional specification introduces issue permissions.
 
 ### Effective permissions
 
@@ -54,7 +56,7 @@ The catalog contains exactly these permissions:
 
 ### Permissions and visibility
 
-- Permission names in FR-ROL-001 are used across **Users**, **Roles**, **Auth**, and **Sessions** specifications to control screen and action visibility.
+- Permission names in FR-ROL-001 are used across **Users**, **Roles**, **Auth**, **Sessions**, and **Projects** specifications to control screen and action visibility.
 
 ## Non-functional requirements
 

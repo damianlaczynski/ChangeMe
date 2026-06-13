@@ -4,7 +4,7 @@ title: Issue Create and Edit Flow
 domain: issues
 type: functional
 status: active
-depends_on: [FR-ISS-003, FR-USR-005]
+depends_on: [FR-ISS-003, FR-PRJ-003, FR-USR-005]
 inherits_nfr:
   [NFR-QUAL-001, NFR-A11Y-001, NFR-I18N-001, NFR-PERF-001, NFR-RSP-001]
 inherits_fr: [FR-UI-001]
@@ -19,7 +19,9 @@ The user must be able to create a new issue and edit an existing one by providin
 ### Access
 
 - Screens: **Create issue**, **Edit issue**
-- Available only to authenticated users.
+- Available only inside a **project workspace** (FR-PRJ-003).
+- **Create issue** assigns the issue to the **current project** automatically; the form does **not** include a project selector.
+- Creating an issue in an **Archived** project is rejected (FR-PRJ-002).
 
 ### "Issue details" section (create and edit)
 
@@ -61,10 +63,10 @@ The user must be able to create a new issue and edit an existing one by providin
 
 ### Back navigation (create and edit)
 
-| Screen           | Back button label         | Destination                            |
-| ---------------- | ------------------------- | -------------------------------------- |
-| **Create issue** | **Back to issues list**   | **Issues list**                        |
-| **Edit issue**   | **Back to issue details** | **Issue details** for the edited issue |
+| Screen           | Back button label         | Destination                                     |
+| ---------------- | ------------------------- | ----------------------------------------------- |
+| **Create issue** | **Back to issues list**   | **Project issues list** for the current project |
+| **Edit issue**   | **Back to issue details** | **Issue details** for the edited issue          |
 
 ### Consistency between create and edit
 

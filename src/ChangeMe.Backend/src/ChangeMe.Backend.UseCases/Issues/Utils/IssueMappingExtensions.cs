@@ -11,7 +11,10 @@ public static class IssueMappingExtensions
   public static IssueDetailsDto ToDetailsDto(
     this Issue issue,
     IReadOnlyDictionary<Guid, string> userLookup,
-    Guid? currentUserId)
+    Guid? currentUserId,
+    Guid projectId,
+    string projectKey,
+    string projectName)
   {
     return new IssueDetailsDto
     {
@@ -20,6 +23,9 @@ public static class IssueMappingExtensions
       Description = issue.Description,
       Status = issue.Status,
       Priority = issue.Priority,
+      ProjectId = projectId,
+      ProjectKey = projectKey,
+      ProjectName = projectName,
       CreatedBy = issue.CreatedBy,
       CreatedByName = userLookup.GetValueOrDefault(issue.CreatedBy),
       AssignedToUserId = issue.AssignedToUserId,

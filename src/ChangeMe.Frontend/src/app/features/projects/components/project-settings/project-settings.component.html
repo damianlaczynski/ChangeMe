@@ -1,0 +1,199 @@
+@if (errorMessage()) {
+  <p-message severity="error" class="mb-4">{{ errorMessage() }}</p-message>
+}
+
+@if (isLoading()) {
+  <p class="text-muted-color m-0">Loading settings...</p>
+} @else if (project(); as currentProject) {
+  <div class="flex flex-col gap-4">
+    <p-card
+      header="Project settings"
+      subheader="Manage project profile and membership."
+    >
+      @if (!canManageProject()) {
+        <p-message severity="info" class="mb-4">
+          You can view project settings, but only project owners can edit them.
+        </p-message>
+      }
+
+      @if (submitError()) {
+        <p-message severity="error" class="mb-4">{{ submitError() }}</p-message>
+      }
+
+      <form
+        class="p-fluid flex flex-col gap-4"
+        [formGroup]="form"
+        (ngSubmit)="onSubmit()"
+      >
+        <p-panel header="Profile" [toggleable]="true">
+          <div class="grid gap-4 md:grid-cols-2">
+            <div class="flex flex-col gap-1.5">
+              <label for="name">Name</label>
+              <input
+                id="name"
+                type="text"
+                pInputText
+                [formControl]="form.controls.name"
+              />
+            </div>
+            <div class="flex flex-col gap-1.5">
+              <label for="key">Key</label>
+              <input
+                id="key"
+                type="text"
+                pInputText
+                [formControl]="form.controls.key"
+                (input)="onKeyInput($event)"
+              />
+            </div>
+            <div class="flex flex-col gap-1.5 md:col-span-2">
+              <label for="description">Description</label>
+              <textarea
+                id="description"
+                pTextarea
+                rows="4"
+                [formControl]="form.controls.description"
+              ></textarea>
+            </div>
+            <div class="flex flex-col gap-1.5">
+              <label for="visibility">Visibility</label>
+              <p-select
+                inputId="visibility"
+                [options]="projectVisibilities"
+                optionLabel="label"
+                optionValue="value"
+                [formControl]="form.controls.visibility"
+              />
+            </div>
+            <div class="flex flex-col gap-1.5">
+              <label for="status">Status</label>
+              <p-select
+                inputId="status"
+                [options]="projectStatuses"
+                optionLabel="label"
+                optionValue="value"
+                [formControl]="form.controls.status"
+              />
+            </div>
+            <div class="flex flex-col gap-1.5">
+              <label for="color">Accent color</label>
+              <input id="color" type="color" [formControl]="form.controls.color" />
+            </div>
+          </div>
+        </p-panel>
+
+        @if (canManageProject()) {
+          <div class="flex flex-wrap gap-2">
+            <p-button
+              type="submit"
+              label="Save changes"
+              icon="pi pi-check"
+              [loading]="isSubmitting()"
+            />
+          </div>
+        }
+      </form>
+    </p-card>
+
+    <p-card header="Members" subheader="Project workspace access and roles.">
+      @if (memberError()) {
+        <p-message severity="error" class="mb-4">{{ memberError() }}</p-message>
+      }
+
+      @if (canManageProject()) {
+        <form
+          class="mb-4 grid gap-4 md:grid-cols-[minmax(0,1fr)_12rem_auto] md:items-end"
+          [formGroup]="addMemberForm"
+          (ngSubmit)="onAddMember()"
+        >
+          <div class="flex flex-col gap-1.5">
+            <label for="memberUser">User</label>
+            <p-select
+              inputId="memberUser"
+              [options]="availableUsers()"
+              optionLabel="displayLabel"
+              optionValue="id"
+              placeholder="Select user"
+              [formControl]="addMemberForm.controls.userId"
+              [showClear]="true"
+            />
+          </div>
+          <div class="flex flex-col gap-1.5">
+            <label for="memberRole">Role</label>
+            <p-select
+              inputId="memberRole"
+              [options]="projectMemberRoles"
+              optionLabel="label"
+              optionValue="value"
+              [formControl]="addMemberForm.controls.role"
+            />
+          </div>
+          <p-button
+            type="submit"
+            label="Add member"
+            icon="pi pi-user-plus"
+            [loading]="isAddingMember()"
+            [disabled]="availableUsers().length === 0"
+          />
+        </form>
+      }
+
+      <p-table [value]="currentProject.members" stripedRows>
+        <ng-template #header>
+          <tr>
+            <th>User</th>
+            <th>Role</th>
+            <th>Joined</th>
+            @if (canManageProject()) {
+              <th>Actions</th>
+            }
+          </tr>
+        </ng-template>
+        <ng-template #body let-member>
+          <tr>
+            <td>{{ member.displayLabel }}</td>
+            <td>
+              @if (canManageProject()) {
+                <p-select
+                  [options]="projectMemberRoles"
+                  optionLabel="label"
+                  optionValue="value"
+                  [ngModel]="member.role"
+                  (ngModelChange)="onMemberRoleChange(member, $event)"
+                  [disabled]="isMemberActionLoading(member.userId)"
+                  appendTo="body"
+                />
+              } @else {
+                <p-tag
+                  [value]="getProjectMemberRoleLabel(member.role)"
+                  severity="secondary"
+                />
+              }
+            </td>
+            <td>{{ member.joinedAt | date: 'medium' }}</td>
+            @if (canManageProject()) {
+              <td>
+                <p-button
+                  label="Remove"
+                  icon="pi pi-user-minus"
+                  severity="danger"
+                  [text]="true"
+                  size="small"
+                  [loading]="isMemberActionLoading(member.userId)"
+                  (onClick)="confirmRemoveMember(member)"
+                />
+              </td>
+            }
+          </tr>
+        </ng-template>
+        <ng-template #emptymessage>
+          <tr>
+            <td [attr.colspan]="canManageProject() ? 4 : 3">
+              <p class="text-muted-color m-0 py-4 text-center">No members</p>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </p-card>
+  </div>
+}

@@ -8,7 +8,7 @@ When multiple policies apply, the system enforces **one gate at a time** in this
 2. **Two-factor verification** — pending challenge (FR-AUTH-013); skipped when **Passkey satisfies two-factor** applied on a passkey primary sign-in, or **Trust identity provider MFA** on external sign-in (FR-AUTH-014).
 3. **Strict two-factor setup** — **`twoFactorSetupRequired`** (FR-AUTH-013).
 4. **Strict passkey setup** — **`passkeySetupRequired`** when **Passkeys authentication required** is **true** and the user has zero passkeys (FR-PKY-001).
-5. **Full session** → **Issues list** (and other app screens).
+5. **Full session** → **Projects list** (and other app screens).
 
 ## Precedence rules
 
@@ -36,7 +36,7 @@ When multiple policies apply, the system enforces **one gate at a time** in this
 
 | Gate             | Summary                                  | Detail                                                                             | Action           |
 | ---------------- | ---------------------------------------- | ---------------------------------------------------------------------------------- | ---------------- |
-| Password         | **`Password change required`**           | Per FR-AUTH-009                                                                   | **`Change now`** |
+| Password         | **`Password change required`**           | Per FR-AUTH-009                                                                    | **`Change now`** |
 | Two-factor setup | **`Two-factor authentication required`** | **`Set up two-factor authentication to continue saving your work to the server.`** | **`Set up now`** |
 | Passkey setup    | **`Passkey required`**                   | **`Add a passkey to continue saving your work to the server.`**                    | **`Add now`**    |
 

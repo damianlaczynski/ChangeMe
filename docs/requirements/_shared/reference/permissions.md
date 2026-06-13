@@ -15,6 +15,8 @@ The catalog contains exactly these permissions:
 | **Sessions.ManageOwn** | Manage own sessions  | Revoke non-current own sessions and use **Sign out everywhere**.              | Sessions |
 | **Sessions.ViewAny**   | View user sessions   | View active sessions of any user in **User details**.                         | Sessions |
 | **Sessions.ManageAny** | Manage user sessions | Revoke sessions of any user, including **Revoke all sessions**.               | Sessions |
+| **Projects.View**      | View projects        | View **Projects list**, open project workspaces, and browse project issues.   | Projects |
+| **Projects.Manage**    | Manage projects      | Create new projects.                                                          | Projects |
 
 ## Effective permissions
 
@@ -24,4 +26,4 @@ The catalog contains exactly these permissions:
 
 ## Out of scope
 
-Issue-level permissions are not defined yet. Issues remain available to all authenticated users with **Deactivated** false until a separate REQ introduces issue permissions.
+Issue-level permissions are not defined yet. Issue actions inside a project workspace remain available to authenticated users who can access the project (FR-PRJ-001) until a separate REQ introduces issue permissions.

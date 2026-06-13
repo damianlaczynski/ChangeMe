@@ -1,0 +1,61 @@
+@if (errorMessage()) {
+  <p-message severity="error" class="mb-4">{{ errorMessage() }}</p-message>
+}
+
+@if (isLoading()) {
+  <p class="text-muted-color m-0">Loading overview...</p>
+} @else if (overview(); as project) {
+  <div class="flex flex-col gap-4">
+    <p-card
+      header="Overview"
+      [subheader]="formatProjectDescription(project.description)"
+    >
+      <div class="mb-4 flex flex-wrap items-center gap-2">
+        <p-tag
+          [value]="getProjectStatusLabel(project.status)"
+          [severity]="getProjectStatusSeverity(project.status)"
+        />
+        <p-tag
+          [value]="getProjectVisibilityLabel(project.visibility)"
+          severity="secondary"
+        />
+      </div>
+
+      <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div class="rounded-xl border border-surface-200 p-4 dark:border-surface-700">
+          <div class="text-muted-color text-sm">Total issues</div>
+          <div class="text-color text-3xl font-semibold">{{ project.totalIssues }}</div>
+        </div>
+        <div class="rounded-xl border border-surface-200 p-4 dark:border-surface-700">
+          <div class="text-muted-color text-sm">New</div>
+          <div class="text-color text-3xl font-semibold">{{ project.newIssues }}</div>
+        </div>
+        <div class="rounded-xl border border-surface-200 p-4 dark:border-surface-700">
+          <div class="text-muted-color text-sm">In progress</div>
+          <div class="text-color text-3xl font-semibold">
+            {{ project.inProgressIssues }}
+          </div>
+        </div>
+        <div class="rounded-xl border border-surface-200 p-4 dark:border-surface-700">
+          <div class="text-muted-color text-sm">Members</div>
+          <div class="text-color text-3xl font-semibold">{{ project.memberCount }}</div>
+        </div>
+      </div>
+
+      <div class="mt-4 flex flex-wrap gap-2">
+        <p-button
+          label="Browse issues"
+          icon="pi pi-list"
+          [routerLink]="['/projects', project.id, 'issues']"
+        />
+        <p-button
+          label="Create issue"
+          icon="pi pi-plus"
+          severity="secondary"
+          [outlined]="true"
+          [routerLink]="['/projects', project.id, 'issues', 'create']"
+        />
+      </div>
+    </p-card>
+  </div>
+}

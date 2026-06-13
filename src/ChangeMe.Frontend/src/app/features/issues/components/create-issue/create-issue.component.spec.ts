@@ -65,6 +65,7 @@ describe('CreateIssueComponent', () => {
   it('submits trimmed values and navigates to issue details', () => {
     const router = TestBed.inject(Router);
     const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    component.projectId.set('project-1');
 
     component.form.patchValue({
       title: '  Regression in filters  ',
@@ -78,6 +79,7 @@ describe('CreateIssueComponent', () => {
     component.onSubmit();
 
     expect(issuesService.createIssue).toHaveBeenCalledWith({
+      projectId: 'project-1',
       title: 'Regression in filters',
       description: 'Steps to reproduce',
       status: IssueStatus.NEW,
@@ -86,10 +88,16 @@ describe('CreateIssueComponent', () => {
       watchAfterCreate: false,
       acceptanceCriteria: []
     });
-    expect(navigateSpy).toHaveBeenCalledWith(['/issues', 'issue-1']);
+    expect(navigateSpy).toHaveBeenCalledWith([
+      '/projects',
+      'project-1',
+      'issues',
+      'issue-1'
+    ]);
   });
 
   it('includes trimmed acceptance criteria in the create request', () => {
+    component.projectId.set('project-1');
     component.addAcceptanceCriterion();
     component.form.controls.acceptanceCriteria.at(0)?.patchValue({
       content: '  User can save filters  '

@@ -3,6 +3,8 @@ using ChangeMe.Backend.Domain.Aggregates.Issue;
 using ChangeMe.Backend.Domain.Aggregates.Issue.Entities;
 using ChangeMe.Backend.Domain.Common.Attachments;
 using ChangeMe.Backend.Domain.Aggregates.Notifications;
+using ChangeMe.Backend.Domain.Aggregates.Projects;
+using ChangeMe.Backend.Domain.Aggregates.Projects.Entities;
 using ChangeMe.Backend.Domain.Aggregates.Roles;
 using ChangeMe.Backend.Domain.Aggregates.Sessions;
 using ChangeMe.Backend.Domain.Aggregates.Users;
@@ -22,6 +24,8 @@ public class ApplicationDbContext(
   public DbSet<IssueAttachment> IssueAttachments => Set<IssueAttachment>();
   public DbSet<IssueHistoryEntry> IssueHistoryEntries => Set<IssueHistoryEntry>();
   public DbSet<IssueWatcher> IssueWatchers => Set<IssueWatcher>();
+  public DbSet<Project> Projects => Set<Project>();
+  public DbSet<ProjectMember> ProjectMembers => Set<ProjectMember>();
   public DbSet<Notification> Notifications => Set<Notification>();
   public DbSet<User> Users => Set<User>();
   public DbSet<Role> Roles => Set<Role>();

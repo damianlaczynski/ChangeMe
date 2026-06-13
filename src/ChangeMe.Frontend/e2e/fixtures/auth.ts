@@ -20,7 +20,9 @@ export async function login(page: Page): Promise<void> {
     .fill(e2eCredentials.password);
   await page.locator('form button[type="submit"]').click();
   await dismissOptionalPasskeyPrompt(page);
-  await expect(page.getByText('Browse, filter and monitor issues.')).toBeVisible({
+  await expect(
+    page.getByText('Workspaces that group issues and future project features.')
+  ).toBeVisible({
     timeout: 20_000
   });
 }

@@ -1,4 +1,5 @@
 ﻿using ChangeMe.Backend.Domain.Aggregates.Issue;
+using ChangeMe.Backend.Domain.Aggregates.Projects;
 
 namespace ChangeMe.Backend.Infrastructure.Persistence.Config.Issues;
 
@@ -28,6 +29,17 @@ public class IssueConfiguration : BaseEntityTypeConfiguration<Issue>
 
     builder.Property(i => i.AssignedToUserId)
       .HasColumnType("uuid");
+
+    builder.Property(i => i.ProjectId)
+      .IsRequired()
+      .HasColumnType("uuid");
+
+    builder.HasOne<Project>()
+      .WithMany()
+      .HasForeignKey(i => i.ProjectId)
+      .OnDelete(DeleteBehavior.Restrict);
+
+    builder.HasIndex(i => i.ProjectId);
 
     builder.Property(i => i.LastActivityAt)
       .IsRequired();

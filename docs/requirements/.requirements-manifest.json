@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-11T22:45:36.638Z",
+  "generatedAt": "2026-06-13T19:28:29.114Z",
   "functional": [
     {
       "id": "FR-AUTH-001",
@@ -379,6 +379,7 @@
       "depends_on": [
         "FR-AUTH-001",
         "FR-ISS-002",
+        "FR-PRJ-003",
         "FR-USR-005"
       ],
       "inherits_nfr": [],
@@ -395,6 +396,7 @@
       "file": "functional/issues/fr-iss-002-issue-create-and-edit-flow.md",
       "depends_on": [
         "FR-ISS-003",
+        "FR-PRJ-003",
         "FR-USR-005"
       ],
       "inherits_nfr": [],
@@ -412,7 +414,8 @@
       "depends_on": [
         "FR-ISS-001",
         "FR-ISS-002",
-        "FR-ISS-004"
+        "FR-ISS-004",
+        "FR-PRJ-003"
       ],
       "inherits_nfr": [],
       "inherits_fr": [
@@ -430,13 +433,7 @@
         "FR-ISS-002",
         "FR-ISS-006"
       ],
-      "inherits_nfr": [
-        "NFR-QUAL-001",
-        "NFR-A11Y-001",
-        "NFR-I18N-001",
-        "NFR-PERF-001",
-        "NFR-RSP-001"
-      ],
+      "inherits_nfr": [],
       "inherits_fr": [
         "FR-UI-001"
       ]
@@ -574,6 +571,75 @@
       "file": "functional/passkeys/fr-pky-007-passkey-notification-emails.md",
       "depends_on": [
         "FR-AUTH-007"
+      ],
+      "inherits_nfr": [],
+      "inherits_fr": [
+        "FR-UI-001"
+      ]
+    },
+    {
+      "id": "FR-PRJ-001",
+      "title": "Projects List",
+      "domain": "projects",
+      "type": "functional",
+      "status": "active",
+      "file": "functional/projects/fr-prj-001-projects-list.md",
+      "depends_on": [
+        "FR-AUTH-001",
+        "FR-PRJ-002",
+        "FR-ROL-001"
+      ],
+      "inherits_nfr": [],
+      "inherits_fr": [
+        "FR-UI-001"
+      ]
+    },
+    {
+      "id": "FR-PRJ-002",
+      "title": "Create and Edit Project",
+      "domain": "projects",
+      "type": "functional",
+      "status": "active",
+      "file": "functional/projects/fr-prj-002-create-and-edit-project.md",
+      "depends_on": [
+        "FR-PRJ-001",
+        "FR-PRJ-003",
+        "FR-ROL-001"
+      ],
+      "inherits_nfr": [],
+      "inherits_fr": [
+        "FR-UI-001"
+      ]
+    },
+    {
+      "id": "FR-PRJ-003",
+      "title": "Project Workspace Layout and Overview",
+      "domain": "projects",
+      "type": "functional",
+      "status": "active",
+      "file": "functional/projects/fr-prj-003-project-workspace-layout-and-overview.md",
+      "depends_on": [
+        "FR-PRJ-001",
+        "FR-PRJ-002",
+        "FR-ISS-001"
+      ],
+      "inherits_nfr": [],
+      "inherits_fr": [
+        "FR-UI-001"
+      ]
+    },
+    {
+      "id": "FR-PRJ-004",
+      "title": "Project Members and Settings",
+      "domain": "projects",
+      "type": "functional",
+      "status": "active",
+      "file": "functional/projects/fr-prj-004-project-members-and-settings.md",
+      "depends_on": [
+        "FR-PRJ-002",
+        "FR-PRJ-003",
+        "FR-USR-002",
+        "FR-USR-005"
       ],
       "inherits_nfr": [],
       "inherits_fr": [

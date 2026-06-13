@@ -25,7 +25,9 @@ public static class PermissionCatalog
     new(PermissionCodes.SessionsViewOwn, "View own sessions", "View the current user's active sessions on My account.", "Sessions"),
     new(PermissionCodes.SessionsManageOwn, "Manage own sessions", "Revoke non-current own sessions and use Sign out everywhere.", "Sessions"),
     new(PermissionCodes.SessionsViewAny, "View user sessions", "View active sessions of any user in User details.", "Sessions"),
-    new(PermissionCodes.SessionsManageAny, "Manage user sessions", "Revoke sessions of any user, including Revoke all sessions.", "Sessions")
+    new(PermissionCodes.SessionsManageAny, "Manage user sessions", "Revoke sessions of any user, including Revoke all sessions.", "Sessions"),
+    new(PermissionCodes.ProjectsView, "View projects", "View projects, enter project workspaces, and browse project issues.", "Projects"),
+    new(PermissionCodes.ProjectsManage, "Manage projects", "Create new projects.", "Projects")
   ];
 
   private static readonly Dictionary<string, PermissionDefinition> DefinitionByCode =

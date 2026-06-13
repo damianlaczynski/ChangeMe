@@ -1,4 +1,4 @@
-import { Component, DestroyRef, inject, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   FormArray,
@@ -7,7 +7,7 @@ import {
   ReactiveFormsModule,
   Validators
 } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ToastService } from '@core/toast/services/toast.service';
 import {
   CreateIssueRequest,
@@ -20,7 +20,8 @@ import {
   IssueAcceptanceCriteriaConstraints,
   IssueConstraints,
   issuePriorities,
-  issueStatuses
+  issueStatuses,
+  projectIssueRoutes
 } from '@features/issues/utils/issue.utils';
 import { BackButtonComponent } from '@shared/components/back-button/back-button.component';
 import { Button } from 'primeng/button';
@@ -31,6 +32,7 @@ import { Message } from 'primeng/message';
 import { Panel } from 'primeng/panel';
 import { Select } from 'primeng/select';
 import { Textarea } from 'primeng/textarea';
+import { filter, map } from 'rxjs';
 
 type CreateIssueForm = {
   title: FormControl<string>;
@@ -64,6 +66,7 @@ type AcceptanceCriterionForm = {
 })
 export class CreateIssueComponent {
   private readonly issuesService = inject(IssuesService);
+  private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly toastService = inject(ToastService);
   private readonly destroyRef = inject(DestroyRef);
@@ -77,6 +80,8 @@ export class CreateIssueComponent {
   readonly isSubmitting = signal(false);
   readonly submitError = signal<string | null>(null);
   readonly isSubmitted = signal(false);
+  readonly projectId = signal('');
+  readonly issueRoutes = computed(() => projectIssueRoutes(this.projectId()));
 
   readonly form = new FormGroup<CreateIssueForm>({
     title: new FormControl('', {
@@ -108,6 +113,17 @@ export class CreateIssueComponent {
   });
 
   constructor() {
+    const parentRoute = this.route.parent;
+    if (parentRoute) {
+      parentRoute.paramMap
+        .pipe(
+          map((params) => params.get('projectId') ?? ''),
+          filter((projectId) => projectId.length > 0),
+          takeUntilDestroyed(this.destroyRef)
+        )
+        .subscribe((projectId) => this.projectId.set(projectId));
+    }
+
     this.issuesService
       .getAssignableUsers()
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -131,7 +147,7 @@ export class CreateIssueComponent {
   }
 
   cancel(): void {
-    void this.router.navigate(['/issues']);
+    void this.router.navigate(this.issueRoutes().list);
   }
 
   onSubmit(): void {
@@ -144,6 +160,7 @@ export class CreateIssueComponent {
     }
 
     const request: CreateIssueRequest = {
+      projectId: this.projectId(),
       title: this.form.controls.title.value.trim(),
       description: this.form.controls.description.value.trim(),
       status: this.form.controls.status.value,
@@ -166,7 +183,7 @@ export class CreateIssueComponent {
         next: (issue) => {
           this.isSubmitting.set(false);
           this.toastService.success('Issue created', issue.title);
-          void this.router.navigate(['/issues', issue.id]);
+          void this.router.navigate(this.issueRoutes().details(issue.id));
         },
         error: (error: Error) => {
           this.submitError.set(error.message);

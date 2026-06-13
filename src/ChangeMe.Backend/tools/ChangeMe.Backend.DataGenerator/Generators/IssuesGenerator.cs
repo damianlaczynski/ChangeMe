@@ -5,6 +5,7 @@ using ChangeMe.Backend.Domain.Aggregates.Issue.Entities;
 using ChangeMe.Backend.Domain.Aggregates.Issue.Enums;
 using Microsoft.Extensions.Options;
 using DomainIssue = global::ChangeMe.Backend.Domain.Aggregates.Issue.Issue;
+using DomainProject = global::ChangeMe.Backend.Domain.Aggregates.Projects.Project;
 using DomainUser = global::ChangeMe.Backend.Domain.Aggregates.Users.User;
 using IssueConstraints = global::ChangeMe.Backend.Domain.Aggregates.Issue.IssueConstraints;
 
@@ -12,7 +13,9 @@ namespace ChangeMe.Backend.DataGenerator.Generators;
 
 internal sealed class IssuesGenerator(IOptions<DataGeneratorOptions> options)
 {
-  public IReadOnlyList<DomainIssue> Generate(IReadOnlyList<DomainUser> demoUsers)
+  public IReadOnlyList<DomainIssue> Generate(
+    IReadOnlyList<DomainUser> demoUsers,
+    IReadOnlyList<DomainProject> demoProjects)
   {
     var config = options.Value;
     var faker = new Faker { Random = new Randomizer(config.Seed + 1) };
@@ -24,6 +27,7 @@ internal sealed class IssuesGenerator(IOptions<DataGeneratorOptions> options)
     {
       var actor = PickRandom(demoUsers, faker);
       var assignee = faker.Random.Bool(0.7f) ? PickRandom(demoUsers, faker) : null;
+      var project = PickRandom(demoProjects, faker);
       var title = Truncate(faker.Hacker.Phrase(), IssueConstraints.TITLE_MAX_LENGTH);
       if (title.Length < IssueConstraints.TITLE_MIN_LENGTH)
         title = $"Issue {index + 1}: {title}";
@@ -33,6 +37,7 @@ internal sealed class IssuesGenerator(IOptions<DataGeneratorOptions> options)
       var status = faker.PickRandom(statuses);
 
       var issueResult = DomainIssue.Create(
+        project.Id,
         title,
         description,
         priority,

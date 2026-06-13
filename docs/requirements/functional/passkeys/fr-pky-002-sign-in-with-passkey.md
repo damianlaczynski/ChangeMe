@@ -48,7 +48,7 @@ After successful passkey primary authentication, evaluate gates per `docs/requir
 2. **Two-factor verification** when **Two-factor enabled** is **true** and **Passkey satisfies two-factor** did not apply on this assertion.
 3. **Strict two-factor setup** when required and not satisfied (FR-AUTH-013).
 4. **Strict passkey setup** when **Passkeys authentication required** is **true** and the user has zero passkeys (should not occur after successful passkey sign-in; included for completeness).
-5. **Issues list** (full session) when no gate applies.
+5. **Projects list** (full session) when no gate applies.
 
 - Passkey sign-in creates a **new session** per FR-AUTH-001 when a full session is issued; records **signed in at**, **device / browser label**, **IP address**, and **Sign-in method** badge **`Passkey`** on session list (FR-AUTH-004, FR-USR-004).
 - Failed passkey verification attempts per challenge: maximum **5**; after **5** failures, invalidate the challenge and show **`Too many passkey attempts. Try again.`**
@@ -65,7 +65,7 @@ After successful passkey primary authentication, evaluate gates per `docs/requir
 ### Accept invitation and Register
 
 - **Accept invitation** (FR-AUTH-010) does **not** register a passkey automatically; after successful acceptance the user may add passkeys on **My account** when signed in.
-- After successful **Register** when email verification is disabled, the success path may show optional prompt **`Add a passkey for faster sign-in`** with action **Add passkey now** → **Add passkey** flow (FR-PKY-003) before navigating to **Issues list**; declining navigates to **Issues list** without enrollment.
+- After successful **Register** when email verification is disabled, the success path may show optional prompt **`Add a passkey for faster sign-in`** with action **Add passkey now** → **Add passkey** flow (FR-PKY-003) before navigating to **Projects list**; declining navigates to **Projects list** without enrollment.
 - When email verification is enabled, passkey enrollment prompt appears on first successful sign-in after **Verify email**, not on **Verify email** itself.
 
 ### States and business rules

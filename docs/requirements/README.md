@@ -99,6 +99,15 @@ See [changes/](changes/) for open requirement deltas.
 | FR-PKY-006 | Combined Compliance Gates and Cross-Auth Interaction | [fr-pky-006-combined-compliance-gates-and-cross-auth-interaction.md](functional/passkeys/fr-pky-006-combined-compliance-gates-and-cross-auth-interaction.md) |
 | FR-PKY-007 | Passkey Notification Emails | [fr-pky-007-passkey-notification-emails.md](functional/passkeys/fr-pky-007-passkey-notification-emails.md) |
 
+## Projects (`functional/projects/`)
+
+| ID | Title | File |
+| -- | ----- | ---- |
+| FR-PRJ-001 | Projects List | [fr-prj-001-projects-list.md](functional/projects/fr-prj-001-projects-list.md) |
+| FR-PRJ-002 | Create and Edit Project | [fr-prj-002-create-and-edit-project.md](functional/projects/fr-prj-002-create-and-edit-project.md) |
+| FR-PRJ-003 | Project Workspace Layout and Overview | [fr-prj-003-project-workspace-layout-and-overview.md](functional/projects/fr-prj-003-project-workspace-layout-and-overview.md) |
+| FR-PRJ-004 | Project Members and Settings | [fr-prj-004-project-members-and-settings.md](functional/projects/fr-prj-004-project-members-and-settings.md) |
+
 ## Users (`functional/users/`)
 
 | ID | Title | File |

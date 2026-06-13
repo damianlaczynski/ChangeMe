@@ -7,5 +7,7 @@ export const PermissionCodes = {
   sessionsViewOwn: 'Sessions.ViewOwn',
   sessionsManageOwn: 'Sessions.ManageOwn',
   sessionsViewAny: 'Sessions.ViewAny',
-  sessionsManageAny: 'Sessions.ManageAny'
+  sessionsManageAny: 'Sessions.ManageAny',
+  projectsView: 'Projects.View',
+  projectsManage: 'Projects.Manage'
 } as const;

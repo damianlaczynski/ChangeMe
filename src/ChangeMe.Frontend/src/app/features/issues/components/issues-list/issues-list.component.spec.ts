@@ -32,7 +32,9 @@ describe('IssuesComponent', () => {
 
   beforeEach(async () => {
     issuesService = {
-      getAllIssues: vi.fn(() => of(createEmptyPaginationResult<IssueDto>(defaultQuery))),
+      getAllIssues: vi.fn(() =>
+        of(createEmptyPaginationResult<IssueDto>(defaultQuery))
+      ),
       getAssignableUsers: vi.fn(() =>
         of([{ id: 'user-1', displayLabel: 'Ada Lovelace' }])
       )
@@ -55,6 +57,7 @@ describe('IssuesComponent', () => {
   });
 
   it('maps filter form values into the list query', () => {
+    component.projectId.set('project-1');
     component.filtersForm.patchValue({
       searchText: '  regression  ',
       statuses: [IssueStatus.NEW, IssueStatus.IN_PROGRESS],
@@ -68,6 +71,7 @@ describe('IssuesComponent', () => {
 
     expect(component.query()).toEqual({
       ...defaultQuery,
+      projectId: 'project-1',
       pageNumber: 1,
       searchText: 'regression',
       statuses: [IssueStatus.NEW, IssueStatus.IN_PROGRESS],

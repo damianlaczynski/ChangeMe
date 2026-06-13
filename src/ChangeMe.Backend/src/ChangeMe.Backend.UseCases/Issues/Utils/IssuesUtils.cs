@@ -1,10 +1,45 @@
 using ChangeMe.Backend.Domain.Aggregates.Issue;
 using ChangeMe.Backend.Domain.Aggregates.Issue.Enums;
+using ChangeMe.Backend.Domain.Aggregates.Projects;
+using ChangeMe.Backend.Domain.Aggregates.Projects.Enums;
+using ChangeMe.Backend.UseCases.Projects.Utils;
+
 namespace ChangeMe.Backend.UseCases.Issues.Utils;
 
 public static class IssuesUtils
 {
   public const string AssignedUserDoesNotExistMessage = "assigned user does not exist";
+  public const string ProjectDoesNotExistMessage = "project does not exist";
+
+  public static async Task<Result> ValidateProjectAccessibleAsync(
+    ApplicationDbContext context,
+    Guid projectId,
+    Guid userId,
+    string propertyName,
+    CancellationToken cancellationToken)
+  {
+    if (projectId == Guid.Empty)
+      return Result.Invalid([new ValidationError(propertyName, "cannot be empty")]);
+
+    var projectResult = await ProjectsUtils.GetAccessibleProjectReadOnlyAsync(
+      context,
+      projectId,
+      userId,
+      cancellationToken);
+
+    if (!projectResult.IsSuccess)
+    {
+      if (projectResult.Status == ResultStatus.NotFound)
+        return Result.Invalid([new ValidationError(propertyName, ProjectDoesNotExistMessage)]);
+
+      return projectResult.Map();
+    }
+
+    if (projectResult.Value.Status == ProjectStatus.ARCHIVED)
+      return Result.Invalid([new ValidationError(propertyName, "issues cannot be created in an archived project")]);
+
+    return Result.Success();
+  }
 
   public static async Task<Result> ValidateAssigneeExistsAsync(
     ApplicationDbContext context,

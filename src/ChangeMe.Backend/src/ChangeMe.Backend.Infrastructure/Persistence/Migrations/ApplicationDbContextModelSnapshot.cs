@@ -227,6 +227,9 @@ namespace ChangeMe.Backend.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("text");
@@ -245,6 +248,8 @@ namespace ChangeMe.Backend.Infrastructure.Persistence.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("Id");
+
+                    b.HasIndex("ProjectId");
 
                     b.ToTable("issues", "changeme_backend");
                 });
@@ -318,6 +323,107 @@ namespace ChangeMe.Backend.Infrastructure.Persistence.Migrations
                         .IsUnique();
 
                     b.ToTable("notifications", "changeme_backend");
+                });
+
+            modelBuilder.Entity("ChangeMe.Backend.Domain.Aggregates.Projects.Entities.ProjectMember", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Id");
+
+                    b.HasIndex("ProjectId", "UserId")
+                        .IsUnique();
+
+                    b.ToTable("project_members", "changeme_backend");
+                });
+
+            modelBuilder.Entity("ChangeMe.Backend.Domain.Aggregates.Projects.Project", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Color")
+                        .IsRequired()
+                        .HasMaxLength(7)
+                        .HasColumnType("character varying(7)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Visibility")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Id");
+
+                    b.HasIndex("Key")
+                        .IsUnique();
+
+                    b.ToTable("projects", "changeme_backend");
                 });
 
             modelBuilder.Entity("ChangeMe.Backend.Domain.Aggregates.Roles.Entities.RolePermission", b =>
@@ -1025,6 +1131,24 @@ namespace ChangeMe.Backend.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("ChangeMe.Backend.Domain.Aggregates.Issue.Issue", b =>
+                {
+                    b.HasOne("ChangeMe.Backend.Domain.Aggregates.Projects.Project", null)
+                        .WithMany()
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ChangeMe.Backend.Domain.Aggregates.Projects.Entities.ProjectMember", b =>
+                {
+                    b.HasOne("ChangeMe.Backend.Domain.Aggregates.Projects.Project", null)
+                        .WithMany("Members")
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("ChangeMe.Backend.Domain.Aggregates.Roles.Entities.RolePermission", b =>
                 {
                     b.HasOne("ChangeMe.Backend.Domain.Aggregates.Roles.Role", "Role")
@@ -1139,6 +1263,11 @@ namespace ChangeMe.Backend.Infrastructure.Persistence.Migrations
                     b.Navigation("HistoryEntries");
 
                     b.Navigation("Watchers");
+                });
+
+            modelBuilder.Entity("ChangeMe.Backend.Domain.Aggregates.Projects.Project", b =>
+                {
+                    b.Navigation("Members");
                 });
 
             modelBuilder.Entity("ChangeMe.Backend.Domain.Aggregates.Roles.Role", b =>

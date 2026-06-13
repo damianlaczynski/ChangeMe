@@ -1,5 +1,5 @@
 <div class="flex min-h-screen w-full bg-surface-50 dark:bg-surface-950">
-  @if (showAuthenticatedChrome()) {
+  @if (showGlobalAuthenticatedChrome()) {
     <aside
       class="sticky top-0 hidden h-screen shrink-0 flex-col border-r border-surface-200 bg-surface-0 transition-[width] duration-200 ease-in-out dark:border-surface-700 dark:bg-surface-900 md:flex"
       [class.w-16]="layoutService.$sidebarCollapsed()"
@@ -44,8 +44,69 @@
     </p-drawer>
   }
 
+  @if (showProjectWorkspaceChrome()) {
+    <aside
+      class="sticky top-0 hidden h-screen shrink-0 flex-col border-r border-surface-200 bg-surface-0 transition-[width] duration-200 ease-in-out dark:border-surface-700 dark:bg-surface-900 md:flex"
+      [class.w-16]="layoutService.$sidebarCollapsed()"
+      [class.w-60]="!layoutService.$sidebarCollapsed()"
+    >
+      <div
+        class="flex min-h-[4.5rem] shrink-0 flex-col justify-center border-b border-surface-200 px-3 py-3 dark:border-surface-700"
+        [class.items-center]="layoutService.$sidebarCollapsed()"
+      >
+        @if (projectWorkspace.overview(); as project) {
+          <div
+            class="flex items-center gap-2"
+            [class.justify-center]="layoutService.$sidebarCollapsed()"
+          >
+            <span
+              class="inline-flex h-3 w-3 shrink-0 rounded-full"
+              [style.background-color]="project.color"
+              aria-hidden="true"
+            ></span>
+            @if (!layoutService.$sidebarCollapsed()) {
+              <div class="min-w-0">
+                <div
+                  class="text-muted-color text-xs font-semibold tracking-wide uppercase"
+                >
+                  {{ project.key }}
+                </div>
+                <div class="text-color truncate font-semibold">{{ project.name }}</div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="flex min-h-0 flex-1 flex-col overflow-y-auto">
+        <app-sidebar-nav
+          [items]="projectWorkspace.navItems()"
+          [collapsed]="layoutService.$sidebarCollapsed()"
+        />
+      </div>
+    </aside>
+
+    <p-drawer
+      class="md:hidden"
+      [visible]="layoutService.$mobileNavOpen()"
+      (visibleChange)="onMobileNavVisibleChange($event)"
+      position="left"
+      [modal]="true"
+      [dismissible]="true"
+      [showCloseIcon]="true"
+      [header]="projectWorkspace.overview()?.name ?? 'Project'"
+      styleClass="app-shell-drawer !w-[min(100vw,18rem)]"
+    >
+      <app-sidebar-nav
+        [items]="projectWorkspace.navItems()"
+        [collapsed]="false"
+        (navigate)="layoutService.closeMobileNav()"
+      />
+    </p-drawer>
+  }
+
   <div class="flex min-w-0 flex-1 flex-col">
-    @if (showAuthenticatedChrome()) {
+    @if (showGlobalAuthenticatedChrome()) {
       <header
         class="sticky top-0 z-20 flex h-14 shrink-0 items-center gap-2 border-b border-surface-200 bg-surface-0 px-3 dark:border-surface-700 dark:bg-surface-900 md:px-4"
       >
@@ -117,7 +178,92 @@
       <app-password-expiration-banner />
       <app-two-factor-setup-banner />
       <app-passkey-setup-banner />
-    } @else if (isAuthenticated()) {
+    } @else if (showProjectWorkspaceChrome()) {
+      <header
+        class="sticky top-0 z-20 flex h-14 shrink-0 items-center gap-2 border-b border-surface-200 bg-surface-0 px-3 dark:border-surface-700 dark:bg-surface-900 md:px-4"
+      >
+        <p-button
+          [icon]="
+            isDesktop() && layoutService.$sidebarCollapsed()
+              ? 'pi pi-angle-right'
+              : 'pi pi-bars'
+          "
+          [rounded]="true"
+          [text]="true"
+          severity="secondary"
+          ariaLabel="Toggle project navigation"
+          (onClick)="onMenuToggle()"
+        />
+
+        <p-button
+          label="All projects"
+          icon="pi pi-arrow-left"
+          severity="secondary"
+          [text]="true"
+          [routerLink]="['/projects']"
+        />
+
+        @if (projectWorkspace.overview(); as project) {
+          <div class="hidden min-w-0 flex-1 items-center gap-2 md:flex">
+            <span
+              class="inline-flex h-3 w-3 shrink-0 rounded-full"
+              [style.background-color]="project.color"
+              aria-hidden="true"
+            ></span>
+            <span class="text-color truncate font-semibold">{{ project.name }}</span>
+            <p-tag
+              [value]="getProjectStatusLabel(project.status)"
+              [severity]="getProjectStatusSeverity(project.status)"
+            />
+          </div>
+        }
+
+        <div class="flex-1 md:hidden"></div>
+
+        <div class="flex flex-wrap items-center gap-1 sm:gap-2 md:ml-auto">
+          <app-notifications-bell />
+          <p-button
+            [icon]="layoutService.$themeMode() === 'dark' ? 'pi pi-sun' : 'pi pi-moon'"
+            [rounded]="true"
+            [text]="true"
+            severity="secondary"
+            [attr.aria-label]="
+              layoutService.$themeMode() === 'dark'
+                ? 'Switch to light mode'
+                : 'Switch to dark mode'
+            "
+            (onClick)="layoutService.toggleTheme()"
+          />
+          <span
+            class="text-muted-color hidden max-w-[12rem] truncate text-sm lg:inline"
+          >
+            {{ formatUserReference(currentUser()!) }}
+          </span>
+          <p-button
+            label="Logout"
+            icon="pi pi-sign-out"
+            severity="secondary"
+            [outlined]="true"
+            size="small"
+            class="hidden sm:inline-flex"
+            (onClick)="logout()"
+          />
+          <p-button
+            icon="pi pi-sign-out"
+            severity="secondary"
+            [rounded]="true"
+            [text]="true"
+            class="sm:hidden"
+            ariaLabel="Logout"
+            (onClick)="logout()"
+          />
+        </div>
+      </header>
+
+      <app-password-expiration-banner />
+      <app-two-factor-setup-banner />
+      <app-passkey-setup-banner />
+    } @else if (isAuthenticated() && !isProjectWorkspace()) {
       <header
         class="flex h-14 shrink-0 items-center justify-between gap-4 border-b border-surface-200 bg-surface-0 px-4 dark:border-surface-700 dark:bg-surface-900"
       >
@@ -147,7 +293,7 @@
           />
         </nav>
       </header>
-    } @else {
+    } @else if (!isAuthenticated()) {
       <header
         class="flex h-14 shrink-0 items-center justify-between gap-4 border-b border-surface-200 bg-surface-0 px-4 dark:border-surface-700 dark:bg-surface-900"
       >
@@ -174,12 +320,16 @@
       </header>
     }
 
-    <main class="mx-auto flex w-full max-w-6xl min-h-0 flex-1 flex-col p-4 md:p-6">
+    <main
+      class="mx-auto flex w-full min-h-0 flex-1 flex-col p-4 md:p-6"
+      [class.max-w-6xl]="!isProjectWorkspace()"
+      [class.max-w-7xl]="isProjectWorkspace()"
+    >
       <router-outlet />
     </main>
   </div>
 
-  @if (showAuthenticatedChrome()) {
+  @if (showGlobalAuthenticatedChrome() || showProjectWorkspaceChrome()) {
     <app-required-password-change-dialog />
     <app-two-factor-setup-dialog />
     <app-passkey-setup-dialog />

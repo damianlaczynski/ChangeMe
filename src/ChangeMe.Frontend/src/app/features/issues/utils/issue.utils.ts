@@ -179,3 +179,14 @@ export function getIssueHistoryEventVisual(
 ): IssueHistoryEventVisual {
   return ISSUE_HISTORY_EVENT_VISUALS[eventType] ?? defaultIssueHistoryEventVisual;
 }
+
+export function projectIssueRoutes(projectId: string) {
+  const list = ['/projects', projectId, 'issues'] as const;
+
+  return {
+    list: [...list],
+    create: [...list, 'create'],
+    details: (issueId: string) => [...list, issueId],
+    edit: (issueId: string) => [...list, issueId, 'edit']
+  };
+}

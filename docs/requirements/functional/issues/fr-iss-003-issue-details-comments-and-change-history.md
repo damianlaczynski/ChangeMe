@@ -4,7 +4,7 @@ title: Issue Details, Comments, and Change History
 domain: issues
 type: functional
 status: active
-depends_on: [FR-ISS-001, FR-ISS-002, FR-ISS-004]
+depends_on: [FR-ISS-001, FR-ISS-002, FR-ISS-004, FR-PRJ-003]
 inherits_nfr:
   [NFR-QUAL-001, NFR-A11Y-001, NFR-I18N-001, NFR-PERF-001, NFR-RSP-001]
 inherits_fr: [FR-UI-001]
@@ -19,7 +19,7 @@ inherits_fr: [FR-UI-001]
 ### Access
 
 - Screen: **Issue details**
-- Available only to authenticated users.
+- Available only inside a **project workspace** (FR-PRJ-003).
 
 ### Issue header and metadata
 
@@ -28,7 +28,7 @@ inherits_fr: [FR-UI-001]
 - Issue identifier is not shown as a separate labeled field; it is used in navigation and search (FR-ISS-001).
 - Watch state is shown by the watch button icon, watcher count label, and tooltip — not by separate **Watching** / **Not watching** text.
 - **Edit** opens **Edit issue** (FR-ISS-002).
-- **Delete** confirmation: `**Delete "{issue title}"? This action cannot be undone.`** On confirm, delete the issue and navigate to **Issues list\*\*.
+- **Delete** confirmation: `**Delete "{issue title}"? This action cannot be undone.`** On confirm, delete the issue and navigate to **Project issues list\*\* for the current project.
 
 ### Description section
 
@@ -81,14 +81,14 @@ inherits_fr: [FR-UI-001]
 
 ### Actions and navigation
 
-- **Back to issues list** button navigates to **Issues list**.
+- **Back to issues list** button navigates to **Project issues list** for the current project.
 - After edit save, the user returns to **Issue details** with refreshed data.
 - After adding a comment, the user stays on **Issue details** and sees the new comment.
 
 ### Deletion navigation
 
-- After deleting an issue from **Issue details**, the user is navigated to **Issues list**.
-- After deleting an issue from **Issues list**, the user remains on **Issues list** with the list refreshed.
+- After deleting an issue from **Issue details**, the user is navigated to **Project issues list** for the current project.
+- After deleting an issue from **Project issues list**, the user remains on **Project issues list** with the list refreshed.
 
 ## Non-functional requirements
 

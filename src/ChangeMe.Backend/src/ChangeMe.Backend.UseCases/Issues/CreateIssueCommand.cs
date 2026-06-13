@@ -6,6 +6,7 @@ using ChangeMe.Backend.UseCases.Issues.Utils;
 namespace ChangeMe.Backend.UseCases.Issues;
 
 public record CreateIssueCommand(
+  Guid ProjectId,
   string Title,
   string Description,
   IssueStatus Status,
@@ -26,6 +27,15 @@ public class CreateIssueHandler(
     if (userAccessor.UserId is not Guid actorUserId)
       return Result.Unauthorized();
 
+    var projectValidation = await IssuesUtils.ValidateProjectAccessibleAsync(
+      context,
+      command.ProjectId,
+      actorUserId,
+      nameof(command.ProjectId),
+      cancellationToken);
+    if (!projectValidation.IsSuccess)
+      return projectValidation.Map();
+
     var assigneeValidation = await IssuesUtils.ValidateAssigneeExistsAsync(
       context,
       command.AssignedToUserId,
@@ -35,6 +45,7 @@ public class CreateIssueHandler(
       return assigneeValidation.Map();
 
     var issueResult = Issue.Create(
+      command.ProjectId,
       command.Title,
       command.Description,
       command.Priority,

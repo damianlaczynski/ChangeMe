@@ -1,0 +1,7 @@
+@if (workspace.isLoading()) {
+  <p class="text-muted-color m-0">Loading project workspace...</p>
+} @else if (workspace.loadError()) {
+  <p-message severity="error">{{ workspace.loadError() }}</p-message>
+} @else {
+  <router-outlet />
+}

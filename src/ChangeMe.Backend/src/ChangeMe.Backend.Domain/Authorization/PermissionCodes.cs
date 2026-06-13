@@ -11,6 +11,8 @@ public static class PermissionCodes
   public const string SessionsManageOwn = "Sessions.ManageOwn";
   public const string SessionsViewAny = "Sessions.ViewAny";
   public const string SessionsManageAny = "Sessions.ManageAny";
+  public const string ProjectsView = "Projects.View";
+  public const string ProjectsManage = "Projects.Manage";
 
   public static readonly IReadOnlyList<string> All =
   [
@@ -22,12 +24,15 @@ public static class PermissionCodes
     SessionsViewOwn,
     SessionsManageOwn,
     SessionsViewAny,
-    SessionsManageAny
+    SessionsManageAny,
+    ProjectsView,
+    ProjectsManage
   ];
 
   public static readonly IReadOnlyList<string> DefaultUserRole =
   [
     SessionsViewOwn,
-    SessionsManageOwn
+    SessionsManageOwn,
+    ProjectsView
   ];
 }

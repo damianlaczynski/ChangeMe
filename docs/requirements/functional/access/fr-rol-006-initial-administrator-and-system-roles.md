@@ -47,10 +47,10 @@ The deployment supplies these values for the first administrator:
 
 On first startup, the system ensures these roles exist:
 
-| Role              | **System** badge | Permissions                                        |
-| ----------------- | ---------------- | -------------------------------------------------- |
-| **Administrator** | Yes              | All permissions from FR-ROL-001.                   |
-| **User**          | Yes              | **Sessions.ViewOwn**, **Sessions.ManageOwn** only. |
+| Role              | **System** badge | Permissions                                                      |
+| ----------------- | ---------------- | ---------------------------------------------------------------- |
+| **Administrator** | Yes              | All permissions from FR-ROL-001.                                 |
+| **User**          | Yes              | **Sessions.ViewOwn**, **Sessions.ManageOwn**, **Projects.View**. |
 
 - If the **Administrator** role already exists, the system adds any newly defined catalog permissions that role does not yet have.
 - System roles follow edit, delete, and assignment rules from FR-ROL-003, FR-ROL-004, and FR-ROL-005.

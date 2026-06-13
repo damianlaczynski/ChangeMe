@@ -4,7 +4,7 @@ title: Issue List
 domain: issues
 type: functional
 status: active
-depends_on: [FR-AUTH-001, FR-ISS-002, FR-USR-005]
+depends_on: [FR-AUTH-001, FR-ISS-002, FR-PRJ-003, FR-USR-005]
 inherits_nfr:
   [NFR-QUAL-001, NFR-A11Y-001, NFR-I18N-001, NFR-PERF-001, NFR-RSP-001]
 inherits_fr: [FR-UI-001]
@@ -12,14 +12,16 @@ inherits_fr: [FR-UI-001]
 
 ## Goal
 
-The user must be able to browse all issues, search, filter, sort, navigate to details, manage watches, and quickly start creating a new issue.
+The user must be able to browse issues within a project workspace, search, filter, sort, navigate to details, manage watches, and quickly start creating a new issue.
 
 ## Functional requirements
 
 ### Access
 
-- Screen: **Issues list**
-- Available only to authenticated users. Guests are redirected to **Login** (FR-AUTH-001).
+- Screen: **Project issues list**
+- Available only inside a **project workspace** (FR-PRJ-003) for a project the user can access.
+- The list shows **only issues belonging to the current project**.
+- Guests are redirected to **Login** (FR-AUTH-001).
 
 ### Search and actions bar
 

@@ -1,0 +1,67 @@
+<p-card
+  class="mb-4"
+  header="Create project"
+  subheader="Create a dedicated workspace for issues and future project features."
+>
+  <div class="mb-4 flex flex-wrap items-center gap-2">
+    <app-back-button label="Back to projects" [route]="['/projects']" />
+  </div>
+
+  @if (submitError()) {
+    <p-message severity="error" class="mb-4">{{ submitError() }}</p-message>
+  }
+
+  <form class="p-fluid flex flex-col gap-4" [formGroup]="form" (ngSubmit)="onSubmit()">
+    <p-panel header="Project profile" [toggleable]="true">
+      <div class="grid gap-4 md:grid-cols-2">
+        <div class="flex flex-col gap-1.5">
+          <label for="name">Name</label>
+          <input id="name" type="text" pInputText [formControl]="form.controls.name" />
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <label for="key">Key</label>
+          <input
+            id="key"
+            type="text"
+            pInputText
+            [formControl]="form.controls.key"
+            (input)="onKeyInput($event)"
+            placeholder="e.g. PORTAL"
+          />
+        </div>
+        <div class="flex flex-col gap-1.5 md:col-span-2">
+          <label for="description">Description</label>
+          <textarea
+            id="description"
+            pTextarea
+            rows="4"
+            [formControl]="form.controls.description"
+          ></textarea>
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <label for="visibility">Visibility</label>
+          <p-select
+            inputId="visibility"
+            [options]="projectVisibilities"
+            optionLabel="label"
+            optionValue="value"
+            [formControl]="form.controls.visibility"
+          />
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <label for="color">Accent color</label>
+          <input id="color" type="color" [formControl]="form.controls.color" />
+        </div>
+      </div>
+    </p-panel>
+
+    <div class="flex flex-wrap gap-2">
+      <p-button
+        type="submit"
+        label="Create project"
+        icon="pi pi-check"
+        [loading]="isSubmitting()"
+      />
+    </div>
+  </form>
+</p-card>

@@ -31,9 +31,9 @@ When password expiration is enabled in deployment settings, users whose password
 
 ### Sign-in and expiration
 
-- After successful authentication (FR-AUTH-001), if **Password expiration enabled** is **true** and the password age exceeds **Maximum password age (days)**, the user opens **Required password change** instead of **Issues list**.
+- After successful authentication (FR-AUTH-001), if **Password expiration enabled** is **true** and the password age exceeds **Maximum password age (days)**, the user opens **Required password change** instead of **Projects list**.
 - When **Combined account compliance gates** (`docs/requirements/_shared/reference/compliance-gates.md`) (FR-AUTH-013) also apply, **Required password change** takes precedence over two-factor verification and **strict two-factor setup** until the password is updated.
-- If the password is within age, sign-in opens **Issues list** as usual.
+- If the password is within age, sign-in opens **Projects list** as usual.
 - The initial administrator account created at first startup is subject to the same expiration rules as other users; first sign-in does **not** require a password change solely because the account is new.
 
 ### Password expiry warnings (signed-in)
@@ -66,7 +66,7 @@ Two surfaces share the same validation and API behavior:
 | **Confirm new password** | **Required**; must match **New password**.                                                      |
 
 - **Change password** button: on success updates the password, sets **password last changed at** to the current time, revokes all other active sessions for the user, keeps the current session, clears expiry warnings and the sticky expiry toast, and shows message **`Password updated.`**
-- After success following **Sign-in and expiration**, the application opens **Issues list**.
+- After success following **Sign-in and expiration**, the application opens **Projects list**.
 - After success from the dialog during an active session, the application **closes the dialog** and **keeps the current route**; the user may retry server actions without signing in again.
 - Sends **Password changed** email (FR-AUTH-007).
 

@@ -4,7 +4,7 @@
   subheader="Review issue data, comments, attachments, and history"
 >
   <div class="mb-4 flex flex-wrap items-center gap-2">
-    <app-back-button label="Back to issues list" [route]="['/issues']" />
+    <app-back-button label="Back to issues list" [route]="issueRoutes().list" />
     @if (issue(); as currentIssue) {
       <p-button
         label="Edit"
@@ -12,7 +12,7 @@
         severity="secondary"
         [outlined]="true"
         size="small"
-        [routerLink]="['/issues', currentIssue.id, 'edit']"
+        [routerLink]="issueRoutes().edit(currentIssue.id)"
       />
       <p-button
         [label]="currentIssue.watchersCount.toString()"

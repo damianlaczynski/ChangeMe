@@ -6,6 +6,7 @@ public sealed class DataGeneratorOptions
 
   public int Seed { get; set; } = 20260522;
   public int Users { get; set; } = 8;
+  public int Projects { get; set; } = 4;
   public int Issues { get; set; } = 25;
   public int CommentsPerIssueMin { get; set; }
   public int CommentsPerIssueMax { get; set; } = 4;

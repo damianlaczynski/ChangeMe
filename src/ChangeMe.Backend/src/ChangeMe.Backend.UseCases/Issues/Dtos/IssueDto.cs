@@ -28,6 +28,9 @@ public class IssueDto
   public string Description { get; set; } = string.Empty;
   public IssueStatus Status { get; set; }
   public IssuePriority Priority { get; set; }
+  public Guid ProjectId { get; set; }
+  public string ProjectKey { get; set; } = string.Empty;
+  public string ProjectName { get; set; } = string.Empty;
   public Guid CreatedBy { get; set; }
   public string? CreatedByName { get; set; }
   public Guid? AssignedToUserId { get; set; }
@@ -52,6 +55,9 @@ public class IssueDetailsDto
   public string Description { get; set; } = string.Empty;
   public IssueStatus Status { get; set; }
   public IssuePriority Priority { get; set; }
+  public Guid ProjectId { get; set; }
+  public string ProjectKey { get; set; } = string.Empty;
+  public string ProjectName { get; set; } = string.Empty;
   public Guid CreatedBy { get; set; }
   public string? CreatedByName { get; set; }
   public Guid? AssignedToUserId { get; set; }

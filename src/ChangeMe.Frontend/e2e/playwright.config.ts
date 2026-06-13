@@ -10,7 +10,8 @@ const baseURL = process.env['E2E_BASE_URL'] ?? 'http://localhost:4200';
 
 function backendWebServerEnv(): Record<string, string> {
   const env: Record<string, string> = {
-    ASPNETCORE_ENVIRONMENT: 'Development'
+    ASPNETCORE_ENVIRONMENT: 'Development',
+    Auth__EmailVerification__Enabled: 'false'
   };
 
   const connectionString = process.env['ConnectionStrings__DefaultConnection'];
