@@ -28,7 +28,7 @@
 2. Add or extend the service in `features/<feature>/services`.
 3. Create a standalone component under `features/<feature>/components/<name>/`.
 4. Register the route in `src/app/app.routes.ts` if it is navigable directly.
-5. Run lint and relevant tests.
+5. Run lint and add frontend unit tests when client logic changes ([testing-guidelines.md](testing-guidelines.md)); colocate `*.spec.ts` next to the component or service (see `features/issues/components/`).
 
 ## Change auth-sensitive behavior
 
@@ -36,6 +36,7 @@
 2. Check route guards under `features/auth/guards`.
 3. Check token/session handling in `features/auth/services/auth.service.ts`.
 4. Add or update integration coverage for authenticated and anonymous flows.
+5. Add or update guard/component unit tests; extend E2E smoke only when the user journey changes ([testing-guidelines.md](testing-guidelines.md)).
 
 ## Add file upload and download (reference: Issues attachments)
 

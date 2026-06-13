@@ -6,14 +6,14 @@
 
 Implementation conventions and recipes. Start with [guides/README.md](guides/README.md).
 
-| Document                                                | Description                                  |
-| ------------------------------------------------------- | -------------------------------------------- |
-| [README.md](guides/README.md)                           | Entry point — when to read each guide        |
-| [repo-map.md](guides/repo-map.md)                       | Where code lives and which layer owns what   |
-| [frontend-guidelines.md](guides/frontend-guidelines.md) | Angular frontend conventions                 |
-| [backend-guidelines.md](guides/backend-guidelines.md)   | .NET backend conventions                     |
-| [testing-guidelines.md](guides/testing-guidelines.md)   | How to verify changes and where tests belong |
-| [feature-recipes.md](guides/feature-recipes.md)         | Short recipes for common feature work        |
+| Document                                                | Description                                           |
+| ------------------------------------------------------- | ----------------------------------------------------- |
+| [README.md](guides/README.md)                           | Entry point — when to read each guide                 |
+| [repo-map.md](guides/repo-map.md)                       | Where code lives and which layer owns what            |
+| [frontend-guidelines.md](guides/frontend-guidelines.md) | Angular frontend conventions                          |
+| [backend-guidelines.md](guides/backend-guidelines.md)   | .NET backend conventions                              |
+| [testing-guidelines.md](guides/testing-guidelines.md)   | Test layer ownership and when to skip automated tests |
+| [feature-recipes.md](guides/feature-recipes.md)         | Short recipes for common feature work                 |
 
 ## Technical (`technical/`)
 

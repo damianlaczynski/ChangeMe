@@ -1,151 +1,95 @@
 # Testing Guidelines
 
-> Scope: how to verify changes in this repository and where each kind of test belongs.
+> Scope: which test layer owns which behavior, and when **not** to add automated tests. For commands, CI, and test project paths, see `AGENTS.md` and `docs/technical/ci.md`.
 
-## Test projects
+## Core rule
 
-- Backend unit tests: `src/ChangeMe.Backend/tests/ChangeMe.Backend.UnitTests`
-- Backend integration tests: `src/ChangeMe.Backend/tests/ChangeMe.Backend.IntegrationTests`
-- Frontend tests: run through Angular with `npm test` in `src/ChangeMe.Frontend`
+Each test must catch a failure that **no lower layer already covers**. Ground scenarios in touched `FR-*` bullets and inherited `FR-UI-001` / `_shared/` docs — not ad-hoc acceptance tables.
 
-**First-time EF migrations:** migration `.cs` files are not shipped. Ensure `Infrastructure/Persistence/Migrations` exists by adding a migration from the solution root before integration tests that call `MigrateAsync()` (see `docs/technical/database-and-docker.md`).
+Prefer the **lowest** layer that can prove the requirement. Extend existing tests before adding a higher layer.
 
-**DataGenerator:** integration and unit tests do not use `ChangeMe.Backend.DataGenerator`; they seed data via `IssueTestHelper`, `TestAuthHelper`, and Testcontainers (see `docs/technical/data-generator.md`).
+## Layer ownership
 
-## Continuous integration
+| Layer                     | Owns                                                                                   | Does not own                                         |
+| ------------------------- | -------------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| Backend unit              | Domain invariants, aggregate behavior, small helpers without app startup               | HTTP, auth middleware, persistence                   |
+| Backend integration       | Routes, status codes, auth, server validation, persistence side effects, API contracts | Angular routing, templates, browser session          |
+| Frontend unit / component | Client logic, forms, guards, UI state, service orchestration (mocked `ApiService`)     | Server rules already proven through HTTP             |
+| E2E                       | Multi-screen user journeys, session/cookies, compliance gates, WebAuthn, SignalR       | Per-field API validation, exhaustive CRUD per screen |
 
-Pull requests and pushes to `main` / `master` run the GitHub Actions workflow in `.github/workflows/ci.yml` (requirements validation, frontend test + build, backend test + build). Details: `docs/technical/ci.md`.
+Colocate frontend specs next to the source file (`*.spec.ts`). Integration tests live under `tests/ChangeMe.Backend.IntegrationTests/Endpoints/<Feature>/`.
 
-CI does **not** run ESLint or formatting checks — run these locally before opening a PR when you touched the matching code:
+## Backend tests
 
-```powershell
-npm run lint:frontend
-npm run format:check:all
-```
+### Unit
 
-## From repository root
+- Domain invariants and aggregate behavior.
+- Infrastructure helpers that do not need full app startup.
 
-After `npm install` in the repository root (for `concurrently`), you can run:
+Skip when behavior exists only at the HTTP boundary or the type has no rules.
 
-- `npm run test:all` — in parallel: frontend tests once (`test:frontend:ci`, no watch) and **all** backend tests via `dotnet test` on `ChangeMe.Backend.slnx`. Integration tests need Docker (Testcontainers).
-- `npm run test:backend` — same as `dotnet test` on the whole backend solution (unit + integration projects).
-- `npm run test:backend:unit` — unit project only.
-- `npm run test:backend:integration` — integration project only.
+### Integration
 
-## Backend tests in Docker
+- Endpoint happy path, validation failures, auth (anonymous / authenticated / forbidden), and persistence when data changes.
 
-The `backend-tests` service in `docker-compose.yml` uses the .NET SDK image, mounts the repository at `/repo`, and runs `dotnet test ChangeMe.Backend.slnx -c Release` from `src/ChangeMe.Backend`. The host Docker socket is mounted so Testcontainers can start the database for integration tests.
+Skip when there is no API or persistence change.
 
-```powershell
-docker compose --profile test run --rm backend-tests
-```
+When adding or changing an endpoint, add or update integration tests in the same PR (see `docs/guides/feature-recipes.md`).
 
-## Backend unit tests
+## Frontend tests
 
-Use unit tests for:
+Vitest + TestBed. Mock HTTP through `ApiService`; stub heavy child components and the layout shell.
 
-- domain invariants
-- aggregate/entity behavior
-- small infrastructure helpers that do not need full app startup
+### Add or update when
 
-Command (from `src/ChangeMe.Backend`):
+- TypeScript logic changes (not markup-only).
+- Non-trivial form validation, guards, or compliance redirects.
+- Permission- or security-sensitive conditional UI.
+- A client-side regression (stale state, double submit, wrong post-error UI).
 
-```powershell
-dotnet test tests/ChangeMe.Backend.UnitTests
-```
+### Skip when
 
-From repository root:
+- Markup, layout, or styling only — lint and manual check.
+- Duplicating server validation already covered by integration tests.
+- Smoke tests with no asserted behavior (`should create the component`, PrimeNG widget presence).
+- Real backend calls or full-template snapshots.
 
-```powershell
-npm run test:backend:unit
-```
+Test observable behavior (copy, disabled controls, navigation), not private fields.
 
-## Backend integration tests
+## E2E tests
 
-Use integration tests for:
+Use only when unit and integration tests cannot prove the journey (browser session, multi-step auth/compliance, realtime, WebAuthn).
 
-- endpoint routes and status codes
-- auth behavior
-- validation behavior visible through HTTP
-- persistence side effects
-- API contract behavior
+### Add or update when
 
-Current setup:
+- A new or changed **user journey** in `FR-*` spans client + server + session.
+- Compliance gates or strict setup modes (`docs/requirements/_shared/reference/compliance-gates.md`).
+- Behavior depends on cookies, browser APIs, SignalR, or passkeys.
 
-<!--#if (PostgreSQL) -->
+### Skip when
 
-- `BackendWebApplicationFactory` starts PostgreSQL via Testcontainers.
-  <!--#endif-->
-  <!--#if (SqlServer) -->
-- `BackendWebApplicationFactory` starts SQL Server via Testcontainers.
-<!--#endif-->
-- Test environment variables override connection string, JWT settings, and email settings.
-- `IEmailService` is replaced with `FakeEmailService`.
-- `TestAuthHelper` creates a registered and authenticated client through real API calls.
+- The change is API-only, a single form, or one list screen — integration + frontend unit suffice.
+- The scenario only re-checks status codes, field validation, or “save shows toast” with no unique routing logic.
 
-Command (from `src/ChangeMe.Backend`):
+Keep the suite small and stable. Do not mirror integration test matrices in the browser. Specs live in `src/ChangeMe.Frontend/e2e/`; run via `AGENTS.md` (`npm run test:e2e`). CI runs the smoke suite on every PR — see `docs/technical/ci.md`.
 
-```powershell
-dotnet test tests/ChangeMe.Backend.IntegrationTests
-```
+## Scenario templates
 
-From repository root:
+Pick the lowest layers that satisfy the `FR-*` bullets.
 
-```powershell
-npm run test:backend:integration
-```
+| Change                      | Backend unit        | Integration                          | Frontend unit                                                       | E2E                                                       |
+| --------------------------- | ------------------- | ------------------------------------ | ------------------------------------------------------------------- | --------------------------------------------------------- |
+| List screen                 | If new domain rules | GET, filters, pagination, auth       | Filter → query mapping, chips, client empty state                   | Optional: login → row → details for new domain or routing |
+| Create / edit form          | If new domain rules | POST/PUT, server validation, auth    | Client validators, submit state, success navigation (mocked router) | Only multi-step or compliance workflows                   |
+| Auth / session / compliance | If new domain rules | Flags, middleware, token endpoints   | Guards, toasts, redirects                                           | Required when user-visible gate journey changes           |
+| Visual / layout only        | —                   | —                                    | —                                                                   | —                                                         |
+| API contract only           | If domain changed   | **First** — contract source of truth | Models/services if mapping changed                                  | Only if user flow changes                                 |
 
-## Frontend checks
+Record E2E as `required`, `optional`, or `skip` (with reason) in `docs/requirements/changes/` when the change touches a user journey.
 
-Minimum checks for frontend work (from `src/ChangeMe.Frontend`, or use the `npm run …:frontend` equivalents from the repository root — see `AGENTS.md`):
+## Guardrails for AI agents
 
-- `npm run lint`
-- `npm test` when component or service behavior changes
-
-Useful commands (from `src/ChangeMe.Frontend`):
-
-```powershell
-npm run lint
-npm test
-npm run format:check
-```
-
-From repository root (delegates into the frontend folder):
-
-```powershell
-npm run lint:frontend
-npm run test:frontend
-npm run test:frontend:ci
-```
-
-## Change-based checklist
-
-### Backend endpoint change
-
-- update or add integration tests
-- verify auth expectation
-- verify status code and response shape
-- verify persistence side effects if data is written
-
-### Domain or persistence change
-
-- add or update unit tests for domain rules
-- add or update integration tests if HTTP behavior or saved data changes
-- verify migrations/configuration if schema changed
-
-### Frontend API contract change
-
-- update frontend model and service
-- check auth flow if token use changed
-- run lint and relevant tests
-
-## AI verification rule
-
-For any non-trivial change, prefer running the smallest relevant automated check before finishing:
-
-- frontend-only UI/service change: lint plus affected frontend tests when available
-- backend domain change: unit tests first
-- backend endpoint change: integration tests for the affected area, then broader tests if needed
-- cross-stack or wide regression: from repository root, `npm run test:all` when Docker is available; otherwise `npm run test:frontend:ci` plus `npm run test:backend:unit`, then integration tests separately when the stack is up
-
-Verify behavior against **Functional requirements** in the touched `FR-*` files and inherited `FR-UI-001` / `_shared/` docs — not a separate acceptance-scenarios table.
+- Before adding a test, name the failure class and confirm no lower layer already covers it.
+- Do not repeat HTTP contracts in frontend or E2E tests.
+- Run the smallest relevant check for the change (`AGENTS.md`); integration tests need Docker (Testcontainers).
+- Do not invent scenarios outside `FR-*`, inherited UI patterns, or an explicit regression.
