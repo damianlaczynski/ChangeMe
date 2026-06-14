@@ -93,21 +93,23 @@ Current issue endpoints illustrate the standard flow:
 
 ## Test map
 
-- `tests/ChangeMe.Backend.UnitTests`
-  - domain and infrastructure helper tests
-- `tests/ChangeMe.Backend.IntegrationTests`
-  - endpoint-level tests through real HTTP
-  - `Fixtures/` for application factories and container-backed setup
-  - `Support/` for reusable auth and test helpers
+- `src/ChangeMe.Backend/tests/ChangeMe.Backend.UnitTests` — domain and infrastructure helper tests
+- `src/ChangeMe.Backend/tests/ChangeMe.Backend.IntegrationTests` — endpoint-level tests through real HTTP
+  - `Endpoints/<Feature>/` — one test class per endpoint area
+  - `Fixtures/` — `BackendWebApplicationFactory` and feature-specific factories
+  - `Support/` — `TestAuthHelper` (register + authenticate via real API calls), `IssueTestHelper`, and other feature helpers
+- `src/ChangeMe.Frontend` — Vitest unit/component specs colocated as `*.spec.ts`; E2E smoke suite in `e2e/`
+
+Which layer to test and when to skip: [`docs/guides/testing-guidelines.md`](testing-guidelines.md).
 
 <!--#if (PostgreSQL) -->
 
-`BackendWebApplicationFactory` starts disposable PostgreSQL via Testcontainers, applies test environment overrides, and replaces `IEmailService` with a fake implementation for integration tests.
+`BackendWebApplicationFactory` starts disposable PostgreSQL via Testcontainers, applies test environment overrides (connection string, JWT, email settings), and replaces `IEmailService` with `FakeEmailService`.
 
 <!--#endif-->
 <!--#if (SqlServer) -->
 
-`BackendWebApplicationFactory` starts disposable SQL Server via Testcontainers, applies test environment overrides, and replaces `IEmailService` with a fake implementation for integration tests.
+`BackendWebApplicationFactory` starts disposable SQL Server via Testcontainers, applies test environment overrides (connection string, JWT, email settings), and replaces `IEmailService` with `FakeEmailService`.
 
 <!--#endif-->
 
