@@ -71,7 +71,7 @@ Use only when unit and integration tests cannot prove the journey (browser sessi
 - The change is API-only, a single form, or one list screen — integration + frontend unit suffice.
 - The scenario only re-checks status codes, field validation, or “save shows toast” with no unique routing logic.
 
-Keep the suite small and stable. Do not mirror integration test matrices in the browser. Specs live in `src/ChangeMe.Frontend/e2e/`; run via `AGENTS.md` (`npm run test:e2e`). CI runs the smoke suite on every PR — see `docs/technical/ci.md`.
+Keep the suite small and stable. Do not mirror integration test matrices in the browser. Specs live in `src/ChangeMe.Frontend/e2e/`; run via `AGENTS.md` (`npm run test:e2e` after `npm run install:frontend` for Chromium). CI runs the smoke suite on every PR — see `docs/technical/ci.md`.
 
 ## Scenario templates
 
