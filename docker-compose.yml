@@ -17,26 +17,12 @@ services:
       dockerfile: src/ChangeMe.Backend/Dockerfile
     ports:
       - "5000:8080"
-#if (PostgreSQL)
     depends_on:
       - postgres
       - mailhog
-#else
-    depends_on:
-      sqlserver:
-        condition: service_healthy
-      sqlserver-init:
-        condition: service_completed_successfully
-      mailhog:
-        condition: service_started
-#endif
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-#if (PostgreSQL)
       - ConnectionStrings__DefaultConnection=Host=postgres;Database=ChangeMe;Username=postgres;Password=postgres
-#else
-      - ConnectionStrings__DefaultConnection=Server=sqlserver,1433;Database=ChangeMe;User Id=sa;Password=LocalDev_Sql1!;TrustServerCertificate=True
-#endif
       - FileStorageOptions__RootPath=/app/storage
     volumes:
       - file-storage-data:/app/storage
@@ -44,7 +30,6 @@ services:
       - app-network
     restart: unless-stopped
 
-#if (PostgreSQL)
   postgres:
     image: postgres:16
     ports:
@@ -58,45 +43,6 @@ services:
     networks:
       - app-network
     restart: unless-stopped
-#else
-  sqlserver:
-    image: mcr.microsoft.com/mssql/server:2022-latest
-    ports:
-      - "1433:1433"
-    environment:
-      - ACCEPT_EULA=Y
-      - MSSQL_SA_PASSWORD=LocalDev_Sql1!
-    volumes:
-      - sqlserver-data:/var/opt/mssql
-    networks:
-      - app-network
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'LocalDev_Sql1!' -C -Q 'SELECT 1' || exit 1"]
-      interval: 5s
-      timeout: 5s
-      retries: 30
-      start_period: 20s
-
-  sqlserver-init:
-    image: mcr.microsoft.com/mssql/server:2022-latest
-    user: "0:0"
-    networks:
-      - app-network
-    depends_on:
-      sqlserver:
-        condition: service_healthy
-    entrypoint: ["/bin/bash", "-lc"]
-    command:
-      - |
-        set -e
-        for i in {1..60}; do
-          /opt/mssql-tools18/bin/sqlcmd -S sqlserver -U sa -P 'LocalDev_Sql1!' -C -Q 'SELECT 1' && break
-          sleep 2
-        done
-        /opt/mssql-tools18/bin/sqlcmd -S sqlserver -U sa -P 'LocalDev_Sql1!' -C -Q "IF DB_ID(N'ChangeMe') IS NULL CREATE DATABASE [ChangeMe];"
-    restart: "no"
-#endif
 
   mailhog:
     image: mailhog/mailhog:latest
@@ -128,9 +74,5 @@ networks:
     driver: bridge
 
 volumes:
-#if (PostgreSQL)
   postgres-data:
-#else
-  sqlserver-data:
-#endif
   file-storage-data:

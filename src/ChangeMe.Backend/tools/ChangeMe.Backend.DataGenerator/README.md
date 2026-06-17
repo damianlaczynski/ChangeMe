@@ -10,7 +10,7 @@ This tool fills the database with sample users, issues, comments, acceptance cri
 
 ## Prerequisites
 
-1. A running database (Docker Compose or local PostgreSQL / SQL Server, depending on how the template was generated).
+1. A running PostgreSQL database (Docker Compose or local instance).
 2. EF Core migrations applied (`npm run ef:database:update` from the repository root).
 3. A valid connection string in the Web project `appsettings.Development.json` (those files are linked into this tool at build time).
 

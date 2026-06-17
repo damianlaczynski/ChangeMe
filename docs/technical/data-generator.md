@@ -64,12 +64,12 @@ npm run data:generate
 
 ## Troubleshooting
 
-| Problem                  | Action                                                                                                              |
-| ------------------------ | ------------------------------------------------------------------------------------------------------------------- |
-| No migrations found      | Add and apply migrations (`docs/technical/database-and-docker.md`)                                                  |
-| Connection refused       | Start Docker Compose or local DB; verify connection string                                                          |
-| Demo data already exists | Run with `--reset` or delete demo users manually                                                                    |
-| Wrong provider           | Regenerate template with the intended `--Database` option; do not mix PostgreSQL and SQL Server migration histories |
+| Problem                    | Action                                                                                                |
+| -------------------------- | ----------------------------------------------------------------------------------------------------- |
+| No migrations found        | Add and apply migrations (`docs/technical/database-and-docker.md`)                                    |
+| Connection refused         | Start Docker Compose or local DB; verify connection string                                            |
+| Demo data already exists   | Run with `--reset` or delete demo users manually                                                      |
+| Migration history mismatch | Regenerate migrations with PostgreSQL; do not reuse migration snapshots from other database providers |
 
 ## Tests
 

@@ -17,12 +17,7 @@ This codebase gives you:
 
 - Frontend: Angular 21, TypeScript, RxJS
 - Backend: ASP.NET Core, FastEndpoints, Mediator source generator use case flow
-<!--#if (PostgreSQL) -->
 - Database: PostgreSQL
-  <!--#endif-->
-  <!--#if (SqlServer) -->
-- Database: SQL Server
-<!--#endif-->
 - Background jobs: Hangfire
 - Local email testing: MailHog
 - Testing: Angular test runner, .NET unit tests, .NET integration tests with Testcontainers
@@ -33,12 +28,7 @@ This codebase gives you:
 - `src/ChangeMe.Frontend` - Angular application
 - `src/ChangeMe.Backend` - .NET solution with source projects and tests
 - `docs/` - implementation and testing guidance
-<!--#if (PostgreSQL) -->
 - `docker-compose.yml` - local full-stack environment (frontend, backend, PostgreSQL, MailHog)
-  <!--#endif-->
-  <!--#if (SqlServer) -->
-- `docker-compose.yml` - local full-stack environment (frontend, backend, SQL Server, MailHog)
-<!--#endif-->
 - `AGENTS.md` - working guide for AI agents and contributors
 
 ## Main Features

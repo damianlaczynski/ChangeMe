@@ -17,12 +17,7 @@ This repository is meant to provide:
 
 - Frontend: Angular 21, TypeScript, RxJS
 - Backend: ASP.NET Core, FastEndpoints, Mediator source generator use case flow
-<!--#if (PostgreSQL) -->
 - Database: PostgreSQL
-  <!--#endif-->
-  <!--#if (SqlServer) -->
-- Database: SQL Server
-<!--#endif-->
 - Background jobs: Hangfire
 - Local email testing: MailHog
 - Testing: Angular test runner, .NET unit tests, .NET integration tests with Testcontainers
@@ -33,12 +28,7 @@ This repository is meant to provide:
 - `src/ChangeMe.Frontend` - Angular application
 - `src/ChangeMe.Backend` - .NET solution with source projects and tests
 - `docs/` - implementation and testing guidance
-<!--#if (PostgreSQL) -->
 - `docker-compose.yml` - local full-stack environment (frontend, backend, PostgreSQL, MailHog)
-  <!--#endif-->
-  <!--#if (SqlServer) -->
-- `docker-compose.yml` - local full-stack environment (frontend, backend, SQL Server, MailHog)
-<!--#endif-->
 - `AGENTS.md` - working guide for AI agents and contributors
 - `.template.config/` - `dotnet new` template manifest (`changeme`, `sourceName` token `ChangeMe`)
 - `template-pack/` - NuGet packaging project for the template
@@ -70,24 +60,11 @@ dotnet new install .
 
 Create a new solution from the installed template:
 
-<!--#if (PostgreSQL) -->
-
 ```powershell
 dotnet new changeme -n IssuesDemo -o IssuesDemo
 ```
 
 PostgreSQL persistence, Hangfire storage, Docker Compose, and integration tests.
-
-<!--#endif-->
-<!--#if (SqlServer) -->
-
-```powershell
-dotnet new changeme -n IssuesDemo -o IssuesDemo --Database SqlServer
-```
-
-SQL Server persistence, Hangfire storage, Docker Compose, and integration tests. Add an EF Core migration before the first run (see `docs/technical/database-and-docker.md` in the generated tree).
-
-<!--#endif-->
 
 The installed short name appears in the `Short Name` column of `dotnet new list`.
 
@@ -159,7 +136,7 @@ This starts the frontend, backend, MailHog, and the database service defined in 
 
 ## Documentation
 
-The `docs/` directory contains guidance that is also shipped into generated solutions (with conditional sections for the selected database). See [`docs/README.md`](docs/README.md) for the full index.
+The `docs/` directory contains guidance that is also shipped into generated solutions. See [`docs/README.md`](docs/README.md) for the full index.
 
 - `docs/guides/` - implementation conventions (start at `docs/guides/README.md`)
 - `docs/technical/` - run and configure the stack (start at `docs/technical/README.md`)

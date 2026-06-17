@@ -6,7 +6,7 @@ It generates:
 
 - an Angular frontend
 - a layered ASP.NET backend
-- **PostgreSQL** (default) or **SQL Server** for EF Core, Hangfire, integration tests, and Docker Compose
+- **PostgreSQL** for EF Core, Hangfire, integration tests, and Docker Compose
 - MailHog for local email capture
 - backend unit and integration test projects
 - `docs/` with guides, technical notes (`docs/technical/database-and-docker.md`), and requirements
@@ -19,19 +19,9 @@ dotnet new install ChangeMe
 
 ## Create a project
 
-**PostgreSQL** (default):
-
 ```powershell
 dotnet new changeme -n IssuesDemo -o IssuesDemo
 ```
-
-**SQL Server:**
-
-```powershell
-dotnet new changeme -n IssuesDemo -o IssuesDemo --Database SqlServer
-```
-
-Parameter: `--Database` (`PostgreSQL` or `SqlServer`).
 
 ## After generation
 

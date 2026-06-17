@@ -1,8 +1,5 @@
 <Project>
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-<!--#if (PostgreSQL) -->
-    <DefineConstants>$(DefineConstants);PostgreSQL</DefineConstants>
-<!--#endif -->
   </PropertyGroup>
 </Project>

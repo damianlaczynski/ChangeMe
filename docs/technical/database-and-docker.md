@@ -12,7 +12,7 @@ The **backend** container sets `ASPNETCORE_ENVIRONMENT=Development`, so ASP.NET 
 2. `appsettings.Development.json` (same)
 3. **Environment variables** from `docker-compose.yml` (override JSON for matching keys)
 
-Today Compose overrides only what the container must differ from local `dotnet run` — for example `ConnectionStrings__DefaultConnection` (database host `postgres` or `sqlserver` instead of `localhost`) and `FileStorageOptions__RootPath=/app/storage`. Everything else (Auth, email, CORS, Serilog, etc.) comes from **appsettings** unless you add more `ServiceName__Property` entries under `backend.environment` in Compose.
+Today Compose overrides only what the container must differ from local `dotnet run` — for example `ConnectionStrings__DefaultConnection` (database host `postgres` instead of `localhost`) and `FileStorageOptions__RootPath=/app/storage`. Everything else (Auth, email, CORS, Serilog, etc.) comes from **appsettings** unless you add more `ServiceName__Property` entries under `backend.environment` in Compose.
 
 To change Docker-only settings, prefer `docker-compose.yml` environment entries over editing appsettings committed for local dev.
 
@@ -38,28 +38,10 @@ Migration **`.cs` files are not shipped with this starter.** Add them when you a
 
 **Production:** Prefer migrations applied from CI/CD (`dotnet ef database update`, reviewed SQL, or dedicated migration jobs) rather than many concurrent app instances all racing `Migrate()` at startup.
 
-### PostgreSQL vs SQL Server migrations
-
-Each EF Core provider emits **different DDL** and stores provider-specific metadata in snapshots and history. You maintain **one** migration history per provider configuration this solution was generated with; mixing snapshots across providers breaks deployments.
-
-<!--#if (PostgreSQL) -->
-
 ## PostgreSQL
 
 - **Docker Compose** runs `postgres` (image `postgres:16`) and wires the API to that host.
 - Default connection string for local dev: `src/ChangeMe.Backend/src/ChangeMe.Backend.Web/appsettings.Development.json`.
-
-<!--#endif-->
-
-<!--#if (SqlServer) -->
-
-## SQL Server
-
-- **Docker Compose** runs `sqlserver` (`mcr.microsoft.com/mssql/server:2022-latest`) and **`sqlserver-init`** so the database named in your connection string exists before the API connects.
-- Default connection string: `appsettings.Development.json` next to `Program.cs`.
-- **`sa` password** in Compose is for local development only.
-
-<!--#endif-->
 
 - **Integration tests** use disposable databases via Testcontainers (`BackendWebApplicationFactory`). The factory calls `MigrateAsync()` — migration `.cs` files must exist before the first local run (see [EF Core migrations](#ef-core-migrations) above). A running Docker engine is required.
 

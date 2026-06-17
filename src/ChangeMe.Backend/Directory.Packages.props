@@ -1,17 +1,9 @@
 <Project>
   <ItemGroup>
-    <!--#if (PostgreSQL) -->
     <PackageVersion Include="AspNetCore.HealthChecks.Npgsql" Version="9.0.0" />
     <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.1" />
     <PackageVersion Include="Hangfire.PostgreSql" Version="1.21.1" />
     <PackageVersion Include="Testcontainers.PostgreSql" Version="4.11.0" />
-    <!--#endif -->
-    <!--#if (SqlServer) -->
-    <PackageVersion Include="AspNetCore.HealthChecks.SqlServer" Version="9.0.0" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.7" />
-    <PackageVersion Include="Hangfire.SqlServer" Version="1.8.23" />
-    <PackageVersion Include="Testcontainers.MsSql" Version="4.11.0" />
-    <!--#endif -->
     <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="10.0.7" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.7" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.0" />
