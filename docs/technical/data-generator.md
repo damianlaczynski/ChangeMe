@@ -73,4 +73,4 @@ npm run data:generate
 
 ## Tests
 
-Integration tests use their own helpers (`IssueTestHelper`, `TestAuthHelper`) and Testcontainers — they do **not** invoke DataGenerator. See `docs/guides/testing-guidelines.md`.
+Integration tests use their own helpers (`IssueTestHelper`, `TestAuthHelper`) and Testcontainers — they do **not** invoke DataGenerator. Test layout and helpers: [`docs/guides/repo-map.md`](../guides/repo-map.md#test-map).

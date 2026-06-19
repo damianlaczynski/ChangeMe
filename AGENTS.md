@@ -31,14 +31,15 @@
 
 ### Repository root (npm)
 
-From the repository root, run `npm install` once to install root devDependencies (`concurrently` is required for `start:all` and `test:all`). Frontend packages still live under `src/ChangeMe.Frontend`; use `npm run install:frontend` after clone or when frontend dependencies change.
+From the repository root, run `npm install` once to install root devDependencies (`concurrently` is required for `start:all` and `test:all`). Frontend packages still live under `src/ChangeMe.Frontend`; use `npm run install:frontend` after clone or when frontend dependencies change — that script also installs Playwright **Chromium** for E2E (plain `npm install` inside `src/ChangeMe.Frontend` does not).
 
-- Install frontend dependencies: `npm run install:frontend`
+- Install frontend dependencies and Playwright Chromium: `npm run install:frontend`
 - Start dev servers: `npm run start:frontend`, `npm run start:backend`, or both in parallel with `npm run start:all`
 - Build: `npm run build:frontend`, `npm run build:backend`, or `npm run build:all`
 - Frontend quality: `npm run lint:frontend`, `npm run format:frontend`, `npm run test:frontend` (interactive watch when TTY), or `npm run test:frontend:ci` (single run, `--watch=false`)
 - Backend tests: `npm run test:backend` (entire solution — unit and integration projects), `npm run test:backend:unit`, or `npm run test:backend:integration`
 - Full automated check (frontend CI tests + full backend solution tests, parallel): `npm run test:all` — backend integration tests use Testcontainers and need a running Docker engine
+- E2E (Playwright): `npm run test:e2e` (needs Chromium from `npm run install:frontend`, PostgreSQL on `localhost`; Playwright starts the stack); `npm run test:e2e:ui` for interactive debugging — also runs in CI on every PR (`docs/technical/ci.md`)
 - CI workflow (GitHub Actions): see `docs/technical/ci.md`
 - EF Core (from repo root; run `npm run ef:restore` once after clone): `npm run ef:migrations:add -- <Name>`, `npm run ef:migrations:remove`, `npm run ef:database:update`
 - Demo data (after migrations; Development only): `npm run data:generate`, or `npm run data:generate -- --reset` — see `docs/technical/data-generator.md`
@@ -46,11 +47,12 @@ From the repository root, run `npm install` once to install root devDependencies
 
 ### Frontend (in `src/ChangeMe.Frontend`)
 
-- Install dependencies: `npm install`
+- Install dependencies: prefer `npm run install:frontend` from the repository root (includes Playwright Chromium); `npm install` here installs npm packages only
 - Run dev server: `npm start`
 - Lint: `npm run lint`
 - Format: `npm run format`
 - Tests: `npm test`
+- E2E: `npm run e2e` (from repo root: `npm run test:e2e`, or `npm run test:e2e:ui` for Playwright UI)
 
 ### Backend (in `src/ChangeMe.Backend`)
 

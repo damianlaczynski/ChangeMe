@@ -11,13 +11,14 @@ Concurrent runs for the same branch are cancelled (`cancel-in-progress: true`) w
 
 ## Jobs
 
-Three jobs run **in parallel** (no job depends on another):
+Four jobs run **in parallel** (no job depends on another):
 
 | Job              | What it runs                                                              | Working directory       |
 | ---------------- | ------------------------------------------------------------------------- | ----------------------- |
 | **Requirements** | `npm ci` → `npm run requirements:validate`                                | Repository root         |
 | **Frontend**     | `npm ci` → `npm test -- --watch=false` → `npm run build`                  | `src/ChangeMe.Frontend` |
 | **Backend**      | `dotnet restore` → optional EF migration → `dotnet test` → `dotnet build` | Repository root         |
+| **E2E**          | PostgreSQL service → `npm ci` → Playwright → smoke tests (`npm run e2e`)  | `src/ChangeMe.Frontend` |
 
 ### Requirements
 
@@ -49,6 +50,13 @@ Generated solutions that commit their own migrations skip this step automaticall
 
 Locally, add migrations before integration tests if the folder is empty — see `docs/technical/database-and-docker.md`.
 
+### E2E
+
+- Node.js **22** and .NET **10** (same as Frontend / Backend jobs).
+- **PostgreSQL 16** service container on the runner (`localhost:5432`).
+- Playwright starts the backend and frontend dev servers, then runs the smoke suite in `src/ChangeMe.Frontend/e2e/tests/`.
+- Reproduce locally: run `npm run install:frontend` once (Chromium), PostgreSQL on `localhost`, then `npm run test:e2e` from the repository root (see `AGENTS.md`).
+
 ## What CI does not cover
 
 | Check                         | Local command                 |
@@ -65,12 +73,16 @@ For test scope and project layout, see `docs/guides/testing-guidelines.md`.
 From the repository root after `npm install`:
 
 ```powershell
+npm run install:frontend
 npm run requirements:validate
 npm run test:frontend:ci
 npm run build:frontend
 npm run test:backend
 npm run build:backend
+npm run test:e2e
 ```
+
+(`install:frontend` installs Playwright Chromium; `test:e2e` also needs PostgreSQL on `localhost` — same as local backend Development settings.)
 
 Or approximate the full automated check:
 

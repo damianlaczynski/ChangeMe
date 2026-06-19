@@ -2,7 +2,7 @@
   "name": "changeme",
   "private": true,
   "scripts": {
-    "install:frontend": "npm --prefix src/ChangeMe.Frontend install",
+    "install:frontend": "npm --prefix src/ChangeMe.Frontend install && npm --prefix src/ChangeMe.Frontend exec playwright install chromium",
     "start:frontend": "npm --prefix src/ChangeMe.Frontend run start",
     "start:backend": "dotnet run --project src/ChangeMe.Backend/src/ChangeMe.Backend.Web/ChangeMe.Backend.Web.csproj",
     "start:all": "concurrently -n frontend,backend -c cyan,green \"npm run start:frontend\" \"npm run start:backend\"",
@@ -23,6 +23,8 @@
     "test:backend:unit": "dotnet test src/ChangeMe.Backend/tests/ChangeMe.Backend.UnitTests",
     "test:backend:integration": "dotnet test src/ChangeMe.Backend/tests/ChangeMe.Backend.IntegrationTests",
     "test:all": "concurrently -n fe,be -c cyan,blue \"npm run test:frontend:ci\" \"npm run test:backend\"",
+    "test:e2e": "npm --prefix src/ChangeMe.Frontend run e2e",
+    "test:e2e:ui": "npm --prefix src/ChangeMe.Frontend run e2e:ui",
     "ef:restore": "dotnet tool restore",
     "ef:migrations:add": "dotnet ef migrations add --project src/ChangeMe.Backend/src/ChangeMe.Backend.Infrastructure/ChangeMe.Backend.Infrastructure.csproj --startup-project src/ChangeMe.Backend/src/ChangeMe.Backend.Web/ChangeMe.Backend.Web.csproj --output-dir Persistence/Migrations",
     "ef:migrations:remove": "dotnet ef migrations remove --project src/ChangeMe.Backend/src/ChangeMe.Backend.Infrastructure/ChangeMe.Backend.Infrastructure.csproj --startup-project src/ChangeMe.Backend/src/ChangeMe.Backend.Web/ChangeMe.Backend.Web.csproj",

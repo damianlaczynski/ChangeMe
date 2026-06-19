@@ -47,7 +47,7 @@ For build, run, and test commands from `src/ChangeMe.Backend` or from the reposi
 5. Add or update feature services in `UseCases/<Feature>/Services/` when orchestration is shared.
 6. Reuse or extend domain methods in `Domain/`.
 7. Update EF configuration or migrations in `Infrastructure/` if persistence changes.
-8. Add or update integration tests under `tests/...IntegrationTests/Endpoints/<Feature>/`.
+8. Add or update integration tests when the endpoint or persistence changes ([testing-guidelines.md](testing-guidelines.md)).
 
 ## Endpoint conventions
 
@@ -97,11 +97,9 @@ Infrastructure services (e.g. `UserAuthTokenService`) **stage** EF changes only 
 - Endpoint auth defaults come from `BaseEndpoint` and `BaseEndpointWithoutRequest`.
 - Email is abstracted behind `IEmailService`.
 
-## Test expectations
+## Tests
 
-- Endpoint behavior belongs in integration tests.
-- Pure domain rules and utility behavior belong in unit tests.
-- If you change route behavior, status code mapping, auth requirements, validation, or persistence side effects, add or update integration tests.
+Layer ownership, anti-patterns, and when to skip: [testing-guidelines.md](testing-guidelines.md). Integration tests: `src/ChangeMe.Backend/tests/ChangeMe.Backend.IntegrationTests/Endpoints/<Feature>/`.
 
 ## Guardrails for AI agents
 
