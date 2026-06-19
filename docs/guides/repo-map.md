@@ -123,4 +123,3 @@ Current issue endpoints illustrate the standard flow:
 - `docs/technical/database-and-docker.md` — EF Core migrations, Docker Compose, Hangfire jobs, file storage
 - `docs/technical/data-generator.md` — optional demo data for local development
 - `docs/technical/ci.md` — GitHub Actions workflow
-- `docs/technical/auth-operations-guide.md` — `AuthOptions` configuration, OIDC, 2FA, and operator troubleshooting

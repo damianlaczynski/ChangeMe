@@ -64,7 +64,7 @@ Use only when unit and integration tests cannot prove the journey (browser sessi
 
 - A new or changed **user journey** in `FR-*` spans client + server + session.
 - Compliance gates or strict setup modes (`docs/requirements/_shared/reference/compliance-gates.md`).
-- Behavior depends on cookies, browser APIs, SignalR, or passkeys.
+- Behavior depends on cookies, browser APIs, or SignalR.
 
 ### Skip when
 

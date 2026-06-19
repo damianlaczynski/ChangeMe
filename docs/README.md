@@ -26,7 +26,6 @@ Run, configure, and troubleshoot the stack. Start with [technical/README.md](tec
 | [database-and-docker.md](technical/database-and-docker.md)                     | EF Core migrations, Docker Compose, Hangfire, file storage |
 | [data-generator.md](technical/data-generator.md)                               | Optional demo data for local development                   |
 | [ci.md](technical/ci.md)                                                       | GitHub Actions workflow and local reproduction             |
-| [auth-operations-guide.md](technical/auth-operations-guide.md)                 | `AuthOptions`, OIDC, 2FA, and operator settings            |
 
 ## Requirements (`requirements/`)
 
