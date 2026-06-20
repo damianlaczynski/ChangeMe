@@ -26,17 +26,10 @@ public class GetRoleAssignedUsersHandler(ApplicationDbContext context)
     if (!string.IsNullOrWhiteSpace(query.SearchText))
     {
       var searchText = query.SearchText.Trim();
-#if PostgreSQL
       usersQuery = usersQuery.Where(u =>
         EF.Functions.ILike(u.FirstName, $"%{searchText}%")
         || EF.Functions.ILike(u.LastName, $"%{searchText}%")
         || EF.Functions.ILike(u.Email, $"%{searchText}%"));
-#else
-      usersQuery = usersQuery.Where(u =>
-        EF.Functions.Like(u.FirstName, $"%{searchText}%")
-        || EF.Functions.Like(u.LastName, $"%{searchText}%")
-        || EF.Functions.Like(u.Email, $"%{searchText}%"));
-#endif
     }
 
     var projected = usersQuery.Select(u => new RoleAssignedUserDto

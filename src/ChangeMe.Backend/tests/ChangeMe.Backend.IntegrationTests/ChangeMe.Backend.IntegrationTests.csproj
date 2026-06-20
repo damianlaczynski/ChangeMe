@@ -41,9 +41,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
 
-    <PackageReference Include="Testcontainers.PostgreSql" Condition="$(DefineConstants.Contains('PostgreSQL'))" />
-
-    <PackageReference Include="Testcontainers.MsSql" Condition="!$(DefineConstants.Contains('PostgreSQL'))" />
+    <PackageReference Include="Testcontainers.PostgreSql" />
 
     <PackageReference Include="xunit.runner.visualstudio" />
 

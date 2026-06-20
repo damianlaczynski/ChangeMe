@@ -12,30 +12,6 @@
     "type": "solution"
   },
   "symbols": {
-    "Database": {
-      "type": "parameter",
-      "datatype": "choice",
-      "choices": [
-        {
-          "choice": "PostgreSQL",
-          "description": "PostgreSQL (Npgsql, Hangfire.PostgreSql, Docker postgres image)"
-        },
-        {
-          "choice": "SqlServer",
-          "description": "SQL Server (EF Core SqlServer, Hangfire.SqlServer, Docker mssql image)"
-        }
-      ],
-      "defaultValue": "PostgreSQL",
-      "description": "Database stack for EF Core migrations, Hangfire, integration tests, and docker-compose."
-    },
-    "PostgreSQL": {
-      "type": "computed",
-      "value": "(Database == \"PostgreSQL\")"
-    },
-    "SqlServer": {
-      "type": "computed",
-      "value": "(Database == \"SqlServer\")"
-    },
     "ProjectNameCamelCase": {
       "type": "derived",
       "valueSource": "name",
@@ -49,24 +25,6 @@
     }
   },
   "primaryOutputs": [{ "path": "src/ChangeMe.Backend/ChangeMe.Backend.slnx" }],
-  "specialCustomOperations": {
-    "**/docker-compose.yml": {
-      "operations": [
-        {
-          "type": "conditional",
-          "configuration": {
-            "if": ["#if"],
-            "else": ["#else"],
-            "elseif": ["#elseif"],
-            "endif": ["#endif"],
-            "trim": true,
-            "wholeLine": true,
-            "evaluator": "C++"
-          }
-        }
-      ]
-    }
-  },
   "sources": [
     {
       "source": "./",
@@ -96,11 +54,6 @@
           ]
         }
       ]
-    },
-    {
-      "condition": "(Database == \"SqlServer\")",
-      "source": "template-content/sqlserver-web/",
-      "target": "./src/ChangeMe.Backend/src/ChangeMe.Backend.Web/"
     },
     {
       "source": "template-content/generated-readme/",
