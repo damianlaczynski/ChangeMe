@@ -61,7 +61,7 @@ Each EF Core provider emits **different DDL** and stores provider-specific metad
 
 <!--#endif-->
 
-- **Integration tests** use disposable databases via Testcontainers (`BackendWebApplicationFactory`).
+- **Integration tests** use disposable databases via Testcontainers (`BackendWebApplicationFactory`). The factory calls `MigrateAsync()` — migration `.cs` files must exist before the first local run (see [EF Core migrations](#ef-core-migrations) above). A running Docker engine is required.
 
 ## Demo data (optional)
 

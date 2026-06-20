@@ -6,13 +6,13 @@
 
 ## Documents
 
-| Document                                         | Read when you need to…                                   |
-| ------------------------------------------------ | -------------------------------------------------------- |
-| [repo-map.md](repo-map.md)                       | Find where code lives and which layer owns what          |
-| [frontend-guidelines.md](frontend-guidelines.md) | Angular components, forms, routing, PrimeNG, Tailwind    |
-| [backend-guidelines.md](backend-guidelines.md)   | Layers, endpoints, use cases, validation, EF             |
-| [testing-guidelines.md](testing-guidelines.md)   | Which test layer owns which behavior; when to skip tests |
-| [feature-recipes.md](feature-recipes.md)         | Step-by-step recipes for common feature work             |
+| Document                                         | Read when you need to…                                  |
+| ------------------------------------------------ | ------------------------------------------------------- |
+| [repo-map.md](repo-map.md)                       | Find where code lives and which layer owns what         |
+| [frontend-guidelines.md](frontend-guidelines.md) | Angular components, forms, routing, PrimeNG, Tailwind   |
+| [backend-guidelines.md](backend-guidelines.md)   | Layers, endpoints, use cases, validation, EF            |
+| [testing-guidelines.md](testing-guidelines.md)   | Test layer ownership, anti-patterns, when to skip tests |
+| [feature-recipes.md](feature-recipes.md)         | Step-by-step recipes for common feature work            |
 
 ## Start here by task
 
@@ -22,7 +22,7 @@
 | Frontend change                   | [repo-map.md](repo-map.md) + [frontend-guidelines.md](frontend-guidelines.md)                                   |
 | Backend change                    | [repo-map.md](repo-map.md) + [backend-guidelines.md](backend-guidelines.md)                                     |
 | New endpoint or screen end-to-end | [feature-recipes.md](feature-recipes.md) + relevant guidelines + [testing-guidelines.md](testing-guidelines.md) |
-| Verify before PR                  | [testing-guidelines.md](testing-guidelines.md)                                                                  |
+| Verify before PR                  | [testing-guidelines.md](testing-guidelines.md) + [`AGENTS.md`](../../AGENTS.md) (commands)                      |
 
 ## Relationship to other docs
 

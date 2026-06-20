@@ -55,7 +55,7 @@ Locally, add migrations before integration tests if the folder is empty — see 
 - Node.js **22** and .NET **10** (same as Frontend / Backend jobs).
 - **PostgreSQL 16** service container on the runner (`localhost:5432`).
 - Playwright starts the backend and frontend dev servers, then runs the smoke suite in `src/ChangeMe.Frontend/e2e/tests/`.
-- Reproduce locally: PostgreSQL on `localhost`, then `npm run test:e2e` from the repository root (see `AGENTS.md`).
+- Reproduce locally: run `npm run install:frontend` once (Chromium), PostgreSQL on `localhost`, then `npm run test:e2e` from the repository root (see `AGENTS.md`).
 
 ## What CI does not cover
 
@@ -73,6 +73,7 @@ For test scope and project layout, see `docs/guides/testing-guidelines.md`.
 From the repository root after `npm install`:
 
 ```powershell
+npm run install:frontend
 npm run requirements:validate
 npm run test:frontend:ci
 npm run build:frontend
@@ -81,7 +82,7 @@ npm run build:backend
 npm run test:e2e
 ```
 
-(`test:e2e` needs PostgreSQL on `localhost` — same as local backend Development settings.)
+(`install:frontend` installs Playwright Chromium; `test:e2e` also needs PostgreSQL on `localhost` — same as local backend Development settings.)
 
 Or approximate the full automated check:
 
