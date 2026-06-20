@@ -46,7 +46,8 @@ Each EF Core provider emits **different DDL** and stores provider-specific metad
 
 ## PostgreSQL
 
-- **Docker Compose** runs `postgres` (image `postgres:16`) and wires the API to that host.
+- **Docker Compose** runs `postgres` (image `postgres:18`) and wires the API to that host.
+- PostgreSQL **18+** official images store data under a versioned path; mount the named volume at **`/var/lib/postgresql`** (not `/var/lib/postgresql/data`). After upgrading from PostgreSQL 16/17 Compose volumes, run `npm run docker:down:volumes` once and recreate the stack, or migrate data with `pg_dump` / `pg_upgrade`.
 - Default connection string for local dev: `src/ChangeMe.Backend/src/ChangeMe.Backend.Web/appsettings.Development.json`.
 
 <!--#endif-->

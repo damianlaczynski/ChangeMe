@@ -26,7 +26,7 @@ public class BackendWebApplicationFactory : WebApplicationFactory<Program>, IAsy
     Guid.NewGuid().ToString("N"));
   private readonly Dictionary<string, string?> environmentOverrides = new();
 #if PostgreSQL
-  private readonly PostgreSqlContainer postgresContainer = new PostgreSqlBuilder("postgres:15.1")
+  private readonly PostgreSqlContainer postgresContainer = new PostgreSqlBuilder("postgres:18")
     .Build();
 #else
   private readonly MsSqlContainer msSqlContainer = new MsSqlBuilder("mcr.microsoft.com/mssql/server:2022-latest")

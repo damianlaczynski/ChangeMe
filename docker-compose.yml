@@ -46,7 +46,7 @@ services:
 
 #if (PostgreSQL)
   postgres:
-    image: postgres:16
+    image: postgres:18
     ports:
       - "5432:5432"
     environment:
@@ -54,7 +54,7 @@ services:
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=ChangeMe
     volumes:
-      - postgres-data:/var/lib/postgresql/data
+      - postgres-data:/var/lib/postgresql
     networks:
       - app-network
     restart: unless-stopped

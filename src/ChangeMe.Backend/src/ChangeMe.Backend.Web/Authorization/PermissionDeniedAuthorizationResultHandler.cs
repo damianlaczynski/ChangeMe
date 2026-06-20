@@ -10,7 +10,7 @@ public sealed class PermissionDeniedAuthorizationResultHandler : IAuthorizationM
   public async Task HandleAsync(
     RequestDelegate next,
     HttpContext context,
-    AuthorizationPolicy? policy,
+    AuthorizationPolicy policy,
     PolicyAuthorizationResult authorizeResult)
   {
     if (authorizeResult.Forbidden && !authorizeResult.Succeeded)
