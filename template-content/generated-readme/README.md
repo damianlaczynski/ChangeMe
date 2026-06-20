@@ -69,7 +69,7 @@ npm test
 
 ### Backend
 
-Includes `InitialCreate` — apply once: `npm run ef:database:update` from the repository root (see `docs/technical/database-and-docker.md`).
+Includes `InitialCreate` — in Development, migrations apply on API startup (`DatabaseOptions:ApplyMigrationsOnStartup` is `true` in `appsettings.Development.json`; see `docs/technical/database-and-docker.md`).
 
 From `src/ChangeMe.Backend`:
 

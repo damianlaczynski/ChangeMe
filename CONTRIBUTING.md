@@ -6,7 +6,7 @@
 
 | Audience                  | Files                                                                                                    |
 | ------------------------- | -------------------------------------------------------------------------------------------------------- |
-| Generated solution / fork | `README.md`, `AGENTS.md`, `docs/*`, `.config/dotnet-tools.json` (optional `dotnet-ef` pin)               |
+| Generated solution / fork | `README.md`, `AGENTS.md`, `docs/*`                                                                       |
 | Template repo maintainers | `CONTRIBUTING.md` (this file), `.template.config/template.json`, `template-pack/*`, `template-content/*` |
 
 `CONTRIBUTING.md` is excluded from the NuGet template payload (`dotnet new` output).

@@ -14,7 +14,7 @@
 ## Prerequisites
 
 1. Database is reachable (see `docs/technical/database-and-docker.md`).
-2. Migrations applied (`npm run ef:database:update` from the repository root).
+2. Migrations applied (automatic on API startup in Development, or `npm run ef:database:update` from the repository root).
 
 3. `ConnectionStrings:DefaultConnection` in `src/ChangeMe.Backend/src/ChangeMe.Backend.Web/appsettings.Development.json` points at your database.
 
@@ -59,12 +59,12 @@ npm run data:generate
 
 ## Troubleshooting
 
-| Problem                    | Action                                                                                                |
-| -------------------------- | ----------------------------------------------------------------------------------------------------- |
-| No migrations found        | Run `npm run ef:database:update` (`docs/technical/database-and-docker.md`)                            |
-| Connection refused         | Start Docker Compose or local DB; verify connection string                                            |
-| Demo data already exists   | Run with `--reset` or delete demo users manually                                                      |
-| Migration history mismatch | Regenerate migrations with PostgreSQL; do not reuse migration snapshots from other database providers |
+| Problem                    | Action                                                                                                     |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| No migrations found        | Start the API in Development or run `npm run ef:database:update` (`docs/technical/database-and-docker.md`) |
+| Connection refused         | Start Docker Compose or local DB; verify connection string                                                 |
+| Demo data already exists   | Run with `--reset` or delete demo users manually                                                           |
+| Migration history mismatch | Regenerate migrations with PostgreSQL; do not reuse migration snapshots from other database providers      |
 
 ## Tests
 
