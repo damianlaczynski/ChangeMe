@@ -11,7 +11,7 @@ This tool fills the database with sample users, issues, comments, acceptance cri
 ## Prerequisites
 
 1. A running PostgreSQL database (Docker Compose or local instance).
-2. EF Core migrations applied (`npm run ef:database:update` from the repository root).
+2. EF Core migrations applied (automatic on API startup in Development, or `npm run ef:database:update` from the repository root).
 3. A valid connection string in the Web project `appsettings.Development.json` (those files are linked into this tool at build time).
 
 ## Running

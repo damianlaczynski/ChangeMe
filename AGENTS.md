@@ -7,7 +7,6 @@
 - `src/ChangeMe.Frontend` - Angular 21 frontend.
 - `src/ChangeMe.Backend` - .NET backend solution.
 - `docker-compose.yml` - local full-stack environment with frontend, backend, PostgreSQL, and MailHog.
-- `.config/dotnet-tools.json` - pins **`dotnet-ef`** for `dotnet ef migrations add` (optional; see `docs/technical/database-and-docker.md`).
 - `docs/` - guides, technical, and requirements (`docs/README.md` for the full index).
 - `docs/guides/README.md`, `docs/technical/README.md`, `docs/requirements/requirements-change-process.md` - entry points per area.
 - Root `package.json` - optional npm scripts that run frontend and backend tasks from the repository root (see Commands).
@@ -35,7 +34,7 @@ From the repository root, run `npm install` once to install root devDependencies
 - Full automated check (frontend CI tests + full backend solution tests, parallel): `npm run test:all` — backend integration tests use Testcontainers and need a running Docker engine
 - E2E (Playwright): `npm run test:e2e` (needs Chromium from `npm run install:frontend`, PostgreSQL on `localhost`; Playwright starts the stack); `npm run test:e2e:ui` for interactive debugging — also runs in CI on every PR (`docs/technical/ci.md`)
 - CI workflow (GitHub Actions): see `docs/technical/ci.md`
-- EF Core (from repo root; run `npm run ef:restore` once after clone): `npm run ef:migrations:add -- <Name>`, `npm run ef:migrations:remove`, `npm run ef:database:update`
+- EF Core (from repo root): `npm run ef:migrations:add -- <Name>`, `npm run ef:migrations:remove`, `npm run ef:database:update`
 - Demo data (after migrations; Development only): `npm run data:generate`, or `npm run data:generate -- --reset` — see `docs/technical/data-generator.md`
 - Requirements structure: `npm run requirements:validate` — checks `FR-*` / `NFR-*` specs, cross-references, and regenerates `docs/requirements/README.md`
 
@@ -50,7 +49,7 @@ From the repository root, run `npm install` once to install root devDependencies
 
 ### Backend (in `src/ChangeMe.Backend`)
 
-- First-time migrations: add an EF migration from the solution root (`dotnet tool restore` then `dotnet ef migrations add ...`; see `docs/technical/database-and-docker.md`).
+- Includes `InitialCreate` — in Development, migrations apply on API startup (`DatabaseOptions:ApplyMigrationsOnStartup` is `true` in `appsettings.Development.json`; see `docs/technical/database-and-docker.md`).
 - Restore/build solution: `dotnet build ChangeMe.Backend.slnx`
 - Run web app: `dotnet run --project src/ChangeMe.Backend.Web`
 - All tests in the solution: `dotnet test ChangeMe.Backend.slnx`

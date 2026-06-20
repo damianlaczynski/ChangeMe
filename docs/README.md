@@ -13,6 +13,7 @@ Implementation conventions and recipes. Start with [guides/README.md](guides/REA
 | [frontend-guidelines.md](guides/frontend-guidelines.md) | Angular frontend conventions                                      |
 | [backend-guidelines.md](guides/backend-guidelines.md)   | .NET backend conventions                                          |
 | [testing-guidelines.md](guides/testing-guidelines.md)   | Test layer ownership, anti-patterns, when to skip automated tests |
+| [e2e-guidelines.md](guides/e2e-guidelines.md)           | Playwright layout, locators, conventions, config, commands        |
 | [feature-recipes.md](guides/feature-recipes.md)         | Short recipes for common feature work                             |
 
 ## Technical (`technical/`)

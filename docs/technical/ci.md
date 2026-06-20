@@ -13,12 +13,12 @@ Concurrent runs for the same branch are cancelled (`cancel-in-progress: true`) w
 
 Four jobs run **in parallel** (no job depends on another):
 
-| Job              | What it runs                                                              | Working directory       |
-| ---------------- | ------------------------------------------------------------------------- | ----------------------- |
-| **Requirements** | `npm ci` → `npm run requirements:validate`                                | Repository root         |
-| **Frontend**     | `npm ci` → `npm test -- --watch=false` → `npm run build`                  | `src/ChangeMe.Frontend` |
-| **Backend**      | `dotnet restore` → optional EF migration → `dotnet test` → `dotnet build` | Repository root         |
-| **E2E**          | PostgreSQL service → `npm ci` → Playwright → smoke tests (`npm run e2e`)  | `src/ChangeMe.Frontend` |
+| Job              | What it runs                                                             | Working directory       |
+| ---------------- | ------------------------------------------------------------------------ | ----------------------- |
+| **Requirements** | `npm ci` → `npm run requirements:validate`                               | Repository root         |
+| **Frontend**     | `npm ci` → `npm test -- --watch=false` → `npm run build`                 | `src/ChangeMe.Frontend` |
+| **Backend**      | `dotnet restore` → `dotnet test` → `dotnet build`                        | Repository root         |
+| **E2E**          | PostgreSQL service → `npm ci` → Playwright → smoke tests (`npm run e2e`) | `src/ChangeMe.Frontend` |
 
 ### Requirements
 
@@ -41,14 +41,6 @@ npm run requirements:validate
 - .NET **10**
 - `dotnet test` and `dotnet build` on `ChangeMe.Backend.slnx` in **Release**
 - **Integration tests** use Testcontainers (Docker). GitHub-hosted `ubuntu-latest` runners provide Docker; local runs need a running Docker engine too.
-
-#### EF migrations in CI
-
-Migration `.cs` files are **not** committed in the template repository (see `CONTRIBUTING.md`). The backend job creates `InitialCreate` with `dotnet ef` when `Persistence/Migrations/*.cs` is missing.
-
-Generated solutions that commit their own migrations skip this step automatically.
-
-Locally, add migrations before integration tests if the folder is empty — see `docs/technical/database-and-docker.md`.
 
 ### E2E
 

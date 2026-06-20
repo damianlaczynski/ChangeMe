@@ -16,27 +16,17 @@ Today Compose overrides only what the container must differ from local `dotnet r
 
 To change Docker-only settings, prefer `docker-compose.yml` environment entries over editing appsettings committed for local dev.
 
+For sensitive local overrides (JWT signing key, SMTP credentials, database password), see `src/ChangeMe.Backend/src/ChangeMe.Backend.Web/secrets.json.example` and set values via [User Secrets](https://learn.microsoft.com/aspnet/core/security/app-secrets) or environment variables — never commit real secrets.
+
 ## EF Core migrations
 
-Migration **`.cs` files are not shipped with this starter.** Add them when you are ready (name is yours; `InitialCreate` is a common first migration):
+`InitialCreate` is included in `Infrastructure/Persistence/Migrations/`. In Development, **`DatabaseOptions:ApplyMigrationsOnStartup` is `true`** in `appsettings.Development.json` — pending migrations apply when the API starts (`dotnet run`, `npm run start:backend`, or Docker Compose).
 
-1. From the **solution root** (folder containing `src/` and `.config/`):
+When you change the EF model, add a migration: `npm run ef:migrations:add -- <Name>`.
 
-   ```powershell
-   dotnet tool restore
-   ```
+For a one-off apply without starting the API: `npm run ef:database:update`.
 
-2. Still from the solution root:
-
-   ```powershell
-   dotnet ef migrations add InitialCreate --project src/ChangeMe.Backend/src/ChangeMe.Backend.Infrastructure/ChangeMe.Backend.Infrastructure.csproj --startup-project src/ChangeMe.Backend/src/ChangeMe.Backend.Web/ChangeMe.Backend.Web.csproj --output-dir Persistence/Migrations
-   ```
-
-   If you do not use the local tool manifest, install the global tool once: `dotnet tool install --global dotnet-ef` (version aligned with your SDK), then run the same `dotnet ef` command.
-
-3. **`Database:ApplyMigrationsOnStartup`** defaults to `false` in `appsettings.json` and `appsettings.Development.json`. After migration files exist, set it to `true` in Development (or run `dotnet ef database update`) so pending migrations apply when the API starts. If enabled with zero migrations, startup fails with a clear error instead of creating an empty database.
-
-**Production:** Prefer migrations applied from CI/CD (`dotnet ef database update`, reviewed SQL, or dedicated migration jobs) rather than many concurrent app instances all racing `Migrate()` at startup.
+**Production:** keep `ApplyMigrationsOnStartup` false (default in `appsettings.json`) and apply migrations from CI/CD rather than at app startup on many instances.
 
 ## PostgreSQL
 
@@ -44,7 +34,7 @@ Migration **`.cs` files are not shipped with this starter.** Add them when you a
 - PostgreSQL **18+** official images store data under a versioned path; mount the named volume at **`/var/lib/postgresql`** (not `/var/lib/postgresql/data`). After upgrading from PostgreSQL 16/17 Compose volumes, run `npm run docker:down:volumes` once and recreate the stack, or migrate data with `pg_dump` / `pg_upgrade`.
 - Default connection string for local dev: `src/ChangeMe.Backend/src/ChangeMe.Backend.Web/appsettings.Development.json`.
 
-- **Integration tests** use disposable databases via Testcontainers (`BackendWebApplicationFactory`). The factory calls `MigrateAsync()` — migration `.cs` files must exist before the first local run (see [EF Core migrations](#ef-core-migrations) above). A running Docker engine is required.
+- **Integration tests** use disposable databases via Testcontainers (`BackendWebApplicationFactory`). The factory calls `MigrateAsync()`. A running Docker engine is required.
 
 ## Demo data (optional)
 

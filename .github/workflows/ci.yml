@@ -79,23 +79,6 @@ jobs:
       - name: Restore
         run: dotnet restore src/ChangeMe.Backend/ChangeMe.Backend.slnx
 
-      # Migrations are not committed in the template repo (see CONTRIBUTING.md).
-      # Generated apps commit their own migrations; skip when files already exist.
-      - name: Create EF migrations for integration tests
-        shell: bash
-        run: |
-          migrations_dir="src/ChangeMe.Backend/src/ChangeMe.Backend.Infrastructure/Persistence/Migrations"
-          if compgen -G "${migrations_dir}/*.cs" > /dev/null; then
-            echo "Migrations already present; skipping dotnet ef migrations add."
-            exit 0
-          fi
-
-          dotnet tool install --global dotnet-ef --version 10.0.9
-          dotnet ef migrations add InitialCreate \
-            --project src/ChangeMe.Backend/src/ChangeMe.Backend.Infrastructure/ChangeMe.Backend.Infrastructure.csproj \
-            --startup-project src/ChangeMe.Backend/src/ChangeMe.Backend.Web/ChangeMe.Backend.Web.csproj \
-            --output-dir Persistence/Migrations
-
       - name: Test
         run: dotnet test src/ChangeMe.Backend/ChangeMe.Backend.slnx -c Release --no-restore
 
@@ -153,22 +136,6 @@ jobs:
       - name: Restore .NET
         working-directory: .
         run: dotnet restore src/ChangeMe.Backend/ChangeMe.Backend.slnx
-
-      - name: Create EF migrations for E2E
-        working-directory: .
-        shell: bash
-        run: |
-          migrations_dir="src/ChangeMe.Backend/src/ChangeMe.Backend.Infrastructure/Persistence/Migrations"
-          if compgen -G "${migrations_dir}/*.cs" > /dev/null; then
-            echo "Migrations already present; skipping dotnet ef migrations add."
-            exit 0
-          fi
-
-          dotnet tool install --global dotnet-ef --version 10.0.9
-          dotnet ef migrations add InitialCreate \
-            --project src/ChangeMe.Backend/src/ChangeMe.Backend.Infrastructure/ChangeMe.Backend.Infrastructure.csproj \
-            --startup-project src/ChangeMe.Backend/src/ChangeMe.Backend.Web/ChangeMe.Backend.Web.csproj \
-            --output-dir Persistence/Migrations
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium

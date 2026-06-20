@@ -20,7 +20,7 @@
 | Task                                                     | Document                                                                                                              |
 | -------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
 | First clone — run full stack locally                     | [database-and-docker.md](database-and-docker.md) → `npm run docker:up`                                                |
-| First clone — run API/tests without Compose              | [database-and-docker.md](database-and-docker.md) (migrations) → `docs/guides/testing-guidelines.md`                   |
+| First clone — run API/tests without Compose              | [database-and-docker.md](database-and-docker.md) → `docs/guides/testing-guidelines.md`                                |
 | Populate UI with sample data                             | [data-generator.md](data-generator.md)                                                                                |
 | PR failed on GitHub                                      | [ci.md](ci.md)                                                                                                        |
 | Configure JWT, password policy, or initial administrator | [database-and-docker.md](database-and-docker.md) (`AuthOptions`, `InitialAdministratorOptions` in `appsettings.json`) |

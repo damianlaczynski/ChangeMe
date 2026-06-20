@@ -25,7 +25,7 @@ dotnet new changeme -n IssuesDemo -o IssuesDemo
 
 ## After generation
 
-- Read `docs/technical/database-and-docker.md` for the first `dotnet ef migrations add`, Compose, `ApplyMigrationsOnStartup`, and production migration guidance.
+- Start the API once in Development (migrations apply on startup), then see `docs/technical/database-and-docker.md` for Compose and production notes.
 
 ## Verify the install
 

@@ -44,7 +44,15 @@ This codebase gives you:
 
 ### Frontend
 
-From `src/ChangeMe.Frontend`:
+From the **repository root** (recommended — includes Playwright Chromium for E2E):
+
+```powershell
+npm install
+npm run install:frontend
+npm run start:frontend
+```
+
+Or from `src/ChangeMe.Frontend` (npm packages only):
 
 ```powershell
 npm install
@@ -61,12 +69,7 @@ npm test
 
 ### Backend
 
-Create the first EF Core migration before running the API or integration tests that apply the database (see `docs/technical/database-and-docker.md`). From the **solution root**:
-
-```powershell
-dotnet tool restore
-dotnet ef migrations add InitialCreate --project src/ChangeMe.Backend/src/ChangeMe.Backend.Infrastructure/ChangeMe.Backend.Infrastructure.csproj --startup-project src/ChangeMe.Backend/src/ChangeMe.Backend.Web/ChangeMe.Backend.Web.csproj --output-dir Persistence/Migrations
-```
+Includes `InitialCreate` — in Development, migrations apply on API startup (`DatabaseOptions:ApplyMigrationsOnStartup` is `true` in `appsettings.Development.json`; see `docs/technical/database-and-docker.md`).
 
 From `src/ChangeMe.Backend`:
 
