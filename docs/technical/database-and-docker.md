@@ -18,6 +18,8 @@ To change Docker-only settings, prefer `docker-compose.yml` environment entries 
 
 For sensitive local overrides (JWT signing key, SMTP credentials, database password), see `src/ChangeMe.Backend/src/ChangeMe.Backend.Web/secrets.json.example` and set values via [User Secrets](https://learn.microsoft.com/aspnet/core/security/app-secrets) or environment variables — never commit real secrets.
 
+Deployed stacks (runtime API URL, TLS, CORS, production checklist): [deployment.md](deployment.md).
+
 ## EF Core migrations
 
 `InitialCreate` is included in `Infrastructure/Persistence/Migrations/`. After clone or `dotnet new`, apply it once from the repository root:

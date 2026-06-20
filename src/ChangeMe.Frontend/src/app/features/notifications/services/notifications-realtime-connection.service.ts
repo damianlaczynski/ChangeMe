@@ -1,5 +1,5 @@
 import { DestroyRef, Injectable, effect, inject, signal } from '@angular/core';
-import { environment } from '@environments/environment';
+import { getNotificationsHubUrl } from '@environments/runtime-config';
 import { AuthService } from '@features/auth/services/auth.service';
 import {
   HubConnection,
@@ -103,6 +103,6 @@ export class NotificationsRealtimeConnectionService {
   }
 
   private getHubUrl(): string {
-    return environment.apiUrl.replace(/\/api(?:\/v\d+)?\/?$/, '/hubs/notifications');
+    return getNotificationsHubUrl();
   }
 }

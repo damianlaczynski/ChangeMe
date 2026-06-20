@@ -51,6 +51,13 @@ For dev server, lint, format, and test commands from `src/ChangeMe.Frontend` or 
 - Shared request/response handling belongs in `shared/api/services/api.service.ts`.
 - Keep endpoint strings centralized per service through a `baseEndpoint` field when the service owns one API area.
 
+## API base URL
+
+- **Development (`ng serve`):** explicit in `environment.development.ts` (`http://localhost:5000/api/v1`).
+- **Production / Docker:** explicit in `public/runtime-config.js` (`apiUrl: '/api/v1'`) or `CHANGE_ME_API_URL` — no value in `environment.ts`.
+- HTTP and SignalR services use `getApiUrl()` / `getNotificationsHubUrl()` from `src/environments/runtime-config.ts`.
+- Deployment patterns (nginx `/api` proxy, CORS, split hosts): [deployment.md](../technical/deployment.md).
+
 ## Forms and templates
 
 - Follow the existing Angular standalone template style already used in the repo.

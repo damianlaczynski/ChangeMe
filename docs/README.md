@@ -25,6 +25,7 @@ Run, configure, and troubleshoot the stack. Start with [technical/README.md](tec
 | [README.md](technical/README.md)                                               | Entry point — when to read each technical doc              |
 | [technical-documentation-guide.md](technical/technical-documentation-guide.md) | When to add or extend technical docs                       |
 | [database-and-docker.md](technical/database-and-docker.md)                     | EF Core migrations, Docker Compose, Hangfire, file storage |
+| [deployment.md](technical/deployment.md)                                       | Runtime API URL, production deployment checklist           |
 | [data-generator.md](technical/data-generator.md)                               | Optional demo data for local development                   |
 | [ci.md](technical/ci.md)                                                       | GitHub Actions workflow and local reproduction             |
 
