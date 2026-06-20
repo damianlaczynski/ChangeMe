@@ -20,9 +20,9 @@ The user must be able to sign in with email and password and begin an authentica
 
 ### Login screen
 
-| Field        | Behavior                                                                          |
-| ------------ | --------------------------------------------------------------------------------- |
-| **Email**    | Text field, **required**; valid email format; max **320** characters.             |
+| Field        | Behavior                                                                           |
+| ------------ | ---------------------------------------------------------------------------------- |
+| **Email**    | Text field, **required**; valid email format; max **320** characters.              |
 | **Password** | Password field, **required**; **8–128** characters (same bounds as user creation). |
 
 - Successful sign-in opens the **Issues list** screen with the user authenticated.
@@ -51,6 +51,8 @@ The user must be able to sign in with email and password and begin an authentica
 
 - Each sign-in creates a **new session**; signing in from multiple devices creates multiple independent sessions.
 - A guest who opens a protected screen is redirected to **Login**.
+- After successful sign-in, the user receives a full application session immediately and may access screens permitted by effective permissions (FR-ROL-001). There are no intermediate gates before the application (for example required password change, two-factor verification, or email verification).
+- Sign-in is evaluated in this order: (1) unknown credentials → **`Invalid email or password.`**; (2) account **deactivated** (FR-USR-005) → **`This account has been deactivated. Contact an administrator.`**; (3) success → create session and navigate to **Issues list**.
 
 ## Non-functional requirements
 

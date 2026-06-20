@@ -15,7 +15,7 @@ After either path, add or update a pending record in `docs/requirements/changes/
 
 ## Before you write
 
-1. Read relevant `_shared/reference/` docs (glossary, account model, compliance gates, permissions) when the feature touches those concepts.
+1. Read relevant `_shared/reference/` docs (glossary, account model, permissions) when the feature touches those concepts.
 2. Check whether behavior belongs in `_shared/functional/ui-patterns.md` (`FR-UI-001`) or another shared doc — link once, do not duplicate across specifications.
 3. Search `docs/requirements/README.md` for related `FR-*` files; set `depends_on` and cite identifiers when behavior builds on another specification.
 
@@ -57,7 +57,6 @@ Specifications must be **unambiguous**. A developer or tester must not need to g
 | --------------------------- | ------------------------------------------------------------------------------ |
 | Business terms              | `docs/requirements/_shared/reference/glossary.md`                              |
 | Account attributes          | `docs/requirements/_shared/reference/account-model.md`                         |
-| Post-sign-in gates          | `docs/requirements/_shared/reference/compliance-gates.md`                      |
 | Permission names            | `docs/requirements/_shared/reference/permissions.md`                           |
 | UI/UX patterns              | `docs/requirements/_shared/functional/ui-patterns.md` (`FR-UI-001`)            |
 | Product quality (NFR index) | `docs/requirements/_shared/non-functional/product-quality.md` (`NFR-QUAL-001`) |

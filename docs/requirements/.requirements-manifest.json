@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-20T10:23:54.435Z",
+  "generatedAt": "2026-06-20T10:42:42.895Z",
   "functional": [
     {
       "id": "FR-AUTH-001",
@@ -82,13 +82,7 @@
       "status": "active",
       "file": "functional/identity/fr-auth-008-password-policy.md",
       "depends_on": [],
-      "inherits_nfr": [
-        "NFR-QUAL-001",
-        "NFR-A11Y-001",
-        "NFR-I18N-001",
-        "NFR-PERF-001",
-        "NFR-RSP-001"
-      ],
+      "inherits_nfr": [],
       "inherits_fr": [
         "FR-UI-001"
       ]
@@ -299,7 +293,13 @@
       "type": "functional",
       "status": "active",
       "file": "functional/users/fr-usr-001-my-account-profile.md",
-      "depends_on": [],
+      "depends_on": [
+        "FR-AUTH-001",
+        "FR-AUTH-003",
+        "FR-AUTH-004",
+        "FR-ROL-001",
+        "FR-USR-004"
+      ],
       "inherits_nfr": [],
       "inherits_fr": [
         "FR-UI-001"
@@ -328,7 +328,12 @@
       "type": "functional",
       "status": "active",
       "file": "functional/users/fr-usr-003-edit-user-admin.md",
-      "depends_on": [],
+      "depends_on": [
+        "FR-AUTH-001",
+        "FR-AUTH-008",
+        "FR-ROL-001",
+        "FR-ROL-005"
+      ],
       "inherits_nfr": [],
       "inherits_fr": [
         "FR-UI-001"
@@ -413,9 +418,6 @@
   "reference": [
     {
       "file": "_shared/reference/account-model.md"
-    },
-    {
-      "file": "_shared/reference/compliance-gates.md"
     },
     {
       "file": "_shared/reference/glossary.md"

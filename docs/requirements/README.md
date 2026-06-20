@@ -8,7 +8,6 @@
 | Document | File |
 | -------- | ---- |
 | account-model.md | [account-model.md](_shared/reference/account-model.md) |
-| compliance-gates.md | [compliance-gates.md](_shared/reference/compliance-gates.md) |
 | glossary.md | [glossary.md](_shared/reference/glossary.md) |
 | permissions.md | [permissions.md](_shared/reference/permissions.md) |
 
