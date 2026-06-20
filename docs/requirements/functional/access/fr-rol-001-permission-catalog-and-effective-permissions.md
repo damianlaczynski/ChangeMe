@@ -38,7 +38,7 @@ The catalog contains exactly these permissions:
 ### Effective permissions
 
 - A user has **one or more roles**. Effective permissions are the **union** of all permissions from assigned roles, without duplicates.
-- After sign-in, registration, or credential renewal (FR-AUTH-001, FR-AUTH-002), the user receives their current effective permission set.
+- After sign-in or credential renewal (FR-AUTH-001, FR-AUTH-002), the user receives their current effective permission set.
 - **My account** (FR-USR-001) reflects the current effective permission set when opened.
 - After an administrator changes role assignments (FR-ROL-005), the new permissions apply when the affected user next renews credentials or signs in again.
 

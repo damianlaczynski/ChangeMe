@@ -1,7 +1,7 @@
 <p-card
   class="mb-4"
   header="My account"
-  subheader="View your profile and account security."
+  subheader="View your profile, roles, and permissions."
 >
   @if (isLoading()) {
     <div class="flex flex-col items-center gap-2 py-8">
@@ -22,42 +22,6 @@
       />
     </div>
   } @else if (account(); as profile) {
-    @if (profile.pendingEmailChange; as pendingChange) {
-      <p-panel header="Pending email change" class="mb-4">
-        <p class="m-0 mb-2 text-sm">
-          Sign in with your current email until you confirm the change from the new
-          mailbox.
-        </p>
-        <p class="m-0 text-sm">
-          <span class="text-muted-color">New email:</span>
-          {{ pendingChange.newEmail }}
-        </p>
-        <p class="m-0 mb-4 text-sm">
-          <span class="text-muted-color">Requested at:</span>
-          {{ pendingChange.requestedAtUtc | date: 'dd.MM.yyyy HH:mm' }}
-        </p>
-        <div class="flex flex-wrap gap-2">
-          <p-button
-            label="Resend confirmation email"
-            icon="pi pi-envelope"
-            severity="secondary"
-            [outlined]="true"
-            size="small"
-            [loading]="isResendingEmailChange()"
-            (onClick)="resendEmailChangeConfirmation()"
-          />
-          <p-button
-            label="Cancel email change"
-            icon="pi pi-times"
-            severity="danger"
-            [outlined]="true"
-            size="small"
-            (onClick)="confirmCancelEmailChange(pendingChange.newEmail)"
-          />
-        </div>
-      </p-panel>
-    }
-
     <div class="mb-4 flex flex-wrap items-center gap-2">
       <p-button
         label="Edit"
@@ -67,46 +31,6 @@
         size="small"
         [routerLink]="['/account/edit']"
       />
-      @if (profile.hasPasswordSet) {
-        <p-button
-          label="Change password"
-          icon="pi pi-lock"
-          severity="secondary"
-          [outlined]="true"
-          size="small"
-          [routerLink]="['/account/change-password']"
-        />
-      } @else if (externalProvidersEnabled()) {
-        <p-button
-          label="Set password"
-          icon="pi pi-lock"
-          severity="secondary"
-          [outlined]="true"
-          size="small"
-          [routerLink]="['/account/set-password']"
-        />
-      }
-      @if (canChangeEmail()) {
-        <p-button
-          label="Change email"
-          icon="pi pi-envelope"
-          severity="secondary"
-          [outlined]="true"
-          size="small"
-          [routerLink]="['/account/change-email']"
-        />
-      }
-      @if (canManageSessions()) {
-        <p-button
-          label="Sign out everywhere"
-          icon="pi pi-sign-out"
-          severity="danger"
-          [outlined]="true"
-          size="small"
-          [loading]="isSigningOutEverywhere()"
-          (onClick)="signOutEverywhere()"
-        />
-      }
     </div>
 
     <dl
@@ -129,38 +53,6 @@
         <dd class="m-0">{{ profile.memberSince | date: 'dd.MM.yyyy HH:mm' }}</dd>
       </div>
     </dl>
-
-    @if (externalProvidersEnabled()) {
-      <app-my-account-external-methods
-        [account]="profile"
-        [stepUpValidityMinutes]="stepUpExternalSignInValidityMinutes()"
-        [passkeysEnabled]="passkeysAuthenticationEnabled()"
-        [linkingEnabled]="externalProviderLinkingEnabled()"
-        (accountChanged)="reload()"
-      />
-    }
-
-    @if (twoFactorAuthenticationEnabled()) {
-      <app-my-account-two-factor
-        [account]="profile"
-        [twoFactorRequired]="twoFactorAuthenticationRequired()"
-        [stepUpValidityMinutes]="stepUpExternalSignInValidityMinutes()"
-        [passkeysEnabled]="passkeysAuthenticationEnabled()"
-        (accountChanged)="reload()"
-      />
-    }
-
-    @if (passkeysAuthenticationEnabled()) {
-      <app-my-account-passkeys
-        [account]="profile"
-        [passkeysEnabled]="passkeysAuthenticationEnabled()"
-        [passkeysRequired]="passkeysAuthenticationRequired()"
-        [externalProvidersEnabled]="externalProvidersEnabled()"
-        [maximumPasskeys]="maximumPasskeysPerUser()"
-        [stepUpValidityMinutes]="stepUpExternalSignInValidityMinutes()"
-        (accountChanged)="reload()"
-      />
-    }
 
     <p-panel header="Roles" [toggleable]="true" class="mb-4">
       @if (profile.roles.length === 0) {
@@ -187,25 +79,5 @@
     </p-panel>
 
     <app-effective-permissions [permissions]="effectivePermissions()" />
-
-    @if (canViewSessions()) {
-      <app-my-sessions class="mt-4 block" />
-    }
-
-    @if (cancelEmailChangeStepUpVisible() && account(); as stepUpAccount) {
-      <app-identity-step-up-dialog
-        [account]="stepUpAccount"
-        [visible]="cancelEmailChangeStepUpVisible()"
-        [passkeysEnabled]="passkeysAuthenticationEnabled()"
-        [stepUpValidityMinutes]="stepUpExternalSignInValidityMinutes()"
-        submitLabel="Cancel email change"
-        [submitting]="isCancelEmailChangeSubmitting()"
-        [errorMessage]="cancelEmailChangeStepUpError()"
-        fieldIdPrefix="cancelEmailChangeStepUp"
-        (visibleChange)="cancelEmailChangeStepUpVisible.set($event)"
-        (cancelled)="closeCancelEmailChangeStepUp()"
-        (verified)="onCancelEmailChangeStepUpVerified($event)"
-      />
-    }
   }
 </p-card>

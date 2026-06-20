@@ -4,7 +4,7 @@ title: Role and User Assignments
 domain: access
 type: functional
 status: active
-depends_on: [FR-INV-001, FR-ROL-004, FR-USR-003, FR-USR-004, FR-USR-005]
+depends_on: [FR-ROL-004, FR-USR-003, FR-USR-004, FR-USR-005]
 inherits_nfr:
   [NFR-QUAL-001, NFR-A11Y-001, NFR-I18N-001, NFR-PERF-001, NFR-RSP-001]
 inherits_fr: [FR-UI-001]
@@ -12,18 +12,18 @@ inherits_fr: [FR-UI-001]
 
 ## Goal
 
-An authorized administrator must be able to assign roles to users from **Invite user** and **Edit user**, and remove a user from a role from **Role details**, using consistent rules in both places.
+An authorized administrator must be able to assign roles to users from **Create user** and **Edit user**, and remove a user from a role from **Role details**, using consistent rules in both places.
 
 ## Functional requirements
 
 ### Entry point — Users administration
 
-- Role assignment for a user is performed on **Invite user** (FR-INV-001) and **Edit user** (FR-USR-003); there is no separate role-assignment screen under **Users**.
+- Role assignment for a user is performed on **Create user** and **Edit user** (FR-USR-003); there is no separate role-assignment screen under **Users**.
 - **Roles** multi-select lists all roles sorted by **name** ascending; each option shows role **name** and **System** badge when applicable.
 - At least **one** role must be selected before save.
-- Saving **Invite user** or **Edit user** replaces the user's entire role set with the selected set.
+- Saving **Create user** or **Edit user** replaces the user's entire role set with the selected set.
 - The **Roles** field is visible and editable only with permission **Roles.Manage**.
-- Without **Roles.Manage**, **Invite user** is **not available** (every new user must receive role assignment at invite).
+- Without **Roles.Manage**, **Create user** is **not available** (every new user must receive role assignment at creation).
 - **Permissions** preview on create/edit follows FR-USR-003.
 
 - **User details** (FR-USR-004) shows assigned roles and effective permissions read-only; role badges link to **Role details**.
@@ -37,7 +37,7 @@ An authorized administrator must be able to assign roles to users from **Invite 
 
 ### Validation
 
-- **Roles** (on **Invite user** and **Edit user**): at least one role selected; error: **`At least one role is required.`**
+- **Roles** (on **Create user** and **Edit user**): at least one role selected; error: **`At least one role is required.`**
 - **Remove from role** (on **Role details**): must not leave the user with zero roles; error: **`Each user must have at least one role. Assign another role before removing this one.`**
 
 ### Self-service restrictions
@@ -55,7 +55,7 @@ An authorized administrator must be able to assign roles to users from **Invite 
 
 ### Permissions and visibility
 
-- **Roles.Manage**: required for the **Roles** field on **Invite user** / **Edit user** and for **Remove from role** on **Role details**.
+- **Roles.Manage**: required for the **Roles** field on **Create user** / **Edit user** and for **Remove from role** on **Role details**.
 - **Roles.View**: allows read-only **Roles** and **Permissions** on **User details** and read-only **Assigned users** on **Role details** when the user lacks **Roles.Manage**.
 
 ## Non-functional requirements

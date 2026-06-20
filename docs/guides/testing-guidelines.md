@@ -19,7 +19,7 @@ Automated tests do **not** use `ChangeMe.Backend.DataGenerator` — they seed vi
 | Backend unit              | Domain invariants, aggregate behavior, small helpers without app startup               | HTTP, auth middleware, persistence                   |
 | Backend integration       | Routes, status codes, auth, server validation, persistence side effects, API contracts | Angular routing, templates, browser session          |
 | Frontend unit / component | Client logic, forms, guards, UI state, service orchestration (mocked `ApiService`)     | Server rules already proven through HTTP             |
-| E2E                       | Multi-screen user journeys, session/cookies, compliance gates, WebAuthn, SignalR       | Per-field API validation, exhaustive CRUD per screen |
+| E2E                       | Multi-screen user journeys, session/cookies, SignalR                                   | Per-field API validation, exhaustive CRUD per screen |
 
 Colocate frontend specs as `*.spec.ts` next to the source. Integration tests: `src/ChangeMe.Backend/tests/ChangeMe.Backend.IntegrationTests/Endpoints/<Feature>/`.
 
@@ -35,7 +35,7 @@ Colocate frontend specs as `*.spec.ts` next to the source. Integration tests: `s
 | Frontend unit       | Markup, layout, or styling only; duplicating server validation; smoke with no real assertion (`should create`, widget presence); real HTTP; full-template snapshots; asserting private fields instead of observable UI |
 | E2E                 | API-only change, single form, or one list screen; re-checking status codes, field validation, or “save shows toast” without unique routing; mirroring integration test matrices in the browser                         |
 
-**E2E only when** unit and integration cannot prove the journey: multi-step auth/compliance, cookies or browser APIs, SignalR, passkeys (`docs/requirements/_shared/reference/compliance-gates.md`). Record `required` / `optional` / `skip` (with reason) in `docs/requirements/changes/` when a user journey changes.
+**E2E only when** unit and integration cannot prove the journey: multi-step auth flows, cookies or browser APIs, SignalR (see FR-AUTH-001 for sign-in behavior). Record `required` / `optional` / `skip` (with reason) in `docs/requirements/changes/` when a user journey changes.
 
 When frontend unit tests are warranted: Vitest + TestBed; mock `ApiService`; stub heavy children and layout shell; assert copy, disabled controls, and navigation.
 

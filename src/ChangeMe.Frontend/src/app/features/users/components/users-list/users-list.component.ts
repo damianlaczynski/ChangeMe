@@ -22,11 +22,8 @@ import {
 } from '@features/users/models/user.model';
 import { UsersService } from '@features/users/services/users.service';
 import {
-  emailVerifiedFilters,
   getActivateConfirmMessage,
   getDeactivateConfirmMessage,
-  getEmailVerifiedBadgeLabel,
-  getEmailVerifiedBadgeSeverity,
   getUserStatusLabel,
   getUserStatusSeverity,
   statusFilters,
@@ -56,7 +53,6 @@ import { catchError, of, switchMap, tap } from 'rxjs';
 type UsersFilterForm = {
   searchText: FormControl<string>;
   status: FormControl<UserMembershipStatus[]>;
-  emailVerified: FormControl<boolean[]>;
 };
 
 type UserSortField = 'Name' | 'CreatedAt' | 'LastSignIn';
@@ -93,13 +89,9 @@ export class UsersListComponent {
   private readonly destroyRef = inject(DestroyRef);
 
   readonly statusFilters = statusFilters;
-  readonly emailVerifiedFilters = emailVerifiedFilters;
   readonly getUserStatusLabel = getUserStatusLabel;
   readonly getUserStatusSeverity = getUserStatusSeverity;
-  readonly getEmailVerifiedBadgeLabel = getEmailVerifiedBadgeLabel;
-  readonly getEmailVerifiedBadgeSeverity = getEmailVerifiedBadgeSeverity;
   readonly UserMessages = UserMessages;
-  readonly emailVerificationEnabled = signal(false);
   readonly permissionCodes = PermissionCodes;
 
   readonly users = signal<UserListItemDto[]>([]);
@@ -120,7 +112,7 @@ export class UsersListComponent {
   readonly canManageUsers = computed(() =>
     this.authService.hasPermission(PermissionCodes.usersManage)
   );
-  readonly canInviteUsers = computed(
+  readonly canCreateUsers = computed(
     () =>
       this.authService.hasPermission(PermissionCodes.usersManage) &&
       this.authService.hasPermission(PermissionCodes.rolesManage)
@@ -131,8 +123,7 @@ export class UsersListComponent {
 
   readonly filtersForm = new FormGroup<UsersFilterForm>({
     searchText: new FormControl('', { nonNullable: true }),
-    status: new FormControl<UserMembershipStatus[]>([], { nonNullable: true }),
-    emailVerified: new FormControl<boolean[]>([], { nonNullable: true })
+    status: new FormControl<UserMembershipStatus[]>([], { nonNullable: true })
   });
 
   readonly appliedFilterChips = computed(() => {
@@ -146,31 +137,12 @@ export class UsersListComponent {
       });
     }
 
-    if (this.emailVerificationEnabled()) {
-      for (const emailVerified of activeQuery.emailVerified ?? []) {
-        chips.push({
-          id: `emailVerified-${emailVerified}`,
-          label: `Email verified: ${getEmailVerifiedBadgeLabel(emailVerified)}`
-        });
-      }
-    }
-
     return chips;
   });
-
-  readonly tableColumnCount = computed(() => (this.emailVerificationEnabled() ? 8 : 7));
 
   readonly hasAppliedFilters = computed(() => this.appliedFilterChips().length > 0);
 
   constructor() {
-    this.authService
-      .getAuthSettings()
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (settings) =>
-          this.emailVerificationEnabled.set(settings.emailVerificationEnabled)
-      });
-
     toObservable(this.query)
       .pipe(
         tap(() => {
@@ -196,27 +168,22 @@ export class UsersListComponent {
   }
 
   applyFilters(): void {
-    const { searchText, status, emailVerified } = this.filtersForm.getRawValue();
+    const { searchText, status } = this.filtersForm.getRawValue();
     this.query.update((current) => ({
       ...current,
       pageNumber: 1,
       searchText: searchText.trim() || undefined,
-      status: status.length > 0 ? status : undefined,
-      emailVerified:
-        this.emailVerificationEnabled() && emailVerified.length > 0
-          ? emailVerified
-          : undefined
+      status: status.length > 0 ? status : undefined
     }));
   }
 
   clearFilters(): void {
-    this.filtersForm.reset({ searchText: '', status: [], emailVerified: [] });
+    this.filtersForm.reset({ searchText: '', status: [] });
     this.query.update((current) => ({
       ...current,
       pageNumber: 1,
       searchText: undefined,
-      status: undefined,
-      emailVerified: undefined
+      status: undefined
     }));
   }
 
@@ -361,16 +328,6 @@ export class UsersListComponent {
         (item) => item !== status
       );
       this.filtersForm.controls.status.setValue(values);
-      this.applyFilters();
-      return;
-    }
-
-    if (chip.id.startsWith('emailVerified-')) {
-      const emailVerified = chip.id.slice('emailVerified-'.length) === 'true';
-      const values = this.filtersForm.controls.emailVerified.value.filter(
-        (item) => item !== emailVerified
-      );
-      this.filtersForm.controls.emailVerified.setValue(values);
       this.applyFilters();
     }
   }

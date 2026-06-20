@@ -1,9 +1,7 @@
 using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UseCases.Auth.Dtos;
-using ChangeMe.Backend.UseCases.Auth.Utils;
 using ChangeMe.Backend.UseCases.Users.Dtos;
 using ChangeMe.Backend.UseCases.Users.Utils;
-using Microsoft.Extensions.Options;
 
 namespace ChangeMe.Backend.UseCases.Auth;
 
@@ -11,8 +9,7 @@ public sealed record GetMyAccountQuery() : IQuery<MyAccountDto>;
 
 public class GetMyAccountHandler(
   ApplicationDbContext context,
-  IUserAccessor userAccessor,
-  IOptions<AuthOptions> authOptions) : IQueryHandler<GetMyAccountQuery, MyAccountDto>
+  IUserAccessor userAccessor) : IQueryHandler<GetMyAccountQuery, MyAccountDto>
 {
   public async ValueTask<Result<MyAccountDto>> Handle(GetMyAccountQuery query, CancellationToken cancellationToken)
   {
@@ -23,13 +20,10 @@ public class GetMyAccountHandler(
       .AsNoTracking()
       .Include(x => x.Roles)
       .ThenInclude(x => x.Role)
-      .Include(x => x.ExternalLogins)
-      .Include(x => x.Passkeys)
       .FirstOrDefaultAsync(x => x.Id == userId, cancellationToken);
     if (user is null || !user.IsActive)
       return Result<MyAccountDto>.Unauthorized();
 
-    var auth = authOptions.Value;
     var roles = user.Roles
       .Select(x => x.Role)
       .OrderBy(role => role.Name)
@@ -41,65 +35,13 @@ public class GetMyAccountHandler(
       userId,
       cancellationToken);
 
-    var externalLogins = auth.External.Enabled
-      ? user.ExternalLogins
-        .OrderBy(x => x.ProviderKey)
-        .Select(login => new MyAccountExternalLoginDto(
-          login.ProviderKey,
-          ExternalAuthUtils.ResolveProviderDisplayName(auth, login.ProviderKey),
-          login.LastProviderEmail,
-          login.LinkedAtUtc))
-        .ToList()
-      : [];
-
-    var linkedProviderKeys = user.ExternalLogins
-      .Select(x => x.ProviderKey)
-      .ToHashSet(StringComparer.OrdinalIgnoreCase);
-
-    var linkableProviders = auth.External.Enabled && auth.External.LinkingEnabled
-      ? auth.External.Providers
-        .Where(x => x.IsConfigured && !linkedProviderKeys.Contains(x.ProviderKey))
-        .Select(x => new ExternalProviderSettingsDto
-        {
-          ProviderKey = x.ProviderKey,
-          DisplayName = x.DisplayName
-        })
-        .ToList()
-      : [];
-
-    var passkeys = auth.Passkeys.PasskeysAuthenticationEnabled
-      ? user.Passkeys
-        .OrderBy(x => x.CreatedAtUtc)
-        .Select(CompletePasskeyRegistrationHandler.Map)
-        .ToList()
-      : [];
-
-    var passkeyStepUpFresh = auth.Passkeys.PasskeysAuthenticationEnabled
-      && user.IsPasskeyStepUpFresh(DateTime.UtcNow, auth.Passkeys.PasskeyStepUpValidityMinutes);
-
-    PendingEmailChangeDto? pendingEmailChange = user.HasPendingEmailChange
-      && user.PendingNewEmail is not null
-      && user.PendingEmailChangeRequestedAtUtc is not null
-      ? new PendingEmailChangeDto(user.PendingNewEmail, user.PendingEmailChangeRequestedAtUtc.Value)
-      : null;
-
     return Result.Success(new MyAccountDto(
       user.Id,
       user.FirstName,
       user.LastName,
       user.Email,
       user.CreatedAt,
-      user.HasPasswordSet,
-      user.TwoFactorEnabled,
-      user.TwoFactorEnabledAt,
-      ExternalAuthUtils.IsExternalStepUpFresh(user, auth, DateTime.UtcNow),
       roles,
-      effectivePermissions,
-      externalLogins,
-      linkableProviders,
-      passkeys,
-      passkeyStepUpFresh,
-      user.HasPendingInvitation,
-      pendingEmailChange));
+      effectivePermissions));
   }
 }

@@ -84,12 +84,11 @@ public static class ApplicationDataSeeder
       return;
 
     var passwordHash = passwordHasher.HashPassword(options.Password);
-    var createUserResult = User.CreateWithPassword(
+    var createUserResult = User.Create(
       options.FirstName,
       options.LastName,
       options.Email,
-      passwordHash,
-      emailVerified: true);
+      passwordHash);
     if (!createUserResult.IsSuccess)
       return;
 

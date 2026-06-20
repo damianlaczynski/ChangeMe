@@ -15,9 +15,6 @@ describe('authGuard', () => {
   let router: Router;
   let authService: {
     isAuthenticated: ReturnType<typeof vi.fn>;
-    requiresPasswordChangeScreen: ReturnType<typeof vi.fn>;
-    requiresTwoFactorSetupScreen: ReturnType<typeof vi.fn>;
-    requiresPasskeySetupScreen: ReturnType<typeof vi.fn>;
   };
 
   const route = {} as ActivatedRouteSnapshot;
@@ -34,10 +31,7 @@ describe('authGuard', () => {
 
   beforeEach(() => {
     authService = {
-      isAuthenticated: vi.fn(() => false),
-      requiresPasswordChangeScreen: vi.fn(() => false),
-      requiresTwoFactorSetupScreen: vi.fn(() => false),
-      requiresPasskeySetupScreen: vi.fn(() => false)
+      isAuthenticated: vi.fn(() => false)
     };
 
     TestBed.configureTestingModule({
@@ -51,28 +45,7 @@ describe('authGuard', () => {
     expectUrl(runGuard('/issues'), '/login?returnUrl=%2Fissues');
   });
 
-  it('redirects to required password change before app routes', () => {
-    authService.isAuthenticated.mockReturnValue(true);
-    authService.requiresPasswordChangeScreen.mockReturnValue(true);
-
-    expectUrl(runGuard('/issues'), '/required-password-change');
-  });
-
-  it('redirects to required two-factor setup before app routes', () => {
-    authService.isAuthenticated.mockReturnValue(true);
-    authService.requiresTwoFactorSetupScreen.mockReturnValue(true);
-
-    expectUrl(runGuard('/issues'), '/required-two-factor-setup');
-  });
-
-  it('redirects to required passkey setup before app routes', () => {
-    authService.isAuthenticated.mockReturnValue(true);
-    authService.requiresPasskeySetupScreen.mockReturnValue(true);
-
-    expectUrl(runGuard('/issues'), '/required-passkey-setup');
-  });
-
-  it('allows access when the session is fully established', () => {
+  it('allows access when authenticated', () => {
     authService.isAuthenticated.mockReturnValue(true);
 
     expect(runGuard('/issues')).toBe(true);

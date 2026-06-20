@@ -1,7 +1,7 @@
 <p-card
   class="mb-4"
   [header]="pageTitle()"
-  subheader="Review account profile, roles, and active sessions"
+  subheader="Review account profile, roles, and active sessions."
 >
   <div class="mb-4 flex flex-wrap items-center gap-2">
     <app-back-button label="Back to users list" [route]="['/users']" />
@@ -14,56 +14,6 @@
           [outlined]="true"
           size="small"
           [routerLink]="['/users', profile.id, 'edit']"
-        />
-      }
-      @if (canSendInvitation()) {
-        <p-button
-          label="Send invitation"
-          icon="pi pi-envelope"
-          severity="secondary"
-          [outlined]="true"
-          size="small"
-          (onClick)="confirmSendInvitation()"
-        />
-      }
-      @if (canManageUsers() && emailVerificationEnabled() && !profile.emailVerified) {
-        <p-button
-          label="Confirm email"
-          icon="pi pi-check-circle"
-          severity="secondary"
-          [outlined]="true"
-          size="small"
-          (onClick)="confirmConfirmEmail()"
-        />
-      }
-      @if (canResetTwoFactor()) {
-        <p-button
-          label="Reset two-factor"
-          icon="pi pi-shield"
-          severity="danger"
-          [outlined]="true"
-          size="small"
-          (onClick)="confirmResetTwoFactor()"
-        />
-      }
-      @if (canResetPasskeys()) {
-        <p-button
-          label="Reset passkeys"
-          icon="pi pi-key"
-          severity="danger"
-          [outlined]="true"
-          size="small"
-          (onClick)="confirmResetPasskeys()"
-        />
-      }
-      @if (canManageUsers() && !profile.deactivated && profile.hasPasswordSet) {
-        <p-button
-          label="Send password reset"
-          icon="pi pi-key"
-          severity="secondary"
-          [outlined]="true"
-          size="small"
-          (onClick)="confirmSendPasswordReset()"
         />
       }
       @if (canDeactivateUsers()) {
@@ -86,16 +36,6 @@
             (onClick)="confirmActivate()"
           />
         }
-      }
-      @if (canCancelPendingEmailChange()) {
-        <p-button
-          label="Cancel pending email change"
-          icon="pi pi-times"
-          severity="danger"
-          [outlined]="true"
-          size="small"
-          (onClick)="confirmCancelPendingEmailChange()"
-        />
       }
       @if (canManageSessions() && !profile.deactivated) {
         <p-button
@@ -129,98 +69,16 @@
       />
     </div>
   } @else if (user(); as profile) {
-    @if (profile.pendingInvitation; as invitation) {
-      <p-panel header="Invitation" class="mb-4">
-        <p class="text-muted-color mt-0 text-sm">
-          {{ UserMessages.invitationPanelIntro }}
-        </p>
-
-        @if (invitation.isLinkExpired) {
-          <div class="mb-4 flex flex-wrap items-center gap-2">
-            <p-tag value="Expired" severity="warn" />
-            <span class="text-muted-color text-sm">
-              {{ UserMessages.invitationExpiredMessage }}
-            </span>
-          </div>
-        }
-
-        <dl class="grid gap-4 sm:grid-cols-2">
-          <div class="flex flex-col gap-1">
-            <dt class="text-muted-color text-sm">Last sent at</dt>
-            <dd class="m-0">
-              {{ invitation.lastSentAtUtc | date: 'dd.MM.yyyy HH:mm' }}
-            </dd>
-          </div>
-          <div class="flex flex-col gap-1">
-            <dt class="text-muted-color text-sm">Link expires at</dt>
-            <dd class="m-0">
-              {{ invitation.expiresAtUtc | date: 'dd.MM.yyyy HH:mm' }}
-            </dd>
-          </div>
-          <div class="flex flex-col gap-1 sm:col-span-2">
-            <dt class="text-muted-color text-sm">Expiry note</dt>
-            <dd class="text-muted-color m-0 text-sm">
-              {{ UserMessages.invitationExpiryNote }}
-            </dd>
-          </div>
-          <div class="flex flex-col gap-1">
-            <dt class="text-muted-color text-sm">Profile name</dt>
-            <dd class="m-0">
-              {{ formatUserName(profile) || 'Not set' }}
-            </dd>
-          </div>
-        </dl>
-
-        @if (canManageInvitationActions()) {
-          <div class="mt-4 flex flex-wrap justify-end gap-2">
-            <p-button
-              label="Cancel invitation"
-              icon="pi pi-times"
-              severity="danger"
-              [outlined]="true"
-              size="small"
-              (onClick)="confirmCancelInvitation()"
-            />
-            <p-button
-              label="Resend invitation"
-              icon="pi pi-envelope"
-              severity="secondary"
-              [outlined]="true"
-              size="small"
-              (onClick)="confirmResendInvitation()"
-            />
-          </div>
-        }
-      </p-panel>
-    }
-
-    @if (profile.pendingEmailChange; as pendingChange) {
-      <p-panel header="Pending email change" class="mb-4">
-        <dl class="grid gap-4 sm:grid-cols-2">
-          <div class="flex flex-col gap-1">
-            <dt class="text-muted-color text-sm">New email</dt>
-            <dd class="m-0 font-medium">{{ pendingChange.newEmail }}</dd>
-          </div>
-          <div class="flex flex-col gap-1">
-            <dt class="text-muted-color text-sm">Requested at</dt>
-            <dd class="m-0">
-              {{ pendingChange.requestedAtUtc | date: 'dd.MM.yyyy HH:mm' }}
-            </dd>
-          </div>
-        </dl>
-      </p-panel>
-    }
-
     <dl
       class="mb-6 grid gap-4 rounded-lg border border-surface-200 p-4 sm:grid-cols-2 lg:grid-cols-3"
     >
       <div class="flex flex-col gap-1">
         <dt class="text-muted-color text-sm">First name</dt>
-        <dd class="m-0 font-medium">{{ profile.firstName.trim() || '—' }}</dd>
+        <dd class="m-0 font-medium">{{ profile.firstName }}</dd>
       </div>
       <div class="flex flex-col gap-1">
         <dt class="text-muted-color text-sm">Last name</dt>
-        <dd class="m-0 font-medium">{{ profile.lastName.trim() || '—' }}</dd>
+        <dd class="m-0 font-medium">{{ profile.lastName }}</dd>
       </div>
       <div class="flex flex-col gap-1">
         <dt class="text-muted-color text-sm">Email</dt>
@@ -235,25 +93,6 @@
           />
         </dd>
       </div>
-      @if (emailVerificationEnabled()) {
-        <div class="flex flex-col gap-1">
-          <dt class="text-muted-color text-sm">Email verified</dt>
-          <dd class="m-0">
-            <p-tag
-              [value]="profile.emailVerified ? 'Verified' : 'Unverified'"
-              [severity]="profile.emailVerified ? 'success' : 'warn'"
-            />
-          </dd>
-        </div>
-        @if (profile.emailVerified && profile.emailVerifiedAt) {
-          <div class="flex flex-col gap-1">
-            <dt class="text-muted-color text-sm">Email verified at</dt>
-            <dd class="m-0">
-              {{ profile.emailVerifiedAt | date: 'dd.MM.yyyy HH:mm' }}
-            </dd>
-          </div>
-        }
-      }
       <div class="flex flex-col gap-1">
         <dt class="text-muted-color text-sm">Member since</dt>
         <dd class="m-0">{{ profile.memberSince | date: 'dd.MM.yyyy HH:mm' }}</dd>
@@ -268,175 +107,13 @@
           }
         </dd>
       </div>
-      <div class="flex flex-col gap-1">
-        <dt class="text-muted-color text-sm">Password last changed at</dt>
-        <dd class="m-0">
-          @if (profile.hasPasswordSet && profile.passwordLastChangedAt) {
-            {{ profile.passwordLastChangedAt | date: 'dd.MM.yyyy HH:mm' }}
-          } @else {
-            —
-          }
-        </dd>
-      </div>
       @if (profile.deactivated && profile.deactivatedAt) {
         <div class="flex flex-col gap-1">
           <dt class="text-muted-color text-sm">Deactivated at</dt>
           <dd class="m-0">{{ profile.deactivatedAt | date: 'dd.MM.yyyy HH:mm' }}</dd>
         </div>
       }
-      @if (twoFactorAuthenticationEnabled()) {
-        <div class="flex flex-col gap-1">
-          <dt class="text-muted-color text-sm">Two-factor authentication</dt>
-          <dd class="m-0">
-            <p-tag
-              [value]="profile.twoFactorEnabled ? 'Enabled' : 'Disabled'"
-              [severity]="profile.twoFactorEnabled ? 'success' : 'secondary'"
-            />
-          </dd>
-        </div>
-        @if (profile.twoFactorEnabled && profile.twoFactorEnabledAt) {
-          <div class="flex flex-col gap-1">
-            <dt class="text-muted-color text-sm">Two-factor enabled at</dt>
-            <dd class="m-0">
-              {{ profile.twoFactorEnabledAt | date: 'dd.MM.yyyy HH:mm' }}
-            </dd>
-          </div>
-        }
-      }
-      @if (passwordExpirationEnabled()) {
-        <div class="flex flex-col gap-1">
-          <dt class="text-muted-color text-sm">Password expires at</dt>
-          <dd class="m-0">
-            @if (
-              profile.hasPasswordSet &&
-              profile.passwordLastChangedAt &&
-              profile.passwordExpiresAtUtc
-            ) {
-              {{ profile.passwordExpiresAtUtc | date: 'dd.MM.yyyy HH:mm' }}
-            } @else {
-              —
-            }
-          </dd>
-        </div>
-      }
     </dl>
-
-    @if (externalProvidersEnabled() && profile.externalLogins.length > 0) {
-      <p-panel header="External sign-in methods" [toggleable]="true" class="mb-4">
-        <div class="flex flex-col gap-3">
-          @for (login of profile.externalLogins; track login.providerKey) {
-            <div
-              class="border-surface-200 flex flex-wrap items-center justify-between gap-3 rounded-lg border p-3 dark:border-surface-700"
-            >
-              <div class="flex flex-col gap-1">
-                <span class="text-color font-medium">{{ login.displayName }}</span>
-                <span class="text-muted-color text-sm">
-                  Provider email: {{ login.providerEmail ?? '—' }}
-                </span>
-                @if (
-                  login.providerEmail &&
-                  login.providerEmail.toLowerCase() !== profile.email.toLowerCase()
-                ) {
-                  <span class="text-muted-color text-sm">
-                    May differ from profile email.
-                  </span>
-                }
-                <span class="text-muted-color text-sm">
-                  Linked {{ login.linkedAtUtc | date: 'dd.MM.yyyy HH:mm' }}
-                </span>
-              </div>
-              @if (canManageUsers()) {
-                <p-button
-                  label="Unlink"
-                  severity="danger"
-                  [outlined]="true"
-                  size="small"
-                  (onClick)="
-                    confirmUnlinkExternal(login.providerKey, login.displayName)
-                  "
-                />
-              }
-            </div>
-          }
-        </div>
-      </p-panel>
-    }
-
-    @if (passkeysAuthenticationEnabled()) {
-      <p-panel header="Passkeys" [toggleable]="true" [collapsed]="true" class="mb-4">
-        <p-table [value]="profile.passkeys ?? []" stripedRows>
-          <ng-template #header>
-            <tr>
-              <th>Name</th>
-              <th>Created at</th>
-              <th>Last used at</th>
-              <th>Authenticator type</th>
-              <th>Backup eligible</th>
-              <th>Backup state</th>
-              @if (canManageUsers()) {
-                <th>Actions</th>
-              }
-            </tr>
-          </ng-template>
-          <ng-template #body let-pk>
-            <tr>
-              <td>{{ pk.name }}</td>
-              <td>{{ pk.createdAtUtc | date: 'dd.MM.yyyy HH:mm' }}</td>
-              <td>
-                @if (pk.lastUsedAtUtc) {
-                  {{ pk.lastUsedAtUtc | date: 'dd.MM.yyyy HH:mm' }}
-                } @else {
-                  <span class="text-muted-color">—</span>
-                }
-              </td>
-              <td>{{ pk.authenticatorType }}</td>
-              <td>
-                @if (pk.backupEligible) {
-                  <p-tag [value]="AuthMessages.passkeyBackupEligible" severity="info" />
-                } @else {
-                  <span class="text-muted-color">—</span>
-                }
-              </td>
-              <td>
-                @if (pk.backupEligible) {
-                  <p-tag
-                    [value]="
-                      pk.backupState
-                        ? AuthMessages.passkeyBackedUp
-                        : AuthMessages.passkeyNotBackedUp
-                    "
-                    [severity]="pk.backupState ? 'success' : 'secondary'"
-                  />
-                } @else {
-                  <span class="text-muted-color">—</span>
-                }
-              </td>
-              @if (canManageUsers()) {
-                <td>
-                  <p-button
-                    label="Remove"
-                    icon="pi pi-trash"
-                    severity="danger"
-                    [text]="true"
-                    size="small"
-                    (onClick)="confirmRemovePasskey(pk.id, pk.name)"
-                  />
-                </td>
-              }
-            </tr>
-          </ng-template>
-          <ng-template #emptymessage>
-            <tr>
-              <td [attr.colspan]="canManageUsers() ? 7 : 6">
-                <p class="text-muted-color m-0 py-4 text-center">
-                  No passkeys registered.
-                </p>
-              </td>
-            </tr>
-          </ng-template>
-        </p-table>
-      </p-panel>
-    }
 
     <p-panel header="Roles" [toggleable]="true" class="mb-4">
       @if (profile.roles.length === 0) {
@@ -455,73 +132,63 @@
       }
     </p-panel>
 
-    <app-effective-permissions
-      class="mb-4"
-      [permissions]="profile.effectivePermissions"
-      [roleIdsSelected]="true"
-    />
+    <app-effective-permissions [permissions]="profile.effectivePermissions" />
 
-    @if (canViewSessions()) {
-      <p-panel header="Active sessions" [toggleable]="true">
-        <p-table [value]="sessions()" [loading]="isLoadingSessions()" stripedRows>
-          <ng-template #header>
-            <tr>
-              <th>Device / browser</th>
-              <th>Sign-in method</th>
-              <th>Signed in at</th>
-              <th>Last activity</th>
-              @if (canManageSessions()) {
-                <th>Actions</th>
-              }
-            </tr>
-          </ng-template>
-          <ng-template #body let-session>
-            <tr>
-              <td>
-                <div class="font-medium">{{ session.deviceBrowserLabel }}</div>
-                <div class="text-muted-color text-sm">
-                  {{ formatIpAddress(session.ipAddress) }}
-                </div>
-              </td>
-              <td>{{ session.signInMethodLabel }}</td>
-              <td>{{ session.signedInAt | date: 'dd.MM.yyyy HH:mm' }}</td>
-              <td>{{ session.lastActivityAt | date: 'dd.MM.yyyy HH:mm' }}</td>
-              @if (canManageSessions()) {
-                <td>
-                  <p-button
-                    label="Revoke"
-                    icon="pi pi-times"
-                    severity="danger"
-                    [text]="true"
-                    size="small"
-                    [loading]="isRevokePending(session.id)"
-                    (onClick)="confirmRevokeSession(session)"
-                  />
-                </td>
-              }
-            </tr>
-          </ng-template>
-          <ng-template #emptymessage>
-            <tr>
-              <td [attr.colspan]="canManageSessions() ? 5 : 4">
-                <p class="text-muted-color m-0 py-4 text-center">
-                  {{ UserMessages.noActiveSessions }}
-                </p>
-              </td>
-            </tr>
-          </ng-template>
-        </p-table>
+    @if (canViewSessions() && !profile.deactivated) {
+      <p-panel header="Active sessions" [toggleable]="true" class="mt-4">
+        @if (isLoadingSessions()) {
+          <div class="flex justify-center py-4">
+            <p-progressSpinner ariaLabel="Loading sessions" />
+          </div>
+        } @else if (sessions().length === 0) {
+          <p class="text-muted-color m-0 text-sm">{{ UserMessages.noActiveSessions }}</p>
+        } @else {
+          <p-table [value]="sessions()" stripedRows>
+            <ng-template #header>
+              <tr>
+                <th>Device / browser</th>
+                <th>Sign-in method</th>
+                <th>IP address</th>
+                <th>Signed in</th>
+                <th>Last activity</th>
+                @if (canManageSessions()) {
+                  <th>Actions</th>
+                }
+              </tr>
+            </ng-template>
+            <ng-template #body let-session>
+              <tr>
+                <td>{{ session.deviceBrowserLabel }}</td>
+                <td>{{ session.signInMethod }}</td>
+                <td>{{ formatIpAddress(session.ipAddress) }}</td>
+                <td>{{ session.signedInAt | date: 'dd.MM.yyyy HH:mm' }}</td>
+                <td>{{ session.lastActivityAt | date: 'dd.MM.yyyy HH:mm' }}</td>
+                @if (canManageSessions()) {
+                  <td>
+                    <p-button
+                      label="Revoke"
+                      icon="pi pi-times"
+                      severity="danger"
+                      [outlined]="true"
+                      size="small"
+                      [loading]="isRevokePending(session.id)"
+                      (onClick)="confirmRevokeSession(session)"
+                    />
+                  </td>
+                }
+              </tr>
+            </ng-template>
+          </p-table>
 
-        @if (hasLoadedSessions()) {
-          <p-paginator
-            [rows]="sessionsPagination()?.pageSize ?? 10"
-            [totalRecords]="sessionsPagination()?.totalCount ?? 0"
-            [first]="
-              ((sessionsPagination()?.currentPage ?? 1) - 1) *
-              (sessionsPagination()?.pageSize ?? 10)
-            "
-            (onPageChange)="onSessionsPageChange($event)"
-          />
+          @if (sessionsPagination(); as pagination) {
+            <p-paginator
+              class="mt-4"
+              [rows]="pagination.pageSize"
+              [totalRecords]="pagination.totalCount"
+              [first]="(pagination.currentPage - 1) * pagination.pageSize"
+              (onPageChange)="onSessionsPageChange($event)"
+            />
+          }
         }
       </p-panel>
     }
