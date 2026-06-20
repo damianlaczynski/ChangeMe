@@ -33,7 +33,7 @@ public sealed class IssueAttachmentEndpointTests(BackendWebApplicationFactory fa
 
     using var content = CreateTextFileContent("notes.txt", "Attachment content");
 
-    var response = await client.PostAsync($"/api/issues/{issueId}/attachments", content, cancellationToken);
+    var response = await client.PostAsync($"/api/v1/issues/{issueId}/attachments", content, cancellationToken);
 
     Assert.Equal(HttpStatusCode.Created, response.StatusCode);
 
@@ -67,7 +67,7 @@ public sealed class IssueAttachmentEndpointTests(BackendWebApplicationFactory fa
 
     using var content = CreateTextFileContent("report.pdf", "plain text content");
 
-    var response = await client.PostAsync($"/api/issues/{issueId}/attachments", content, cancellationToken);
+    var response = await client.PostAsync($"/api/v1/issues/{issueId}/attachments", content, cancellationToken);
 
     Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
   }
@@ -91,7 +91,7 @@ public sealed class IssueAttachmentEndpointTests(BackendWebApplicationFactory fa
       "%PDF-1.7 disguised pdf content"u8.ToArray(),
       "text/plain");
 
-    var response = await client.PostAsync($"/api/issues/{issueId}/attachments", content, cancellationToken);
+    var response = await client.PostAsync($"/api/v1/issues/{issueId}/attachments", content, cancellationToken);
 
     Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
 
@@ -117,7 +117,7 @@ public sealed class IssueAttachmentEndpointTests(BackendWebApplicationFactory fa
     using (var uploadContent = CreateTextFileContent("download-me.txt", "download payload"))
     {
       var uploadResponse = await client.PostAsync(
-        $"/api/issues/{issueId}/attachments",
+        $"/api/v1/issues/{issueId}/attachments",
         uploadContent,
         cancellationToken);
       Assert.Equal(HttpStatusCode.Created, uploadResponse.StatusCode);
@@ -131,7 +131,7 @@ public sealed class IssueAttachmentEndpointTests(BackendWebApplicationFactory fa
       .SingleAsync(cancellationToken);
 
     var downloadResponse = await client.GetAsync(
-      $"/api/issues/{issueId}/attachments/{attachmentId}/content",
+      $"/api/v1/issues/{issueId}/attachments/{attachmentId}/content",
       cancellationToken);
 
     Assert.Equal(HttpStatusCode.OK, downloadResponse.StatusCode);
@@ -164,7 +164,7 @@ public sealed class IssueAttachmentEndpointTests(BackendWebApplicationFactory fa
     using (var uploadContent = CreateTextFileContent("remove-me.txt", "temporary content"))
     {
       var uploadResponse = await client.PostAsync(
-        $"/api/issues/{issueId}/attachments",
+        $"/api/v1/issues/{issueId}/attachments",
         uploadContent,
         cancellationToken);
       Assert.Equal(HttpStatusCode.Created, uploadResponse.StatusCode);
@@ -175,7 +175,7 @@ public sealed class IssueAttachmentEndpointTests(BackendWebApplicationFactory fa
     var attachment = await dbContext.IssueAttachments.SingleAsync(a => a.OwnerId == issueId, cancellationToken);
 
     var deleteResponse = await client.DeleteAsync(
-      $"/api/issues/{issueId}/attachments/{attachment.Id}",
+      $"/api/v1/issues/{issueId}/attachments/{attachment.Id}",
       cancellationToken);
 
     Assert.Equal(HttpStatusCode.OK, deleteResponse.StatusCode);
@@ -205,7 +205,7 @@ public sealed class IssueAttachmentEndpointTests(BackendWebApplicationFactory fa
     using (var uploadContent = CreateTextFileContent("protected.txt", "protected content"))
     {
       var uploadResponse = await uploaderClient.PostAsync(
-        $"/api/issues/{issueId}/attachments",
+        $"/api/v1/issues/{issueId}/attachments",
         uploadContent,
         cancellationToken);
       Assert.Equal(HttpStatusCode.Created, uploadResponse.StatusCode);
@@ -220,7 +220,7 @@ public sealed class IssueAttachmentEndpointTests(BackendWebApplicationFactory fa
 
     using var otherClient = await TestAuthHelper.CreateAuthenticatedClientAsync(factory, cancellationToken);
     var deleteResponse = await otherClient.DeleteAsync(
-      $"/api/issues/{issueId}/attachments/{attachmentId}",
+      $"/api/v1/issues/{issueId}/attachments/{attachmentId}",
       cancellationToken);
 
     Assert.Equal(HttpStatusCode.Forbidden, deleteResponse.StatusCode);
@@ -243,14 +243,14 @@ public sealed class IssueAttachmentEndpointTests(BackendWebApplicationFactory fa
     for (var index = 0; index < IssueConstraints.ATTACHMENT_MAX_ATTACHMENTS_PER_ISSUE; index++)
     {
       using var content = CreateTextFileContent($"file-{index}.txt", $"content {index}");
-      var response = await client.PostAsync($"/api/issues/{issueId}/attachments", content, cancellationToken);
+      var response = await client.PostAsync($"/api/v1/issues/{issueId}/attachments", content, cancellationToken);
       Assert.Equal(HttpStatusCode.Created, response.StatusCode);
     }
 
     using (var overflowContent = CreateTextFileContent("overflow.txt", "one too many"))
     {
       var overflowResponse = await client.PostAsync(
-        $"/api/issues/{issueId}/attachments",
+        $"/api/v1/issues/{issueId}/attachments",
         overflowContent,
         cancellationToken);
 
@@ -281,7 +281,7 @@ public sealed class IssueAttachmentEndpointTests(BackendWebApplicationFactory fa
     using (var uploadContent = CreateTextFileContent("stored.txt", "stored payload"))
     {
       var uploadResponse = await client.PostAsync(
-        $"/api/issues/{issueId}/attachments",
+        $"/api/v1/issues/{issueId}/attachments",
         uploadContent,
         cancellationToken);
       Assert.Equal(HttpStatusCode.Created, uploadResponse.StatusCode);
@@ -297,7 +297,7 @@ public sealed class IssueAttachmentEndpointTests(BackendWebApplicationFactory fa
     var storedFilePath = GetStoredAttachmentPath(factory, issueId, storageKey);
     Assert.True(File.Exists(storedFilePath));
 
-    var deleteIssueResponse = await client.DeleteAsync($"/api/issues/{issueId}", cancellationToken);
+    var deleteIssueResponse = await client.DeleteAsync($"/api/v1/issues/{issueId}", cancellationToken);
     Assert.Equal(HttpStatusCode.OK, deleteIssueResponse.StatusCode);
 
     Assert.False(await dbContext.Issues.AnyAsync(i => i.Id == issueId, cancellationToken));
@@ -318,19 +318,19 @@ public sealed class IssueAttachmentEndpointTests(BackendWebApplicationFactory fa
     var attachmentId = Guid.CreateVersion7();
 
     using var uploadContent = CreateTextFileContent("anonymous.txt", "anonymous upload");
-    var uploadResponse = await client.PostAsync($"/api/issues/{issueId}/attachments", uploadContent, cancellationToken);
+    var uploadResponse = await client.PostAsync($"/api/v1/issues/{issueId}/attachments", uploadContent, cancellationToken);
     Assert.Equal(HttpStatusCode.Unauthorized, uploadResponse.StatusCode);
 
-    var listResponse = await client.GetAsync($"/api/issues/{issueId}/attachments", cancellationToken);
+    var listResponse = await client.GetAsync($"/api/v1/issues/{issueId}/attachments", cancellationToken);
     Assert.Equal(HttpStatusCode.Unauthorized, listResponse.StatusCode);
 
     var downloadResponse = await client.GetAsync(
-      $"/api/issues/{issueId}/attachments/{attachmentId}/content",
+      $"/api/v1/issues/{issueId}/attachments/{attachmentId}/content",
       cancellationToken);
     Assert.Equal(HttpStatusCode.Unauthorized, downloadResponse.StatusCode);
 
     var deleteResponse = await client.DeleteAsync(
-      $"/api/issues/{issueId}/attachments/{attachmentId}",
+      $"/api/v1/issues/{issueId}/attachments/{attachmentId}",
       cancellationToken);
     Assert.Equal(HttpStatusCode.Unauthorized, deleteResponse.StatusCode);
   }

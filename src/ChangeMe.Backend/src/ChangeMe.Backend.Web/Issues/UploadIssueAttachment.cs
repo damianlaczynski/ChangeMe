@@ -1,6 +1,7 @@
 using ChangeMe.Backend.Domain.Aggregates.Issue;
 using ChangeMe.Backend.UseCases.Issues;
 using ChangeMe.Backend.UseCases.Issues.Dtos;
+using ChangeMe.Backend.Web.Configurations;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace ChangeMe.Backend.Web.Issues;
@@ -16,6 +17,7 @@ public class UploadIssueAttachment(IMediator mediator) : Endpoint<UploadIssueAtt
   public override void Configure()
   {
     Post("/issues/{IssueId}/attachments");
+    Version(ApiVersionConfig.CurrentVersion);
     AllowFileUploads();
     AuthSchemes(JwtBearerDefaults.AuthenticationScheme);
     Summary(s => s.Summary = "Upload issue attachment");

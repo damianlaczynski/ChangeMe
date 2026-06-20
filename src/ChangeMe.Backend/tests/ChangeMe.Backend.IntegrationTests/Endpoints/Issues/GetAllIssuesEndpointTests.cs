@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using ChangeMe.Backend.Domain.Aggregates.Issue.Enums;
 using ChangeMe.Backend.IntegrationTests.Fixtures;
 using ChangeMe.Backend.IntegrationTests.Support;
@@ -20,7 +20,7 @@ public sealed class GetAllIssuesEndpointTests(BackendWebApplicationFactory facto
     using var client = await TestAuthHelper.CreateAuthenticatedClientAsync(factory, cancellationToken);
 
     var response = await client.GetAsync(
-      $"/api/issues?pageNumber=1&pageSize=10&searchText={Uri.EscapeDataString(marker)}",
+      $"/api/v1/issues?pageNumber=1&pageSize=10&searchText={Uri.EscapeDataString(marker)}",
       cancellationToken);
     var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
 

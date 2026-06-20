@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.Infrastructure.Common;
+using ChangeMe.Backend.Infrastructure.Common;
 using Microsoft.EntityFrameworkCore;
 
 namespace ChangeMe.Backend.UnitTests;

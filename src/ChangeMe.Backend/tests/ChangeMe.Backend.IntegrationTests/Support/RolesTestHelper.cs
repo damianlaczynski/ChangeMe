@@ -1,4 +1,4 @@
-﻿using System.Net.Http.Json;
+using System.Net.Http.Json;
 using System.Text.Json;
 using ChangeMe.Backend.Domain.Authorization;
 using ChangeMe.Backend.Infrastructure.Persistence;
@@ -32,7 +32,7 @@ internal static class RolesTestHelper
     IReadOnlyList<string>? permissionCodes = null)
   {
     var roleName = name ?? $"Role-{Guid.NewGuid():N}";
-    var response = await client.PostAsJsonAsync("/api/roles", new
+    var response = await client.PostAsJsonAsync("/api/v1/roles", new
     {
       Name = roleName,
       Description = description ?? "Integration test role",
@@ -52,7 +52,7 @@ internal static class RolesTestHelper
     var userRoleId = await GetRoleIdByNameAsync(factory, "User", cancellationToken);
     var email = $"role-user-{Guid.NewGuid():N}@example.com";
 
-    var response = await adminClient.PostAsJsonAsync("/api/users", new
+    var response = await adminClient.PostAsJsonAsync("/api/v1/users", new
     {
       FirstName = "Role",
       LastName = "Assignee",
@@ -73,7 +73,7 @@ internal static class RolesTestHelper
     IReadOnlyList<Guid> roleIds,
     CancellationToken cancellationToken)
   {
-    var response = await adminClient.PutAsJsonAsync($"/api/users/{userId}", new
+    var response = await adminClient.PutAsJsonAsync($"/api/v1/users/{userId}", new
     {
       Id = userId,
       FirstName = "Role",

@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using ChangeMe.Backend.Domain.Aggregates.Issue.Enums;
 using ChangeMe.Backend.IntegrationTests.Fixtures;
 using ChangeMe.Backend.IntegrationTests.Support;
@@ -23,7 +23,7 @@ public sealed class GetIssueByIdEndpointTests(BackendWebApplicationFactory facto
       ["Acceptance criterion A"],
       cancellationToken);
 
-    var response = await client.GetAsync($"/api/issues/{issueId}", cancellationToken);
+    var response = await client.GetAsync($"/api/v1/issues/{issueId}", cancellationToken);
     var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
 
     Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -37,7 +37,7 @@ public sealed class GetIssueByIdEndpointTests(BackendWebApplicationFactory facto
     var cancellationToken = TestContext.Current.CancellationToken;
     using var client = await TestAuthHelper.CreateAuthenticatedClientAsync(factory, cancellationToken);
 
-    var response = await client.GetAsync($"/api/issues/{Guid.NewGuid()}", cancellationToken);
+    var response = await client.GetAsync($"/api/v1/issues/{Guid.NewGuid()}", cancellationToken);
 
     Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
   }
@@ -52,7 +52,7 @@ public sealed class GetIssueByIdEndpointTests(BackendWebApplicationFactory facto
       BaseAddress = new Uri("https://localhost")
     });
 
-    var response = await client.GetAsync($"/api/issues/{Guid.NewGuid()}", cancellationToken);
+    var response = await client.GetAsync($"/api/v1/issues/{Guid.NewGuid()}", cancellationToken);
 
     Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
   }

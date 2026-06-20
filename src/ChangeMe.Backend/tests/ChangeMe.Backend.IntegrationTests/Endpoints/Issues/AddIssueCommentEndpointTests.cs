@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using System.Net.Http.Json;
 using ChangeMe.Backend.Domain.Aggregates.Issue.Enums;
 using ChangeMe.Backend.Infrastructure.Persistence;
@@ -26,7 +26,7 @@ public sealed class AddIssueCommentEndpointTests(BackendWebApplicationFactory fa
       null,
       cancellationToken);
 
-    var response = await client.PostAsJsonAsync($"/api/issues/{issueId}/comments", new
+    var response = await client.PostAsJsonAsync($"/api/v1/issues/{issueId}/comments", new
     {
       IssueId = issueId,
       Content = "Comment added from integration test"

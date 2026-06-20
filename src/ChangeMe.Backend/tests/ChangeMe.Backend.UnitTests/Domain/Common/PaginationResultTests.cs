@@ -1,4 +1,4 @@
-﻿namespace ChangeMe.Backend.UnitTests;
+namespace ChangeMe.Backend.UnitTests;
 
 public sealed class PaginationResultTests
 {

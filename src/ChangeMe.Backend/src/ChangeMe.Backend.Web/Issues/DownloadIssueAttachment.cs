@@ -1,5 +1,6 @@
 using System.Net.Mime;
 using ChangeMe.Backend.UseCases.Issues;
+using ChangeMe.Backend.Web.Configurations;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace ChangeMe.Backend.Web.Issues;
@@ -9,6 +10,7 @@ public class DownloadIssueAttachment(IMediator mediator) : EndpointWithoutReques
   public override void Configure()
   {
     Get("/issues/{IssueId}/attachments/{AttachmentId}/content");
+    Version(ApiVersionConfig.CurrentVersion);
     AuthSchemes(JwtBearerDefaults.AuthenticationScheme);
     Summary(s => s.Summary = "Download issue attachment content");
   }

@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using ChangeMe.Backend.Domain.Aggregates.Issue.Enums;
@@ -32,7 +32,7 @@ public sealed class NotificationsEndpointTests(BackendWebApplicationFactory fact
       emailService.Clear();
     }
 
-    var createResponse = await ownerClient.PostAsJsonAsync("/api/issues", new
+    var createResponse = await ownerClient.PostAsJsonAsync("/api/v1/issues", new
     {
       Title = "Issue that will notify watchers",
       Description = "Issue description",
@@ -46,13 +46,13 @@ public sealed class NotificationsEndpointTests(BackendWebApplicationFactory fact
     var createBody = await createResponse.Content.ReadAsStringAsync(cancellationToken);
     var issueId = ExtractId(createBody);
 
-    var watchResponse = await watcherClient.PostAsJsonAsync($"/api/issues/{issueId}/watch", new
+    var watchResponse = await watcherClient.PostAsJsonAsync($"/api/v1/issues/{issueId}/watch", new
     {
       IssueId = issueId
     }, cancellationToken);
     watchResponse.EnsureSuccessStatusCode();
 
-    var updateResponse = await ownerClient.PutAsJsonAsync($"/api/issues/{issueId}", new
+    var updateResponse = await ownerClient.PutAsJsonAsync($"/api/v1/issues/{issueId}", new
     {
       Id = issueId,
       Title = "Issue that will notify watchers",
@@ -65,7 +65,7 @@ public sealed class NotificationsEndpointTests(BackendWebApplicationFactory fact
 
     Assert.Equal(HttpStatusCode.OK, updateResponse.StatusCode);
 
-    var notificationsResponse = await watcherClient.GetAsync("/api/notifications", cancellationToken);
+    var notificationsResponse = await watcherClient.GetAsync("/api/v1/notifications", cancellationToken);
     var notificationsBody = await notificationsResponse.Content.ReadAsStringAsync(cancellationToken);
 
     Assert.Equal(HttpStatusCode.OK, notificationsResponse.StatusCode);
@@ -74,7 +74,7 @@ public sealed class NotificationsEndpointTests(BackendWebApplicationFactory fact
 
     var notificationId = ExtractFirstNotificationId(notificationsBody);
 
-    var markAsReadResponse = await watcherClient.PutAsJsonAsync($"/api/notifications/{notificationId}/read", new
+    var markAsReadResponse = await watcherClient.PutAsJsonAsync($"/api/v1/notifications/{notificationId}/read", new
     {
       NotificationId = notificationId
     }, cancellationToken);
@@ -105,7 +105,7 @@ public sealed class NotificationsEndpointTests(BackendWebApplicationFactory fact
       ((FakeEmailService)clearScope.ServiceProvider.GetRequiredService<IEmailService>()).Clear();
     }
 
-    var createResponse = await ownerClient.PostAsJsonAsync("/api/issues", new
+    var createResponse = await ownerClient.PostAsJsonAsync("/api/v1/issues", new
     {
       Title = "Issue with acceptance criteria",
       Description = "Issue description",
@@ -133,13 +133,13 @@ public sealed class NotificationsEndpointTests(BackendWebApplicationFactory fact
       .Select(x => x.Id)
       .SingleAsync(cancellationToken);
 
-    var watchResponse = await watcherClient.PostAsJsonAsync($"/api/issues/{issueId}/watch", new
+    var watchResponse = await watcherClient.PostAsJsonAsync($"/api/v1/issues/{issueId}/watch", new
     {
       IssueId = issueId
     }, cancellationToken);
     watchResponse.EnsureSuccessStatusCode();
 
-    var updateResponse = await ownerClient.PutAsJsonAsync($"/api/issues/{issueId}", new
+    var updateResponse = await ownerClient.PutAsJsonAsync($"/api/v1/issues/{issueId}", new
     {
       Id = issueId,
       Title = "Issue with acceptance criteria",
@@ -163,7 +163,7 @@ public sealed class NotificationsEndpointTests(BackendWebApplicationFactory fact
 
     Assert.Equal(HttpStatusCode.OK, updateResponse.StatusCode);
 
-    var notificationsResponse = await watcherClient.GetAsync("/api/notifications", cancellationToken);
+    var notificationsResponse = await watcherClient.GetAsync("/api/v1/notifications", cancellationToken);
     var notificationsBody = await notificationsResponse.Content.ReadAsStringAsync(cancellationToken);
 
     Assert.Equal(HttpStatusCode.OK, notificationsResponse.StatusCode);
@@ -217,7 +217,7 @@ public sealed class NotificationsEndpointTests(BackendWebApplicationFactory fact
     }
 
     var pageOneResponse = await client.GetAsync(
-      "/api/notifications?isRead=false&pageNumber=1&pageSize=10&sortField=CreatedAt&ascending=false",
+      "/api/v1/notifications?isRead=false&pageNumber=1&pageSize=10&sortField=CreatedAt&ascending=false",
       cancellationToken);
     var pageOneBody = await pageOneResponse.Content.ReadAsStringAsync(cancellationToken);
 
@@ -240,7 +240,7 @@ public sealed class NotificationsEndpointTests(BackendWebApplicationFactory fact
       pageOneCreatedAt.SequenceEqual(pageOneCreatedAt.OrderByDescending(timestamp => timestamp)));
 
     var pageTwoResponse = await client.GetAsync(
-      "/api/notifications?isRead=false&pageNumber=2&pageSize=10&sortField=CreatedAt&ascending=false",
+      "/api/v1/notifications?isRead=false&pageNumber=2&pageSize=10&sortField=CreatedAt&ascending=false",
       cancellationToken);
     var pageTwoBody = await pageTwoResponse.Content.ReadAsStringAsync(cancellationToken);
 
@@ -301,7 +301,7 @@ public sealed class NotificationsEndpointTests(BackendWebApplicationFactory fact
       readAt: DateTime.UtcNow.AddDays(-31),
       cancellationToken);
 
-    var response = await client.GetAsync("/api/notifications", cancellationToken);
+    var response = await client.GetAsync("/api/v1/notifications", cancellationToken);
     var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
 
     Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -392,7 +392,7 @@ public sealed class NotificationsEndpointTests(BackendWebApplicationFactory fact
       readAt: DateTime.UtcNow.AddMinutes(-2),
       cancellationToken);
 
-    var response = await client.PutAsync("/api/notifications/read-all", null, cancellationToken);
+    var response = await client.PutAsync("/api/v1/notifications/read-all", null, cancellationToken);
 
     var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
 

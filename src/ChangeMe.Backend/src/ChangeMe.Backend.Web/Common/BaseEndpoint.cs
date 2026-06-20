@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using ChangeMe.Backend.Web.Configurations;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace ChangeMe.Backend.Web.Common;
 
@@ -9,6 +10,7 @@ public abstract class BaseEndpoint<TRequest, TResponse>(IMediator mediator) : En
   {
     DontThrowIfValidationFails();
     AuthSchemes(JwtBearerDefaults.AuthenticationScheme);
+    Version(ApiVersionConfig.CurrentVersion);
     ConfigureEndpoint();
   }
 

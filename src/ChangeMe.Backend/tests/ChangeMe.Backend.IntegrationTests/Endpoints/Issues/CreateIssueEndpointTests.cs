@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using System.Net.Http.Json;
 using ChangeMe.Backend.Domain.Aggregates.Issue.Enums;
 using ChangeMe.Backend.Infrastructure.Persistence;
@@ -35,7 +35,7 @@ public sealed class CreateIssueEndpointTests(BackendWebApplicationFactory factor
       }
     };
 
-    var response = await client.PostAsJsonAsync("/api/issues", request, cancellationToken);
+    var response = await client.PostAsJsonAsync("/api/v1/issues", request, cancellationToken);
 
     Assert.Equal(HttpStatusCode.Created, response.StatusCode);
 
@@ -66,7 +66,7 @@ public sealed class CreateIssueEndpointTests(BackendWebApplicationFactory factor
       BaseAddress = new Uri("https://localhost")
     });
 
-    var response = await client.PostAsJsonAsync("/api/issues", new
+    var response = await client.PostAsJsonAsync("/api/v1/issues", new
     {
       Title = "Unauthorized issue",
       Description = "Should fail",

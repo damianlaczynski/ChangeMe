@@ -17,10 +17,14 @@ public static class FastEndpointsConfig
     services.AddFastEndpoints()
             .SwaggerDocument(o =>
             {
+              o.MaxEndpointVersion = ApiVersionConfig.CurrentVersion;
               o.ShortSchemaNames = true;
               o.EnableJWTBearerAuth = false;
               o.DocumentSettings = settings =>
                   {
+                    settings.DocumentName = $"v{ApiVersionConfig.CurrentVersion}";
+                    settings.Title = "ChangeMe API";
+                    settings.Version = $"{ApiVersionConfig.Prefix}{ApiVersionConfig.CurrentVersion}";
                     settings.AddAuth("Bearer", new OpenApiSecurityScheme
                     {
                       Type = OpenApiSecuritySchemeType.Http,
@@ -37,6 +41,9 @@ public static class FastEndpointsConfig
     app.UseFastEndpoints(config =>
     {
       config.Endpoints.RoutePrefix = "api";
+      config.Versioning.Prefix = ApiVersionConfig.Prefix;
+      config.Versioning.PrependToRoute = true;
+      config.Versioning.DefaultVersion = ApiVersionConfig.CurrentVersion;
       config.Serializer.Options.PropertyNameCaseInsensitive = true;
       config.Serializer.Options.Converters.Add(new JsonStringEnumConverter());
     }).UseSwaggerGen();
