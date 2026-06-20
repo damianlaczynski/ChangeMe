@@ -1,12 +1,11 @@
 import { defineConfig, devices } from '@playwright/test';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { authStoragePath, e2eBaseUrl } from './shared/env';
 
 const e2eDir = path.dirname(fileURLToPath(import.meta.url));
 const frontendRoot = path.resolve(e2eDir, '..');
 const repoRoot = path.resolve(frontendRoot, '../..');
-
-const baseURL = process.env['E2E_BASE_URL'] ?? 'http://localhost:4200';
 
 function backendWebServerEnv(): Record<string, string> {
   const env: Record<string, string> = {
@@ -22,24 +21,51 @@ function backendWebServerEnv(): Record<string, string> {
 }
 
 export default defineConfig({
-  testDir: path.join(e2eDir, 'tests'),
-  fullyParallel: false,
+  testDir: path.join(e2eDir, 'features'),
+  fullyParallel: true,
   forbidOnly: !!process.env['CI'],
   retries: process.env['CI'] ? 1 : 0,
   workers: 1,
   timeout: 60_000,
-  reporter: process.env['CI'] ? [['github'], ['list']] : [['list']],
+  globalSetup: path.join(e2eDir, 'shared/global-setup.ts'),
+  reporter: process.env['CI']
+    ? [['github'], ['html', { open: 'never' }], ['list']]
+    : [['list']],
   use: {
-    baseURL,
-    trace: 'on-first-retry'
+    baseURL: e2eBaseUrl,
+    screenshot: 'only-on-failure',
+    trace: 'retain-on-failure'
   },
   projects: [
     {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] }
+      name: 'auth',
+      testDir: path.join(e2eDir, 'features/auth'),
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: { cookies: [], origins: [] }
+      }
+    },
+    {
+      name: 'app',
+      testIgnore: '**/auth/**',
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: authStoragePath
+      }
     }
   ],
   webServer: [
+    ...(process.env['CI']
+      ? []
+      : [
+          {
+            command:
+              'docker run --rm --name changeme-e2e-mailhog -p 1025:1025 -p 8025:8025 mailhog/mailhog',
+            url: 'http://localhost:8025',
+            timeout: 120_000,
+            reuseExistingServer: true
+          }
+        ]),
     {
       command:
         'dotnet run --no-launch-profile --project src/ChangeMe.Backend/src/ChangeMe.Backend.Web/ChangeMe.Backend.Web.csproj',
@@ -52,7 +78,7 @@ export default defineConfig({
     {
       command: 'npm start',
       cwd: frontendRoot,
-      url: baseURL,
+      url: e2eBaseUrl,
       timeout: 180_000,
       reuseExistingServer: !process.env['CI']
     }
