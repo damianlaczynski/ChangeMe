@@ -4,15 +4,7 @@ title: My Account Profile
 domain: users
 type: functional
 status: active
-depends_on:
-  [
-    FR-AUTH-001,
-    FR-AUTH-003,
-    FR-AUTH-004,
-    FR-AUTH-005,
-    FR-ROL-001,
-    FR-USR-004,
-  ]
+depends_on: [FR-AUTH-001, FR-AUTH-003, FR-AUTH-004, FR-ROL-001, FR-USR-004]
 inherits_nfr:
   [NFR-QUAL-001, NFR-A11Y-001, NFR-I18N-001, NFR-PERF-001, NFR-RSP-001]
 inherits_fr: [FR-UI-001]
@@ -20,7 +12,7 @@ inherits_fr: [FR-UI-001]
 
 ## Goal
 
-The signed-in user must be able to view their own profile, edit it on a separate screen, and reach account security actions.
+The signed-in user must be able to view their own profile, edit it on a separate screen, and manage their sessions.
 
 ## Functional requirements
 
@@ -46,7 +38,6 @@ The signed-in user must be able to view their own profile, edit it on a separate
 ### Header actions
 
 - **Edit** button (header action) opens **Edit profile** (same placement as **Edit** on other detail screens).
-- **Change password** button (header action) opens **Change password** (FR-AUTH-005).
 - **Sign out everywhere** button (header action) when the user has **Sessions.ManageOwn**; same behavior as FR-AUTH-003.
 
 ### Edit profile screen

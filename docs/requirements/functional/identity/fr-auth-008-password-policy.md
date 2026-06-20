@@ -5,12 +5,14 @@ domain: identity
 type: functional
 status: active
 depends_on: []
-inherits_nfr: [NFR-QUAL-001, NFR-A11Y-001, NFR-I18N-001, NFR-PERF-001, NFR-RSP-001]
+inherits_nfr:
+  [NFR-QUAL-001, NFR-A11Y-001, NFR-I18N-001, NFR-PERF-001, NFR-RSP-001]
 inherits_fr: [FR-UI-001]
 ---
+
 ## Goal
 
-Password strength rules must be consistent across user creation and password change, and configurable per deployment.
+Password strength rules must be consistent for admin user creation and configurable per deployment.
 
 ## Functional requirements
 
@@ -23,12 +25,12 @@ Password strength rules must be consistent across user creation and password cha
 ### User-visible validation
 
 - Violations show inline on the password field with a specific message (for example **`Password must contain at least one uppercase letter.`**).
-- All password forms load policy hints from the server on screen open.
+- All password entry forms load policy hints from the server on screen open.
 
 ### Configuration
 
 - Deployment settings define minimum length, maximum length, and each character-class requirement.
-- Changing settings affects new password entry only; existing passwords are not re-validated until change.
+- Changing settings affects new password entry only; existing passwords are not re-validated on sign-in.
 
 ## Non-functional requirements
 

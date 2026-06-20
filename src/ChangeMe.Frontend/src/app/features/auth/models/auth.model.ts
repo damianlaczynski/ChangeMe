@@ -43,8 +43,3 @@ export interface UpdateMyAccountRequest {
   firstName: string;
   lastName: string;
 }
-
-export interface ChangePasswordRequest {
-  currentPassword: string;
-  newPassword: string;
-}

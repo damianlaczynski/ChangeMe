@@ -10,12 +10,6 @@ export const AuthConstraints = {
 export const AuthMessages = {
   invalidCredentials: 'Invalid email or password.',
   deactivatedAccount: 'This account has been deactivated. Contact an administrator.',
-  passwordChangedLogin: 'Password changed. Sign in with your new password.',
-  changePasswordTitle: 'Change password and sign out everywhere?',
-  changePasswordMessage:
-    'Change password and sign out everywhere? You will be signed out on every device and must sign in again with your new password.',
-  changePasswordNotice:
-    'Changing your password will sign you out on all devices, including this one. You will need to sign in again with your new password.',
   profileUpdated: 'Profile updated.',
   permissionDenied: 'You do not have permission to perform this action.'
 };

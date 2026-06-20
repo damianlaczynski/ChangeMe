@@ -4,13 +4,7 @@ title: Create and Edit User (Admin)
 domain: users
 type: functional
 status: active
-depends_on:
-  [
-    FR-AUTH-001,
-    FR-AUTH-008,
-    FR-ROL-001,
-    FR-ROL-005,
-  ]
+depends_on: [FR-AUTH-001, FR-AUTH-008, FR-ROL-001, FR-ROL-005]
 inherits_nfr:
   [NFR-QUAL-001, NFR-A11Y-001, NFR-I18N-001, NFR-PERF-001, NFR-RSP-001]
 inherits_fr: [FR-UI-001]
@@ -41,13 +35,13 @@ An authorized administrator must be able to create a new user with a password an
 - Screen: **Create user**
 - Requires permission **Users.Manage** and **Roles.Manage** (FR-ROL-005).
 
-| Field                | Behavior                                                                       |
-| -------------------- | ------------------------------------------------------------------------------ |
-| **First name**       | Text field, **required**; max **100** characters.                              |
-| **Last name**        | Text field, **required**; max **100** characters.                              |
-| **Email**            | Text field, **required**; valid email; max **320** characters; must be unique. |
-| **Password**         | Password field, **required**; **8–128** characters.                            |
-| **Confirm password** | **Required**; must match **Password**.                                         |
+| Field                | Behavior                                                                          |
+| -------------------- | --------------------------------------------------------------------------------- |
+| **First name**       | Text field, **required**; max **100** characters.                                 |
+| **Last name**        | Text field, **required**; max **100** characters.                                 |
+| **Email**            | Text field, **required**; valid email; max **320** characters; must be unique.    |
+| **Password**         | Password field, **required**; **8–128** characters.                               |
+| **Confirm password** | **Required**; must match **Password**.                                            |
 | **Roles**            | Same rules as edit (FR-ROL-005); visible and editable only with **Roles.Manage**. |
 
 - Password rules follow **Password policy** (FR-AUTH-008).
@@ -58,15 +52,15 @@ An authorized administrator must be able to create a new user with a password an
 - Screen: **Edit user**
 - Requires permission **Users.Manage**.
 
-| Field           | Behavior                                                                                        |
-| --------------- | ----------------------------------------------------------------------------------------------- |
-| **First name**  | **Required**; max **100** characters.                                                           |
-| **Last name**   | **Required**; max **100** characters.                                                           |
-| **Email**       | **Required**; valid email; unique; max **320** characters.                                      |
-| **Roles**       | Same rules as create (FR-ROL-005); visible and editable only with **Roles.Manage**.             |
+| Field           | Behavior                                                                                                                        |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| **First name**  | **Required**; max **100** characters.                                                                                           |
+| **Last name**   | **Required**; max **100** characters.                                                                                           |
+| **Email**       | **Required**; valid email; unique; max **320** characters.                                                                      |
+| **Roles**       | Same rules as create (FR-ROL-005); visible and editable only with **Roles.Manage**.                                             |
 | **Deactivated** | Checkbox; editable only with **Users.Deactivate**; label **`Deactivated`**. When checked, **Status** becomes **`Deactivated`**. |
 
-- **Password** fields are **not shown** on **Edit user**; password changes are self-service via **Change password** (FR-AUTH-005).
+- **Password** fields are **not shown** on **Edit user**; password is set only on **Create user**.
 - **Edit user** is the screen for managing a user's role assignments; there is no separate role-assignment screen in **Users** administration.
 
 ### Validation and form behavior

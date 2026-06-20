@@ -13,7 +13,6 @@ import { Observable, firstValueFrom, from, of, throwError } from 'rxjs';
 import { catchError, finalize, map, switchMap, tap } from 'rxjs/operators';
 import {
   AuthResponse,
-  ChangePasswordRequest,
   LoginRequest,
   LoginResponse,
   MyAccountDto,
@@ -124,10 +123,6 @@ export class AuthService {
       firstName,
       lastName
     });
-  }
-
-  changePassword(request: ChangePasswordRequest) {
-    return this.apiService.post<boolean>('auth/change-password', request);
   }
 
   continueAfterLogin(returnUrl = '/issues'): void {

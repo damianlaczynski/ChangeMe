@@ -52,7 +52,6 @@ See [changes/](changes/) for open requirement deltas.
 | FR-AUTH-002 | Staying Signed In | [fr-auth-002-staying-signed-in.md](functional/identity/fr-auth-002-staying-signed-in.md) |
 | FR-AUTH-003 | Logout | [fr-auth-003-logout.md](functional/identity/fr-auth-003-logout.md) |
 | FR-AUTH-004 | My Sessions | [fr-auth-004-my-sessions.md](functional/identity/fr-auth-004-my-sessions.md) |
-| FR-AUTH-005 | Change Password | [fr-auth-005-change-password.md](functional/identity/fr-auth-005-change-password.md) |
 | FR-AUTH-008 | Password Policy | [fr-auth-008-password-policy.md](functional/identity/fr-auth-008-password-policy.md) |
 
 ## Issues (`functional/issues/`)

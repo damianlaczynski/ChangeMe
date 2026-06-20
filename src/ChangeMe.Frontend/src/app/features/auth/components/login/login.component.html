@@ -1,4 +1,7 @@
-<app-auth-page title="Welcome back" subtitle="Sign in to create, edit and delete issues.">
+<app-auth-page
+  title="Welcome back"
+  subtitle="Sign in to create, edit and delete issues."
+>
   <form class="p-fluid flex flex-col gap-4" [formGroup]="form" (ngSubmit)="onSubmit()">
     <div class="flex flex-col gap-1.5">
       <label class="text-color text-sm font-medium" for="email">Email</label>
@@ -59,10 +62,6 @@
         </p-message>
       }
     </div>
-
-    @if (infoMessage()) {
-      <p-message severity="info">{{ infoMessage() }}</p-message>
-    }
 
     @if (errorMessage()) {
       <p-message severity="error">{{ errorMessage() }}</p-message>

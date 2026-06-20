@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-19T22:32:53.132Z",
+  "generatedAt": "2026-06-20T10:23:54.435Z",
   "functional": [
     {
       "id": "FR-AUTH-001",
@@ -68,22 +68,6 @@
       "depends_on": [
         "FR-AUTH-003",
         "FR-USR-001"
-      ],
-      "inherits_nfr": [],
-      "inherits_fr": [
-        "FR-UI-001"
-      ]
-    },
-    {
-      "id": "FR-AUTH-005",
-      "title": "Change Password",
-      "domain": "identity",
-      "type": "functional",
-      "status": "active",
-      "file": "functional/identity/fr-auth-005-change-password.md",
-      "depends_on": [
-        "FR-AUTH-001",
-        "FR-AUTH-008"
       ],
       "inherits_nfr": [],
       "inherits_fr": [

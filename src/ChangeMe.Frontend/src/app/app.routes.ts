@@ -1,5 +1,4 @@
 import { Routes } from '@angular/router';
-import { ChangePasswordComponent } from '@features/auth/components/change-password/change-password.component';
 import { EditMyAccountComponent } from '@features/auth/components/edit-my-account/edit-my-account.component';
 import { LoginComponent } from '@features/auth/components/login/login.component';
 import { MyAccountComponent } from '@features/auth/components/my-account/my-account.component';
@@ -62,11 +61,6 @@ export const routes: Routes = [
   {
     path: 'account/edit',
     component: EditMyAccountComponent,
-    canActivate: [authGuard]
-  },
-  {
-    path: 'account/change-password',
-    component: ChangePasswordComponent,
     canActivate: [authGuard]
   },
   {
