@@ -92,7 +92,7 @@ Current issue endpoints illustrate the standard flow:
   - `Endpoints/<Feature>/` — one test class per endpoint area
   - `Fixtures/` — `BackendWebApplicationFactory` and feature-specific factories
   - `Support/` — `TestAuthHelper` (register + authenticate via real API calls), `IssueTestHelper`, and other feature helpers
-- `src/ChangeMe.Frontend` — Vitest unit/component specs colocated as `*.spec.ts`; E2E smoke suite in `e2e/`
+- `src/ChangeMe.Frontend` — Vitest unit/component specs colocated as `*.spec.ts`; E2E suite in `e2e/features/` (see [e2e-guidelines.md](e2e-guidelines.md))
 
 Which layer to test and when to skip: [`docs/guides/testing-guidelines.md`](testing-guidelines.md).
 

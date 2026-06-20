@@ -43,6 +43,7 @@ Thumbs.db
 
 # Playwright
 /e2e/test-results/
+/e2e/shared/auth-storage.json
 /playwright-report/
 /blob-report/
 /playwright/.cache/

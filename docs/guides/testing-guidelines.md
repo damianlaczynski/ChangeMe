@@ -62,7 +62,7 @@ Prefer the **smallest** relevant check. Command details: [`AGENTS.md`](../../AGE
 | Frontend logic or services      | `npm run lint:frontend` plus `npm run test:frontend:ci` (or affected specs)                                                                   |
 | Backend domain or helpers only  | `npm run test:backend:unit`                                                                                                                   |
 | Backend endpoint or persistence | `npm run test:backend:integration` — Docker required; migrations must exist ([`database-and-docker.md`](../technical/database-and-docker.md)) |
-| User journey or wide regression | `npm run test:all`; add `npm run test:e2e` when the journey or compliance gate changed                                                        |
+| User journey or wide regression | `npm run test:all`; add `npm run test:e2e` when the journey or compliance gate changed ([e2e-guidelines.md](e2e-guidelines.md))               |
 | No Docker available             | `npm run test:frontend:ci` and `npm run test:backend:unit` first; integration when Docker is up                                               |
 
 ## Guardrails for AI agents
