@@ -1,4 +1,4 @@
-﻿using System.Net.Http.Headers;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using ChangeMe.Backend.Infrastructure.Persistence;
@@ -31,7 +31,7 @@ internal static class TestAuthHelper
     var email = $"user-{Guid.NewGuid():N}@example.com";
     var userRoleId = await RolesTestHelper.GetRoleIdByNameAsync(factory, "User", cancellationToken);
 
-    var createResponse = await admin.Client.PostAsJsonAsync("/api/users", new
+    var createResponse = await admin.Client.PostAsJsonAsync("/api/v1/users", new
     {
       FirstName = "Test",
       LastName = "User",
@@ -67,7 +67,7 @@ internal static class TestAuthHelper
       BaseAddress = new Uri("https://localhost")
     });
 
-    var loginResponse = await loginClient.PostAsJsonAsync("/api/auth/login", new
+    var loginResponse = await loginClient.PostAsJsonAsync("/api/v1/auth/login", new
     {
       Email = email,
       Password = password

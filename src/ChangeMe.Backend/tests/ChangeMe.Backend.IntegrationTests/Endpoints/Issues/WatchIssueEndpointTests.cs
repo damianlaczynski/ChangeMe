@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using System.Net.Http.Json;
 using ChangeMe.Backend.Domain.Aggregates.Issue.Enums;
 using ChangeMe.Backend.Infrastructure.Persistence;
@@ -26,14 +26,14 @@ public sealed class WatchIssueEndpointTests(BackendWebApplicationFactory factory
       null,
       cancellationToken);
 
-    var watchResponse = await client.PostAsJsonAsync($"/api/issues/{issueId}/watch", new
+    var watchResponse = await client.PostAsJsonAsync($"/api/v1/issues/{issueId}/watch", new
     {
       IssueId = issueId
     }, cancellationToken);
 
     Assert.Equal(HttpStatusCode.OK, watchResponse.StatusCode);
 
-    var unwatchResponse = await client.DeleteAsync($"/api/issues/{issueId}/watch", cancellationToken);
+    var unwatchResponse = await client.DeleteAsync($"/api/v1/issues/{issueId}/watch", cancellationToken);
 
     Assert.Equal(HttpStatusCode.OK, unwatchResponse.StatusCode);
 

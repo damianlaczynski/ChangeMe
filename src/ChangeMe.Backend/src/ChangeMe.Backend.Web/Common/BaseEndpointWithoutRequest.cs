@@ -1,3 +1,4 @@
+using ChangeMe.Backend.Web.Configurations;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace ChangeMe.Backend.Web.Common;
@@ -9,6 +10,7 @@ public abstract class BaseEndpointWithoutRequest<TRequest, TResponse>(IMediator 
   public override void Configure()
   {
     AuthSchemes(JwtBearerDefaults.AuthenticationScheme);
+    Version(ApiVersionConfig.CurrentVersion);
     ConfigureEndpoint();
   }
 

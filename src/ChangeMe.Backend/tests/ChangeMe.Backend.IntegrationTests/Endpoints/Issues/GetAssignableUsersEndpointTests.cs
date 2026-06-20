@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using System.Text.Json;
 using ChangeMe.Backend.IntegrationTests.Fixtures;
 using ChangeMe.Backend.IntegrationTests.Support;
@@ -18,7 +18,7 @@ public sealed class GetAssignableUsersEndpointTests(BackendWebApplicationFactory
 
     using var client = firstUser.Client;
 
-    var response = await client.GetAsync("/api/issues/assignable-users", cancellationToken);
+    var response = await client.GetAsync("/api/v1/issues/assignable-users", cancellationToken);
     var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
 
     Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -36,7 +36,7 @@ public sealed class GetAssignableUsersEndpointTests(BackendWebApplicationFactory
 
     using var client = factory.CreateClient();
 
-    var response = await client.GetAsync("/api/issues/assignable-users", cancellationToken);
+    var response = await client.GetAsync("/api/v1/issues/assignable-users", cancellationToken);
 
     Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
   }

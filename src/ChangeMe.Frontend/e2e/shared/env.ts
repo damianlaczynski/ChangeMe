@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 const e2eDir = path.dirname(fileURLToPath(import.meta.url));
 
 export const e2eBaseUrl = process.env['E2E_BASE_URL'] ?? 'http://localhost:4200';
-export const e2eApiUrl = process.env['E2E_API_URL'] ?? 'http://localhost:5000/api';
+export const e2eApiUrl = process.env['E2E_API_URL'] ?? 'http://localhost:5000/api/v1';
 
 export const e2eCredentials = {
   email: process.env['E2E_USER_EMAIL'] ?? 'admin@example.local',

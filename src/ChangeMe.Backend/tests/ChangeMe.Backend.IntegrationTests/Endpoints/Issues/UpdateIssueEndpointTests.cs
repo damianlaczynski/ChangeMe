@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using ChangeMe.Backend.Domain.Aggregates.Issue.Enums;
@@ -37,7 +37,7 @@ public sealed class UpdateIssueEndpointTests(BackendWebApplicationFactory factor
       .Select(x => x.Id)
       .FirstAsync(cancellationToken);
 
-    var response = await client.PutAsJsonAsync($"/api/issues/{issueId}", new
+    var response = await client.PutAsJsonAsync($"/api/v1/issues/{issueId}", new
     {
       Id = issueId,
       Title = "Updated title",
@@ -100,7 +100,7 @@ public sealed class UpdateIssueEndpointTests(BackendWebApplicationFactory factor
       cancellationToken,
       actorId: actor.UserId);
 
-    var updateResponse = await client.PutAsJsonAsync($"/api/issues/{issueId}", new
+    var updateResponse = await client.PutAsJsonAsync($"/api/v1/issues/{issueId}", new
     {
       Id = issueId,
       Title = "Issue with assignee change",
@@ -113,7 +113,7 @@ public sealed class UpdateIssueEndpointTests(BackendWebApplicationFactory factor
 
     Assert.Equal(HttpStatusCode.OK, updateResponse.StatusCode);
 
-    var historyResponse = await client.GetAsync($"/api/issues/{issueId}/history", cancellationToken);
+    var historyResponse = await client.GetAsync($"/api/v1/issues/{issueId}/history", cancellationToken);
     var responseBody = await historyResponse.Content.ReadAsStringAsync(cancellationToken);
 
     Assert.Equal(HttpStatusCode.OK, historyResponse.StatusCode);

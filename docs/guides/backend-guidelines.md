@@ -69,6 +69,10 @@ Shared rules:
 - When an endpoint has **route parameters only** (no body), keep using `BaseEndpoint<TRequest, TResponse>` — FastEndpoints binds route segments to matching property names on the request DTO.
 - When an endpoint has **no payload but needs route values** and you prefer `BaseEndpointWithoutRequest`, override `CreateRequest()` to read `Route<T>(...)`.
 
+## API versioning
+
+REST routes are versioned in the URL (`/api/v1/...`). Version and prefix live in `Web/Configurations/ApiVersionConfig.cs`; wiring in `FastEndpointsConfig.cs`. `BaseEndpoint` classes apply the current version automatically; custom `Endpoint<...>` classes set `Version(...)` themselves. `/health`, `/hubs`, and Hangfire stay unversioned.
+
 ## Handler conventions
 
 - Handlers live in the same file as their request contract in `UseCases/<Feature>/`.

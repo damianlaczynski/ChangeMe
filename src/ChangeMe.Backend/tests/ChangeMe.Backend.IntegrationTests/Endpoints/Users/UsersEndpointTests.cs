@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using System.Net.Http.Json;
 using ChangeMe.Backend.IntegrationTests.Fixtures;
 using ChangeMe.Backend.IntegrationTests.Support;
@@ -16,7 +16,7 @@ public sealed class UsersEndpointTests(BackendWebApplicationFactory factory)
     var cancellationToken = TestContext.Current.CancellationToken;
     var user = await TestAuthHelper.CreateAuthenticatedUserAsync(factory, cancellationToken);
 
-    var response = await user.Client.GetAsync("/api/users?pageNumber=1&pageSize=10", cancellationToken);
+    var response = await user.Client.GetAsync("/api/v1/users?pageNumber=1&pageSize=10", cancellationToken);
 
     Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
   }
@@ -27,7 +27,7 @@ public sealed class UsersEndpointTests(BackendWebApplicationFactory factory)
     var cancellationToken = TestContext.Current.CancellationToken;
     var admin = await TestAuthHelper.CreateAdministratorUserAsync(factory, cancellationToken);
 
-    var response = await admin.Client.GetAsync("/api/users?pageNumber=1&pageSize=10", cancellationToken);
+    var response = await admin.Client.GetAsync("/api/v1/users?pageNumber=1&pageSize=10", cancellationToken);
 
     Assert.Equal(HttpStatusCode.OK, response.StatusCode);
   }
@@ -42,7 +42,7 @@ public sealed class UsersEndpointTests(BackendWebApplicationFactory factory)
     var email = $"managed-{Guid.NewGuid():N}@example.com";
     const string password = TestAuthHelper.DefaultUserPassword;
 
-    var response = await admin.Client.PostAsJsonAsync("/api/users", new
+    var response = await admin.Client.PostAsJsonAsync("/api/v1/users", new
     {
       FirstName = "Managed",
       LastName = "User",
@@ -71,7 +71,7 @@ public sealed class UsersEndpointTests(BackendWebApplicationFactory factory)
     var userRoleId = await RolesTestHelper.GetRoleIdByNameAsync(factory, "User", cancellationToken);
     var email = $"updated-{Guid.NewGuid():N}@example.com";
 
-    var createResponse = await admin.Client.PostAsJsonAsync("/api/users", new
+    var createResponse = await admin.Client.PostAsJsonAsync("/api/v1/users", new
     {
       FirstName = "Original",
       LastName = "User",
@@ -84,7 +84,7 @@ public sealed class UsersEndpointTests(BackendWebApplicationFactory factory)
     var createBody = await createResponse.Content.ReadAsStringAsync(cancellationToken);
     var userId = RolesTestHelper.ReadGuidFromResultBody(createBody, "id");
 
-    var updateResponse = await admin.Client.PutAsJsonAsync($"/api/users/{userId}", new
+    var updateResponse = await admin.Client.PutAsJsonAsync($"/api/v1/users/{userId}", new
     {
       Id = userId,
       FirstName = "Updated",

@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using System.Net.Http.Json;
 using ChangeMe.Backend.Domain.Aggregates.Roles;
 using ChangeMe.Backend.Domain.Authorization;
@@ -17,7 +17,7 @@ public sealed class RolesEndpointTests(BackendWebApplicationFactory factory)
     var cancellationToken = TestContext.Current.CancellationToken;
     var user = await TestAuthHelper.CreateAuthenticatedUserAsync(factory, cancellationToken);
 
-    var response = await user.Client.GetAsync("/api/roles", cancellationToken);
+    var response = await user.Client.GetAsync("/api/v1/roles", cancellationToken);
 
     Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
   }
@@ -28,7 +28,7 @@ public sealed class RolesEndpointTests(BackendWebApplicationFactory factory)
     var cancellationToken = TestContext.Current.CancellationToken;
     var admin = await TestAuthHelper.CreateAdministratorUserAsync(factory, cancellationToken);
 
-    var response = await admin.Client.GetAsync("/api/roles", cancellationToken);
+    var response = await admin.Client.GetAsync("/api/v1/roles", cancellationToken);
 
     Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
@@ -49,7 +49,7 @@ public sealed class RolesEndpointTests(BackendWebApplicationFactory factory)
       description: marker);
 
     var response = await admin.Client.GetAsync(
-      $"/api/roles?searchText={Uri.EscapeDataString(marker)}",
+      $"/api/v1/roles?searchText={Uri.EscapeDataString(marker)}",
       cancellationToken);
 
     Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -65,7 +65,7 @@ public sealed class RolesEndpointTests(BackendWebApplicationFactory factory)
     var admin = await TestAuthHelper.CreateAdministratorUserAsync(factory, cancellationToken);
     var roleId = await RolesTestHelper.CreateCustomRoleAsync(admin.Client, cancellationToken);
 
-    var response = await admin.Client.GetAsync($"/api/roles/{roleId}", cancellationToken);
+    var response = await admin.Client.GetAsync($"/api/v1/roles/{roleId}", cancellationToken);
 
     Assert.Equal(HttpStatusCode.OK, response.StatusCode);
   }
@@ -78,7 +78,7 @@ public sealed class RolesEndpointTests(BackendWebApplicationFactory factory)
     var admin = await TestAuthHelper.CreateAdministratorUserAsync(factory, cancellationToken);
     var roleId = await RolesTestHelper.CreateCustomRoleAsync(admin.Client, cancellationToken);
 
-    var response = await user.Client.GetAsync($"/api/roles/{roleId}", cancellationToken);
+    var response = await user.Client.GetAsync($"/api/v1/roles/{roleId}", cancellationToken);
 
     Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
   }
@@ -89,7 +89,7 @@ public sealed class RolesEndpointTests(BackendWebApplicationFactory factory)
     var cancellationToken = TestContext.Current.CancellationToken;
     var admin = await TestAuthHelper.CreateAdministratorUserAsync(factory, cancellationToken);
 
-    var response = await admin.Client.GetAsync($"/api/roles/{Guid.NewGuid()}", cancellationToken);
+    var response = await admin.Client.GetAsync($"/api/v1/roles/{Guid.NewGuid()}", cancellationToken);
 
     Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
   }
@@ -100,7 +100,7 @@ public sealed class RolesEndpointTests(BackendWebApplicationFactory factory)
     var cancellationToken = TestContext.Current.CancellationToken;
     var admin = await TestAuthHelper.CreateAdministratorUserAsync(factory, cancellationToken);
 
-    var response = await admin.Client.GetAsync("/api/roles/permission-catalog", cancellationToken);
+    var response = await admin.Client.GetAsync("/api/v1/roles/permission-catalog", cancellationToken);
 
     Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
@@ -115,7 +115,7 @@ public sealed class RolesEndpointTests(BackendWebApplicationFactory factory)
     var cancellationToken = TestContext.Current.CancellationToken;
     var user = await TestAuthHelper.CreateAuthenticatedUserAsync(factory, cancellationToken);
 
-    var response = await user.Client.GetAsync("/api/roles/permission-catalog", cancellationToken);
+    var response = await user.Client.GetAsync("/api/v1/roles/permission-catalog", cancellationToken);
 
     Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
   }
@@ -127,7 +127,7 @@ public sealed class RolesEndpointTests(BackendWebApplicationFactory factory)
     var admin = await TestAuthHelper.CreateAdministratorUserAsync(factory, cancellationToken);
     var roleName = $"Custom-{Guid.NewGuid():N}";
 
-    var response = await admin.Client.PostAsJsonAsync("/api/roles", new
+    var response = await admin.Client.PostAsJsonAsync("/api/v1/roles", new
     {
       Name = roleName,
       Description = "Test role",
@@ -146,7 +146,7 @@ public sealed class RolesEndpointTests(BackendWebApplicationFactory factory)
     var cancellationToken = TestContext.Current.CancellationToken;
     var user = await TestAuthHelper.CreateAuthenticatedUserAsync(factory, cancellationToken);
 
-    var response = await user.Client.PostAsJsonAsync("/api/roles", new
+    var response = await user.Client.PostAsJsonAsync("/api/v1/roles", new
     {
       Name = $"Denied-{Guid.NewGuid():N}",
       PermissionCodes = new[] { PermissionCodes.UsersView }
@@ -163,7 +163,7 @@ public sealed class RolesEndpointTests(BackendWebApplicationFactory factory)
     var roleName = $"Duplicate-{Guid.NewGuid():N}";
     await RolesTestHelper.CreateCustomRoleAsync(admin.Client, cancellationToken, name: roleName);
 
-    var response = await admin.Client.PostAsJsonAsync("/api/roles", new
+    var response = await admin.Client.PostAsJsonAsync("/api/v1/roles", new
     {
       Name = roleName.ToUpperInvariant(),
       PermissionCodes = new[] { PermissionCodes.UsersView }
@@ -181,7 +181,7 @@ public sealed class RolesEndpointTests(BackendWebApplicationFactory factory)
     var cancellationToken = TestContext.Current.CancellationToken;
     var admin = await TestAuthHelper.CreateAdministratorUserAsync(factory, cancellationToken);
 
-    var response = await admin.Client.PostAsJsonAsync("/api/roles", new
+    var response = await admin.Client.PostAsJsonAsync("/api/v1/roles", new
     {
       Name = $"NoPerms-{Guid.NewGuid():N}",
       PermissionCodes = Array.Empty<string>()
@@ -198,7 +198,7 @@ public sealed class RolesEndpointTests(BackendWebApplicationFactory factory)
     var roleId = await RolesTestHelper.CreateCustomRoleAsync(admin.Client, cancellationToken);
     var updatedName = $"Updated-{Guid.NewGuid():N}";
 
-    var response = await admin.Client.PutAsJsonAsync($"/api/roles/{roleId}", new
+    var response = await admin.Client.PutAsJsonAsync($"/api/v1/roles/{roleId}", new
     {
       Id = roleId,
       Name = updatedName,
@@ -222,7 +222,7 @@ public sealed class RolesEndpointTests(BackendWebApplicationFactory factory)
       RoleConstraints.AdministratorRoleName,
       cancellationToken);
 
-    var response = await admin.Client.PutAsJsonAsync($"/api/roles/{administratorRoleId}", new
+    var response = await admin.Client.PutAsJsonAsync($"/api/v1/roles/{administratorRoleId}", new
     {
       Id = administratorRoleId,
       Name = "Renamed Administrator",
@@ -242,7 +242,7 @@ public sealed class RolesEndpointTests(BackendWebApplicationFactory factory)
     var admin = await TestAuthHelper.CreateAdministratorUserAsync(factory, cancellationToken);
     var roleId = await RolesTestHelper.CreateCustomRoleAsync(admin.Client, cancellationToken);
 
-    var response = await admin.Client.DeleteAsync($"/api/roles/{roleId}", cancellationToken);
+    var response = await admin.Client.DeleteAsync($"/api/v1/roles/{roleId}", cancellationToken);
 
     Assert.Equal(HttpStatusCode.OK, response.StatusCode);
   }
@@ -263,7 +263,7 @@ public sealed class RolesEndpointTests(BackendWebApplicationFactory factory)
       [userRoleId, roleId],
       cancellationToken);
 
-    var response = await admin.Client.DeleteAsync($"/api/roles/{roleId}", cancellationToken);
+    var response = await admin.Client.DeleteAsync($"/api/v1/roles/{roleId}", cancellationToken);
 
     Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
 
@@ -281,7 +281,7 @@ public sealed class RolesEndpointTests(BackendWebApplicationFactory factory)
       RoleConstraints.UserRoleName,
       cancellationToken);
 
-    var response = await admin.Client.DeleteAsync($"/api/roles/{userRoleId}", cancellationToken);
+    var response = await admin.Client.DeleteAsync($"/api/v1/roles/{userRoleId}", cancellationToken);
 
     Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
   }
@@ -302,7 +302,7 @@ public sealed class RolesEndpointTests(BackendWebApplicationFactory factory)
       new[] { userRoleId, roleId },
       cancellationToken);
 
-    var response = await admin.Client.GetAsync($"/api/roles/{roleId}/users", cancellationToken);
+    var response = await admin.Client.GetAsync($"/api/v1/roles/{roleId}/users", cancellationToken);
 
     Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
@@ -335,7 +335,7 @@ public sealed class RolesEndpointTests(BackendWebApplicationFactory factory)
       cancellationToken);
 
     var response = await admin.Client.DeleteAsync(
-      $"/api/roles/{customRoleId}/users/{userId}",
+      $"/api/v1/roles/{customRoleId}/users/{userId}",
       cancellationToken);
 
     Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -350,7 +350,7 @@ public sealed class RolesEndpointTests(BackendWebApplicationFactory factory)
     var (userId, _) = await RolesTestHelper.CreateManagedUserAsync(admin.Client, factory, cancellationToken);
 
     var response = await admin.Client.DeleteAsync(
-      $"/api/roles/{userRoleId}/users/{userId}",
+      $"/api/v1/roles/{userRoleId}/users/{userId}",
       cancellationToken);
 
     Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);

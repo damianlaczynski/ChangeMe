@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.Domain.Authorization;
+using ChangeMe.Backend.Domain.Authorization;
 
 namespace ChangeMe.Backend.UnitTests.Domain.Authorization;
 

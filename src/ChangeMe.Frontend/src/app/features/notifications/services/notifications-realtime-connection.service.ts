@@ -103,6 +103,6 @@ export class NotificationsRealtimeConnectionService {
   }
 
   private getHubUrl(): string {
-    return environment.apiUrl.replace(/\/api\/?$/, '/hubs/notifications');
+    return environment.apiUrl.replace(/\/api(?:\/v\d+)?\/?$/, '/hubs/notifications');
   }
 }

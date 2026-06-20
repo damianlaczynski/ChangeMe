@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using ChangeMe.Backend.Domain.Aggregates.Issue.Enums;
 using ChangeMe.Backend.Infrastructure.Persistence;
 using ChangeMe.Backend.IntegrationTests.Fixtures;
@@ -24,7 +24,7 @@ public sealed class DeleteIssueEndpointTests(BackendWebApplicationFactory factor
       null,
       cancellationToken);
 
-    var response = await client.DeleteAsync($"/api/issues/{issueId}", cancellationToken);
+    var response = await client.DeleteAsync($"/api/v1/issues/{issueId}", cancellationToken);
 
     Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 

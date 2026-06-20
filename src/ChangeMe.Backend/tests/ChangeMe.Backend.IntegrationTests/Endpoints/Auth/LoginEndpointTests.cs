@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using System.Net.Http.Json;
 using ChangeMe.Backend.IntegrationTests.Fixtures;
 using ChangeMe.Backend.IntegrationTests.Support;
@@ -19,7 +19,7 @@ public sealed class LoginEndpointTests(BackendWebApplicationFactory factory)
     var admin = await TestAuthHelper.CreateAdministratorUserAsync(factory, cancellationToken);
     var userRoleId = await RolesTestHelper.GetRoleIdByNameAsync(factory, "User", cancellationToken);
 
-    await admin.Client.PostAsJsonAsync("/api/users", new
+    await admin.Client.PostAsJsonAsync("/api/v1/users", new
     {
       FirstName = "Login",
       LastName = "User",
@@ -33,7 +33,7 @@ public sealed class LoginEndpointTests(BackendWebApplicationFactory factory)
       BaseAddress = new Uri("https://localhost")
     });
 
-    var response = await client.PostAsJsonAsync("/api/auth/login", new
+    var response = await client.PostAsJsonAsync("/api/v1/auth/login", new
     {
       Email = email,
       Password = password
@@ -56,7 +56,7 @@ public sealed class LoginEndpointTests(BackendWebApplicationFactory factory)
     var admin = await TestAuthHelper.CreateAdministratorUserAsync(factory, cancellationToken);
     var userRoleId = await RolesTestHelper.GetRoleIdByNameAsync(factory, "User", cancellationToken);
 
-    await admin.Client.PostAsJsonAsync("/api/users", new
+    await admin.Client.PostAsJsonAsync("/api/v1/users", new
     {
       FirstName = "Login",
       LastName = "Invalid",
@@ -70,7 +70,7 @@ public sealed class LoginEndpointTests(BackendWebApplicationFactory factory)
       BaseAddress = new Uri("https://localhost")
     });
 
-    var response = await client.PostAsJsonAsync("/api/auth/login", new
+    var response = await client.PostAsJsonAsync("/api/v1/auth/login", new
     {
       Email = email,
       Password = "WrongPass123!"
@@ -89,7 +89,7 @@ public sealed class LoginEndpointTests(BackendWebApplicationFactory factory)
       BaseAddress = new Uri("https://localhost")
     });
 
-    var response = await client.PostAsJsonAsync("/api/auth/login", new
+    var response = await client.PostAsJsonAsync("/api/v1/auth/login", new
     {
       Email = "user@example.com",
       Password = "short"
