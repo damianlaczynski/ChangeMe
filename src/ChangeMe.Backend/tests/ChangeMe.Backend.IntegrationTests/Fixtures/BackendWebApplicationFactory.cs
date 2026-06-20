@@ -21,7 +21,7 @@ public class BackendWebApplicationFactory : WebApplicationFactory<Program>, IAsy
     "changeme-integration-tests",
     Guid.NewGuid().ToString("N"));
   private readonly Dictionary<string, string?> environmentOverrides = new();
-  private readonly PostgreSqlContainer postgresContainer = new PostgreSqlBuilder("postgres:15.1")
+  private readonly PostgreSqlContainer postgresContainer = new PostgreSqlBuilder("postgres:18")
     .Build();
 
   public async ValueTask InitializeAsync()

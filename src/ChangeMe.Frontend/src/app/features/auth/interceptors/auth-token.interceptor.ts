@@ -1,4 +1,4 @@
-import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
+import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
@@ -7,7 +7,9 @@ import { AuthService } from '../services/auth.service';
 const AUTH_ENDPOINTS_WITHOUT_REFRESH = ['/auth/login', '/auth/refresh'] as const;
 
 function shouldAttemptTokenRefresh(requestUrl: string): boolean {
-  return !AUTH_ENDPOINTS_WITHOUT_REFRESH.some((segment) => requestUrl.includes(segment));
+  return !AUTH_ENDPOINTS_WITHOUT_REFRESH.some((segment) =>
+    requestUrl.includes(segment)
+  );
 }
 
 export const authTokenInterceptor: HttpInterceptorFn = (req, next) => {

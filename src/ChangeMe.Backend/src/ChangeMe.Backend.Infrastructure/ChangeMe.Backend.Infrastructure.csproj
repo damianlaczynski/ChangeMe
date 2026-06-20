@@ -26,10 +26,6 @@
     </PackageReference>
     <PackageReference Include="MailKit" />
     <PackageReference Include="Mime-Detective" />
-    <PackageReference Include="Otp.NET" />
-    <PackageReference Include="IdentityModel" />
-    <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" />
-    <PackageReference Include="Fido2" />
     <PackageReference Include="AspNetCore.HealthChecks.Npgsql" />
     <PackageReference Include="Hangfire.PostgreSql" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />

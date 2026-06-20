@@ -40,7 +40,8 @@ Migration **`.cs` files are not shipped with this starter.** Add them when you a
 
 ## PostgreSQL
 
-- **Docker Compose** runs `postgres` (image `postgres:16`) and wires the API to that host.
+- **Docker Compose** runs `postgres` (image `postgres:18`) and wires the API to that host.
+- PostgreSQL **18+** official images store data under a versioned path; mount the named volume at **`/var/lib/postgresql`** (not `/var/lib/postgresql/data`). After upgrading from PostgreSQL 16/17 Compose volumes, run `npm run docker:down:volumes` once and recreate the stack, or migrate data with `pg_dump` / `pg_upgrade`.
 - Default connection string for local dev: `src/ChangeMe.Backend/src/ChangeMe.Backend.Web/appsettings.Development.json`.
 
 - **Integration tests** use disposable databases via Testcontainers (`BackendWebApplicationFactory`). The factory calls `MigrateAsync()` — migration `.cs` files must exist before the first local run (see [EF Core migrations](#ef-core-migrations) above). A running Docker engine is required.
