@@ -1,7 +1,4 @@
 using Ardalis.Result;
-using ChangeMe.Backend.Domain.Aggregates.Users.Enums;
-using ChangeMe.Backend.Domain.Aggregates.Users.Interfaces;
-using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.Infrastructure.Persistence;
 using ChangeMe.Backend.UseCases.Users;
 using Mediator;
@@ -71,48 +68,11 @@ internal sealed class GetUserByIdDispatchingTestMediator(ApplicationDbContext co
   {
     if (request is GetUserByIdQuery getUserQuery)
     {
-      var handler = new GetUserByIdHandler(
-        context,
-        new PasswordExpirationEvaluator(TestAuthOptions.Create()),
-        new StubUserAuthTokenService(),
-        TestAuthOptions.Create(),
-        new PasskeyPolicyEvaluator(TestAuthOptions.Create()),
-        TimeProvider.System);
+      var handler = new GetUserByIdHandler(context);
       var result = await handler.Handle(getUserQuery, cancellationToken);
       return (TResponse)(object)result!;
     }
 
     throw new NotSupportedException($"Unsupported request: {request.GetType().Name}");
   }
-}
-
-internal sealed class StubUserAuthTokenService : IUserAuthTokenService
-{
-  public Task<DateTime?> GetActiveUnusedTokenExpiresAtUtcAsync(
-    Guid userId,
-    UserAuthTokenType type,
-    CancellationToken cancellationToken = default) =>
-    Task.FromResult<DateTime?>(null);
-
-  public Task<Result<string>> IssueTokenAsync(
-    Guid userId,
-    UserAuthTokenType type,
-    DateTime? issuedAtUtc = null,
-    CancellationToken cancellationToken = default) =>
-    throw new NotSupportedException();
-
-  public Task<Result<Guid>> ValidateTokenAsync(
-    string plainToken,
-    UserAuthTokenType type,
-    CancellationToken cancellationToken = default) =>
-    throw new NotSupportedException();
-
-  public Task MarkTokenUsedAsync(string plainToken, CancellationToken cancellationToken = default) =>
-    throw new NotSupportedException();
-
-  public Task InvalidateUnusedTokensAsync(
-    Guid userId,
-    UserAuthTokenType type,
-    CancellationToken cancellationToken = default) =>
-    throw new NotSupportedException();
 }

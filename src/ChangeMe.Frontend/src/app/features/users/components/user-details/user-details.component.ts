@@ -16,7 +16,7 @@ import {
   formatUserReference
 } from '@core/user/utils/user-display.utils';
 import { AuthService } from '@features/auth/services/auth.service';
-import { AuthMessages, formatIpAddress } from '@features/auth/utils/auth.utils';
+import { formatIpAddress } from '@features/auth/utils/auth.utils';
 import { EffectivePermissionsComponent } from '@features/users/components/effective-permissions/effective-permissions.component';
 import { AdminUserSessionDto, UserDetailsDto } from '@features/users/models/user.model';
 import { UsersService } from '@features/users/services/users.service';
@@ -74,31 +74,6 @@ export class UserDetailsComponent {
   });
 
   readonly formatUserName = formatUserName;
-
-  readonly canManageInvitationActions = computed(() => {
-    const profile = this.user();
-    return (
-      !!profile &&
-      this.canManageUsers() &&
-      profile.status === 'Invited' &&
-      !!profile.pendingInvitation
-    );
-  });
-
-  readonly canCancelPendingEmailChange = computed(() => {
-    const profile = this.user();
-    return !!profile && this.canManageUsers() && !!profile.pendingEmailChange;
-  });
-
-  readonly canSendInvitation = computed(() => {
-    const profile = this.user();
-    return (
-      !!profile &&
-      this.canManageUsers() &&
-      profile.status === 'InvitationCanceled' &&
-      !profile.deactivated
-    );
-  });
   readonly sessions = signal<AdminUserSessionDto[]>([]);
   readonly sessionsPagination = signal<PaginationResult<AdminUserSessionDto> | null>(
     null
@@ -114,14 +89,8 @@ export class UserDetailsComponent {
   readonly isLoadingSessions = signal(false);
   readonly hasLoadedSessions = signal(false);
   readonly pendingRevokeSessionIds = signal<string[]>([]);
-  readonly passwordExpirationEnabled = signal(false);
-  readonly emailVerificationEnabled = signal(false);
-  readonly twoFactorAuthenticationEnabled = signal(false);
-  readonly passkeysAuthenticationEnabled = signal(false);
-  readonly externalProvidersEnabled = signal(false);
 
   readonly UserMessages = UserMessages;
-  readonly AuthMessages = AuthMessages;
   readonly formatIpAddress = formatIpAddress;
   readonly getUserStatusLabel = getUserStatusLabel;
   readonly getUserStatusSeverity = getUserStatusSeverity;
@@ -134,47 +103,7 @@ export class UserDetailsComponent {
   readonly canManageSessions = () =>
     this.authService.hasPermission(PermissionCodes.sessionsManageAny);
 
-  readonly canResetTwoFactor = computed(() => {
-    const profile = this.user();
-    return (
-      !!profile &&
-      this.twoFactorAuthenticationEnabled() &&
-      profile.twoFactorEnabled &&
-      this.canManageUsers() &&
-      !profile.deactivated
-    );
-  });
-
-  readonly canResetPasskeys = computed(() => {
-    const profile = this.user();
-    return (
-      !!profile &&
-      this.passkeysAuthenticationEnabled() &&
-      profile.passkeys &&
-      profile.passkeys.length > 0 &&
-      this.canManageUsers() &&
-      !profile.deactivated
-    );
-  });
-
   constructor() {
-    this.authService
-      .getAuthSettings()
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (settings) => {
-          this.passwordExpirationEnabled.set(settings.passwordExpirationEnabled);
-          this.emailVerificationEnabled.set(settings.emailVerificationEnabled);
-          this.twoFactorAuthenticationEnabled.set(
-            settings.twoFactorAuthenticationEnabled
-          );
-          this.passkeysAuthenticationEnabled.set(
-            settings.passkeys?.passkeysAuthenticationEnabled === true
-          );
-          this.externalProvidersEnabled.set(settings.externalProvidersEnabled);
-        }
-      });
-
     effect(() => {
       this.id();
       this.loadUser();
@@ -210,171 +139,6 @@ export class UserDetailsComponent {
       acceptButtonProps: { label: 'Activate', severity: 'success' },
       rejectButtonProps: { label: 'Cancel', severity: 'secondary', outlined: true },
       accept: () => this.activateUser()
-    });
-  }
-
-  confirmUnlinkExternal(providerKey: string, displayName: string): void {
-    const profile = this.user();
-    if (!profile) {
-      return;
-    }
-
-    if (!profile.hasPasswordSet && profile.externalLogins.length <= 1) {
-      this.toastService.error(AuthMessages.cannotRemoveOnlySignInMethod);
-      return;
-    }
-
-    this.confirmationService.confirm({
-      header: AuthMessages.unlinkExternalProviderTitle,
-      message: AuthMessages.unlinkExternalProviderMessage(displayName),
-      icon: 'pi pi-exclamation-triangle',
-      acceptButtonProps: { label: 'Remove', severity: 'danger' },
-      rejectButtonProps: { label: 'Cancel', severity: 'secondary', outlined: true },
-      accept: () => this.unlinkExternal(providerKey)
-    });
-  }
-
-  confirmResetTwoFactor(): void {
-    const profile = this.user();
-    if (!profile) {
-      return;
-    }
-
-    this.confirmationService.confirm({
-      header: UserMessages.resetTwoFactorTitle,
-      message: UserMessages.resetTwoFactorMessage(formatUserReference(profile)),
-      icon: 'pi pi-exclamation-triangle',
-      acceptButtonProps: { label: 'Reset', severity: 'danger' },
-      rejectButtonProps: { label: 'Cancel', severity: 'secondary', outlined: true },
-      accept: () => this.resetTwoFactor()
-    });
-  }
-
-  confirmResetPasskeys(): void {
-    const profile = this.user();
-    if (!profile) {
-      return;
-    }
-
-    this.confirmationService.confirm({
-      header: UserMessages.resetPasskeysTitle,
-      message: UserMessages.resetPasskeysMessage(formatUserReference(profile)),
-      icon: 'pi pi-exclamation-triangle',
-      acceptButtonProps: { label: 'Reset', severity: 'danger' },
-      rejectButtonProps: { label: 'Cancel', severity: 'secondary', outlined: true },
-      accept: () => this.resetPasskeys()
-    });
-  }
-
-  confirmRemovePasskey(passkeyId: string, passkeyName: string): void {
-    this.confirmationService.confirm({
-      header: UserMessages.removePasskeyTitle,
-      message: UserMessages.removePasskeyMessage(passkeyName),
-      icon: 'pi pi-exclamation-triangle',
-      acceptButtonProps: { label: 'Remove', severity: 'danger' },
-      rejectButtonProps: { label: 'Cancel', severity: 'secondary', outlined: true },
-      accept: () => this.removePasskey(passkeyId)
-    });
-  }
-
-  confirmSendPasswordReset(): void {
-    const profile = this.user();
-    if (!profile) {
-      return;
-    }
-
-    this.confirmationService.confirm({
-      header: UserMessages.sendPasswordResetTitle,
-      message: UserMessages.sendPasswordResetMessage(profile.email),
-      icon: 'pi pi-exclamation-triangle',
-      acceptButtonProps: { label: 'Send', severity: 'warn' },
-      rejectButtonProps: { label: 'Cancel', severity: 'secondary', outlined: true },
-      accept: () => this.sendPasswordReset()
-    });
-  }
-
-  confirmConfirmEmail(): void {
-    const profile = this.user();
-    if (!profile) {
-      return;
-    }
-
-    this.confirmationService.confirm({
-      header: UserMessages.confirmEmailTitle,
-      message: UserMessages.confirmEmailMessage(formatUserReference(profile)),
-      icon: 'pi pi-exclamation-triangle',
-      acceptButtonProps: { label: 'Confirm', severity: 'warn' },
-      rejectButtonProps: { label: 'Cancel', severity: 'secondary', outlined: true },
-      accept: () => this.confirmUserEmail()
-    });
-  }
-
-  confirmResendInvitation(): void {
-    const profile = this.user();
-    if (!profile) {
-      return;
-    }
-
-    this.confirmationService.confirm({
-      header: UserMessages.resendInvitationTitle,
-      message: UserMessages.resendInvitationMessage(profile.email),
-      icon: 'pi pi-exclamation-triangle',
-      acceptButtonProps: { label: 'Resend', severity: 'warn' },
-      rejectButtonProps: { label: 'Cancel', severity: 'secondary', outlined: true },
-      accept: () => this.resendInvitation()
-    });
-  }
-
-  confirmCancelPendingEmailChange(): void {
-    const profile = this.user();
-    const pending = profile?.pendingEmailChange;
-    if (!profile || !pending) {
-      return;
-    }
-
-    this.confirmationService.confirm({
-      header: UserMessages.cancelPendingEmailChangeTitle,
-      message: UserMessages.cancelPendingEmailChangeMessage(pending.newEmail),
-      icon: 'pi pi-exclamation-triangle',
-      acceptButtonProps: { label: 'Cancel pending change', severity: 'danger' },
-      rejectButtonProps: {
-        label: 'Keep pending change',
-        severity: 'secondary',
-        outlined: true
-      },
-      accept: () => this.cancelPendingEmailChange()
-    });
-  }
-
-  confirmCancelInvitation(): void {
-    const profile = this.user();
-    if (!profile) {
-      return;
-    }
-
-    this.confirmationService.confirm({
-      header: UserMessages.cancelInvitationTitle,
-      message: UserMessages.cancelInvitationMessage(profile.email),
-      icon: 'pi pi-exclamation-triangle',
-      acceptButtonProps: { label: 'Cancel invitation', severity: 'danger' },
-      rejectButtonProps: { label: 'Keep', severity: 'secondary', outlined: true },
-      accept: () => this.cancelInvitation()
-    });
-  }
-
-  confirmSendInvitation(): void {
-    const profile = this.user();
-    if (!profile) {
-      return;
-    }
-
-    this.confirmationService.confirm({
-      header: UserMessages.sendInvitationTitle,
-      message: UserMessages.sendInvitationMessage(profile.email),
-      icon: 'pi pi-exclamation-triangle',
-      acceptButtonProps: { label: 'Send', severity: 'warn' },
-      rejectButtonProps: { label: 'Cancel', severity: 'secondary', outlined: true },
-      accept: () => this.sendInvitation()
     });
   }
 
@@ -460,133 +224,6 @@ export class UserDetailsComponent {
           this.errorMessage.set(error.message);
           this.isLoadingSessions.set(false);
         }
-      });
-  }
-
-  private unlinkExternal(providerKey: string): void {
-    this.usersService
-      .unlinkExternalLogin(this.id(), providerKey)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (user) => {
-          this.user.set(user);
-          this.toastService.success(AuthMessages.externalAccountUnlinked);
-        },
-        error: (error: Error) => this.errorMessage.set(error.message)
-      });
-  }
-
-  private resetTwoFactor(): void {
-    this.usersService
-      .resetTwoFactor(this.id())
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (user) => {
-          this.user.set(user);
-          this.toastService.success(UserMessages.twoFactorReset);
-        },
-        error: (error: Error) => this.errorMessage.set(error.message)
-      });
-  }
-
-  private resetPasskeys(): void {
-    this.usersService
-      .resetPasskeys(this.id())
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (user) => {
-          this.user.set(user);
-          this.toastService.success(UserMessages.passkeysReset);
-        },
-        error: (error: Error) => this.errorMessage.set(error.message)
-      });
-  }
-
-  private removePasskey(passkeyId: string): void {
-    this.usersService
-      .removePasskey(this.id(), passkeyId)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (user) => {
-          this.user.set(user);
-          this.toastService.success(UserMessages.passkeyRemoved);
-        },
-        error: (error: Error) => this.errorMessage.set(error.message)
-      });
-  }
-
-  private sendPasswordReset(): void {
-    this.usersService
-      .sendPasswordReset(this.id())
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: () => this.toastService.success(UserMessages.passwordResetSent),
-        error: (error: Error) => this.errorMessage.set(error.message)
-      });
-  }
-
-  private confirmUserEmail(): void {
-    this.usersService
-      .confirmUserEmail(this.id())
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (user) => {
-          this.user.set(user);
-          this.toastService.success(UserMessages.emailMarkedAsVerified);
-        },
-        error: (error: Error) => this.errorMessage.set(error.message)
-      });
-  }
-
-  private resendInvitation(): void {
-    this.usersService
-      .resendInvitation(this.id())
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (user) => {
-          this.user.set(user);
-          this.toastService.success(UserMessages.invitationResent);
-        },
-        error: (error: Error) => this.errorMessage.set(error.message)
-      });
-  }
-
-  private cancelPendingEmailChange(): void {
-    this.usersService
-      .cancelPendingEmailChange(this.id())
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (user) => {
-          this.user.set(user);
-          this.toastService.success(UserMessages.pendingEmailChangeCanceled);
-        },
-        error: (error: Error) => this.errorMessage.set(error.message)
-      });
-  }
-
-  private cancelInvitation(): void {
-    this.usersService
-      .cancelInvitation(this.id())
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (user) => {
-          this.user.set(user);
-          this.toastService.success(UserMessages.invitationCanceled);
-        },
-        error: (error: Error) => this.errorMessage.set(error.message)
-      });
-  }
-
-  private sendInvitation(): void {
-    this.usersService
-      .sendInvitation(this.id())
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (user) => {
-          this.user.set(user);
-          this.toastService.success(UserMessages.invitationSent);
-        },
-        error: (error: Error) => this.errorMessage.set(error.message)
       });
   }
 

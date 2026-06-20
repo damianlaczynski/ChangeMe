@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
 using ChangeMe.Backend.IntegrationTests.Fixtures;
+using ChangeMe.Backend.IntegrationTests.Support;
 using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace ChangeMe.Backend.IntegrationTests;
@@ -13,20 +14,24 @@ public sealed class LoginEndpointTests(BackendWebApplicationFactory factory)
   {
     var cancellationToken = TestContext.Current.CancellationToken;
     var email = $"login-{Guid.NewGuid():N}@example.com";
-    const string password = "StrongPass123!";
+    const string password = TestAuthHelper.DefaultUserPassword;
+
+    var admin = await TestAuthHelper.CreateAdministratorUserAsync(factory, cancellationToken);
+    var userRoleId = await RolesTestHelper.GetRoleIdByNameAsync(factory, "User", cancellationToken);
+
+    await admin.Client.PostAsJsonAsync("/api/users", new
+    {
+      FirstName = "Login",
+      LastName = "User",
+      Email = email,
+      Password = password,
+      RoleIds = new[] { userRoleId }
+    }, cancellationToken);
 
     using var client = factory.CreateClient(new WebApplicationFactoryClientOptions
     {
       BaseAddress = new Uri("https://localhost")
     });
-
-    await client.PostAsJsonAsync("/api/auth/register", new
-    {
-      FirstName = "Login",
-      LastName = "User",
-      Email = email,
-      Password = password
-    }, cancellationToken);
 
     var response = await client.PostAsJsonAsync("/api/auth/login", new
     {
@@ -46,19 +51,24 @@ public sealed class LoginEndpointTests(BackendWebApplicationFactory factory)
   {
     var cancellationToken = TestContext.Current.CancellationToken;
     var email = $"login-invalid-{Guid.NewGuid():N}@example.com";
+    const string password = TestAuthHelper.DefaultUserPassword;
+
+    var admin = await TestAuthHelper.CreateAdministratorUserAsync(factory, cancellationToken);
+    var userRoleId = await RolesTestHelper.GetRoleIdByNameAsync(factory, "User", cancellationToken);
+
+    await admin.Client.PostAsJsonAsync("/api/users", new
+    {
+      FirstName = "Login",
+      LastName = "Invalid",
+      Email = email,
+      Password = password,
+      RoleIds = new[] { userRoleId }
+    }, cancellationToken);
 
     using var client = factory.CreateClient(new WebApplicationFactoryClientOptions
     {
       BaseAddress = new Uri("https://localhost")
     });
-
-    await client.PostAsJsonAsync("/api/auth/register", new
-    {
-      FirstName = "Login",
-      LastName = "Invalid",
-      Email = email,
-      Password = "StrongPass123!"
-    }, cancellationToken);
 
     var response = await client.PostAsJsonAsync("/api/auth/login", new
     {

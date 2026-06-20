@@ -7,10 +7,6 @@ status: active
 depends_on:
   [
     FR-AUTH-001,
-    FR-AUTH-009,
-    FR-AUTH-011,
-    FR-AUTH-012,
-    FR-AUTH-013,
     FR-ROL-001,
     FR-ROL-003,
     FR-ROL-004,
@@ -55,16 +51,11 @@ On first startup, the system ensures these roles exist:
 - If the **Administrator** role already exists, the system adds any newly defined catalog permissions that role does not yet have.
 - System roles follow edit, delete, and assignment rules from FR-ROL-003, FR-ROL-004, and FR-ROL-005.
 
-### Registration default role
-
-- Public registration (FR-AUTH-001), when **Public registration enabled** is **true** (FR-AUTH-012), assigns the **User** role automatically.
-- Registration does **not** assign **Administrator**.
-
 ### States and business rules
 
 - Initial administrator **Password** values must not appear in user-visible logs or messages.
-- Production deployments must use a strong, unique password for the initial administrator; password expiration (FR-AUTH-009) and two-factor authentication (FR-AUTH-013) apply under the same rules as for other accounts when enabled.
-- The initial administrator account is created with **Email verified** true so sign-in is possible when email verification is enabled (FR-AUTH-011).
+- Production deployments must use a strong, unique password for the initial administrator.
+- New users created by administrators receive role assignments per FR-ROL-005; they do **not** receive **Administrator** unless explicitly selected.
 
 ### Out of scope
 

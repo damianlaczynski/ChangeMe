@@ -1,8 +1,8 @@
 # ChangeMe
 
-ChangeMe is a template full-stack issue tracking application. It is intended as a practical starter repository for building and extending a modern web app with a typed frontend, a layered .NET backend, authentication, persistence, and automated testing already in place.
+ChangeMe is a template full-stack issue tracking application. It is intended as a practical starter repository for building and extending a modern web app with a typed frontend, a layered .NET backend, JWT session authentication, persistence, and automated testing already in place.
 
-The current feature set centers around user authentication and issue management: users can register, sign in, browse issues, and authenticated users can create, edit, and delete issues.
+The current feature set centers around authenticated issue management with role-based access control: administrators create users and assign roles; signed-in users browse issues and, when permitted, create, edit, and delete them.
 
 ## Purpose
 
@@ -10,7 +10,7 @@ This repository is meant to provide:
 
 - a clean full-stack starting point for product work
 - a clear separation between frontend, API, domain, and infrastructure concerns
-- a place to practice or extend real-world patterns such as auth, CRUD flows, validation, and integration testing
+- a place to practice or extend real-world patterns such as login sessions, permissions, CRUD flows, validation, and integration testing
 - a documented structure that is easy for both developers and AI agents to navigate
 
 ## Tech Stack
@@ -36,9 +36,10 @@ This repository is meant to provide:
 
 ## Main Features
 
-- user registration and login
-- authenticated issue creation, editing, and deletion
-- issue listing and issue details views
+- email/password login, session refresh, and logout
+- admin-managed users, roles, and permission-based access
+- issue listing, details, comments, attachments, and notifications
+- authenticated issue create, edit, and delete (permission-gated)
 - layered backend architecture with separate Web, UseCases, Domain, and Infrastructure projects
 - integration-ready local development stack
 

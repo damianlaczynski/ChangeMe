@@ -1,8 +1,9 @@
 ﻿using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.Infrastructure.Configurations;
 using ChangeMe.Backend.Infrastructure.FileStorage;
-using ChangeMe.Backend.Infrastructure.Persistence;
 using ChangeMe.Backend.Infrastructure.Email;
+using ChangeMe.Backend.Infrastructure.Persistence;
+using ChangeMe.Backend.IntegrationTests.Support;
 using ChangeMe.Backend.IntegrationTests.Support.Fakes;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -79,27 +80,23 @@ public class BackendWebApplicationFactory : WebApplicationFactory<Program>, IAsy
     environmentOverrides[$"{AuthOptions.SectionName}__Jwt__SigningKey"] = "Integration-Tests-Signing-Key-Needs-32-Chars";
     environmentOverrides[$"{AuthOptions.SectionName}__Jwt__ExpirationMinutes"] = "60";
     environmentOverrides[$"{AuthOptions.SectionName}__Jwt__SessionLifetimeDays"] = "14";
+    environmentOverrides[$"{AuthOptions.SectionName}__PasswordPolicy__RequireSpecialCharacter"] = "false";
+    environmentOverrides[$"{InitialAdministratorOptions.SectionName}__Email"] = TestAuthHelper.SeededAdminEmail;
+    environmentOverrides[$"{InitialAdministratorOptions.SectionName}__Password"] = TestAuthHelper.SeededAdminPassword;
+    environmentOverrides[$"{InitialAdministratorOptions.SectionName}__FirstName"] = "Integration";
+    environmentOverrides[$"{InitialAdministratorOptions.SectionName}__LastName"] = "Admin";
     environmentOverrides[$"{EmailOptions.SectionName}__Host"] = "localhost";
     environmentOverrides[$"{EmailOptions.SectionName}__Port"] = "1025";
     environmentOverrides[$"{EmailOptions.SectionName}__EnableSsl"] = "false";
     environmentOverrides[$"{EmailOptions.SectionName}__FromEmail"] = "tests@example.local";
     environmentOverrides[$"{EmailOptions.SectionName}__FromName"] = "Integration Tests";
-    environmentOverrides[$"{AuthOptions.SectionName}__EmailVerification__Enabled"] = "false";
-    environmentOverrides[$"{AuthOptions.SectionName}__PasswordExpiration__Enabled"] = "false";
-    environmentOverrides[$"{AuthOptions.SectionName}__PasswordPolicy__RequireSpecialCharacter"] = "false";
     Directory.CreateDirectory(fileStorageRootPath);
     environmentOverrides[$"{FileStorageOptions.SectionName}__RootPath"] = fileStorageRootPath;
-
-    ConfigureAuthEnvironmentOverrides(environmentOverrides);
 
     foreach (var pair in environmentOverrides)
     {
       Environment.SetEnvironmentVariable(pair.Key, pair.Value);
     }
-  }
-
-  protected virtual void ConfigureAuthEnvironmentOverrides(Dictionary<string, string?> overrides)
-  {
   }
 
   private void ClearEnvironmentOverrides()

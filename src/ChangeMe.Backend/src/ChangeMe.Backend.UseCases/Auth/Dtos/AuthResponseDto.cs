@@ -10,8 +10,4 @@ public sealed record AuthResponseDto(
   DateTime ExpiresAtUtc,
   string RefreshToken,
   DateTime RefreshTokenExpiresAtUtc,
-  IReadOnlyList<string> Permissions,
-  bool PasswordChangeRequired = false,
-  DateTime? PasswordExpiresAtUtc = null,
-  bool TwoFactorSetupRequired = false,
-  bool PasskeySetupRequired = false);
+  IReadOnlyList<string> Permissions);

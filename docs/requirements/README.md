@@ -8,7 +8,6 @@
 | Document | File |
 | -------- | ---- |
 | account-model.md | [account-model.md](_shared/reference/account-model.md) |
-| compliance-gates.md | [compliance-gates.md](_shared/reference/compliance-gates.md) |
 | glossary.md | [glossary.md](_shared/reference/glossary.md) |
 | permissions.md | [permissions.md](_shared/reference/permissions.md) |
 
@@ -48,33 +47,11 @@ See [changes/](changes/) for open requirement deltas.
 
 | ID | Title | File |
 | -- | ----- | ---- |
-| FR-AUTH-001 | Login and Registration with Sessions | [fr-auth-001-login-and-registration-with-sessions.md](functional/identity/fr-auth-001-login-and-registration-with-sessions.md) |
+| FR-AUTH-001 | Login with Sessions | [fr-auth-001-login-with-sessions.md](functional/identity/fr-auth-001-login-with-sessions.md) |
 | FR-AUTH-002 | Staying Signed In | [fr-auth-002-staying-signed-in.md](functional/identity/fr-auth-002-staying-signed-in.md) |
 | FR-AUTH-003 | Logout | [fr-auth-003-logout.md](functional/identity/fr-auth-003-logout.md) |
 | FR-AUTH-004 | My Sessions | [fr-auth-004-my-sessions.md](functional/identity/fr-auth-004-my-sessions.md) |
-| FR-AUTH-005 | Change Password | [fr-auth-005-change-password.md](functional/identity/fr-auth-005-change-password.md) |
-| FR-AUTH-006 | Forgot and Reset Password (Self-Service) | [fr-auth-006-forgot-and-reset-password-self-service.md](functional/identity/fr-auth-006-forgot-and-reset-password-self-service.md) |
-| FR-AUTH-007 | Auth Email Notifications | [fr-auth-007-auth-email-notifications.md](functional/identity/fr-auth-007-auth-email-notifications.md) |
 | FR-AUTH-008 | Password Policy | [fr-auth-008-password-policy.md](functional/identity/fr-auth-008-password-policy.md) |
-| FR-AUTH-009 | Password Expiration | [fr-auth-009-password-expiration.md](functional/identity/fr-auth-009-password-expiration.md) |
-| FR-AUTH-010 | Accept Account Invitation | [fr-auth-010-accept-account-invitation.md](functional/identity/fr-auth-010-accept-account-invitation.md) |
-| FR-AUTH-011 | Email Verification | [fr-auth-011-email-verification.md](functional/identity/fr-auth-011-email-verification.md) |
-| FR-AUTH-012 | Public Registration Policy | [fr-auth-012-public-registration-policy.md](functional/identity/fr-auth-012-public-registration-policy.md) |
-| FR-AUTH-013 | Two-Factor Authentication | [fr-auth-013-two-factor-authentication.md](functional/identity/fr-auth-013-two-factor-authentication.md) |
-| FR-AUTH-014 | External Identity Providers | [fr-auth-014-external-identity-providers.md](functional/identity/fr-auth-014-external-identity-providers.md) |
-| FR-AUTH-015 | Self-Service Email Change | [fr-auth-015-self-service-email-change.md](functional/identity/fr-auth-015-self-service-email-change.md) |
-
-## Invitations (`functional/invitations/`)
-
-| ID | Title | File |
-| -- | ----- | ---- |
-| FR-INV-001 | Invite User (Administrator) | [fr-inv-001-invite-user-administrator.md](functional/invitations/fr-inv-001-invite-user-administrator.md) |
-| FR-INV-002 | Pending Invitation Banner (User Details) | [fr-inv-002-pending-invitation-banner-user-details.md](functional/invitations/fr-inv-002-pending-invitation-banner-user-details.md) |
-| FR-INV-003 | Resend Invitation | [fr-inv-003-resend-invitation.md](functional/invitations/fr-inv-003-resend-invitation.md) |
-| FR-INV-004 | Cancel Invitation | [fr-inv-004-cancel-invitation.md](functional/invitations/fr-inv-004-cancel-invitation.md) |
-| FR-INV-005 | User Status | [fr-inv-005-user-status.md](functional/invitations/fr-inv-005-user-status.md) |
-| FR-INV-006 | Invitation History Retention | [fr-inv-006-invitation-history-retention.md](functional/invitations/fr-inv-006-invitation-history-retention.md) |
-| FR-INV-007 | Accept Invitation — Guest Screen Presentation | [fr-inv-007-accept-invitation-guest-screen-presentation.md](functional/invitations/fr-inv-007-accept-invitation-guest-screen-presentation.md) |
 
 ## Issues (`functional/issues/`)
 
@@ -87,29 +64,15 @@ See [changes/](changes/) for open requirement deltas.
 | FR-ISS-005 | Notification Bell and Dropdown | [fr-iss-005-notification-bell-and-dropdown.md](functional/issues/fr-iss-005-notification-bell-and-dropdown.md) |
 | FR-ISS-006 | Issue Attachments | [fr-iss-006-issue-attachments.md](functional/issues/fr-iss-006-issue-attachments.md) |
 
-## Passkeys (`functional/passkeys/`)
-
-| ID | Title | File |
-| -- | ----- | ---- |
-| FR-PKY-001 | Passkeys Policy and Deployment | [fr-pky-001-passkeys-policy-and-deployment.md](functional/passkeys/fr-pky-001-passkeys-policy-and-deployment.md) |
-| FR-PKY-002 | Sign-In with Passkey | [fr-pky-002-sign-in-with-passkey.md](functional/passkeys/fr-pky-002-sign-in-with-passkey.md) |
-| FR-PKY-003 | Passkey Enrollment and My Account Management | [fr-pky-003-passkey-enrollment-and-my-account-management.md](functional/passkeys/fr-pky-003-passkey-enrollment-and-my-account-management.md) |
-| FR-PKY-004 | Step-Up Authentication with Passkeys | [fr-pky-004-step-up-authentication-with-passkeys.md](functional/passkeys/fr-pky-004-step-up-authentication-with-passkeys.md) |
-| FR-PKY-005 | Administrator Passkey Management | [fr-pky-005-administrator-passkey-management.md](functional/passkeys/fr-pky-005-administrator-passkey-management.md) |
-| FR-PKY-006 | Combined Compliance Gates and Cross-Auth Interaction | [fr-pky-006-combined-compliance-gates-and-cross-auth-interaction.md](functional/passkeys/fr-pky-006-combined-compliance-gates-and-cross-auth-interaction.md) |
-| FR-PKY-007 | Passkey Notification Emails | [fr-pky-007-passkey-notification-emails.md](functional/passkeys/fr-pky-007-passkey-notification-emails.md) |
-
 ## Users (`functional/users/`)
 
 | ID | Title | File |
 | -- | ----- | ---- |
 | FR-USR-001 | My Account Profile | [fr-usr-001-my-account-profile.md](functional/users/fr-usr-001-my-account-profile.md) |
 | FR-USR-002 | User List | [fr-usr-002-user-list.md](functional/users/fr-usr-002-user-list.md) |
-| FR-USR-003 | Edit User (Admin) | [fr-usr-003-edit-user-admin.md](functional/users/fr-usr-003-edit-user-admin.md) |
+| FR-USR-003 | Create and Edit User (Admin) | [fr-usr-003-edit-user-admin.md](functional/users/fr-usr-003-edit-user-admin.md) |
 | FR-USR-004 | User Details and Session Administration | [fr-usr-004-user-details-and-session-administration.md](functional/users/fr-usr-004-user-details-and-session-administration.md) |
 | FR-USR-005 | Deactivate and Activate Accounts | [fr-usr-005-deactivate-and-activate-accounts.md](functional/users/fr-usr-005-deactivate-and-activate-accounts.md) |
-| FR-USR-006 | Admin Send Password Reset | [fr-usr-006-admin-send-password-reset.md](functional/users/fr-usr-006-admin-send-password-reset.md) |
-| FR-USR-007 | Admin Confirm Email | [fr-usr-007-admin-confirm-email.md](functional/users/fr-usr-007-admin-confirm-email.md) |
 
 ---
 

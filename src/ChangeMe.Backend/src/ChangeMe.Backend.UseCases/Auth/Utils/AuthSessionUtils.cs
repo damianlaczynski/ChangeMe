@@ -10,24 +10,8 @@ public static class AuthSessionUtils
 {
   public const string InvalidCredentialsMessage = "Invalid email or password.";
   public const string DeactivatedAccountMessage = "This account has been deactivated. Contact an administrator.";
-  public const string InvitePendingAccountMessage =
-    "Complete your account setup using the invitation link sent to your email.";
   public const string DuplicateEmailMessage = "An account with this email already exists.";
-  public const string InvalidInvitationTokenMessage =
-    "This invitation link is invalid or has expired. Contact your administrator.";
-  public const string InvitationAlreadyAcceptedMessage = "This account has already been activated.";
-  public const string ForgotPasswordSuccessMessage =
-    "If an account exists for this email, a reset link has been sent.";
-  public const string InvalidPasswordResetTokenMessage =
-    "This reset link is invalid or has expired. Request a new link from the sign-in page.";
   public const string PermissionDeniedMessage = "You do not have permission to perform this action.";
-  public const string EmailNotVerifiedMessage = "Verify your email before signing in.";
-  public const string RegistrationDisabledMessage =
-    "Registration is disabled. Contact an administrator.";
-  public const string EmailVerificationResendAckMessage =
-    "If an unverified account exists for this email, a verification link has been sent.";
-  public const string InvalidEmailVerificationTokenMessage =
-    "This verification link is invalid or has expired.";
 
   public static async Task<Result<AuthResponseDto>> CreateAuthResponseAsync(
     ApplicationDbContext context,
@@ -35,11 +19,7 @@ public static class AuthSessionUtils
     User user,
     UserSession session,
     string refreshToken,
-    bool passwordChangeRequired,
-    DateTime? passwordExpiresAtUtc,
-    bool twoFactorSetupRequired,
-    CancellationToken cancellationToken,
-    bool passkeySetupRequired = false)
+    CancellationToken cancellationToken)
   {
     var permissions = await PermissionResolver.GetEffectivePermissionsAsync(context, user.Id, cancellationToken);
     var accessToken = jwtTokenGenerator.GenerateToken(user, session.Id, permissions);
@@ -54,11 +34,7 @@ public static class AuthSessionUtils
       accessToken.ExpiresAtUtc,
       refreshToken,
       session.RefreshTokenExpiresAtUtc,
-      permissions,
-      passwordChangeRequired,
-      passwordExpiresAtUtc,
-      twoFactorSetupRequired,
-      passkeySetupRequired));
+      permissions));
   }
 
   public static string? GetClientIpAddress(HttpContext? httpContext)

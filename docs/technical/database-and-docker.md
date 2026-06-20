@@ -74,15 +74,12 @@ The template ships **without dashboard authentication**. Restrict or disable the
 
 ### Recurring jobs
 
-| Hangfire job id                   | Configuration                                             | Default schedule     | Purpose                                      |
-| --------------------------------- | --------------------------------------------------------- | -------------------- | -------------------------------------------- |
-| `attachment-storage-cleanup`      | `FileStorageOptions:CleanupCronExpression`                | `0 * * * *` (hourly) | Delete orphaned attachment files on disk     |
-| `notifications-retention-cleanup` | `NotificationRetentionOptions:CleanupCronExpression`      | `0 3 * * *`          | Purge old in-app notifications               |
-| `invitations-retention-cleanup`   | `AuthOptions:Invitations:Retention:CleanupCronExpression` | `0 4 * * *`          | Delete old revoked/cancelled invitation rows |
+| Hangfire job id                   | Configuration                                        | Default schedule     | Purpose                                  |
+| --------------------------------- | ---------------------------------------------------- | -------------------- | ---------------------------------------- |
+| `attachment-storage-cleanup`      | `FileStorageOptions:CleanupCronExpression`           | `0 * * * *` (hourly) | Delete orphaned attachment files on disk |
+| `notifications-retention-cleanup` | `NotificationRetentionOptions:CleanupCronExpression` | `0 3 * * *`          | Purge old in-app notifications           |
 
 Notification retention days: `NotificationRetentionOptions` (`UnreadRetentionDays`, `ReadRetentionDays`, `AbsoluteRetentionDays`) in `appsettings.json`.
-
-Invitation retention: `AuthOptions:Invitations:Retention` — see [auth-operations-guide.md](auth-operations-guide.md) §4.8.
 
 Cron expressions use standard five-field syntax (minute hour day month weekday). Changing a schedule requires an API restart so `RecurringJob.AddOrUpdate` runs again.
 

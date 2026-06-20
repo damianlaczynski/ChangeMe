@@ -1,8 +1,8 @@
 # ChangeMe
 
-ChangeMe is a full-stack issue tracking application starter: Angular frontend, layered ASP.NET backend, authentication, persistence, Hangfire, local MailHog, and automated tests.
+ChangeMe is a full-stack issue tracking application starter: Angular frontend, layered ASP.NET backend, JWT session authentication, persistence, Hangfire, local MailHog, and automated tests.
 
-Users can register, sign in, browse issues, and authenticated users can create, edit, and delete issues.
+Administrators create users and assign roles; signed-in users browse issues and, when permitted, create, edit, and delete them.
 
 ## Purpose
 
@@ -10,7 +10,7 @@ This codebase gives you:
 
 - a clean full-stack starting point for product work
 - separation between frontend, API, domain, and infrastructure
-- patterns for auth, CRUD flows, validation, and integration testing
+- patterns for login sessions, permissions, CRUD flows, validation, and integration testing
 - documentation that is easy for developers and AI assistants to follow
 
 ## Tech Stack
@@ -33,9 +33,10 @@ This codebase gives you:
 
 ## Main Features
 
-- user registration and login
-- authenticated issue creation, editing, and deletion
-- issue listing and issue details views
+- email/password login, session refresh, and logout
+- admin-managed users, roles, and permission-based access
+- issue listing, details, comments, attachments, and notifications
+- authenticated issue create, edit, and delete (permission-gated)
 - layered backend architecture with separate Web, UseCases, Domain, and Infrastructure projects
 - integration-ready local development stack
 

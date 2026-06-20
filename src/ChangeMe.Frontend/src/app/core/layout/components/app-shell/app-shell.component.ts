@@ -2,25 +2,16 @@ import { BreakpointObserver } from '@angular/cdk/layout';
 import { Component, computed, DestroyRef, inject } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
+import { filter, map } from 'rxjs/operators';
 import { SidebarNavComponent } from '@core/layout/components/sidebar-nav/sidebar-nav.component';
 import { LayoutNavItem } from '@core/layout/models/layout-nav-item.model';
 import { LayoutService } from '@core/layout/services/layout.service';
 import { formatUserReference } from '@core/user/utils/user-display.utils';
-import { PasskeySetupBannerComponent } from '@features/auth/components/passkey-setup-banner/passkey-setup-banner.component';
-import { PasskeySetupDialogComponent } from '@features/auth/components/passkey-setup-dialog/passkey-setup-dialog.component';
-import { PasswordExpirationBannerComponent } from '@features/auth/components/password-expiration-banner/password-expiration-banner.component';
-import { RequiredPasswordChangeDialogComponent } from '@features/auth/components/required-password-change-dialog/required-password-change-dialog.component';
-import { TwoFactorSetupBannerComponent } from '@features/auth/components/two-factor-setup-banner/two-factor-setup-banner.component';
-import { TwoFactorSetupDialogComponent } from '@features/auth/components/two-factor-setup-dialog/two-factor-setup-dialog.component';
 import { AuthService } from '@features/auth/services/auth.service';
-import { PasskeySetupNoticeService } from '@features/auth/services/passkey-setup-notice.service';
-import { PasswordExpirationNoticeService } from '@features/auth/services/password-expiration-notice.service';
-import { TwoFactorSetupNoticeService } from '@features/auth/services/two-factor-setup-notice.service';
 import { NotificationsBellComponent } from '@features/notifications/components/notifications-bell/notifications-bell.component';
 import { PermissionCodes } from '@shared/authorization/permission-codes';
 import { Button } from 'primeng/button';
 import { Drawer } from 'primeng/drawer';
-import { filter, map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-shell',
@@ -29,12 +20,6 @@ import { filter, map } from 'rxjs/operators';
     RouterLink,
     SidebarNavComponent,
     NotificationsBellComponent,
-    PasswordExpirationBannerComponent,
-    TwoFactorSetupBannerComponent,
-    PasskeySetupBannerComponent,
-    RequiredPasswordChangeDialogComponent,
-    TwoFactorSetupDialogComponent,
-    PasskeySetupDialogComponent,
     Button,
     Drawer
   ],
@@ -51,16 +36,7 @@ export class AppShellComponent {
   readonly currentUser = this.authService.currentUser;
   readonly formatUserReference = formatUserReference;
   readonly isAuthenticated = this.authService.isAuthenticated;
-  readonly requiresPasswordChangeScreen = this.authService.requiresPasswordChangeScreen;
-  readonly requiresTwoFactorSetupScreen = this.authService.requiresTwoFactorSetupScreen;
-  readonly requiresPasskeySetupScreen = this.authService.requiresPasskeySetupScreen;
-  readonly showAuthenticatedChrome = computed(
-    () =>
-      this.isAuthenticated() &&
-      !this.requiresPasswordChangeScreen() &&
-      !this.requiresTwoFactorSetupScreen() &&
-      !this.requiresPasskeySetupScreen()
-  );
+  readonly showAuthenticatedChrome = computed(() => this.isAuthenticated());
   readonly isDesktop = toSignal(
     this.breakpointObserver
       .observe('(min-width: 768px)')
@@ -97,10 +73,6 @@ export class AppShellComponent {
   });
 
   constructor() {
-    inject(PasswordExpirationNoticeService);
-    inject(TwoFactorSetupNoticeService);
-    inject(PasskeySetupNoticeService);
-
     this.router.events
       .pipe(
         filter((event): event is NavigationEnd => event instanceof NavigationEnd),

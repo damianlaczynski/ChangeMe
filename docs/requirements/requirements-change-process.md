@@ -15,7 +15,7 @@
 | Location                                                          | Role                                                                                               |
 | ----------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
 | `docs/requirements/functional/<domain>/fr-<area>-<nnn>-<slug>.md` | **Functional specification** (`FR-*`) — atomic, testable behavior per screen or flow.              |
-| `docs/requirements/_shared/reference/*.md`                        | **Reference** — glossary, account model, compliance gates, permissions.                            |
+| `docs/requirements/_shared/reference/*.md`                        | **Reference** — glossary, account model, permissions.                                              |
 | `docs/requirements/_shared/functional/*.md`                       | **Shared functional patterns** (`FR-UI-001`, UI/UX defaults).                                      |
 | `docs/requirements/_shared/non-functional/*.md`                   | **Non-functional requirements** (`NFR-*`) — accessibility, i18n, performance, responsiveness.      |
 | `docs/requirements/changes/YYYY-MM-DD-<title>.md`                 | **Pending delta** — one file per coherent batch until implemented.                                 |

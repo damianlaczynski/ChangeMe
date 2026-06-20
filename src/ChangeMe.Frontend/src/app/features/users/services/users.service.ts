@@ -4,8 +4,8 @@ import { PaginationResult } from '@shared/data/models/pagination-result.model';
 import { Observable } from 'rxjs';
 import {
   AdminUserSessionDto,
+  CreateUserRequest,
   EffectivePermissionDto,
-  InviteUserRequest,
   PreviewEffectivePermissionsRequest,
   RoleAssignmentOptionDto,
   UpdateUserRequest,
@@ -47,7 +47,7 @@ export class UsersService {
     );
   }
 
-  inviteUser(request: InviteUserRequest): Observable<UserDetailsDto> {
+  createUser(request: CreateUserRequest): Observable<UserDetailsDto> {
     return this.apiService.post<UserDetailsDto>(this.baseEndpoint, request);
   }
 
@@ -68,76 +68,6 @@ export class UsersService {
   activateUser(id: string): Observable<UserDetailsDto> {
     return this.apiService.post<UserDetailsDto>(
       `${this.baseEndpoint}/${id}/activate`,
-      {}
-    );
-  }
-
-  resendInvitation(id: string): Observable<UserDetailsDto> {
-    return this.apiService.post<UserDetailsDto>(
-      `${this.baseEndpoint}/${id}/resend-invitation`,
-      {}
-    );
-  }
-
-  cancelInvitation(id: string): Observable<UserDetailsDto> {
-    return this.apiService.post<UserDetailsDto>(
-      `${this.baseEndpoint}/${id}/cancel-invitation`,
-      {}
-    );
-  }
-
-  cancelPendingEmailChange(id: string): Observable<UserDetailsDto> {
-    return this.apiService.post<UserDetailsDto>(
-      `${this.baseEndpoint}/${id}/cancel-pending-email-change`,
-      {}
-    );
-  }
-
-  sendInvitation(id: string): Observable<UserDetailsDto> {
-    return this.apiService.post<UserDetailsDto>(
-      `${this.baseEndpoint}/${id}/send-invitation`,
-      {}
-    );
-  }
-
-  sendPasswordReset(id: string): Observable<UserDetailsDto> {
-    return this.apiService.post<UserDetailsDto>(
-      `${this.baseEndpoint}/${id}/send-password-reset`,
-      {}
-    );
-  }
-
-  resetTwoFactor(id: string): Observable<UserDetailsDto> {
-    return this.apiService.post<UserDetailsDto>(
-      `${this.baseEndpoint}/${id}/reset-two-factor`,
-      {}
-    );
-  }
-
-  resetPasskeys(id: string): Observable<UserDetailsDto> {
-    return this.apiService.post<UserDetailsDto>(
-      `${this.baseEndpoint}/${id}/reset-passkeys`,
-      {}
-    );
-  }
-
-  removePasskey(userId: string, passkeyId: string): Observable<UserDetailsDto> {
-    return this.apiService.post<UserDetailsDto>(
-      `${this.baseEndpoint}/${userId}/passkeys/${passkeyId}/remove`,
-      {}
-    );
-  }
-
-  unlinkExternalLogin(userId: string, providerKey: string): Observable<UserDetailsDto> {
-    return this.apiService.post<UserDetailsDto>(
-      `${this.baseEndpoint}/${userId}/external-logins/${encodeURIComponent(providerKey)}/unlink`,
-      {}
-    );
-  }
-
-  confirmUserEmail(id: string): Observable<UserDetailsDto> {
-    return this.apiService.post<UserDetailsDto>(
-      `${this.baseEndpoint}/${id}/confirm-email`,
       {}
     );
   }

@@ -110,4 +110,3 @@ Which layer to test and when to skip: [`docs/guides/testing-guidelines.md`](test
 - `docs/technical/database-and-docker.md` — EF Core migrations, Docker Compose, Hangfire jobs, file storage
 - `docs/technical/data-generator.md` — optional demo data for local development
 - `docs/technical/ci.md` — GitHub Actions workflow
-- `docs/technical/auth-operations-guide.md` — `AuthOptions` configuration, OIDC, 2FA, and operator troubleshooting

@@ -14,17 +14,5 @@ export const authGuard: CanActivateFn = (_route, state) => {
     });
   }
 
-  if (authService.requiresPasswordChangeScreen()) {
-    return router.createUrlTree(['/required-password-change']);
-  }
-
-  if (authService.requiresTwoFactorSetupScreen()) {
-    return router.createUrlTree(['/required-two-factor-setup']);
-  }
-
-  if (authService.requiresPasskeySetupScreen()) {
-    return router.createUrlTree(['/required-passkey-setup']);
-  }
-
   return true;
 };
