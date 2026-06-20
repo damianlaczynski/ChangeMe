@@ -22,15 +22,13 @@ Deployed stacks (runtime API URL, TLS, CORS, production checklist): [deployment.
 
 ## EF Core migrations
 
-`InitialCreate` is included in `Infrastructure/Persistence/Migrations/`. After clone or `dotnet new`, apply it once from the repository root:
+`InitialCreate` is included in `Infrastructure/Persistence/Migrations/`. In Development, **`DatabaseOptions:ApplyMigrationsOnStartup` is `true`** in `appsettings.Development.json` — pending migrations apply when the API starts (`dotnet run`, `npm run start:backend`, or Docker Compose).
 
-```powershell
-npm run ef:database:update
-```
+When you change the EF model, add a migration: `npm run ef:migrations:add -- <Name>`.
 
-Or set `Database:ApplyMigrationsOnStartup` to `true` in Development. When you change the EF model, add a migration: `npm run ef:migrations:add -- <Name>`.
+For a one-off apply without starting the API: `npm run ef:database:update`.
 
-**Production:** apply migrations from CI/CD rather than at app startup on many instances.
+**Production:** keep `ApplyMigrationsOnStartup` false (default in `appsettings.json`) and apply migrations from CI/CD rather than at app startup on many instances.
 
 ## PostgreSQL
 

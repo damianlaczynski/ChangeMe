@@ -25,7 +25,7 @@ dotnet new changeme -n IssuesDemo -o IssuesDemo
 
 ## After generation
 
-- Run `npm run ef:database:update` once, then see `docs/technical/database-and-docker.md` and `docs/technical/deployment.md`.
+- Start the API once in Development (migrations apply on startup), then see `docs/technical/database-and-docker.md` for Compose and production notes.
 
 ## Verify the install
 
