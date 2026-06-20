@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using System.Net;
+﻿using System.Net;
 
 namespace ChangeMe.Backend.Infrastructure.Email;
 
@@ -45,37 +44,6 @@ public static class BrandedEmailTemplates
       $"""<p style="{ParagraphStyle}">{Encode(message)}</p>""",
       actionUrl,
       actionLabel);
-
-  public static string BuildAuthEventEmail(
-    string headline,
-    string summary,
-    string accountEmail,
-    DateTime eventTimeUtc,
-    string detail,
-    string actionUrl,
-    string actionLabel,
-    string? passkeyName = null)
-  {
-    var passkeyLine = string.IsNullOrWhiteSpace(passkeyName)
-      ? string.Empty
-      : $"""<p style="{ParagraphStyle}">Passkey: {Encode(passkeyName)}</p>""";
-
-    return BuildLayout(
-      preheader: summary,
-      headline,
-      $"""
-      <p style="{ParagraphStyle}">{Encode(summary)}</p>
-      <p style="{ParagraphStyle}">Account: {Encode(accountEmail)}</p>
-      <p style="{ParagraphStyle}">Event time (UTC): {Encode(FormatEventTimeUtc(eventTimeUtc))}</p>
-      {passkeyLine}
-      <p style="{ParagraphStyle}">{Encode(detail)}</p>
-      """,
-      actionUrl,
-      actionLabel);
-  }
-
-  internal static string FormatEventTimeUtc(DateTime eventTimeUtc) =>
-    eventTimeUtc.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture) + " UTC";
 
   private static string BuildLayout(
     string preheader,

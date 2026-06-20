@@ -87,7 +87,15 @@ The packaging project targets `net10.0` only as a carrier for NuGet metadata and
 
 ### Frontend (this repository)
 
-Run from `src/ChangeMe.Frontend`:
+From the **repository root** (installs npm packages and Playwright Chromium for E2E):
+
+```powershell
+npm install
+npm run install:frontend
+npm run start:frontend
+```
+
+Or from `src/ChangeMe.Frontend` (npm packages only; E2E needs Chromium from `npm run install:frontend` at the root):
 
 ```powershell
 npm install
@@ -104,12 +112,7 @@ npm test
 
 ### Backend (this repository)
 
-Add EF Core migrations when working on a clone of this repo (see `docs/technical/database-and-docker.md`). From the **repository root**:
-
-```powershell
-dotnet tool restore
-dotnet ef migrations add InitialCreate --project src/ChangeMe.Backend/src/ChangeMe.Backend.Infrastructure/ChangeMe.Backend.Infrastructure.csproj --startup-project src/ChangeMe.Backend/src/ChangeMe.Backend.Web/ChangeMe.Backend.Web.csproj --output-dir Persistence/Migrations
-```
+Includes `InitialCreate` — apply once after clone: `npm run ef:database:update` (see `docs/technical/database-and-docker.md`).
 
 From `src/ChangeMe.Backend`:
 

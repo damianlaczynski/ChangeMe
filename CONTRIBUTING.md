@@ -33,6 +33,6 @@ Package readme lives in **`template-pack/NuGetPackageREADME.md`**.
 
 - `.template.config/template.json` – symbols, sources.
 - `template-content/generated-readme/README.md` – becomes the generated solution’s root **`README.md`** (root **`README.md`** is excluded from the template payload and stays maintainer-facing on GitHub).
-- **`src/ChangeMe.Backend/.../Persistence/Migrations/*.cs`** – excluded from the template payload; consumers add migrations with **`dotnet ef`** (see **`docs/technical/database-and-docker.md`** in the generated tree).
+- **`src/ChangeMe.Backend/.../Persistence/Migrations/*.cs`** – shipped with the template (`InitialCreate` included). After an EF model change, add a migration: `npm run ef:migrations:add -- <Name>` from the repo root.
 
 When adjusting persistence, keep **`README.md` / `AGENTS.md` / `docs/`** oriented toward the **generated product**, not this repo.

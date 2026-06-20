@@ -14,12 +14,7 @@
 ## Prerequisites
 
 1. Database is reachable (see `docs/technical/database-and-docker.md`).
-2. EF Core migrations exist and are applied:
-
-   ```powershell
-   npm run ef:restore
-   npm run ef:database:update
-   ```
+2. Migrations applied (`npm run ef:database:update` from the repository root).
 
 3. `ConnectionStrings:DefaultConnection` in `src/ChangeMe.Backend/src/ChangeMe.Backend.Web/appsettings.Development.json` points at your database.
 
@@ -66,7 +61,7 @@ npm run data:generate
 
 | Problem                    | Action                                                                                                |
 | -------------------------- | ----------------------------------------------------------------------------------------------------- |
-| No migrations found        | Add and apply migrations (`docs/technical/database-and-docker.md`)                                    |
+| No migrations found        | Run `npm run ef:database:update` (`docs/technical/database-and-docker.md`)                            |
 | Connection refused         | Start Docker Compose or local DB; verify connection string                                            |
 | Demo data already exists   | Run with `--reset` or delete demo users manually                                                      |
 | Migration history mismatch | Regenerate migrations with PostgreSQL; do not reuse migration snapshots from other database providers |

@@ -49,8 +49,7 @@
             "**/logs/**",
             "*.nupkg",
             "README.md",
-            "CONTRIBUTING.md",
-            "src/ChangeMe.Backend/src/ChangeMe.Backend.Infrastructure/Persistence/Migrations/**"
+            "CONTRIBUTING.md"
           ]
         }
       ]
