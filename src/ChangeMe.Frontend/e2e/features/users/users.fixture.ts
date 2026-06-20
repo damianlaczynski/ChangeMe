@@ -17,19 +17,14 @@ export async function selectMultiselectOption(
   label: string,
   optionLabel: string
 ): Promise<void> {
-  const field = page.locator('.flex.flex-col').filter({
-    has: page.locator('label', { hasText: label })
-  });
-  await field.locator('.p-multiselect').click();
+  const panel = page
+    .getByRole('main')
+    .getByRole('region', { name: label, exact: true });
+  await panel.locator('.p-multiselect').click();
   await page.getByRole('option', { name: optionLabel, exact: true }).click();
   await page.keyboard.press('Escape');
 }
 
-export function userIdFromUrl(page: Page): string {
-  const match = page.url().match(/\/users\/([0-9a-f-]+)/i);
-  if (!match?.[1]) {
-    throw new Error(`Could not parse user id from URL: ${page.url()}`);
-  }
-
-  return match[1];
+export async function expectDetailsTitle(page: Page, title: string): Promise<void> {
+  await expect(page.getByRole('main')).toContainText(title);
 }

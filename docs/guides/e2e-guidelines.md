@@ -1,268 +1,142 @@
 # E2E testing guidelines
 
-> Scope: Playwright smoke suite and planned E2E structure for `src/ChangeMe.Frontend/e2e/`.
+> Scope: Playwright smoke suite in `src/ChangeMe.Frontend/e2e/`.
 >
-> **Status:** current layout under `src/ChangeMe.Frontend/e2e/features/` and `e2e/shared/`.
->
-> Layer ownership and when to add E2E at all: [testing-guidelines.md](testing-guidelines.md). CI job details: [ci.md](../technical/ci.md). Commands: [`AGENTS.md`](../../AGENTS.md).
+> When to add E2E: [testing-guidelines.md](testing-guidelines.md). Commands: [`AGENTS.md`](../../AGENTS.md). CI: [ci.md](../technical/ci.md).
 
-## Goals
-
-| Decision                         | Choice                                                                               |
-| -------------------------------- | ------------------------------------------------------------------------------------ |
-| Suite purpose                    | Smoke in CI plus selected user journeys (~10–20 minutes)                             |
-| Folder layout                    | Mirror frontend features under `e2e/features/` plus `e2e/shared/`                    |
-| Session                          | `globalSetup` logs in seed admin → `storageState` for most tests                     |
-| Test data                        | Seed administrator (`InitialAdministratorOptions`) plus cleanup after each spec file |
-| API arrange                      | Allowed with per-feature `*.api.ts` helpers and documented conventions (this file)   |
-| First feature expansion          | Full admin CRUD for **Users** and **Roles**                                          |
-| Restricted user (no `usersView`) | Deferred — admin-only for the first iteration                                        |
-| API payload types                | Import enums/models from frontend (`IssueStatus`, `IssuePriority`, etc.)             |
-| CI diagnostics                   | Screenshot + trace on failure; HTML report as CI artifact                            |
-| Parallelism                      | Start with 1 worker; move to 2–4 workers after per-file data isolation is proven     |
-
-## Target folder layout
+## Layout
 
 ```
 e2e/
 ├── playwright.config.ts
-├── tsconfig.json                 # paths @features/*, @shared/* for imports from src/app
+├── tsconfig.json              # extends frontend tsconfig → @features/*, @shared/*
 ├── shared/
-│   ├── global-setup.ts           # admin login → write storageState
-│   ├── env.ts                    # E2E_BASE_URL, E2E_API_URL, credentials
-│   ├── test.ts                   # test.extend (authenticatedPage, apiClient)
-│   ├── auth-storage.json         # generated; gitignored
-│   └── api/
-│       ├── client.ts             # token cache, authenticated request wrapper
-│       └── cleanup.ts            # afterAll helpers — delete E2E-created entities
-├── features/
-│   ├── auth/
-│   │   ├── auth.fixture.ts       # UI login/logout (for auth tests; not storageState)
-│   │   └── auth.smoke.spec.ts
-│   ├── issues/
-│   │   ├── issues.api.ts         # createIssue, deleteIssue (arrange / teardown)
-│   │   ├── issues.fixture.ts     # optional: gotoIssuesList, createViaUi
-│   │   └── issues.smoke.spec.ts
-│   ├── users/
-│   │   ├── users.api.ts
-│   │   ├── users.fixture.ts
-│   │   └── users.smoke.spec.ts   # list → details → create → edit
-│   └── roles/
-│       ├── roles.api.ts
-│       ├── roles.fixture.ts
-│       └── roles.smoke.spec.ts
+│   ├── global-setup.ts        # admin login → auth-storage.json
+│   ├── env.ts                 # URLs, credentials, e2eTitle / e2eEmail
+│   ├── test.ts                # test.extend({ apiClient })
+│   ├── auth.fixture.ts        # loginViaUi (globalSetup + auth specs)
+│   └── api/client.ts          # authenticated API client
+└── features/<feature>/
+    ├── *.api.ts               # HTTP arrange only (optional)
+    ├── *.fixture.ts           # shared UI navigation/actions
+    └── *.smoke.spec.ts
 ```
 
-### Naming conventions
+| Pattern           | Purpose                               |
+| ----------------- | ------------------------------------- |
+| `*.api.ts`        | HTTP arrange — not Playwright tests   |
+| `*.fixture.ts`    | Reusable UI steps for one feature     |
+| `*.smoke.spec.ts` | Test files                            |
+| `shared/`         | Cross-cutting infra, not domain logic |
 
-| Pattern           | Purpose                                           |
-| ----------------- | ------------------------------------------------- |
-| `*.api.ts`        | HTTP arrange/teardown only — not Playwright tests |
-| `*.fixture.ts`    | Shared UI actions for one feature                 |
-| `*.smoke.spec.ts` | Playwright test files                             |
-| `shared/`         | Cross-cutting infrastructure, not domain logic    |
+## Session
 
-## Session: `globalSetup` + `storageState`
+- **`globalSetup`** logs in seed admin → writes `shared/auth-storage.json` (gitignored).
+- **`app` project** — most specs; uses saved `storageState`.
+- **`auth` project** — `features/auth/` only; empty storage (redirect, login, logout).
 
-```mermaid
-sequenceDiagram
-  participant GS as globalSetup
-  participant API as Backend API
-  participant Browser as Playwright
-  participant Tests as specs
+Default credentials: `admin@example.local` / `admin123` (`InitialAdministratorOptions`), overridable via `E2E_USER_EMAIL` and `E2E_USER_PASSWORD`.
 
-  GS->>API: POST /auth/login (admin)
-  GS->>Browser: save cookies / localStorage
-  Browser->>GS: auth-storage.json
-  Tests->>Browser: use.storageState
-  Note over Tests: most tests start already on /issues
-```
+| File                            | Role                                                  |
+| ------------------------------- | ----------------------------------------------------- |
+| `shared/auth.fixture.ts`        | `loginViaUi` — shared by `globalSetup` and auth specs |
+| `features/auth/auth.fixture.ts` | Re-exports `login`; adds `logout` for auth-only tests |
 
-**Default:** most specs use `use.storageState` pointing at `shared/auth-storage.json`.
+## Locators
 
-**Exceptions** (clean session, no storageState):
+Prefer, in order:
 
-- Auth specs (`redirect`, `login` / `logout`)
-- Future compliance-gate journeys (dedicated user state set up via API)
+1. `getByRole` (buttons, links, checkboxes, options, textboxes)
+2. `getByLabel` (inputs, multiselects linked with `for` / `inputId`)
+3. `getByPlaceholder` (search fields)
 
-**Playwright config (target):**
-
-- `globalSetup: './shared/global-setup.ts'`
-- default `use.storageState: './shared/auth-storage.json'`
-- separate Playwright **project** for auth tests without storageState
-
-## API helpers
-
-Replace the legacy single `e2e/fixtures/api.ts` with a shared client and per-feature APIs.
-
-### Shared client
+Avoid PrimeNG class selectors and Tailwind layout classes except where noted below.
 
 ```typescript
-// shared/api/client.ts
-export class E2eApiClient {
-  constructor(private request: APIRequestContext) {}
-
-  /** Cached per worker — avoid login on every arrange call. */
-  async token(): Promise<string> {
-    /* ... */
-  }
-
-  async post<T>(path: string, body: unknown): Promise<T> {
-    /* ... */
-  }
-  async delete(path: string): Promise<void> {
-    /* ... */
-  }
-}
+await page.getByRole("button", { name: "Create user" }).click();
+await page.getByRole("textbox", { name: "Name" }).fill(title);
+await page
+  .getByRole("main")
+  .getByRole("region", { name: "Roles" })
+  .locator(".p-multiselect")
+  .click();
+await page.getByRole("checkbox", { name: "View users" }).click();
+await expect(page.getByRole("main")).toContainText(title);
 ```
 
-### Per-feature example
+**PrimeNG:** collapsible panel headers and permission checkboxes can make `getByLabel` ambiguous — prefer `getByRole("textbox", …)` for inputs. Multiselect: scope to `getByRole("main").getByRole("region", { name: "…" })`, click `.p-multiselect`, pick `getByRole("option")`, press `Escape`. Use `expectDetailsTitle` in `*.fixture.ts` when the page title includes extra context (e.g. user name + email).
+
+## Test data
+
+| Helper                    | Use                                              |
+| ------------------------- | ------------------------------------------------ |
+| `e2eTitle('issues-list')` | Issues, roles — `E2E-<feature>-<timestamp>`      |
+| `e2eEmail('users')`       | User emails — `E2E-<feature>-<uuid>@example.com` |
+| `e2eTestPassword`         | Create-user password (`StrongPass123!`)          |
+
+**No automated cleanup** — the suite does not delete issues, users, or roles after tests.
+
+| Reason     | Detail                                                                                        |
+| ---------- | --------------------------------------------------------------------------------------------- |
+| Isolation  | `e2eTitle()` and `e2eEmail()` produce unique names — tests do not depend on an empty database |
+| CI         | Each GitHub Actions job uses a fresh PostgreSQL service                                       |
+| Simplicity | Less infrastructure (`afterAll`, registries, per-entity delete helpers)                       |
+
+Reset a noisy local database with `npm run data:generate -- --reset`, or recreate the dev database. Revisit cleanup only if orphaned rows affect performance or assertions.
+
+## API arrange
+
+1. Arrange via API only — not for Act/Assert of UI behaviour.
+2. Import payload types from frontend models (`IssueStatus`, `IssueDetailsDto`, …).
+3. Never modify the seed administrator.
+
+## Multi-step specs
+
+Use `test.step()` in journeys that span several screens (users create→edit, roles create→edit). Single-purpose smoke tests can stay flat.
 
 ```typescript
-// features/issues/issues.api.ts
-import {
-  IssuePriority,
-  IssueStatus,
-} from "@features/issues/models/issue.model";
-
-export async function createIssue(client: E2eApiClient, title: string) {
-  return client.post("/issues", {
-    title,
-    description: "Created by Playwright E2E.",
-    status: IssueStatus.NEW,
-    priority: IssuePriority.MEDIUM,
-    assignedToUserId: null,
-    watchAfterCreate: false,
-    acceptanceCriteria: [],
-  });
-}
-```
-
-### API arrange rules
-
-1. **Arrange and teardown only** — do not use API for Act/Assert when the test covers UI behaviour (unless the test is explicitly about the API).
-2. **Prefix created data** with `E2E-<feature>-<timestamp>` (or similar) so cleanup and debugging are predictable.
-3. **Return entity IDs** from create helpers so teardown can delete by ID.
-4. **Never delete** the seed administrator (`InitialAdministratorOptions` / default `admin@example.local`).
-
-### TypeScript paths
-
-Add `e2e/tsconfig.json` extending the frontend root config with the same `paths` as `tsconfig.json` (`@features/*`, `@shared/*`) so E2E imports frontend enums without duplicating constants.
-
-## Data cleanup
-
-**Strategy:** `test.afterAll` per spec file (not `afterEach`).
-
-Cleanup scope:
-
-- Issues, users, and roles created during the spec file
-- Seed admin and system roles — never touched
-
-**Registry pattern:**
-
-```typescript
-// In spec or shared cleanup helper
-const createdIssueIds: string[] = [];
-
-test.afterAll(async ({ request }) => {
-  const client = new E2eApiClient(request);
-  for (const id of createdIssueIds) {
-    await client.delete(`/issues/${id}`).catch(() => {});
-  }
+await test.step("create user", async () => {
+  /* … */
+});
+await test.step("edit profile", async () => {
+  /* … */
 });
 ```
 
-Alternative (simpler, slower): delete by search prefix if the API supports it (`search=E2E-`).
+## Playwright config
 
-## Planned test inventory
+| Option                 | Value                                   |
+| ---------------------- | --------------------------------------- |
+| `workers`              | `1` — unique test data replaces cleanup |
+| `fullyParallel`        | `false`                                 |
+| `screenshot` / `trace` | `only-on-failure` / `retain-on-failure` |
+| CI reporter            | `github`, `html`, `list`                |
 
-### Phase 1 — infrastructure + smoke tests (auth, issues)
+Locally Playwright starts backend + frontend (`webServer`). MailHog starts via Docker when `CI` is unset.
 
-| File                                   | Scenarios                                                        |
-| -------------------------------------- | ---------------------------------------------------------------- |
-| `features/auth/auth.smoke.spec.ts`     | unauthenticated redirect; login + logout (no storageState)       |
-| `features/issues/issues.smoke.spec.ts` | list → details; search filter; create via UI (with storageState) |
+## Smoke coverage
 
-### Phase 2 — Users and Roles (admin CRUD)
+| Spec     | Scenarios                                |
+| -------- | ---------------------------------------- |
+| `auth`   | unauthenticated redirect; login + logout |
+| `issues` | list → details; search; create via form  |
+| `users`  | list → create → edit profile             |
+| `roles`  | list → details; create → edit            |
 
-| File                                 | Scenarios                                 |
-| ------------------------------------ | ----------------------------------------- |
-| `features/users/users.smoke.spec.ts` | list → invite → edit profile              |
-| `features/roles/roles.smoke.spec.ts` | list → details; create custom role → edit |
+## Out of scope (deferred)
 
-### Phase 2 detail (Users and Roles)
+- Restricted user (no `usersView` / `rolesView`)
+- `data-testid` — only if accessible locators break repeatedly
 
-| Feature   | Scenarios                                                                               |
-| --------- | --------------------------------------------------------------------------------------- |
-| **Users** | list visible → user details → invite/create → edit (e.g. name) → assert on list/details |
-| **Roles** | list → role details → create role with permissions → edit → assert                      |
-
-Use API arrange where it speeds setup (e.g. user to edit); Act and Assert through the UI.
-
-### Explicitly deferred (later iterations)
-
-- User without `usersView` / `rolesView` (navigation and guards)
-- Compliance gates (required password change, 2FA setup, passkey setup)
-- Passkeys, WebAuthn, SignalR / notifications bell
-- `data-testid` hooks — only if UI copy changes break role-based locators
-
-## Playwright and CI configuration (target)
-
-| Option             | Value                                                          |
-| ------------------ | -------------------------------------------------------------- |
-| `globalSetup`      | `./shared/global-setup.ts`                                     |
-| `use.storageState` | `./shared/auth-storage.json` (except auth project)             |
-| `use.screenshot`   | `'only-on-failure'`                                            |
-| `use.trace`        | `'retain-on-failure'`                                          |
-| `reporter` (CI)    | `[['github'], ['html', { open: 'never' }], ['list']]`          |
-| `workers`          | `1` initially → `2` after cleanup proven → up to `4` if stable |
-| `fullyParallel`    | `true` once per-file isolation works                           |
-
-**CI (`.github/workflows/ci.yml`):**
-
-- Upload `playwright-report/` as an artifact on failure (optionally always).
-
-**Gitignore:**
-
-- `src/ChangeMe.Frontend/e2e/shared/auth-storage.json`
-
-## Local run
-
-From repository root (see [`AGENTS.md`](../../AGENTS.md)):
+## Run
 
 ```powershell
-npm run install:frontend   # once — includes Playwright Chromium
-npm run test:e2e           # needs PostgreSQL on localhost (Development connection string)
+npm run install:frontend   # once — includes Chromium
+npm run test:e2e           # PostgreSQL on localhost
 npm run test:e2e:ui        # interactive debugging
 ```
 
-Playwright starts backend and frontend via `webServer` in `e2e/playwright.config.ts`. Locally, existing servers can be reused when `CI` is unset (`reuseExistingServer: true`). Playwright also starts **MailHog** via Docker on port `1025` when `CI` is unset.
-
-Default credentials match `InitialAdministratorOptions` in `appsettings.Development.json` (`admin@example.local` / `admin123`), overridable via `E2E_USER_EMAIL` and `E2E_USER_PASSWORD`.
-
-## Implementation order
-
-1. Add `e2e/tsconfig.json`, `shared/env.ts`, `shared/api/client.ts`
-2. Add `shared/global-setup.ts` and update `playwright.config.ts` (storageState, diagnostics)
-3. Migrate existing tests to `features/auth/` and `features/issues/`
-4. Replace legacy `api.ts` with `features/issues/issues.api.ts` (frontend enum imports) + cleanup registry
-5. Add Users/Roles API helpers, fixtures, and smoke specs
-6. CI: HTML report artifact, increase `workers` to 2
-7. Update [repo-map.md](repo-map.md) E2E path once layout matches this doc
-
-Estimated suite duration after phase 2: ~12–18 minutes in CI with 2 workers.
-
-## Future enhancements
-
-| Topic                                                  | When to add                                                                                                                 |
-| ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
-| Restricted user via API (register + verify, or invite) | Navigation/permission E2E                                                                                                   |
-| Compliance gate specs                                  | When a user-visible gate journey changes — see [compliance-gates.md](../requirements/_shared/reference/compliance-gates.md) |
-| Tags (`@smoke`, `@users`, `@compliance`)               | When the suite grows beyond ~15 tests                                                                                       |
-| Page objects                                           | Only if fixtures grow too large; prefer feature `*.fixture.ts` first                                                        |
-
 ## Related documents
 
-- [testing-guidelines.md](testing-guidelines.md) — which layer owns which failures; anti-patterns
-- [ci.md](../technical/ci.md) — E2E job on GitHub Actions
-- [compliance-gates.md](../requirements/_shared/reference/compliance-gates.md) — future compliance E2E scenarios
+- [testing-guidelines.md](testing-guidelines.md) — layer ownership
+- [repo-map.md](repo-map.md) — where E2E lives in the repo

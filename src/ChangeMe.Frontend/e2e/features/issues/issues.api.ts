@@ -19,10 +19,3 @@ export async function createIssue(
     acceptanceCriteria: []
   });
 }
-
-export async function deleteIssue(
-  client: E2eApiClient,
-  issueId: string
-): Promise<void> {
-  await client.delete(`/issues/${issueId}`);
-}

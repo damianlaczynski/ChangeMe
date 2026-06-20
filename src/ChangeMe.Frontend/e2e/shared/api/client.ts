@@ -78,12 +78,4 @@ export class E2eApiClient {
 
     expect(response.ok()).toBeTruthy();
   }
-
-  async postNoBody(path: string): Promise<void> {
-    const response = await this.request.post(`${e2eApiUrl}${path}`, {
-      headers: await this.authHeaders()
-    });
-
-    expect(response.ok()).toBeTruthy();
-  }
 }

@@ -22,7 +22,7 @@ function backendWebServerEnv(): Record<string, string> {
 
 export default defineConfig({
   testDir: path.join(e2eDir, 'features'),
-  fullyParallel: true,
+  fullyParallel: false,
   forbidOnly: !!process.env['CI'],
   retries: process.env['CI'] ? 1 : 0,
   workers: 1,

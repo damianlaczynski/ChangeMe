@@ -1,5 +1,4 @@
 import { expect, type Page } from '@playwright/test';
-import { PermissionCodes } from '@shared/authorization/permission-codes';
 
 export async function gotoRolesList(page: Page): Promise<void> {
   await page.goto('/roles');
@@ -15,22 +14,14 @@ export async function expectRolesList(page: Page): Promise<void> {
   });
 }
 
-export async function selectPermission(
-  page: Page,
-  permissionCode: string
-): Promise<void> {
-  await page.locator(`[id="${permissionCode}"]`).click();
+export async function fillRoleName(page: Page, name: string): Promise<void> {
+  await page.getByRole('textbox', { name: 'Name' }).fill(name);
+}
+
+export async function expectDetailsTitle(page: Page, title: string): Promise<void> {
+  await expect(page.getByRole('main')).toContainText(title);
 }
 
 export async function selectViewUsersPermission(page: Page): Promise<void> {
-  await selectPermission(page, PermissionCodes.usersView);
-}
-
-export function roleIdFromUrl(page: Page): string {
-  const match = page.url().match(/\/roles\/([0-9a-f-]+)/i);
-  if (!match?.[1]) {
-    throw new Error(`Could not parse role id from URL: ${page.url()}`);
-  }
-
-  return match[1];
+  await page.getByRole('checkbox', { name: 'View users' }).click();
 }

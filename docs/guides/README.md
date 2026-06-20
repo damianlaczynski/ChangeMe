@@ -12,7 +12,7 @@
 | [frontend-guidelines.md](frontend-guidelines.md) | Angular components, forms, routing, PrimeNG, Tailwind      |
 | [backend-guidelines.md](backend-guidelines.md)   | Layers, endpoints, use cases, validation, EF               |
 | [testing-guidelines.md](testing-guidelines.md)   | Test layer ownership, anti-patterns, when to skip tests    |
-| [e2e-guidelines.md](e2e-guidelines.md)           | Playwright layout, fixtures, API arrange, planned E2E work |
+| [e2e-guidelines.md](e2e-guidelines.md)           | Playwright layout, locators, conventions, config, commands |
 | [feature-recipes.md](feature-recipes.md)         | Step-by-step recipes for common feature work               |
 
 ## Start here by task

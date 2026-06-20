@@ -1,46 +1,53 @@
-import { E2eCleanupRegistry } from '../../shared/api/cleanup';
+import { e2eEmail, e2eTestPassword } from '../../shared/env';
 import { expect, test } from '../../shared/test';
-import { gotoUsersList, selectMultiselectOption, userIdFromUrl } from './users.fixture';
-
-const cleanup = new E2eCleanupRegistry();
-
-test.afterAll(async ({ request }) => {
-  const { E2eApiClient } = await import('../../shared/api/client');
-  await cleanup.run(new E2eApiClient(request));
-});
+import {
+  expectDetailsTitle,
+  gotoUsersList,
+  selectMultiselectOption
+} from './users.fixture';
 
 test.describe('users smoke', () => {
-  test('lists users, invites a user, and edits their profile', async ({ page }) => {
-    const email = `e2e-users-${crypto.randomUUID()}@example.com`;
+  test('lists users, creates a user, and edits their profile', async ({ page }) => {
+    const email = e2eEmail('users');
     const firstName = 'E2E';
-    const lastName = 'Invite';
+    const lastName = 'User';
     const updatedFirstName = 'E2EUpdated';
 
-    await gotoUsersList(page);
-    await page.getByRole('button', { name: 'Invite user' }).click();
-    await expect(page).toHaveURL(/\/users\/invite/);
+    await test.step('open users list', async () => {
+      await gotoUsersList(page);
+    });
 
-    await page.getByLabel('First name (optional)').fill(firstName);
-    await page.getByLabel('Last name (optional)').fill(lastName);
-    await page.getByLabel('Email').fill(email);
-    await selectMultiselectOption(page, 'Roles', 'User');
-    await page.getByRole('button', { name: 'Send invitation' }).click();
+    await test.step('create user', async () => {
+      await page.getByRole('button', { name: 'Create user' }).click();
+      await expect(page).toHaveURL(/\/users\/create/);
 
-    await expect(page.getByRole('alert')).not.toBeVisible();
-    await expect(page).toHaveURL(/\/users\/[0-9a-f-]+/i, { timeout: 20_000 });
-    cleanup.registerUser(userIdFromUrl(page));
-    await expect(
-      page.locator('.p-card-title').getByText(`${firstName} ${lastName}`)
-    ).toBeVisible();
+      await page.getByLabel('First name').fill(firstName);
+      await page.getByLabel('Last name').fill(lastName);
+      await page.getByLabel('Email').fill(email);
+      await page
+        .getByRole('textbox', { name: 'Password', exact: true })
+        .fill(e2eTestPassword);
+      await page
+        .getByRole('textbox', { name: 'Confirm password' })
+        .fill(e2eTestPassword);
+      await selectMultiselectOption(page, 'Roles', 'User');
+      await page.getByRole('button', { name: 'Create user' }).click();
 
-    await page.getByRole('button', { name: 'Edit' }).click();
-    await expect(page).toHaveURL(/\/users\/[0-9a-f-]+\/edit/);
-    await page.getByLabel(/^First name/).fill(updatedFirstName);
-    await page.getByRole('button', { name: 'Save changes' }).click();
+      await expect(page.getByRole('alert')).not.toBeVisible();
+      await expect(page).toHaveURL(/\/users\/[0-9a-f-]+/i, { timeout: 20_000 });
+      await expectDetailsTitle(page, `${firstName} ${lastName}`);
+    });
 
-    await expect(page).toHaveURL(/\/users\/[0-9a-f-]+(?!\/edit)/, { timeout: 20_000 });
-    await expect(
-      page.locator('.p-card-title').getByText(`${updatedFirstName} ${lastName}`)
-    ).toBeVisible();
+    await test.step('edit profile', async () => {
+      await page.getByRole('button', { name: 'Edit' }).click();
+      await expect(page).toHaveURL(/\/users\/[0-9a-f-]+\/edit/);
+      await page.getByLabel('First name').fill(updatedFirstName);
+      await page.getByRole('button', { name: 'Save changes' }).click();
+
+      await expect(page).toHaveURL(/\/users\/[0-9a-f-]+(?!\/edit)/, {
+        timeout: 20_000
+      });
+      await expectDetailsTitle(page, `${updatedFirstName} ${lastName}`);
+    });
   });
 });

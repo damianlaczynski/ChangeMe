@@ -11,12 +11,3 @@ export async function expectIssuesList(page: Page): Promise<void> {
     timeout: 20_000
   });
 }
-
-export function issueIdFromUrl(page: Page): string {
-  const match = page.url().match(/\/issues\/([0-9a-f-]+)/i);
-  if (!match?.[1]) {
-    throw new Error(`Could not parse issue id from URL: ${page.url()}`);
-  }
-
-  return match[1];
-}
