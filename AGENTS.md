@@ -6,12 +6,7 @@
 
 - `src/ChangeMe.Frontend` - Angular 21 frontend.
 - `src/ChangeMe.Backend` - .NET backend solution.
-<!--#if (PostgreSQL) -->
 - `docker-compose.yml` - local full-stack environment with frontend, backend, PostgreSQL, and MailHog.
-  <!--#endif-->
-  <!--#if (SqlServer) -->
-- `docker-compose.yml` - local full-stack environment with frontend, backend, SQL Server, and MailHog.
-<!--#endif-->
 - `.config/dotnet-tools.json` - pins **`dotnet-ef`** for `dotnet ef migrations add` (optional; see `docs/technical/database-and-docker.md`).
 - `docs/` - guides, technical, and requirements (`docs/README.md` for the full index).
 - `docs/guides/README.md`, `docs/technical/README.md`, `docs/requirements/requirements-change-process.md` - entry points per area.

@@ -23,13 +23,8 @@ public sealed class ApplicationDesignTimeDbContextFactory : IDesignTimeDbContext
             "Set ConnectionStrings:DefaultConnection in appsettings or ConnectionStrings__DefaultConnection for EF Core design-time.");
 
     var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
-#if PostgreSQL
     optionsBuilder.UseNpgsql(cs, npgsql =>
         npgsql.MigrationsHistoryTable("__EFMigrationsHistory", DatabaseSchema.Default));
-#else
-    optionsBuilder.UseSqlServer(cs, sql =>
-        sql.MigrationsHistoryTable("__EFMigrationsHistory", DatabaseSchema.Default));
-#endif
 
     return new ApplicationDbContext(optionsBuilder.Options);
   }

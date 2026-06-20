@@ -35,7 +35,6 @@ public static class DatabaseConfig
           $"Connection string 'DefaultConnection' is not configured. Available connection string keys: {keys}");
     }
 
-#if PostgreSQL
     logger.LogInformation("Using PostgreSQL database");
 
     services.AddDbContext<ApplicationDbContext>(options =>
@@ -58,30 +57,6 @@ public static class DatabaseConfig
     }
 
     logger.LogInformation("PostgreSQL database connection configured");
-#else
-    logger.LogInformation("Using SQL Server database");
-
-    services.AddDbContext<ApplicationDbContext>(options =>
-    {
-      options.UseSqlServer(connectionString, sql =>
-          sql.MigrationsHistoryTable("__EFMigrationsHistory", DatabaseSchema.Default));
-
-      if (environment.IsDevelopment())
-      {
-        options.EnableSensitiveDataLogging();
-        options.EnableDetailedErrors();
-        logger.LogInformation("Sensitive data logging enabled for development");
-      }
-    });
-
-    if (configureHealthChecks)
-    {
-      services.AddHealthChecks()
-          .AddSqlServer(connectionString, name: "sqlserver", tags: ["db", "ready"]);
-    }
-
-    logger.LogInformation("SQL Server database connection configured");
-#endif
     return services;
   }
 

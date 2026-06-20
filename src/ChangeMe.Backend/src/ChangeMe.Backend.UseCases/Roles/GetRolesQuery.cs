@@ -19,15 +19,9 @@ public class GetRolesHandler(ApplicationDbContext context)
     if (!string.IsNullOrWhiteSpace(query.SearchText))
     {
       var searchText = query.SearchText.Trim();
-#if PostgreSQL
       rolesQuery = rolesQuery.Where(r =>
         EF.Functions.ILike(r.Name, $"%{searchText}%")
         || (r.Description != null && EF.Functions.ILike(r.Description, $"%{searchText}%")));
-#else
-      rolesQuery = rolesQuery.Where(r =>
-        EF.Functions.Like(r.Name, $"%{searchText}%")
-        || (r.Description != null && EF.Functions.Like(r.Description, $"%{searchText}%")));
-#endif
     }
 
     var projected = rolesQuery.Select(r => new RoleListItemDto

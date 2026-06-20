@@ -31,17 +31,10 @@ public class GetAllIssuesHandler(
     {
       var searchText = query.SearchText.Trim();
       var parsedIssueId = Guid.TryParse(searchText, out var issueId) ? issueId : Guid.Empty;
-#if PostgreSQL
       issuesQuery = issuesQuery.Where(i =>
         EF.Functions.ILike(i.Title, $"%{searchText}%")
         || EF.Functions.ILike(i.Description, $"%{searchText}%")
         || (parsedIssueId != Guid.Empty && i.Id == parsedIssueId));
-#else
-      issuesQuery = issuesQuery.Where(i =>
-        EF.Functions.Like(i.Title, $"%{searchText}%")
-        || EF.Functions.Like(i.Description, $"%{searchText}%")
-        || (parsedIssueId != Guid.Empty && i.Id == parsedIssueId));
-#endif
     }
 
     if (query.Statuses?.Count > 0)

@@ -30,12 +30,9 @@
     <PackageReference Include="IdentityModel" />
     <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" />
     <PackageReference Include="Fido2" />
-    <PackageReference Include="AspNetCore.HealthChecks.Npgsql" Condition="$(DefineConstants.Contains('PostgreSQL'))" />
-    <PackageReference Include="Hangfire.PostgreSql" Condition="$(DefineConstants.Contains('PostgreSQL'))" />
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Condition="$(DefineConstants.Contains('PostgreSQL'))" />
-    <PackageReference Include="AspNetCore.HealthChecks.SqlServer" Condition="!$(DefineConstants.Contains('PostgreSQL'))" />
-    <PackageReference Include="Hangfire.SqlServer" Condition="!$(DefineConstants.Contains('PostgreSQL'))" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Condition="!$(DefineConstants.Contains('PostgreSQL'))" />
+    <PackageReference Include="AspNetCore.HealthChecks.Npgsql" />
+    <PackageReference Include="Hangfire.PostgreSql" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
   </ItemGroup>
 
   <ItemGroup>
