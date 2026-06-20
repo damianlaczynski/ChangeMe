@@ -11,7 +11,6 @@ export const e2eCredentials = {
   password: process.env['E2E_USER_PASSWORD'] ?? 'admin123'
 };
 
-/** Meets default password policy for create-user flows. */
 export const e2eTestPassword = 'StrongPass123!';
 
 export const authStoragePath = path.join(e2eDir, 'auth-storage.json');
