@@ -17,11 +17,29 @@
       "valueSource": "name",
       "valueTransform": "projectNameCamelCase",
       "replaces": "changeMe"
+    },
+    "ProjectNameScreamingSnake": {
+      "type": "derived",
+      "valueSource": "name",
+      "valueTransform": "projectNameScreamingSnake",
+      "replaces": "CHANGE_ME"
     }
   },
   "forms": {
     "projectNameCamelCase": {
       "identifier": "firstLowerCaseInvariant"
+    },
+    "projectNameScreamingSnake": {
+      "identifier": "chain",
+      "steps": ["projectNamePascalToSnake", "projectNameUpperCase"]
+    },
+    "projectNamePascalToSnake": {
+      "identifier": "replace",
+      "pattern": "([a-z])([A-Z])",
+      "replacement": "$1_$2"
+    },
+    "projectNameUpperCase": {
+      "identifier": "upperCaseInvariant"
     }
   },
   "primaryOutputs": [{ "path": "src/ChangeMe.Backend/ChangeMe.Backend.slnx" }],
