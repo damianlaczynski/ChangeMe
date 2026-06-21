@@ -111,11 +111,8 @@ public class User : Entity, IAggregateRoot
     foreach (var assignment in roles.Where(x => !distinctRoleIds.Contains(x.RoleId)).ToList())
       roles.Remove(assignment);
 
-    foreach (var roleId in distinctRoleIds)
-    {
-      if (!roles.Any(x => x.RoleId == roleId))
-        roles.Add(UserRole.Create(Id, roleId));
-    }
+    foreach (var roleId in distinctRoleIds.Where(roleId => !roles.Any(x => x.RoleId == roleId)))
+      roles.Add(UserRole.Create(Id, roleId));
 
     return Result.Success();
   }

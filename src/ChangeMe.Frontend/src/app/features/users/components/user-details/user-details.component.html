@@ -141,18 +141,20 @@
             <p-progressSpinner ariaLabel="Loading sessions" />
           </div>
         } @else if (sessions().length === 0) {
-          <p class="text-muted-color m-0 text-sm">{{ UserMessages.noActiveSessions }}</p>
+          <p class="text-muted-color m-0 text-sm">
+            {{ UserMessages.noActiveSessions }}
+          </p>
         } @else {
           <p-table [value]="sessions()" stripedRows>
             <ng-template #header>
               <tr>
-                <th>Device / browser</th>
-                <th>Sign-in method</th>
-                <th>IP address</th>
-                <th>Signed in</th>
-                <th>Last activity</th>
+                <th scope="col">Device / browser</th>
+                <th scope="col">Sign-in method</th>
+                <th scope="col">IP address</th>
+                <th scope="col">Signed in</th>
+                <th scope="col">Last activity</th>
                 @if (canManageSessions()) {
-                  <th>Actions</th>
+                  <th scope="col">Actions</th>
                 }
               </tr>
             </ng-template>

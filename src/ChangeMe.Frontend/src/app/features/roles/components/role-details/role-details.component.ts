@@ -30,8 +30,9 @@ import {
 } from '@features/roles/utils/roles.utils';
 import { EffectivePermissionsComponent } from '@features/users/components/effective-permissions/effective-permissions.component';
 import {
-  getAccountBadgeLabel,
-  getAccountBadgeSeverity
+  getUserStatusLabel,
+  getUserStatusSeverity,
+  toUserMembershipStatus
 } from '@features/users/utils/users.utils';
 import { PermissionCodes } from '@shared/authorization/permission-codes';
 import { BackButtonComponent } from '@shared/components/back-button/back-button.component';
@@ -82,8 +83,9 @@ export class RoleDetailsComponent {
 
   readonly RoleMessages = RoleMessages;
   readonly formatDescription = formatDescription;
-  readonly getAccountBadgeLabel = getAccountBadgeLabel;
-  readonly getAccountBadgeSeverity = getAccountBadgeSeverity;
+  readonly getUserStatusLabel = getUserStatusLabel;
+  readonly getUserStatusSeverity = getUserStatusSeverity;
+  readonly toUserMembershipStatus = toUserMembershipStatus;
 
   readonly role = signal<RoleDetailsDto | null>(null);
   readonly pageTitle = computed(() => this.role()?.name ?? 'Role details');

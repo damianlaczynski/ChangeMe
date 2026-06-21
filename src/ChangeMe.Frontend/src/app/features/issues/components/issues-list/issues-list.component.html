@@ -124,28 +124,28 @@
   >
     <ng-template #header>
       <tr>
-        <th pSortableColumn="Title">
+        <th scope="col" pSortableColumn="Title">
           <div class="flex items-center gap-2">
             Title
             <p-sortIcon field="Title" />
           </div>
         </th>
-        <th>Status</th>
-        <th>Priority</th>
-        <th>Assigned to</th>
-        <th pSortableColumn="CreatedAt">
+        <th scope="col">Status</th>
+        <th scope="col">Priority</th>
+        <th scope="col">Assigned to</th>
+        <th scope="col" pSortableColumn="CreatedAt">
           <div class="flex items-center gap-2">
             Created at
             <p-sortIcon field="CreatedAt" />
           </div>
         </th>
-        <th pSortableColumn="LastActivityAt">
+        <th scope="col" pSortableColumn="LastActivityAt">
           <div class="flex items-center gap-2">
             Last activity
             <p-sortIcon field="LastActivityAt" />
           </div>
         </th>
-        <th>Actions</th>
+        <th scope="col">Actions</th>
       </tr>
     </ng-template>
     <ng-template #body let-issue>

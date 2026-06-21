@@ -4,46 +4,46 @@ using System.Reflection;
 namespace ChangeMe.Backend.Web.Common;
 
 /// <summary>
-/// Adds logging for all requests in the Mediator pipeline.
+/// Adds logging for all messages in the Mediator pipeline.
 /// </summary>
-public class LoggingBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
-  where TRequest : IMessage
+public class LoggingBehavior<TMessage, TResponse> : IPipelineBehavior<TMessage, TResponse>
+  where TMessage : IMessage
 {
-  private readonly ILogger<LoggingBehavior<TRequest, TResponse>> _logger;
+  private readonly ILogger<LoggingBehavior<TMessage, TResponse>> _logger;
 
-  public LoggingBehavior(ILogger<LoggingBehavior<TRequest, TResponse>> logger)
+  public LoggingBehavior(ILogger<LoggingBehavior<TMessage, TResponse>> logger)
   {
     _logger = logger;
   }
 
   public async ValueTask<TResponse> Handle(
-    TRequest request,
-    MessageHandlerDelegate<TRequest, TResponse> next,
+    TMessage message,
+    MessageHandlerDelegate<TMessage, TResponse> next,
     CancellationToken cancellationToken)
   {
-    if (request is null)
-      throw new ArgumentNullException(nameof(request));
+    if (message is null)
+      throw new ArgumentNullException(nameof(message));
 
     if (_logger.IsEnabled(LogLevel.Information))
     {
-      _logger.LogInformation("Handling {RequestName}", typeof(TRequest).Name);
+      _logger.LogInformation("Handling {messageName}", typeof(TMessage).Name);
 
-      Type requestType = request.GetType();
-      IList<PropertyInfo> props = new List<PropertyInfo>(requestType.GetProperties());
+      Type messageType = message.GetType();
+      var props = messageType.GetProperties().ToList();
       foreach (PropertyInfo prop in props)
       {
-        object? propValue = prop.GetValue(request, null);
+        object? propValue = prop.GetValue(message, null);
         _logger.LogInformation("Property {Property} : {@Value}", prop.Name, propValue);
       }
     }
 
     var sw = Stopwatch.StartNew();
 
-    var response = await next(request, cancellationToken);
+    var response = await next(message, cancellationToken);
 
     _logger.LogInformation(
-      "Handled {RequestName} with {Response} in {ElapsedMs} ms",
-      typeof(TRequest).Name,
+      "Handled {messageName} with {Response} in {ElapsedMs} ms",
+      typeof(TMessage).Name,
       response,
       sw.ElapsedMilliseconds);
     sw.Stop();
