@@ -14,6 +14,7 @@ import { providePrimeNG } from 'primeng/config';
 
 import { LayoutService } from '@core/layout/services/layout.service';
 import { authTokenInterceptor } from '@features/auth/interceptors/auth-token.interceptor';
+import { AuthService } from '@features/auth/services/auth.service';
 import Aura from '@primeuix/themes/aura';
 import { routes } from './app.routes';
 
@@ -26,6 +27,7 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideAppInitializer(() => {
       inject(LayoutService);
+      return inject(AuthService).initializeSession();
     }),
     providePrimeNG({
       ripple: true,

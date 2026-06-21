@@ -41,6 +41,6 @@ app.UseFileStorageCleanup();
 
 await app.UseDatabase();
 
-app.Run();
+await app.RunAsync();
 
 public partial class Program;

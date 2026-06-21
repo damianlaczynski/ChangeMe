@@ -7,10 +7,7 @@ public static class UserDisplayFormat
   public static Expression<Func<User, string>> DisplayLabelExpression { get; } = user =>
     user.FirstName == "" && user.LastName == ""
       ? user.Email
-      : (user.FirstName != "" ? user.FirstName : "") +
-        (user.FirstName != "" && user.LastName != "" ? " " : "") +
-        (user.LastName != "" ? user.LastName : "") +
-        " (" + user.Email + ")";
+      : (user.FirstName + " " + user.LastName).Trim() + " (" + user.Email + ")";
 
   public static string DisplayLabel(string firstName, string lastName, string email)
   {

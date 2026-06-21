@@ -22,5 +22,7 @@ RUN dotnet publish src/ChangeMe.Backend.Web/ChangeMe.Backend.Web.csproj -c "$BUI
 
 FROM base AS final
 WORKDIR /app
-COPY --from=publish /app/publish .
+COPY --from=publish --chown=$APP_UID:$APP_UID /app/publish .
+RUN mkdir -p /app/storage && chown -R $APP_UID:$APP_UID /app/storage
+USER $APP_UID
 ENTRYPOINT ["dotnet", "ChangeMe.Backend.Web.dll"]

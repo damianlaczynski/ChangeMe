@@ -1,6 +1,5 @@
 ﻿using System.Linq.Expressions;
 using System.Reflection;
-using Microsoft.EntityFrameworkCore.Query;
 
 namespace ChangeMe.Backend.Infrastructure.Common;
 
@@ -15,56 +14,54 @@ public static class PaginationQueryableExtensions
   {
     IQueryable<TDestination> destinationQueryable = queryable.Select(selector);
 
-    int totalCount;
-    List<TDestination> items;
+    var totalCount = await destinationQueryable.CountAsync(cancellationToken);
 
-    if (destinationQueryable.Provider is IAsyncQueryProvider)
+    if (totalCount == 0)
     {
-      totalCount = await destinationQueryable.CountAsync(cancellationToken);
-
-      if (totalCount == 0)
-      {
-        return PaginationResult<TDestination>.Create(new List<TDestination>(), 0, parameters);
-      }
-
-      var sortedQuery = ApplySorting(destinationQueryable, parameters);
-
-      var pagedQuery = sortedQuery
-          .Skip((parameters.PageNumber - 1) * parameters.PageSize)
-          .Take(parameters.PageSize);
-
-      items = await pagedQuery.ToListAsync(cancellationToken);
+      return PaginationResult<TDestination>.Create(new List<TDestination>(), 0, parameters);
     }
-    else
-    {
-      totalCount = destinationQueryable.Count();
 
-      if (totalCount == 0)
-      {
-        return PaginationResult<TDestination>.Create(new List<TDestination>(), 0, parameters);
-      }
+    var sortedQuery = ApplySorting(destinationQueryable, parameters);
 
-      var sortedQuery = ApplySorting(destinationQueryable, parameters);
+    var pagedQuery = sortedQuery
+        .Skip((parameters.PageNumber - 1) * parameters.PageSize)
+        .Take(parameters.PageSize);
 
-      var pagedQuery = sortedQuery
-          .Skip((parameters.PageNumber - 1) * parameters.PageSize)
-          .Take(parameters.PageSize);
-
-      items = pagedQuery.ToList();
-    }
+    var items = await pagedQuery.ToListAsync(cancellationToken);
 
     return PaginationResult<TDestination>.Create(items, totalCount, parameters);
   }
 
-  public static async Task<PaginationResult<TDestination>> ToPaginationResultAsync<TSource, TDestination>(
+  public static Task<PaginationResult<TDestination>> ToPaginationResultAsync<TSource, TDestination>(
       this IEnumerable<TSource> source,
       Expression<Func<TSource, TDestination>> selector,
       PaginationParameters<TDestination> parameters,
       CancellationToken cancellationToken = default)
   {
-    var queryable = source.AsQueryable();
+    var destinationQueryable = source.AsQueryable().Select(selector);
 
-    return await ToPaginationResultAsync(queryable, selector, parameters, cancellationToken);
+    return Task.FromResult(ToPaginationResultInMemory(destinationQueryable, parameters));
+  }
+
+  private static PaginationResult<TDestination> ToPaginationResultInMemory<TDestination>(
+      IQueryable<TDestination> destinationQueryable,
+      PaginationParameters<TDestination> parameters)
+  {
+    var totalCount = destinationQueryable.Count();
+
+    if (totalCount == 0)
+    {
+      return PaginationResult<TDestination>.Create(new List<TDestination>(), 0, parameters);
+    }
+
+    var sortedQuery = ApplySorting(destinationQueryable, parameters);
+
+    var items = sortedQuery
+        .Skip((parameters.PageNumber - 1) * parameters.PageSize)
+        .Take(parameters.PageSize)
+        .ToList();
+
+    return PaginationResult<TDestination>.Create(items, totalCount, parameters);
   }
 
   private static IQueryable<TEntity> ApplySorting<TEntity>(IQueryable<TEntity> queryable, PaginationParameters<TEntity> parameters)

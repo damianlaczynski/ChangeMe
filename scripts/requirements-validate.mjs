@@ -146,7 +146,7 @@ function main() {
       allFrIds.add(meta.id);
     }
 
-    const expectedPrefix = meta.id.toLowerCase().replace(/_/g, "-");
+    const expectedPrefix = meta.id.toLowerCase().replaceAll("_", "-");
     if (!name.startsWith(expectedPrefix)) {
       warn(
         `Filename should start with ${expectedPrefix}: functional/${domain}/${name}`,
