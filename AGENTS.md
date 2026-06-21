@@ -7,6 +7,7 @@
 - `src/ChangeMe.Frontend` - Angular 21 frontend.
 - `src/ChangeMe.Backend` - .NET backend solution.
 - `docker-compose.yml` - local full-stack environment with frontend, backend, PostgreSQL, and MailHog.
+- `docker-compose.analyze.yml` - optional security/code analysis (Trivy, Gitleaks, Semgrep, ZAP, SonarQube); merged via `npm run compose:analyze`.
 - `docs/` - guides, technical, and requirements (`docs/README.md` for the full index).
 - `docs/guides/README.md`, `docs/technical/README.md`, `docs/requirements/requirements-change-process.md` - entry points per area.
 - Root `package.json` - optional npm scripts that run frontend and backend tasks from the repository root (see Commands).
@@ -65,6 +66,7 @@ From the repository root, run `npm install` once to install root devDependencies
 - Rebuild images only: `npm run docker:build`
 - Follow logs: `npm run docker:logs`
 - Backend tests in container (bind-mounts the repo; integration tests need the host Docker socket): `npm run docker:test:backend`
+- Security / code analysis (`docker-compose.analyze.yml`; does not start with `docker:up`): `npm run analyze:all`, `analyze:deps`, `analyze:secrets`, `analyze:sast`, `analyze:dast`, `analyze:sonar`, `analyze:sonar:export` — reports in `artifacts/`; see `docs/technical/security-analysis.md`
 
 Configuration in containers: `appsettings.json` + `appsettings.Development.json` (image build) with overrides from `docker-compose.yml` environment variables — see `docs/technical/database-and-docker.md`.
 

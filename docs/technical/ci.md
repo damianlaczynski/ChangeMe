@@ -51,12 +51,13 @@ npm run requirements:validate
 
 ## What CI does not cover
 
-| Check                         | Local command                 |
-| ----------------------------- | ----------------------------- |
-| Frontend ESLint               | `npm run lint:frontend`       |
-| Frontend / backend formatting | `npm run format:check:all`    |
-| Full stack in Docker          | `npm run docker:up`           |
-| Backend tests only in Compose | `npm run docker:test:backend` |
+| Check                         | Local command                                                            |
+| ----------------------------- | ------------------------------------------------------------------------ |
+| Frontend ESLint               | `npm run lint:frontend`                                                  |
+| Frontend / backend formatting | `npm run format:check:all`                                               |
+| Full stack in Docker          | `npm run docker:up`                                                      |
+| Backend tests only in Compose | `npm run docker:test:backend`                                            |
+| Security / dependency scans   | `npm run analyze:all` (see [security-analysis.md](security-analysis.md)) |
 
 For test scope and project layout, see `docs/guides/testing-guidelines.md`.
 

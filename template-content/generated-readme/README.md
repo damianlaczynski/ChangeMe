@@ -71,6 +71,7 @@ This codebase gives you:
 - `src/ChangeMe.Backend` - .NET solution with source projects and tests
 - `docs/` - implementation and testing guidance
 - `docker-compose.yml` - local full-stack environment (frontend, backend, PostgreSQL, MailHog)
+- `docker-compose.analyze.yml` - optional security/code analysis (see `docs/technical/security-analysis.md`)
 - `AGENTS.md` - working guide for AI agents and contributors
 
 ## Getting Started

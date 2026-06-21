@@ -1,0 +1,12 @@
+title = "ChangeMe gitleaks configuration"
+
+[allowlist]
+description = "Known dev placeholders, examples, and test credentials in the template"
+paths = [
+  '''(?i)secrets\.json\.example$''',
+  '''(?i)appsettings\.json$''',
+  '''(?i)appsettings\.Development\.json$''',
+  '''(?i)docs/''',
+  '''(?i)e2e/shared/env\.ts$''',
+  '''(?i)TestAuthHelper\.cs$''',
+]
