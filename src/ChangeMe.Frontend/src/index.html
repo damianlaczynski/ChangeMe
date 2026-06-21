@@ -8,11 +8,7 @@
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
     <!-- PrimeNG dark mode: class on <html> before bootstrap (avoids light flash). See darkModeSelector in app.config.ts -->
     <script src="runtime-config.js"></script>
-    <script>
-      if (localStorage.getItem('theme') === 'dark') {
-        document.documentElement.classList.add('app-dark');
-      }
-    </script>
+    <script src="theme-init.js"></script>
   </head>
   <body>
     <app-root></app-root>
