@@ -13,7 +13,7 @@ import { Toast } from 'primeng/toast';
     <p-confirmDialog>
       <ng-template #message let-message>
         @if (message?.message) {
-          <span>{{ message.message }}</span>
+          <span [innerHTML]="message.message"></span>
         }
       </ng-template>
     </p-confirmDialog>
