@@ -4,7 +4,7 @@ import { PaginationParameters } from '@shared/data/models/pagination-parameters.
 import { PaginationResult } from '@shared/data/models/pagination-result.model';
 import { Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
-import { environment } from '../../../../environments/environment';
+import { getApiUrl } from '../../../../environments/runtime-config';
 import { Result, ResultStatus, ValidationError } from '../models/api-response.model';
 
 const HTTP_STATUS_TO_RESULT: Partial<Record<number, ResultStatus>> = {
@@ -23,7 +23,7 @@ const HTTP_STATUS_TO_RESULT: Partial<Record<number, ResultStatus>> = {
   providedIn: 'root'
 })
 export class ApiService {
-  private readonly baseUrl = environment.apiUrl + '/';
+  private readonly baseUrl = getApiUrl() + '/';
 
   private readonly http = inject(HttpClient);
 

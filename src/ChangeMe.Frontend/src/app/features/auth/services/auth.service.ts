@@ -6,7 +6,7 @@ import {
 } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { environment } from '@environments/environment';
+import { getApiUrl } from '@environments/runtime-config';
 import { Result } from '@shared/api/models/api-response.model';
 import { ApiService } from '@shared/api/services/api.service';
 import { Observable, firstValueFrom, from, of, throwError } from 'rxjs';
@@ -30,7 +30,7 @@ export class AuthService {
   private readonly authStorageService = inject(AuthStorageService);
   private readonly router = inject(Router);
 
-  private readonly baseUrl = environment.apiUrl + '/';
+  private readonly baseUrl = getApiUrl() + '/';
   private readonly session = signal<AuthResponse | null>(
     this.authStorageService.getSession()
   );

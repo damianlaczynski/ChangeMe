@@ -17,7 +17,7 @@
 - Backend change: read `docs/guides/README.md`, then `repo-map.md` and `backend-guidelines.md` under `docs/guides/`.
 - Test work or bugfix verification: read `docs/guides/testing-guidelines.md`.
 - Cross-stack feature: read all four docs above before editing.
-- Auth deployment, Docker, CI, or local stack: read `docs/technical/README.md`, then the linked technical doc.
+- Auth deployment, Docker, CI, or local stack: read `docs/technical/README.md`, then the linked technical doc (`deployment.md` for production runtime URL and checklist).
 - Requirement changes: read `docs/requirements/requirements-change-process.md`; new or updated `FR-*` authoring rules in `docs/requirements/requirements-authoring-guide.md`; pending deltas in `docs/requirements/changes/`; validate with `npm run requirements:validate`.
 
 ## Commands
