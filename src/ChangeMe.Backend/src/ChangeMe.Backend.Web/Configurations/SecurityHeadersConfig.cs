@@ -8,8 +8,8 @@ public static class SecurityHeadersConfig
     {
       var headers = context.Response.Headers;
 
-      headers["X-Content-Type-Options"] = "nosniff";
-      headers["X-Frame-Options"] = "DENY";
+      headers.XContentTypeOptions = "nosniff";
+      headers.XFrameOptions = "DENY";
       headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
       headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=(), payment=()";
       headers["Cross-Origin-Opener-Policy"] = "same-origin";
