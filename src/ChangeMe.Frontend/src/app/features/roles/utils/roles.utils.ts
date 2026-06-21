@@ -1,5 +1,6 @@
-import { groupEffectivePermissions } from '@features/users/utils/users.utils';
 import { highlightDialogValue } from '@shared/ui/utils/dialog-message.utils';
+
+export { groupEffectivePermissions } from '@features/users/utils/users.utils';
 
 export const RoleConstraints = {
   NAME_MIN_LENGTH: 2,
@@ -29,8 +30,6 @@ export const RoleMessages = {
 export function formatDescription(description: string | null | undefined): string {
   return description?.trim() ? description : RoleMessages.emptyDescription;
 }
-
-export { groupEffectivePermissions };
 
 export function getDeleteRoleConfirmMessage(roleName: string): string {
   return `Delete role ${highlightDialogValue(roleName)}? Users will lose permissions granted only through this role.`;

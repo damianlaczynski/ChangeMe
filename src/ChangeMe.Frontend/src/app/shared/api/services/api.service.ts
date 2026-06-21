@@ -167,7 +167,7 @@ export class ApiService {
 
   private normalizeResultStatus(status: unknown): ResultStatus {
     if (typeof status === 'number') {
-      return status as ResultStatus;
+      return status;
     }
 
     if (typeof status === 'string') {

@@ -260,7 +260,7 @@ public class Issue : Entity, IAggregateRoot
     Guid actorUserId)
   {
     if (attachments.Count >= IssueConstraints.ATTACHMENT_MAX_ATTACHMENTS_PER_ISSUE)
-      return Result.Invalid([new ValidationError(nameof(Attachments), $"cannot exceed {IssueConstraints.ATTACHMENT_MAX_ATTACHMENTS_PER_ISSUE} attachments per issue")]);
+      return Result.Invalid(new ValidationError(nameof(Attachments), $"cannot exceed {IssueConstraints.ATTACHMENT_MAX_ATTACHMENTS_PER_ISSUE} attachments per issue"));
 
     var attachmentResult = IssueAttachment.Create(
       Id,
