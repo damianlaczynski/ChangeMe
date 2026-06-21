@@ -27,6 +27,7 @@ builder.Services.AddFastEndpointsWithSwagger();
 var app = builder.Build();
 
 app.UseExceptionHandler();
+app.UseSecurityHeaders();
 
 app.UseCors(CorsConfig.CorsPolicyName);
 app.UseAuthentication();
