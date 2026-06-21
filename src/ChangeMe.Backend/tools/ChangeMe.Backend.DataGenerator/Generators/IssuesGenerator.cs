@@ -27,7 +27,7 @@ internal sealed class IssuesGenerator(IOptions<DataGeneratorOptions> options)
     return issues;
   }
 
-  private DomainIssue CreateDemoIssue(
+  private static DomainIssue CreateDemoIssue(
     int index,
     IReadOnlyList<DomainUser> demoUsers,
     Faker faker,

@@ -106,7 +106,7 @@ public class Role : Entity, IAggregateRoot
     permissions.Add(RolePermission.Create(Id, permissionCode));
   }
 
-  private static void ValidateName(string name, ICollection<ValidationError> validationErrors)
+  private static void ValidateName(string name, List<ValidationError> validationErrors)
   {
     if (string.IsNullOrWhiteSpace(name))
       validationErrors.Add(new ValidationError(nameof(Name), "cannot be null or empty"));

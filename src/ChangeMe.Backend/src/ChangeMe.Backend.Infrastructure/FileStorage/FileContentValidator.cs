@@ -16,40 +16,38 @@ public sealed class FileContentValidator(
     IReadOnlyCollection<string> allowedExtensions)
   {
     if (sizeBytes <= 0)
-      return Result<FileContentValidationResult>.Invalid([new ValidationError("File", "cannot be empty")]);
+      return Result<FileContentValidationResult>.Invalid(new ValidationError("File", "cannot be empty"));
 
     if (sizeBytes > maxFileSizeBytes)
-      return Result<FileContentValidationResult>.Invalid([new ValidationError("File", $"cannot exceed {maxFileSizeBytes} bytes")]);
+      return Result<FileContentValidationResult>.Invalid(new ValidationError("File", $"cannot exceed {maxFileSizeBytes} bytes"));
 
     var sanitizedFileName = SanitizeFileName(originalFileName);
     if (string.IsNullOrWhiteSpace(sanitizedFileName))
-      return Result<FileContentValidationResult>.Invalid([new ValidationError("File", "file name is invalid")]);
+      return Result<FileContentValidationResult>.Invalid(new ValidationError("File", "file name is invalid"));
 
     var extension = Path.GetExtension(sanitizedFileName);
     if (string.IsNullOrWhiteSpace(extension))
-      return Result<FileContentValidationResult>.Invalid([new ValidationError("File", "file extension is required")]);
+      return Result<FileContentValidationResult>.Invalid(new ValidationError("File", "file extension is required"));
 
     extension = extension.ToLowerInvariant();
     if (!IsExtensionAllowed(extension, allowedExtensions))
-      return Result<FileContentValidationResult>.Invalid([new ValidationError("File", "file type is not allowed")]);
+      return Result<FileContentValidationResult>.Invalid(new ValidationError("File", "file type is not allowed"));
 
     var profile = FileExtensionProfiles.GetProfile(extension);
     if (profile is null)
-      return Result<FileContentValidationResult>.Invalid([new ValidationError("File", "file type is not allowed")]);
+      return Result<FileContentValidationResult>.Invalid(new ValidationError("File", "file type is not allowed"));
 
     if (!ContentMatchesExtension(profile, contentPreview))
-      return Result<FileContentValidationResult>.Invalid([
-        new ValidationError("File", "file content does not match file extension")
-      ]);
+      return Result<FileContentValidationResult>.Invalid(
+        new ValidationError("File", "file content does not match file extension"));
 
     if (!string.IsNullOrWhiteSpace(declaredContentType)
         && !string.Equals(
           declaredContentType.Split(';')[0].Trim(),
           profile.ContentType,
           StringComparison.OrdinalIgnoreCase))
-      return Result<FileContentValidationResult>.Invalid([
-        new ValidationError("File", "declared content type does not match file content")
-      ]);
+      return Result<FileContentValidationResult>.Invalid(
+        new ValidationError("File", "declared content type does not match file content"));
 
     return Result.Success(new FileContentValidationResult(
       sanitizedFileName,

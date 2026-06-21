@@ -160,7 +160,7 @@ public class User : Entity, IAggregateRoot
     return validationErrors;
   }
 
-  private static void ValidateEmail(string email, ICollection<ValidationError> validationErrors)
+  private static void ValidateEmail(string email, List<ValidationError> validationErrors)
   {
     if (string.IsNullOrWhiteSpace(email))
     {
@@ -181,7 +181,7 @@ public class User : Entity, IAggregateRoot
     }
   }
 
-  private static void ValidateName(string value, string propertyName, ICollection<ValidationError> validationErrors)
+  private static void ValidateName(string value, string propertyName, List<ValidationError> validationErrors)
   {
     if (string.IsNullOrWhiteSpace(value))
     {

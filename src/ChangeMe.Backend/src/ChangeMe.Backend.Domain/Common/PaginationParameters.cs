@@ -2,7 +2,7 @@
 
 public class PaginationParameters<T>
 {
-  private static readonly int MaxPageSize = 100;
+  private const int MaxPageSize = 100;
   public const int DefaultPageSize = 10;
   public const int DefaultPageNumber = 1;
   public const string DefaultSortField = "Id";
@@ -15,7 +15,15 @@ public class PaginationParameters<T>
   public int PageSize
   {
     get => _pageSize;
-    set => _pageSize = value > MaxPageSize ? MaxPageSize : (value <= 0 ? DefaultPageSize : value);
+    set
+    {
+      if (value > MaxPageSize)
+        _pageSize = MaxPageSize;
+      else if (value <= 0)
+        _pageSize = DefaultPageSize;
+      else
+        _pageSize = value;
+    }
   }
 
   public string SortField { get; set; } = DefaultSortField;

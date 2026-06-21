@@ -26,7 +26,7 @@ public class LoggingBehavior<TMessage, TResponse> : IPipelineBehavior<TMessage, 
 
     if (_logger.IsEnabled(LogLevel.Information))
     {
-      _logger.LogInformation("Handling {messageName}", typeof(TMessage).Name);
+      _logger.LogInformation("Handling {MessageName}", typeof(TMessage).Name);
 
       Type messageType = message.GetType();
       var props = messageType.GetProperties().ToList();
@@ -42,7 +42,7 @@ public class LoggingBehavior<TMessage, TResponse> : IPipelineBehavior<TMessage, 
     var response = await next(message, cancellationToken);
 
     _logger.LogInformation(
-      "Handled {messageName} with {Response} in {ElapsedMs} ms",
+      "Handled {MessageName} with {Response} in {ElapsedMs} ms",
       typeof(TMessage).Name,
       response,
       sw.ElapsedMilliseconds);

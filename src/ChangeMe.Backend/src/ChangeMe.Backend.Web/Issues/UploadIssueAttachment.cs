@@ -31,13 +31,12 @@ public class UploadIssueAttachment(IMediator mediator) : Endpoint<UploadIssueAtt
 
     if (file is null || file.Length == 0)
     {
-      response = Result<IssueAttachmentDto>.Invalid([new ValidationError("File", "cannot be empty")]);
+      response = Result<IssueAttachmentDto>.Invalid(new ValidationError("File", "cannot be empty"));
     }
     else if (file.Length > IssueConstraints.ATTACHMENT_MAX_FILE_SIZE_BYTES)
     {
-      response = Result<IssueAttachmentDto>.Invalid([
-        new ValidationError("File", $"cannot exceed {IssueConstraints.ATTACHMENT_MAX_FILE_SIZE_BYTES} bytes")
-      ]);
+      response = Result<IssueAttachmentDto>.Invalid(
+        new ValidationError("File", $"cannot exceed {IssueConstraints.ATTACHMENT_MAX_FILE_SIZE_BYTES} bytes"));
     }
     else
     {
