@@ -7,7 +7,8 @@
     <NoWarn>$(NoWarn);NU5128</NoWarn>
 
     <PackageId>ChangeMe</PackageId>
-    <Version>1.0.0</Version>
+    <Version>2.0.0</Version>
+    <PackageReleaseNotes>See CHANGELOG.md — API v1, same-origin Docker proxy, RBAC, session auth, Playwright E2E, attachments, root npm scripts, Mediator, slnx.</PackageReleaseNotes>
     <Title>ChangeMe</Title>
     <Authors>Damian Łączyński</Authors>
     <Description>Full-stack dotnet new starter template with Angular frontend, layered ASP.NET backend, PostgreSQL, Docker Compose, tests, and project documentation.</Description>

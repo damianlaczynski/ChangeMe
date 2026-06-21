@@ -1,17 +1,63 @@
 # ChangeMe
 
-ChangeMe is a template full-stack issue tracking application. It is intended as a practical starter repository for building and extending a modern web app with a typed frontend, a layered .NET backend, JWT session authentication, persistence, and automated testing already in place.
+ChangeMe is a **full-stack starter template** for `dotnet new` — not a product you deploy as-is. It ships a small sample app (issue tracking) so you can see patterns in context, but the value is the **architecture, tooling, documentation workflow, and test setup** you reuse in your own domain.
 
-The current feature set centers around authenticated issue management with role-based access control: administrators create users and assign roles; signed-in users browse issues and, when permitted, create, edit, and delete them.
+Use it to bootstrap Angular + ASP.NET projects with layered backend, JWT sessions, PostgreSQL, Docker Compose, CI, and docs already wired — then replace or extend the sample features.
+
+## What the template gives you
+
+### Architecture and patterns
+
+- **Layered backend** — Web → UseCases → Domain → Infrastructure, with feature folders and handler conventions
+- **FastEndpoints** + **Mediator** source generator — command/query handlers, validation, and endpoint base types
+- **API versioning** (`/api/v1`) — pattern for versioned routes and Swagger
+- **JWT sessions** — access + refresh tokens, session list/revoke; **RBAC** with permission catalog, guards, and backend checks (reference implementation)
+- **EF Core** + PostgreSQL — configurations, migrations (`InitialCreate`), repository-style `ApplicationDbContext` usage
+- **Cross-cutting infrastructure** — Hangfire jobs, Serilog, email abstraction (MailHog locally), local file storage pattern
+- **Angular feature slices** — `features/<name>/`, shared `ApiService`, interceptors, guards, PrimeNG + Tailwind setup
+- **Production frontend config** — `runtime-config.js`, nginx same-origin proxy for `/api/` and `/hubs/` in Docker
+- **Sample domain** — issues CRUD, comments, attachments, notifications illustrate end-to-end flows; treat as examples to copy or remove
+
+### Tooling (ready to run)
+
+- Root **`package.json`** — one entry point for start/build, lint/format, unit & integration tests, E2E, EF migrations, Docker Compose, demo data, requirements validation
+- **Docker Compose** — full stack (frontend, backend, PostgreSQL, MailHog) plus optional test profile
+- **GitHub Actions CI** — requirements, frontend, backend, and Playwright E2E in parallel
+- **Playwright E2E** — project layout, fixtures, smoke pattern (`docs/guides/e2e-guidelines.md`)
+- **Testcontainers** — integration tests against real PostgreSQL
+- **Data generator** — CLI pattern for Development seed data (`npm run data:generate`)
+- **`dotnet new` token replacement** — `ChangeMe` plus derived `changeMe` / `CHANGE_ME` symbols from your project name
+
+### Documentation workflow
+
+Three doc layers, each with an entry point:
+
+| Layer                    | Purpose                                                                                             |
+| ------------------------ | --------------------------------------------------------------------------------------------------- |
+| **`docs/guides/`**       | How to implement — repo map, frontend/backend guidelines, testing & E2E guidelines, feature recipes |
+| **`docs/technical/`**    | How to run & deploy — Docker, database, CI, deployment checklist, data generator                    |
+| **`docs/requirements/`** | What to build — `FR-*` / `NFR-*` specs, authoring guide, change process, validation script          |
+
+- **`AGENTS.md`** — fast-start for AI agents and contributors (task → which doc to open, commands, coupling checks)
+- **`npm run requirements:validate`** — lint specs, cross-references, regenerate requirements index
+- Templates for new specs and change deltas (`_functional-specification-template.md`, `_changes-template.md`)
+
+### Testing approach
+
+- **Frontend** — component/service specs where they add value; primary confidence from Playwright smoke tests
+- **Backend unit** — domain and infrastructure helpers
+- **Backend integration** — API behaviour with Testcontainers; endpoint tests mirror Web layer
+- **`docs/guides/testing-guidelines.md`** — layer ownership, when to skip redundant tests, anti-patterns
 
 ## Purpose
 
 This repository is meant to provide:
 
-- a clean full-stack starting point for product work
+- a reproducible full-stack skeleton with conventions already chosen
 - a clear separation between frontend, API, domain, and infrastructure concerns
-- a place to practice or extend real-world patterns such as login sessions, permissions, CRUD flows, validation, and integration testing
-- a documented structure that is easy for both developers and AI agents to navigate
+- reference implementations of auth, permissions, CRUD, validation, background jobs, and integration testing
+- a documentation and requirements workflow you can keep as the product grows
+- a structure that is easy for both developers and AI agents to navigate
 
 ## Tech Stack
 
@@ -22,6 +68,7 @@ This repository is meant to provide:
 - Local email testing: MailHog
 - Testing: Angular test runner, .NET unit tests, .NET integration tests with Testcontainers
 - Local orchestration: Docker Compose
+- UI: PrimeNG + Tailwind CSS
 
 ## Repository Structure
 
@@ -33,15 +80,6 @@ This repository is meant to provide:
 - `.template.config/` - `dotnet new` template manifest (`changeme`, `sourceName` token `ChangeMe`)
 - `template-pack/` - NuGet packaging project for the template
 - `template-content/` - overlays and **generated-project** `README.md` (consumer readme for `dotnet new` output)
-
-## Main Features
-
-- email/password login, session refresh, and logout
-- admin-managed users, roles, and permission-based access
-- issue listing, details, comments, attachments, and notifications
-- authenticated issue create, edit, and delete (permission-gated)
-- layered backend architecture with separate Web, UseCases, Domain, and Infrastructure projects
-- integration-ready local development stack
 
 ## Getting Started
 
@@ -108,6 +146,7 @@ Useful commands:
 npm run lint
 npm run format
 npm test
+npm run test:e2e
 ```
 
 ### Backend (this repository)

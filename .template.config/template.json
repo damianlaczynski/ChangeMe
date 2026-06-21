@@ -67,7 +67,8 @@
             "**/logs/**",
             "*.nupkg",
             "README.md",
-            "CONTRIBUTING.md"
+            "CONTRIBUTING.md",
+            "CHANGELOG.md"
           ]
         }
       ]

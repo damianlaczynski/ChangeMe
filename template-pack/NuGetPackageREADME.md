@@ -1,6 +1,6 @@
 # ChangeMe Full Stack Templates
 
-`ChangeMe` is a full-stack starter template for `dotnet new`.
+`ChangeMe` is a full-stack **starter template** for `dotnet new` — architecture, tooling, docs workflow, and tests you reuse; a small issue-tracking **sample app** shows the patterns in context.
 
 It generates:
 
@@ -9,7 +9,11 @@ It generates:
 - **PostgreSQL** for EF Core, Hangfire, integration tests, and Docker Compose
 - MailHog for local email capture
 - backend unit and integration test projects
-- `docs/` with guides, technical notes (`docs/technical/database-and-docker.md`), and requirements
+- Playwright E2E smoke tests (Chromium via `npm run install:frontend`)
+- `docs/` with guides, technical notes, requirements workflow (`FR-*` specs, validation script), and `AGENTS.md`
+- layered backend (Web → UseCases → Domain → Infrastructure), JWT + RBAC reference, API `/api/v1`, Mediator + FastEndpoints
+
+Production Docker stack uses **same-origin** `/api/v1` through nginx; see `docs/technical/deployment.md`.
 
 ## Install
 

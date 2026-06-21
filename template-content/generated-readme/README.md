@@ -1,17 +1,58 @@
 # ChangeMe
 
-ChangeMe is a full-stack issue tracking application starter: Angular frontend, layered ASP.NET backend, JWT session authentication, persistence, Hangfire, local MailHog, and automated tests.
+Full-stack starter generated from the **ChangeMe** template: Angular frontend, layered ASP.NET backend, PostgreSQL, Docker Compose, and automated tests.
 
-Administrators create users and assign roles; signed-in users browse issues and, when permitted, create, edit, and delete them.
+The included **issue-tracking sample** shows how features are structured — login, RBAC, CRUD, attachments, notifications. Replace or remove it; keep the **architecture, tooling, guidelines, and doc workflow**.
+
+## What you get
+
+### Architecture and patterns
+
+- **Layered backend** — Web → UseCases → Domain → Infrastructure, with feature folders and handler conventions
+- **FastEndpoints** + **Mediator** source generator — command/query handlers, validation, and endpoint base types
+- **API versioning** (`/api/v1`) — pattern for versioned routes and Swagger
+- **JWT sessions** — access + refresh tokens, session list/revoke; **RBAC** with permission catalog, guards, and backend checks (reference implementation)
+- **EF Core** + PostgreSQL — configurations, migrations (`InitialCreate`), `ApplicationDbContext` usage
+- **Cross-cutting infrastructure** — Hangfire jobs, Serilog, email abstraction (MailHog locally), local file storage pattern
+- **Angular feature slices** — `features/<name>/`, shared `ApiService`, interceptors, guards, PrimeNG + Tailwind setup
+- **Production frontend config** — `runtime-config.js`, nginx same-origin proxy for `/api/` and `/hubs/` in Docker
+- **Sample domain** — issues, users, roles illustrate end-to-end flows; copy the pattern or delete the feature
+
+### Tooling (ready to run)
+
+- Root **`package.json`** — start/build, lint/format, tests, E2E, EF migrations, Docker Compose, demo data, requirements validation
+- **Docker Compose** — full stack (frontend, backend, PostgreSQL, MailHog)
+- **Playwright E2E** — project layout, fixtures, smoke pattern (`docs/guides/e2e-guidelines.md`)
+- **Testcontainers** — integration tests against real PostgreSQL
+- **Data generator** — Development seed data CLI (`npm run data:generate`)
+
+### Documentation workflow
+
+| Layer                    | Purpose                                                                                             |
+| ------------------------ | --------------------------------------------------------------------------------------------------- |
+| **`docs/guides/`**       | How to implement — repo map, frontend/backend guidelines, testing & E2E guidelines, feature recipes |
+| **`docs/technical/`**    | How to run & deploy — Docker, database, CI, deployment checklist                                    |
+| **`docs/requirements/`** | What to build — `FR-*` / `NFR-*` specs, authoring guide, change process                             |
+
+- **`AGENTS.md`** — fast-start for AI agents and contributors
+- **`npm run requirements:validate`** — lint specs and regenerate the requirements index
+
+### Testing approach
+
+- **Frontend** — specs where useful; Playwright smoke tests for main flows
+- **Backend unit** — domain and infrastructure helpers
+- **Backend integration** — API behaviour with Testcontainers
+- **`docs/guides/testing-guidelines.md`** — layer ownership and when to skip redundant tests
 
 ## Purpose
 
 This codebase gives you:
 
-- a clean full-stack starting point for product work
+- a reproducible full-stack skeleton with conventions already chosen
 - separation between frontend, API, domain, and infrastructure
-- patterns for login sessions, permissions, CRUD flows, validation, and integration testing
-- documentation that is easy for developers and AI assistants to follow
+- reference implementations you can extend or replace with your own domain
+- a documentation and requirements workflow as the product grows
+- structure that is easy for developers and AI assistants to follow
 
 ## Tech Stack
 
@@ -22,6 +63,7 @@ This codebase gives you:
 - Local email testing: MailHog
 - Testing: Angular test runner, .NET unit tests, .NET integration tests with Testcontainers
 - Local orchestration: Docker Compose
+- UI: PrimeNG + Tailwind CSS
 
 ## Repository Structure
 
@@ -30,15 +72,6 @@ This codebase gives you:
 - `docs/` - implementation and testing guidance
 - `docker-compose.yml` - local full-stack environment (frontend, backend, PostgreSQL, MailHog)
 - `AGENTS.md` - working guide for AI agents and contributors
-
-## Main Features
-
-- email/password login, session refresh, and logout
-- admin-managed users, roles, and permission-based access
-- issue listing, details, comments, attachments, and notifications
-- authenticated issue create, edit, and delete (permission-gated)
-- layered backend architecture with separate Web, UseCases, Domain, and Infrastructure projects
-- integration-ready local development stack
 
 ## Getting Started
 
@@ -65,7 +98,10 @@ Useful commands:
 npm run lint
 npm run format
 npm test
+npm run test:e2e
 ```
+
+See `docs/guides/e2e-guidelines.md` for Playwright setup (Chromium from `npm run install:frontend`).
 
 ### Backend
 

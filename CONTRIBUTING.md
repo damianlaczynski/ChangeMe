@@ -29,6 +29,8 @@ dotnet nuget push template-pack/bin/Release/ChangeMe.<version>.nupkg --source ht
 
 Package readme lives in **`template-pack/NuGetPackageREADME.md`**.
 
+Release notes: bump **`Version`** in **`template-pack/ChangeMe.Templates.csproj`**, update **`CHANGELOG.md`**, then pack and push. Tag the release in git (`v2.0.0`) so changelog compare links resolve.
+
 ## Layout hints for editors
 
 - `.template.config/template.json` – symbols, sources.
