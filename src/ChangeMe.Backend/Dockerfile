@@ -14,11 +14,18 @@ WORKDIR /src
 COPY src/ChangeMe.Backend/ ./src/ChangeMe.Backend/
 WORKDIR /src/src/ChangeMe.Backend/
 RUN dotnet restore ChangeMe.Backend.slnx
-RUN dotnet build src/ChangeMe.Backend.Web/ChangeMe.Backend.Web.csproj -c "$BUILD_CONFIGURATION" -o /app/build --no-restore
+RUN dotnet build src/ChangeMe.Backend.Web/ChangeMe.Backend.Web.csproj \
+    -c "$BUILD_CONFIGURATION" \
+    -o /app/build \
+    --no-restore
 
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish src/ChangeMe.Backend.Web/ChangeMe.Backend.Web.csproj -c "$BUILD_CONFIGURATION" -o /app/publish /p:UseAppHost=false --no-restore
+RUN dotnet publish src/ChangeMe.Backend.Web/ChangeMe.Backend.Web.csproj \
+    -c "$BUILD_CONFIGURATION" \
+    -o /app/publish \
+    /p:UseAppHost=false \
+    --no-restore
 
 FROM base AS final
 WORKDIR /app

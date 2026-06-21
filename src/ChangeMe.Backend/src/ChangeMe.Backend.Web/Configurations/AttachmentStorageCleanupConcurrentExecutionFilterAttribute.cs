@@ -6,7 +6,7 @@ using Hangfire.Server;
 namespace ChangeMe.Backend.Web.Configurations;
 
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
-internal sealed class AttachmentStorageCleanupConcurrentExecutionFilter(int timeoutInSeconds)
+internal sealed class AttachmentStorageCleanupConcurrentExecutionFilterAttribute(int timeoutInSeconds)
   : JobFilterAttribute, IServerFilter
 {
   private readonly DisableConcurrentExecutionAttribute _inner = new(timeoutInSeconds);

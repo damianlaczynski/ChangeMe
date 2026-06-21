@@ -36,6 +36,5 @@ public abstract class BaseEndpoint<TRequest, TResponse>(IMediator mediator) : En
     };
 
     await HttpContext.SendResultAsync(response, ct);
-    return;
   }
 }

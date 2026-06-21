@@ -54,6 +54,7 @@ public class BackendWebApplicationFactory : WebApplicationFactory<Program>, IAsy
     await postgresContainer.DisposeAsync().AsTask().WaitAsync(cancellationToken);
     await base.DisposeAsync();
     TryDeleteFileStorageRoot();
+    GC.SuppressFinalize(this);
   }
 
   protected override void ConfigureWebHost(IWebHostBuilder builder)

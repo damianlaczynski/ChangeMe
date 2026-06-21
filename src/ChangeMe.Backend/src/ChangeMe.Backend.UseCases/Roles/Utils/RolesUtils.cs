@@ -57,7 +57,8 @@ public static class RolesUtils
     return await context.Roles
       .AsNoTracking()
       .AnyAsync(
-        x => x.Name.ToUpper() == normalizedName && (!excludeRoleId.HasValue || x.Id != excludeRoleId.Value),
+        x => x.Name.ToUpper() == normalizedName
+          && (!excludeRoleId.HasValue || x.Id != excludeRoleId.Value),
         cancellationToken);
   }
 

@@ -246,17 +246,17 @@ export class UsersListComponent {
     }
 
     if (this.canDeactivateUsers()) {
-      if (!user.deactivated) {
-        items.push({
-          label: 'Deactivate',
-          icon: 'pi pi-ban',
-          command: () => this.confirmDeactivate(user)
-        });
-      } else {
+      if (user.deactivated) {
         items.push({
           label: 'Activate',
           icon: 'pi pi-check',
           command: () => this.confirmActivate(user)
+        });
+      } else {
+        items.push({
+          label: 'Deactivate',
+          icon: 'pi pi-ban',
+          command: () => this.confirmDeactivate(user)
         });
       }
     }

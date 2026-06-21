@@ -97,7 +97,7 @@ public class ApplicationDbContext(
 
     var entitiesWithEvents = ChangeTracker.Entries<HasDomainEventsBase>()
       .Select(e => e.Entity)
-      .Where(e => e.DomainEvents.Any())
+      .Where(e => e.DomainEvents.Count > 0)
       .ToArray();
 
     dispatcher.DispatchAndClearEvents(entitiesWithEvents);

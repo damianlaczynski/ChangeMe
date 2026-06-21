@@ -6,7 +6,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.AddSerilog();
 
 var loggerFactory = LoggerFactory.Create(lb => lb.AddSimpleConsole(o => o.SingleLine = true));
-var logger = loggerFactory.CreateLogger(typeof(Program));
+var logger = loggerFactory.CreateLogger<Program>();
 
 builder.Services.AddCors(builder);
 builder.Services.AddJwtAuthentication(builder);
