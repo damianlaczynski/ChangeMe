@@ -129,12 +129,11 @@ services:
         set -e
         mkdir -p /repo/artifacts/trivy
         for img in changeme-frontend changeme-backend; do
-          if docker image inspect "$$img" >/dev/null 2>&1; then
-            echo "Scanning image $$img"
-            trivy image --severity HIGH,CRITICAL --ignore-unfixed \
-              --format json --output "/repo/artifacts/trivy/images-$${img}.json" "$$img"
-            trivy image --severity HIGH,CRITICAL --ignore-unfixed \
-              --format table --output "/repo/artifacts/trivy/images-$${img}.txt" "$$img"
+          if trivy image --severity HIGH,CRITICAL --ignore-unfixed \
+            --format json --output "/repo/artifacts/trivy/images-$${img}.json" "$$img" \
+            && trivy image --severity HIGH,CRITICAL --ignore-unfixed \
+            --format table --output "/repo/artifacts/trivy/images-$${img}.txt" "$$img"; then
+            echo "Scanned image $$img"
           else
             echo "Skipping $$img (image not found — run npm run docker:build first)" \
               > "/repo/artifacts/trivy/images-$${img}.skipped.txt"
@@ -152,10 +151,12 @@ services:
     command:
       - |
         set -e
+        set -o pipefail
         mkdir -p /repo/artifacts/gitleaks
         gitleaks detect \
           --source=/repo \
           --config=/repo/config/gitleaks.toml \
+          $(if [ -d /repo/.git ]; then echo ""; else echo "--no-git"; fi) \
           --report-path=/repo/artifacts/gitleaks/report.json \
           --report-format=json \
           --verbose 2>&1 | tee /repo/artifacts/gitleaks/scan.log
@@ -172,13 +173,14 @@ services:
     command:
       - |
         set -e
+        set -o pipefail
         mkdir -p /repo/artifacts/semgrep
         semgrep scan \
           --config p/default --config p/csharp --config p/typescript \
           --error \
           --exclude node_modules --exclude bin --exclude obj \
-          --json --json-output=/repo/artifacts/semgrep/report.json \
-          --sarif --sarif-output=/repo/artifacts/semgrep/report.sarif \
+          --json-output=/repo/artifacts/semgrep/report.json \
+          --sarif-output=/repo/artifacts/semgrep/report.sarif \
           . 2>&1 | tee /repo/artifacts/semgrep/scan.log
 
   zap-baseline:

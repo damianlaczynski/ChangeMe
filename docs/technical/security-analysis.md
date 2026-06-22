@@ -32,20 +32,20 @@ Console output is also tee'd to `scan.log` where useful.
 
 ## Quick reference
 
-| Command                        | What it runs                                                          | Needs running app?                             |
-| ------------------------------ | --------------------------------------------------------------------- | ---------------------------------------------- |
-| `npm run analyze:deps`         | Trivy filesystem (lockfiles, configs)                                 | No                                             |
-| `npm run analyze:deps:images`  | Trivy on `changeme-frontend` / `changeme-backend` images              | Images built (`npm run docker:build`)          |
-| `npm run analyze:deps:audit`   | `npm audit` + `dotnet list package --vulnerable` → `artifacts/audit/` | No                                             |
-| `npm run analyze:secrets`      | Gitleaks (git tree + history)                                         | No                                             |
-| `npm run analyze:sast`         | Semgrep (`p/default`, `p/csharp`, `p/typescript`)                     | No                                             |
-| `npm run analyze:dast`         | OWASP ZAP baseline → `http://host.docker.internal:4200`               | Yes (`npm run docker:up` or dev servers)       |
-| `npm run analyze:sonar:up`     | Start SonarQube + DB (http://localhost:9000)                          | No                                             |
-| `npm run analyze:sonar`        | Start SonarQube, bootstrap token, scan FE + BE, export reports        | No (automatic)                                 |
-| `npm run analyze:sonar:export` | Download metrics + issues JSON/TXT from SonarQube API (no UI)         | SonarQube up, prior scan recommended           |
-| `npm run analyze:sonar:down`   | Stop SonarQube containers                                             | No                                             |
-| `npm run analyze:quick`        | `deps` + `secrets` + `sast` + `deps:audit`                            | No                                             |
-| `npm run analyze:all`          | `quick` + `deps:images` + `dast` + `sonar` (full local suite)         | Yes — see [Full suite](#full-suite-analyzeall) |
+| Command                        | What it runs                                                                                           | Needs running app?                             |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------ | ---------------------------------------------- |
+| `npm run analyze:deps`         | Trivy filesystem (lockfiles, configs)                                                                  | No                                             |
+| `npm run analyze:deps:images`  | Trivy on `changeme-frontend` / `changeme-backend` images                                               | Images built (`npm run docker:build`)          |
+| `npm run analyze:deps:audit`   | `npm audit` + `dotnet list package --vulnerable` → `artifacts/audit/`                                  | No                                             |
+| `npm run analyze:secrets`      | Gitleaks (git tree + history)                                                                          | No                                             |
+| `npm run analyze:sast`         | Semgrep (`p/default`, `p/csharp`, `p/typescript`)                                                      | No                                             |
+| `npm run analyze:dast`         | OWASP ZAP baseline → `http://host.docker.internal:4200`                                                | Yes (`npm run docker:up` or dev servers)       |
+| `npm run analyze:sonar:up`     | Start SonarQube + DB (http://localhost:9000)                                                           | No                                             |
+| `npm run analyze:sonar`        | Start SonarQube, bootstrap token, scan FE + BE, export reports                                         | No (automatic)                                 |
+| `npm run analyze:sonar:export` | Download metrics + issues JSON/TXT from SonarQube API (no UI)                                          | SonarQube up, prior scan recommended           |
+| `npm run analyze:sonar:down`   | Stop SonarQube containers                                                                              | No                                             |
+| `npm run analyze:quick`        | `run-steps.mjs quick` — `deps`, `secrets`, `audit`, `sast` (each step runs even if a prior one failed) | No                                             |
+| `npm run analyze:all`          | `run-steps.mjs all` — quick steps + `deps:images`, `dast`, `sonar` (same continue-on-failure behavior) | Yes — see [Full suite](#full-suite-analyzeall) |
 
 Equivalent Compose invocations:
 
@@ -94,6 +94,10 @@ npm run analyze:all
 
 For only the lightweight scans (no DAST, images, or Sonar), use `npm run analyze:quick` instead.
 
+**Continue on findings:** `analyze:quick` and `analyze:all` use `scripts/analyze/run-steps.mjs`. Each tool runs as its own step — if Trivy, Semgrep, Gitleaks, or another scanner exits non-zero because it found issues, the next tools still run and write their reports under `artifacts/`. The npm script exits `1` at the end when any step failed so you know to review the reports; it does **not** stop mid-pipeline.
+
+`analyze:sonar` uses the same idea internally: frontend, backend, and export are separate steps (export retries up to 3 times). Standalone `npm run analyze:deps` (etc.) still exits non-zero on findings when run alone.
+
 ### SonarQube
 
 ```powershell
@@ -101,6 +105,8 @@ npm run analyze:sonar
 ```
 
 One command: starts SonarQube (if needed), bootstraps token, runs **unit + integration tests with coverage** (FE: Vitest lcov; BE: Coverlet cobertura), uploads to SonarQube, then exports reports to `artifacts/sonar/`.
+
+**First run — no manual UI step:** `scripts/analyze/sonar-bootstrap.mjs` (called by `analyze:sonar` / `analyze:all`) waits until SonarQube is `UP`, logs in as `admin` with the factory default password `admin`, changes it to `SONAR_ADMIN_PASSWORD` from `config/sonar.env` (default `StrongPass123!`), generates an analysis token, and caches it in `artifacts/sonar/token`. You do **not** need to open http://localhost:9000 to set a password on first start. On later runs it reuses the cached token or logs in with the password already stored in SonarQube.
 
 **Without the web UI** (after at least one scan):
 
@@ -143,10 +149,14 @@ Edit `config/gitleaks.toml` when you add documented placeholders (for example ne
 
 ## Severity and exit codes
 
+When run **individually** (`npm run analyze:deps`, `analyze:sast`, …):
+
 - **Trivy** and **Semgrep** fail the command on HIGH/CRITICAL (Trivy) or any Semgrep finding (`--error`).
 - **Gitleaks** exits non-zero when secrets are detected.
 - **ZAP baseline** uses `-I` so informational/medium items do not fail the run; inspect the HTML report for actionable items.
 - **SonarQube** quality gate is configured in the server UI (not enforced by npm scripts by default).
+
+When run via **`analyze:quick` or `analyze:all`**, each tool still writes its report and the orchestrator **continues** to the next tool even when one exits non-zero. The npm script exits `1` at the end if any step failed (findings or errors) — check `artifacts/` for every tool.
 
 Tighten or loosen policies in `docker-compose.analyze.yml` service `command` blocks.
 
