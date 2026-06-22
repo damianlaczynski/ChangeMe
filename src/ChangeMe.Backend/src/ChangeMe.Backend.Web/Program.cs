@@ -9,6 +9,7 @@ var loggerFactory = LoggerFactory.Create(lb => lb.AddSimpleConsole(o => o.Single
 var logger = loggerFactory.CreateLogger<Program>();
 
 builder.Services.AddCors(builder);
+builder.Services.AddRateLimiting(builder);
 builder.Services.AddJwtAuthentication(builder);
 
 builder.Services.AddHttpContextAccessor();
@@ -30,6 +31,7 @@ app.UseExceptionHandler();
 app.UseSecurityHeaders();
 
 app.UseCors(CorsConfig.CorsPolicyName);
+app.UseRateLimiting();
 app.UseAuthentication();
 app.UseAuthorization();
 

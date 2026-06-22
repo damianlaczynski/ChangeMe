@@ -1,5 +1,6 @@
 ﻿using ChangeMe.Backend.UseCases.Auth;
 using ChangeMe.Backend.UseCases.Auth.Dtos;
+using ChangeMe.Backend.Web.Configurations;
 
 namespace ChangeMe.Backend.Web.Auth;
 
@@ -8,6 +9,7 @@ public class Refresh(IMediator mediator) : BaseEndpoint<RefreshSessionCommand, A
   protected override void ConfigureEndpoint()
   {
     Post("/auth/refresh");
+    Options(x => x.RequireRateLimiting(RateLimitingConfig.AuthPolicyName));
     AllowAnonymous();
     Summary(s =>
     {
