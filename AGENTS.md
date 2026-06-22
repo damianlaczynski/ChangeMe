@@ -66,7 +66,7 @@ From the repository root, run `npm install` once to install root devDependencies
 - Rebuild images only: `npm run docker:build`
 - Follow logs: `npm run docker:logs`
 - Backend tests in container (bind-mounts the repo; integration tests need the host Docker socket): `npm run docker:test:backend`
-- Security / code analysis (`docker-compose.analyze.yml`; does not start with `docker:up`): `npm run analyze:all`, `analyze:deps`, `analyze:secrets`, `analyze:sast`, `analyze:dast`, `analyze:sonar`, `analyze:sonar:export` — reports in `artifacts/`; see `docs/technical/security-analysis.md`
+- Security / code analysis (`docker-compose.analyze.yml`; does not start with `docker:up`): `npm run analyze:quick` (fast), `npm run analyze:all` (full — needs built images + running stack for DAST/Sonar), plus `analyze:deps`, `analyze:secrets`, `analyze:sast`, `analyze:dast`, `analyze:sonar`, `analyze:sonar:export` — reports in `artifacts/`; see `docs/technical/security-analysis.md`
 
 Configuration in containers: `appsettings.json` + `appsettings.Development.json` (image build) with overrides from `docker-compose.yml` environment variables — see `docs/technical/database-and-docker.md`.
 

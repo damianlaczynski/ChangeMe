@@ -49,7 +49,8 @@
     "analyze:sonar:backend": "node scripts/analyze/sonar-run.mjs backend",
     "analyze:sonar": "node scripts/analyze/sonar-run.mjs",
     "analyze:sonar:export": "node scripts/analyze/sonar-export.mjs",
-    "analyze:all": "npm run analyze:deps && npm run analyze:secrets && npm run analyze:sast && npm run analyze:deps:audit",
+    "analyze:quick": "npm run analyze:deps && npm run analyze:secrets && npm run analyze:sast && npm run analyze:deps:audit",
+    "analyze:all": "npm run analyze:quick && npm run analyze:deps:images && npm run analyze:dast && npm run analyze:sonar",
     "requirements:validate": "node scripts/requirements-validate.mjs"
   },
   "devDependencies": {

@@ -139,6 +139,6 @@ For cloud deployments, consider moving **`IFileStorageService`** to object stora
 
 **Security and code analysis** — `docker-compose.analyze.yml` (profiles `security` / `analyze`; merged via `npm run compose:analyze`):
 
-| Profile                | Service(s)                                                        | Command                                                                                                               |
-| ---------------------- | ----------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| `security` / `analyze` | `trivy-fs`, `gitleaks`, `semgrep`, `zap-baseline`, `sonarqube`, … | `npm run analyze:all`, `analyze:sonar:up` — see [security-analysis.md](security-analysis.md); reports in `artifacts/` |
+| Profile                | Service(s)                                                        | Command                                                                                                                                       |
+| ---------------------- | ----------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `security` / `analyze` | `trivy-fs`, `gitleaks`, `semgrep`, `zap-baseline`, `sonarqube`, … | `npm run analyze:quick`, `analyze:all` (full), `analyze:sonar:up` — see [security-analysis.md](security-analysis.md); reports in `artifacts/` |

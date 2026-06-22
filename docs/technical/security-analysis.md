@@ -32,19 +32,20 @@ Console output is also tee'd to `scan.log` where useful.
 
 ## Quick reference
 
-| Command                        | What it runs                                                          | Needs running app?                       |
-| ------------------------------ | --------------------------------------------------------------------- | ---------------------------------------- |
-| `npm run analyze:deps`         | Trivy filesystem (lockfiles, configs)                                 | No                                       |
-| `npm run analyze:deps:images`  | Trivy on `changeme-frontend` / `changeme-backend` images              | Images built (`npm run docker:build`)    |
-| `npm run analyze:deps:audit`   | `npm audit` + `dotnet list package --vulnerable` → `artifacts/audit/` | No                                       |
-| `npm run analyze:secrets`      | Gitleaks (git tree + history)                                         | No                                       |
-| `npm run analyze:sast`         | Semgrep (`p/default`, `p/csharp`, `p/typescript`)                     | No                                       |
-| `npm run analyze:dast`         | OWASP ZAP baseline → `http://host.docker.internal:4200`               | Yes (`npm run docker:up` or dev servers) |
-| `npm run analyze:sonar:up`     | Start SonarQube + DB (http://localhost:9000)                          | No                                       |
-| `npm run analyze:sonar`        | Start SonarQube, bootstrap token, scan FE + BE, export reports        | No (automatic)                           |
-| `npm run analyze:sonar:export` | Download metrics + issues JSON/TXT from SonarQube API (no UI)         | SonarQube up, prior scan recommended     |
-| `npm run analyze:sonar:down`   | Stop SonarQube containers                                             | No                                       |
-| `npm run analyze:all`          | `deps` + `secrets` + `sast` + `deps:audit` (no DAST, images, Sonar)   | No                                       |
+| Command                        | What it runs                                                          | Needs running app?                             |
+| ------------------------------ | --------------------------------------------------------------------- | ---------------------------------------------- |
+| `npm run analyze:deps`         | Trivy filesystem (lockfiles, configs)                                 | No                                             |
+| `npm run analyze:deps:images`  | Trivy on `changeme-frontend` / `changeme-backend` images              | Images built (`npm run docker:build`)          |
+| `npm run analyze:deps:audit`   | `npm audit` + `dotnet list package --vulnerable` → `artifacts/audit/` | No                                             |
+| `npm run analyze:secrets`      | Gitleaks (git tree + history)                                         | No                                             |
+| `npm run analyze:sast`         | Semgrep (`p/default`, `p/csharp`, `p/typescript`)                     | No                                             |
+| `npm run analyze:dast`         | OWASP ZAP baseline → `http://host.docker.internal:4200`               | Yes (`npm run docker:up` or dev servers)       |
+| `npm run analyze:sonar:up`     | Start SonarQube + DB (http://localhost:9000)                          | No                                             |
+| `npm run analyze:sonar`        | Start SonarQube, bootstrap token, scan FE + BE, export reports        | No (automatic)                                 |
+| `npm run analyze:sonar:export` | Download metrics + issues JSON/TXT from SonarQube API (no UI)         | SonarQube up, prior scan recommended           |
+| `npm run analyze:sonar:down`   | Stop SonarQube containers                                             | No                                             |
+| `npm run analyze:quick`        | `deps` + `secrets` + `sast` + `deps:audit`                            | No                                             |
+| `npm run analyze:all`          | `quick` + `deps:images` + `dast` + `sonar` (full local suite)         | Yes — see [Full suite](#full-suite-analyzeall) |
 
 Equivalent Compose invocations:
 
@@ -70,13 +71,28 @@ Native registry checks (`analyze:deps:audit`) complement Trivy without extra ima
 
 ## Typical workflows
 
-### Before a release or security review
+### Quick scan (no running app, ~few minutes)
 
 ```powershell
-npm run analyze:all
-npm run docker:build
-npm run analyze:deps:images
+npm run analyze:quick
 ```
+
+### Full suite (`analyze:all`)
+
+Runs every local scan in sequence: Trivy (filesystem + images), Gitleaks, Semgrep, registry audits, ZAP baseline, and SonarQube (with FE/BE coverage). Expect **30–60+ minutes** and ~4 GB RAM free for SonarQube.
+
+**Before you run:**
+
+1. `npm run docker:build` — so `analyze:deps:images` can scan `changeme-frontend` / `changeme-backend` (missing images are skipped with a note in `artifacts/trivy/`).
+2. `npm run docker:up` or `docker:up:detached` — stack must respond on http://localhost:4200 for ZAP (`analyze:dast`).
+
+```powershell
+npm run docker:build
+npm run docker:up:detached
+npm run analyze:all
+```
+
+For only the lightweight scans (no DAST, images, or Sonar), use `npm run analyze:quick` instead.
 
 ### SonarQube
 

@@ -26,7 +26,7 @@
 | Populate UI with sample data                             | [data-generator.md](data-generator.md)                                                                                |
 | Deploy to production or split API / SPA hosts            | [deployment.md](deployment.md)                                                                                        |
 | PR failed on GitHub                                      | [ci.md](ci.md)                                                                                                        |
-| Run security / dependency scans locally                  | [security-analysis.md](security-analysis.md) → `npm run analyze:all`                                                  |
+| Run security / dependency scans locally                  | [security-analysis.md](security-analysis.md) → `npm run analyze:quick` or `analyze:all` (full)                        |
 | Configure JWT, password policy, or initial administrator | [database-and-docker.md](database-and-docker.md) (`AuthOptions`, `InitialAdministratorOptions` in `appsettings.json`) |
 | Email delivery in local or deployed environments         | [database-and-docker.md](database-and-docker.md) (MailHog) + `EmailOptions` in `appsettings.json`                     |
 | Background jobs failing or not running                   | [database-and-docker.md](database-and-docker.md) (Hangfire dashboard, cron)                                           |
