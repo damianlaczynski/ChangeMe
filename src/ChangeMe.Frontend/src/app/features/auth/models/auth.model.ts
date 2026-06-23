@@ -35,11 +35,13 @@ export interface MyAccountDto {
   lastName: string;
   email: string;
   memberSince: string;
+  version: number;
   roles: UserRoleSummaryDto[];
   effectivePermissions: EffectivePermissionDto[];
 }
 
 export interface UpdateMyAccountRequest {
+  version: number;
   firstName: string;
   lastName: string;
 }

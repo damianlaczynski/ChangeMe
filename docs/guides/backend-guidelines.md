@@ -94,6 +94,15 @@ Infrastructure services (e.g. `UserAuthTokenService`) **stage** EF changes only 
 
 `IUserAuthTokenService`: `IssueTokenAsync`, `MarkTokenUsedAsync`, and `InvalidateUnusedTokensAsync` never save; `ValidateTokenAsync` and previews are read-only. Do not save in both the token service and the caller for the same change.
 
+### Optimistic concurrency
+
+- Persisted roots inherit `Entity.Version` (`long`, EF concurrency token via `IsConcurrencyToken()`).
+- `ApplicationDbContext` bumps `Version` on modified entities; `DbUpdateConcurrencyException` propagates from `SaveChangesAsync`.
+- `ExceptionHandlerConfig` maps `DbUpdateConcurrencyException` to HTTP 409 with `Result.Conflict` in all environments.
+- Update commands for form-edited aggregates accept `Version` in the request body; after load, call `ConcurrencyGuard.CheckExpectedVersion(entity, command.Version)` before applying changes.
+- Details DTOs expose `version` so the client can send it back on `PUT`.
+- Message constant: `ConcurrencyMessages.StaleVersion` in `Domain/Common/`.
+
 ## Auth and cross-cutting concerns
 
 - JWT configuration lives in `Web/Configurations/AuthConfig.cs` and environment settings.

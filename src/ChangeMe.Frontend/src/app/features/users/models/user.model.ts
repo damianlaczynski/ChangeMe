@@ -37,6 +37,7 @@ export interface UserDetailsDto {
   status: UserMembershipStatus;
   memberSince: string;
   lastSignInAt: string | null;
+  version: number;
   roles: UserRoleSummaryDto[];
   effectivePermissions: EffectivePermissionDto[];
 }
@@ -66,6 +67,7 @@ export interface CreateUserRequest {
 
 export interface UpdateUserRequest {
   id: string;
+  version: number;
   firstName: string;
   lastName: string;
   email: string;

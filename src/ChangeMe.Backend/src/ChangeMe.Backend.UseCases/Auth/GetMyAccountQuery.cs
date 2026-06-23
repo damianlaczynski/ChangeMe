@@ -41,6 +41,7 @@ public class GetMyAccountHandler(
       user.LastName,
       user.Email,
       user.CreatedAt,
+      user.Version,
       roles,
       effectivePermissions));
   }

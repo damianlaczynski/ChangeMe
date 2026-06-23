@@ -1,5 +1,7 @@
 ﻿using System.Text.Json;
+using ChangeMe.Backend.Domain.Common;
 using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.EntityFrameworkCore;
 
 namespace ChangeMe.Backend.Web.Configurations;
 
@@ -7,13 +9,6 @@ public static class ExceptionHandlerConfig
 {
   public static WebApplication UseExceptionHandler(this WebApplication app)
   {
-    if (app.Environment.IsDevelopment())
-    {
-      app.UseDeveloperExceptionPage();
-      return app;
-    }
-
-
     app.UseExceptionHandler(appError =>
     {
       appError.Run(async context =>
@@ -30,6 +25,7 @@ public static class ExceptionHandlerConfig
 
               var (statusCode, message) = exception switch
               {
+                DbUpdateConcurrencyException => (StatusCodes.Status409Conflict, ConcurrencyMessages.StaleVersion),
                 ArgumentException => (StatusCodes.Status400BadRequest, "Bad Request"),
                 KeyNotFoundException => (StatusCodes.Status404NotFound, "Not Found"),
                 UnauthorizedAccessException => (StatusCodes.Status401Unauthorized, "Unauthorized"),
@@ -38,7 +34,9 @@ public static class ExceptionHandlerConfig
 
               context.Response.StatusCode = statusCode;
 
-              var response = Result<object>.Error(message);
+              var response = statusCode == StatusCodes.Status409Conflict
+                ? Result<object>.Conflict(message)
+                : Result<object>.Error(message);
 
               await context.Response.WriteAsync(JsonSerializer.Serialize(response));
             }

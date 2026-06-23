@@ -1,6 +1,7 @@
 using ChangeMe.Backend.Domain.Aggregates.Roles;
 using ChangeMe.Backend.Domain.Aggregates.Users;
 using ChangeMe.Backend.Domain.Authorization;
+using ChangeMe.Backend.Domain.Common;
 using ChangeMe.Backend.UseCases.Users.Dtos;
 using ChangeMe.Backend.UseCases.Users.Utils;
 
@@ -8,6 +9,7 @@ namespace ChangeMe.Backend.UseCases.Users;
 
 public sealed record UpdateUserCommand(
   Guid Id,
+  long Version,
   string FirstName,
   string LastName,
   string Email,
@@ -24,6 +26,10 @@ public class UpdateUserHandler(
     var user = await context.Users.Include(x => x.Roles).FirstOrDefaultAsync(x => x.Id == command.Id, cancellationToken);
     if (user is null)
       return Result<UserDetailsDto>.NotFound();
+
+    var versionCheck = ConcurrencyGuard.CheckExpectedVersion(user, command.Version);
+    if (!versionCheck.IsSuccess)
+      return versionCheck.Map();
 
     var normalizedEmail = User.NormalizeEmail(command.Email);
     var emailChanged = !user.NormalizedEmail.Equals(normalizedEmail, StringComparison.Ordinal);
