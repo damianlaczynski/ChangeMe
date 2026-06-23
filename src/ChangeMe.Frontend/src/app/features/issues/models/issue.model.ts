@@ -12,6 +12,7 @@ export interface IssueDto {
   assignedToUserName?: string | null;
   createdAt: string;
   updatedAt?: string | null;
+  version: number;
   lastActivityAt: string;
   isWatchedByCurrentUser: boolean;
   watchersCount: number;
@@ -34,6 +35,7 @@ export interface IssueDetailsDto {
   assignedToUserName?: string | null;
   createdAt: string;
   updatedAt?: string | null;
+  version: number;
   lastActivityAt: string;
   isWatchedByCurrentUser: boolean;
   watchersCount: number;
@@ -112,6 +114,7 @@ export interface CreateIssueAcceptanceCriterionPayload {
 
 export interface UpdateIssueRequest {
   id: string;
+  version: number;
   title: string;
   description: string;
   status: IssueStatus;

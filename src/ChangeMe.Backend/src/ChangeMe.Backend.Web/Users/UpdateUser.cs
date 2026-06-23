@@ -18,6 +18,7 @@ public sealed class UpdateUserCommandValidator : Validator<UpdateUserCommand>
   public UpdateUserCommandValidator()
   {
     RuleFor(x => x.Id).NotEmpty();
+    RuleFor(x => x.Version).GreaterThanOrEqualTo(0);
     RuleFor(x => x.FirstName)
       .MaximumLength(UserConstraints.NAME_MAX_LENGTH)
       .When(x => !string.IsNullOrWhiteSpace(x.FirstName));

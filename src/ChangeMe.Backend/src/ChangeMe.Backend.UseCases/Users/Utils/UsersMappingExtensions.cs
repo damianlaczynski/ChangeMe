@@ -21,6 +21,7 @@ public static class UsersMappingExtensions
       Status = UsersStatusUtils.ComputeStatus(user),
       MemberSince = user.CreatedAt,
       LastSignInAt = lastSignInAt,
+      Version = user.Version,
       Roles = roles,
       EffectivePermissions = effectivePermissions
     };

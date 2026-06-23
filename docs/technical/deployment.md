@@ -62,6 +62,7 @@ Do **not** commit real production URLs or secrets in tracked files — set `CHAN
 - Set **`ConnectionStrings:DefaultConnection`** for your PostgreSQL instance.
 - Configure **`EmailOptions`** for real SMTP (MailHog is for local dev only).
 - Set **`InitialAdministratorOptions`** only for first bootstrap, then remove or empty passwords from config.
+- Keep **`RateLimitingOptions:Enabled`** `true` in production (see [Rate limiting](#rate-limiting)); tune `AuthPermitLimit` and `ApiPermitLimit` for your traffic.
 
 See [database-and-docker.md](database-and-docker.md) for Compose overrides and sensitive local values.
 
@@ -90,6 +91,13 @@ Same-origin Docker Compose (default) does not need CORS changes for browser API 
 - Run at least one API instance with the Hangfire server enabled so recurring jobs execute.
 
 Details: [database-and-docker.md — Hangfire](database-and-docker.md#hangfire-and-background-jobs).
+
+### Rate limiting
+
+- **Production:** per-IP fixed-window limits on all API traffic; login and refresh use a stricter auth limit on top. Exceeded requests return **429** with **`Retry-After`**. **`/health`** is excluded from the global limit.
+- **Development / default Compose:** off (`RateLimitingOptions:Enabled: false` in `appsettings.Development.json`).
+- **Deploy:** keep `Enabled` true; tune `AuthPermitLimit` and `ApiPermitLimit` via `RateLimitingOptions` in `appsettings.json` or `RateLimitingOptions__*` environment variables. Defaults and option names: `appsettings.json`, `RateLimitingOptions.cs`, `RateLimitingConfig.cs`.
+- Forward **`X-Forwarded-For`** at the reverse proxy (see [TLS and reverse proxy](#tls-and-reverse-proxy)) so limits apply to clients, not the load balancer.
 
 ### TLS and reverse proxy
 

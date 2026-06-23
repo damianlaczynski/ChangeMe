@@ -8,5 +8,6 @@ public sealed record MyAccountDto(
   string LastName,
   string Email,
   DateTime MemberSince,
+  long Version,
   IReadOnlyList<UserRoleSummaryDto> Roles,
   IReadOnlyList<EffectivePermissionDto> EffectivePermissions);

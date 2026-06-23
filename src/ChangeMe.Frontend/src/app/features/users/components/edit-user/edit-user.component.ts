@@ -65,6 +65,7 @@ export class EditUserComponent {
   readonly roleOptions = signal<{ id: string; name: string; isSystem: boolean }[]>([]);
   readonly effectivePermissions = signal<EffectivePermissionDto[]>([]);
   readonly submitError = signal<string | null>(null);
+  readonly recordVersion = signal(0);
   readonly loadError = signal<string | null>(null);
   readonly isSubmitting = signal(false);
   readonly isLoading = signal(true);
@@ -153,16 +154,16 @@ export class EditUserComponent {
 
     this.isLoading.set(true);
     this.loadError.set(null);
+    this.submitError.set(null);
 
     forkJoin({
       user: this.usersService.getUserById(userId),
-      roles: this.showRolesField()
-        ? this.usersService.getRolesForAssignment()
-        : of([])
+      roles: this.showRolesField() ? this.usersService.getRolesForAssignment() : of([])
     })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: ({ user, roles }) => {
+          this.recordVersion.set(user.version);
           this.form.patchValue({
             firstName: user.firstName,
             lastName: user.lastName,
@@ -199,6 +200,7 @@ export class EditUserComponent {
     this.usersService
       .updateUser({
         id: this.id(),
+        version: this.recordVersion(),
         firstName: raw.firstName.trim(),
         lastName: raw.lastName.trim(),
         email: raw.email.trim(),

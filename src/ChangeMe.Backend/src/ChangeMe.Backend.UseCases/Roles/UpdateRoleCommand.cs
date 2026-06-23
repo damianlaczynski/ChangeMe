@@ -1,11 +1,13 @@
 using ChangeMe.Backend.UseCases.Roles.Dtos;
 
+using ChangeMe.Backend.Domain.Common;
 using ChangeMe.Backend.UseCases.Roles.Utils;
 
 namespace ChangeMe.Backend.UseCases.Roles;
 
 public sealed record UpdateRoleCommand(
   Guid Id,
+  long Version,
   string Name,
   string? Description,
   IReadOnlyList<string> PermissionCodes) : ICommand<RoleDetailsDto>;
@@ -22,6 +24,10 @@ public class UpdateRoleHandler(
 
     if (role is null)
       return Result<RoleDetailsDto>.NotFound();
+
+    var versionCheck = ConcurrencyGuard.CheckExpectedVersion(role, command.Version);
+    if (!versionCheck.IsSuccess)
+      return versionCheck.Map();
 
     if (role.IsSystem)
       return Result<RoleDetailsDto>.Error(RolesUtils.SystemRoleCannotBeModifiedMessage);

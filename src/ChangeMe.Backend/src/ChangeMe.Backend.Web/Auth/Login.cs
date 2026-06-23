@@ -1,5 +1,6 @@
 ﻿using ChangeMe.Backend.UseCases.Auth;
 using ChangeMe.Backend.UseCases.Auth.Dtos;
+using ChangeMe.Backend.Web.Configurations;
 
 namespace ChangeMe.Backend.Web.Auth;
 
@@ -8,6 +9,7 @@ public class Login(IMediator mediator) : BaseEndpoint<LoginUserCommand, LoginRes
   protected override void ConfigureEndpoint()
   {
     Post("/auth/login");
+    Options(x => x.RequireRateLimiting(RateLimitingConfig.AuthPolicyName));
     AllowAnonymous();
     Summary(s =>
     {

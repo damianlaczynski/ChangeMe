@@ -8,6 +8,7 @@ public abstract class Entity : HasDomainEventsBase
   public Guid? UpdatedBy { get; set; }
   public DateTime CreatedAt { get; set; }
   public DateTime? UpdatedAt { get; set; }
+  public long Version { get; set; }
 
   public bool IsDeleted { get; set; } = false;
 }

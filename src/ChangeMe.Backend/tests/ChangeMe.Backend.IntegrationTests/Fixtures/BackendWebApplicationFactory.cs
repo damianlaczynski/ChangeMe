@@ -5,6 +5,7 @@ using ChangeMe.Backend.Infrastructure.Email;
 using ChangeMe.Backend.Infrastructure.Persistence;
 using ChangeMe.Backend.IntegrationTests.Support;
 using ChangeMe.Backend.IntegrationTests.Support.Fakes;
+using ChangeMe.Backend.Web.Configurations;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
@@ -93,6 +94,8 @@ public class BackendWebApplicationFactory : WebApplicationFactory<Program>, IAsy
     environmentOverrides[$"{EmailOptions.SectionName}__FromName"] = "Integration Tests";
     Directory.CreateDirectory(fileStorageRootPath);
     environmentOverrides[$"{FileStorageOptions.SectionName}__RootPath"] = fileStorageRootPath;
+    environmentOverrides[$"{RateLimitingOptions.SectionName}__AuthPermitLimit"] = "1000";
+    environmentOverrides[$"{RateLimitingOptions.SectionName}__ApiPermitLimit"] = "10000";
 
     foreach (var pair in environmentOverrides)
     {

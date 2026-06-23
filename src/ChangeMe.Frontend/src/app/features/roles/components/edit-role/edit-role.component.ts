@@ -58,6 +58,7 @@ export class EditRoleComponent {
   readonly RoleMessages = RoleMessages;
   readonly catalog = signal<PermissionCatalogItemDto[]>([]);
   readonly submitError = signal<string | null>(null);
+  readonly recordVersion = signal(0);
   readonly loadError = signal<string | null>(null);
   readonly permissionsError = signal(false);
   readonly isLoading = signal(true);
@@ -102,6 +103,7 @@ export class EditRoleComponent {
   private loadRole(roleId: string): void {
     this.isLoading.set(true);
     this.loadError.set(null);
+    this.submitError.set(null);
 
     this.rolesService.getRoleById(roleId).subscribe({
       next: (role) => {
@@ -112,6 +114,7 @@ export class EditRoleComponent {
           return;
         }
 
+        this.recordVersion.set(role.version);
         this.form.patchValue({
           name: role.name,
           description: role.description ?? '',
@@ -156,6 +159,7 @@ export class EditRoleComponent {
     this.rolesService
       .updateRole({
         id: this.id(),
+        version: this.recordVersion(),
         name: raw.name,
         description: raw.description.trim() ? raw.description : null,
         permissionCodes: raw.permissionCodes
