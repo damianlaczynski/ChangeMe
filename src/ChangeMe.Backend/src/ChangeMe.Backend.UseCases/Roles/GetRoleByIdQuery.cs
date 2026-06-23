@@ -35,6 +35,7 @@ public class GetRoleByIdHandler(
       IsSystem = role.IsSystem,
       PermissionCount = permissionCodes.Count,
       UserCount = userCount,
+      Version = role.Version,
       Permissions = RolesUtils.MapRolePermissions(permissionCodes)
     });
   }

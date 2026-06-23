@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using ChangeMe.Backend.Domain.Aggregates.Issue.Enums;
 using ChangeMe.Backend.Domain.Aggregates.Users;
+using ChangeMe.Backend.Domain.Common;
 using ChangeMe.Backend.Infrastructure.Persistence;
 using ChangeMe.Backend.IntegrationTests.Fixtures;
 using ChangeMe.Backend.IntegrationTests.Support;
@@ -40,6 +41,7 @@ public sealed class UpdateIssueEndpointTests(BackendWebApplicationFactory factor
     var response = await client.PutAsJsonAsync($"/api/v1/issues/{issueId}", new
     {
       Id = issueId,
+      Version = 0L,
       Title = "Updated title",
       Description = "Updated description",
       Status = IssueStatus.IN_PROGRESS,
@@ -81,6 +83,46 @@ public sealed class UpdateIssueEndpointTests(BackendWebApplicationFactory factor
     Assert.Contains(issue.HistoryEntries, x => x.EventType == IssueHistoryEventType.ACCEPTANCE_CRITERION_ADDED);
     Assert.Contains(issue.HistoryEntries, x => x.EventType == IssueHistoryEventType.ACCEPTANCE_CRITERION_UPDATED);
     Assert.Contains(issue.HistoryEntries, x => x.EventType == IssueHistoryEventType.ACCEPTANCE_CRITERION_REMOVED);
+    Assert.Equal(1, issue.Version);
+  }
+
+  [Fact]
+  public async Task PutIssue_WhenVersionIsStale_ShouldReturnConflict()
+  {
+    var cancellationToken = TestContext.Current.CancellationToken;
+    using var client = await TestAuthHelper.CreateAuthenticatedClientAsync(factory, cancellationToken);
+
+    var issueId = await IssueTestHelper.SeedIssueAsync(
+      factory,
+      "Concurrency title",
+      "Concurrency description",
+      IssuePriority.MEDIUM,
+      null,
+      cancellationToken);
+
+    var staleResponse = await client.PutAsJsonAsync($"/api/v1/issues/{issueId}", new
+    {
+      Id = issueId,
+      Version = 99L,
+      Title = "Should not save",
+      Description = "Concurrency description",
+      Status = IssueStatus.NEW,
+      Priority = IssuePriority.MEDIUM,
+      AssignedToUserId = (Guid?)null,
+      AcceptanceCriteria = Array.Empty<object>()
+    }, cancellationToken);
+
+    Assert.Equal(HttpStatusCode.Conflict, staleResponse.StatusCode);
+
+    var body = await staleResponse.Content.ReadAsStringAsync(cancellationToken);
+    Assert.Contains(ConcurrencyMessages.StaleVersion, body, StringComparison.Ordinal);
+
+    await using var assertScope = factory.Services.CreateAsyncScope();
+    var assertDb = assertScope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    var issue = await assertDb.Issues.AsNoTracking().SingleAsync(x => x.Id == issueId, cancellationToken);
+
+    Assert.Equal("Concurrency title", issue.Title);
+    Assert.Equal(0, issue.Version);
   }
 
   [Fact]
@@ -103,6 +145,7 @@ public sealed class UpdateIssueEndpointTests(BackendWebApplicationFactory factor
     var updateResponse = await client.PutAsJsonAsync($"/api/v1/issues/{issueId}", new
     {
       Id = issueId,
+      Version = 0L,
       Title = "Issue with assignee change",
       Description = "Initial description",
       Status = IssueStatus.NEW,

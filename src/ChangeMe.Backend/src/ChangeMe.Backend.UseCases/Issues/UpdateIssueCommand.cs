@@ -1,5 +1,6 @@
 using ChangeMe.Backend.Domain.Aggregates.Issue;
 using ChangeMe.Backend.Domain.Aggregates.Issue.Enums;
+using ChangeMe.Backend.Domain.Common;
 using ChangeMe.Backend.UseCases.Issues.Dtos;
 using ChangeMe.Backend.UseCases.Issues.Services;
 using ChangeMe.Backend.UseCases.Issues.Utils;
@@ -13,6 +14,7 @@ public record UpdateIssueCommand(
   IssueStatus Status,
   IssuePriority Priority,
   Guid? AssignedToUserId,
+  long Version,
   List<UpdateIssueAcceptanceCriterionPayload>? AcceptanceCriteria = null) : ICommand<IssueDetailsDto>;
 
 public record UpdateIssueAcceptanceCriterionPayload(Guid? Id, string Content);
@@ -36,6 +38,10 @@ public class UpdateIssueHandler(
 
     if (issue is null)
       return Result.NotFound();
+
+    var versionCheck = ConcurrencyGuard.CheckExpectedVersion(issue, command.Version);
+    if (!versionCheck.IsSuccess)
+      return versionCheck.Map();
 
     var assigneeValidation = await IssuesUtils.ValidateAssigneeExistsAsync(
       context,

@@ -26,6 +26,7 @@ public static class IssueMappingExtensions
       AssignedToUserName = issue.AssignedToUserId.HasValue ? userLookup.GetValueOrDefault(issue.AssignedToUserId.Value) : null,
       CreatedAt = issue.CreatedAt,
       UpdatedAt = issue.UpdatedAt,
+      Version = issue.Version,
       LastActivityAt = issue.LastActivityAt,
       IsWatchedByCurrentUser = currentUserId.HasValue && issue.Watchers.Any(w => w.UserId == currentUserId.Value),
       WatchersCount = issue.Watchers.Count,

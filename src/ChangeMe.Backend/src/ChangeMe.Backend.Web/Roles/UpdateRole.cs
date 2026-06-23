@@ -19,6 +19,7 @@ public sealed class UpdateRoleCommandValidator : Validator<UpdateRoleCommand>
   public UpdateRoleCommandValidator()
   {
     RuleFor(x => x.Id).NotEmpty();
+    RuleFor(x => x.Version).GreaterThanOrEqualTo(0);
     RuleFor(x => x.Name)
       .NotEmpty()
       .MinimumLength(RoleConstraints.NAME_MIN_LENGTH)

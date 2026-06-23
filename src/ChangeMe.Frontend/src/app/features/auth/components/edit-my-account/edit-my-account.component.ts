@@ -70,6 +70,7 @@ export class EditMyAccountComponent {
   reload(): void {
     this.isLoading.set(true);
     this.loadError.set(null);
+    this.submitError.set(null);
 
     this.authService
       .getMyAccount()
@@ -99,10 +100,16 @@ export class EditMyAccountComponent {
     this.isSubmitting.set(true);
     this.submitError.set(null);
 
+    const account = this.account();
+    if (!account) {
+      this.isSubmitting.set(false);
+      return;
+    }
+
     const { firstName, lastName } = this.form.getRawValue();
 
     this.authService
-      .updateMyAccount({ firstName, lastName })
+      .updateMyAccount({ version: account.version, firstName, lastName })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (account) => {

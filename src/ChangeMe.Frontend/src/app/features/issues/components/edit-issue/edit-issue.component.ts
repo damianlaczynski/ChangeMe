@@ -145,6 +145,7 @@ export class EditIssueComponent {
 
     this.isLoadingIssue.set(true);
     this.loadError.set(null);
+    this.submitError.set(null);
 
     this.issuesService
       .getIssue(issueId)
@@ -207,12 +208,14 @@ export class EditIssueComponent {
     }
 
     const id = this.id();
-    if (!id) {
+    const version = this.issue()?.version;
+    if (!id || version === undefined) {
       return;
     }
 
     const request: UpdateIssueRequest = {
       id,
+      version,
       title: this.form.controls.title.value.trim(),
       description: this.form.controls.description.value.trim(),
       status: this.form.controls.status.value,
