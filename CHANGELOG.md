@@ -4,6 +4,37 @@ All notable changes to the **ChangeMe** NuGet template package (`dotnet new chan
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2026-06-24
+
+### Added
+
+- **Optimistic concurrency** — `Entity.Version` on persisted roots; update commands and detail DTOs carry `version`; HTTP 409 on stale writes; EF migration `AddEntityVersionConcurrency`.
+- **API rate limiting** — per-IP fixed-window limits (`RateLimitingOptions`); stricter auth policy on login and refresh; 429 with `Retry-After`; `/health` bypass; disabled in Development by default.
+- **Security headers** — backend middleware (X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy, COOP/CORP); nginx CSP with per-request nonce; dynamic `connect-src` from `CHANGE_ME_API_URL` in the frontend Docker entrypoint.
+- **Integration tests** — login rate limit and issue update concurrency scenarios.
+
+### Changed
+
+- **Frontend API client** — maps HTTP 409 conflict responses for stale-version handling.
+- **Issue, role, user, and my-account edits** — send `version` on update; detail views expose it for round-trips.
+- **Docker images** — non-root frontend container user; Dockerfile build improvements.
+- **Validation and logging** — refactored error handling and `LoggingBehavior`.
+
+### Fixed
+
+- **Confirmation dialog** — message rendering in the shared confirmation component.
+
+### Migration notes for consumers upgrading from 2.0.0
+
+If you generated a project from **2.0.0** and want to align with **2.1.0** patterns (not an automatic upgrade):
+
+1. **Database** — apply EF migration `AddEntityVersionConcurrency` (`npm run ef:database:update`).
+2. **API clients** — include `version` from detail DTOs in PUT bodies for issues, roles, users, and my-account updates.
+3. **Rate limiting** — review `RateLimitingOptions` for production (`Enabled` is `true` in `appsettings.json`; tune limits as needed). Forward `X-Forwarded-For` at the reverse proxy so limits apply to clients.
+4. **Split-host Docker** — set `CHANGE_ME_API_URL` to the full API base URL so CSP `connect-src` allows browser calls to the API origin.
+
+Fresh installs: `dotnet new install ChangeMe --force`, then `dotnet new changeme -n YourApp -o YourApp`.
+
 ## [2.0.0] - 2026-06-21
 
 ### Added
@@ -66,5 +97,6 @@ Fresh installs: `dotnet new install ChangeMe --force`, then `dotnet new changeme
 - Backend unit and integration tests (Testcontainers).
 - Template token replacement for `ChangeMe` across solution, Docker, and docs.
 
+[2.1.0]: https://github.com/damianlaczynski/ChangeMe/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/damianlaczynski/ChangeMe/compare/v1.0.0...v2.0.0
 [1.0.0]: https://github.com/damianlaczynski/ChangeMe/releases/tag/v1.0.0
