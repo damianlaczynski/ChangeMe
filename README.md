@@ -76,7 +76,8 @@ This repository is meant to provide:
 - `src/ChangeMe.Backend` - .NET solution with source projects and tests
 - `docs/` - implementation and testing guidance
 - `docker-compose.yml` - local full-stack environment (frontend, backend, PostgreSQL, MailHog)
-- `docker-compose.analyze.yml` - optional security/code analysis (see `docs/technical/security-analysis.md`)
+- `docker-compose.security.yml` - optional security checks (see `docs/technical/security-checks.md`)
+- `docker-compose.sonar.yml` - optional SonarQube code quality (see `docs/technical/sonar-analysis.md`)
 - `AGENTS.md` - working guide for AI agents and contributors
 - `.template.config/` - `dotnet new` template manifest (`changeme`, `sourceName` token `ChangeMe`)
 - `template-pack/` - NuGet packaging project for the template

@@ -1,0 +1,15 @@
+{
+  "host": "backend:8080",
+  "basepath": "/api/v1",
+  "authentication": {
+    "token": {
+      "module": {
+        "file": "/repo/scripts/security/restler-auth.py",
+        "function": "acquire_token",
+        "data": {}
+      },
+      "token_refresh_interval": 300
+    }
+  },
+  "custom_bug_codes": ["500", "501", "502", "503"]
+}

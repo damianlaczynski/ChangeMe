@@ -1,6 +1,6 @@
 import { execSync } from "node:child_process";
-import { ensureSonarToken } from "./sonar-bootstrap.mjs";
-import { exportSonarReports } from "./sonar-export.mjs";
+import { ensureSonarToken } from "./bootstrap.mjs";
+import { exportSonarReports } from "./export.mjs";
 
 const targets = new Set(process.argv.slice(2));
 const runFrontend = targets.size === 0 || targets.has("frontend");
@@ -10,14 +10,12 @@ if (
   targets.size > 0 &&
   ![...targets].every((target) => target === "frontend" || target === "backend")
 ) {
-  console.error(
-    "Usage: node scripts/analyze/sonar-run.mjs [frontend] [backend]",
-  );
+  console.error("Usage: node scripts/sonar/run.mjs [frontend] [backend]");
   process.exit(1);
 }
 
-const COMPOSE_ANALYZE =
-  "docker compose -f docker-compose.yml -f docker-compose.analyze.yml";
+const COMPOSE_SONAR =
+  "docker compose -f docker-compose.yml -f docker-compose.sonar.yml";
 
 const failed = [];
 
@@ -36,7 +34,7 @@ function runStep(name, fn) {
   } catch {
     failed.push(name);
     console.error(
-      `[analyze:sonar] ${name} failed — continuing so remaining Sonar steps and export still run.\n`,
+      `[sonar] ${name} failed — continuing so remaining Sonar steps and export still run.\n`,
     );
   }
 }
@@ -58,10 +56,8 @@ async function exportWithRetry(attempts = 3, delayMs = 5000) {
   }
 }
 
-console.log("Starting SonarQube (profile security)...");
-runCompose(
-  `${COMPOSE_ANALYZE} --profile security up -d sonarqube-db sonarqube`,
-);
+console.log("Starting SonarQube (profile sonar)...");
+runCompose(`${COMPOSE_SONAR} --profile sonar up -d sonarqube-db sonarqube`);
 
 const token = await ensureSonarToken();
 
@@ -73,19 +69,16 @@ if (runFrontend) {
 
   runStep("sonar-frontend", () => {
     console.log("Running SonarScanner for frontend...");
-    runCompose(
-      `${COMPOSE_ANALYZE} --profile security run --rm sonar-frontend`,
-      {
-        SONAR_TOKEN: token,
-      },
-    );
+    runCompose(`${COMPOSE_SONAR} --profile sonar run --rm sonar-frontend`, {
+      SONAR_TOKEN: token,
+    });
   });
 }
 
 if (runBackend) {
   runStep("sonar-backend", () => {
     console.log("Running dotnet-sonarscanner for backend...");
-    runCompose(`${COMPOSE_ANALYZE} --profile security run --rm sonar-backend`, {
+    runCompose(`${COMPOSE_SONAR} --profile sonar run --rm sonar-backend`, {
       SONAR_TOKEN: token,
     });
   });
@@ -97,7 +90,7 @@ try {
 } catch {
   failed.push("sonar-export");
   console.error(
-    "[analyze:sonar] Export failed after retries — run npm run analyze:sonar:export when SonarQube is up.\n",
+    "[sonar] Export failed after retries — run npm run sonar:export when SonarQube is up.\n",
   );
 }
 

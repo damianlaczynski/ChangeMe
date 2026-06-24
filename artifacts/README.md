@@ -1,16 +1,17 @@
-# Analysis artifacts (local, gitignored)
+# Security artifacts (local, gitignored)
 
-Reports from `npm run analyze:*` are written here. See [docs/technical/security-analysis.md](../docs/technical/security-analysis.md).
+Reports from `npm run security` / `security:*`. See [docs/technical/security-checks.md](../docs/technical/security-checks.md).
 
-| Path                                                                        | Tool                                                    |
-| --------------------------------------------------------------------------- | ------------------------------------------------------- |
-| `trivy/fs-report.json`                                                      | Trivy filesystem (SCA)                                  |
-| `trivy/images-*.json`                                                       | Trivy Docker image scans                                |
-| `gitleaks/report.json`                                                      | Gitleaks secrets                                        |
-| `semgrep/report.json` / `report.sarif`                                      | Semgrep SAST                                            |
-| `zap/zap-report.html` / `zap-report.json`                                   | OWASP ZAP baseline                                      |
-| `audit/npm-audit.json`                                                      | npm audit                                               |
-| `audit/dotnet-vulnerable.txt`                                               | dotnet vulnerable packages                              |
-| `sonar/token`, `*-scan.log`, `summary.txt`, `summary.json`, `*-report.json` | SonarQube (API export; dashboard optional)              |
-| FE `coverage/**/lcov.info`                                                  | Vitest coverage (before `analyze:sonar:frontend`)       |
-| BE `TestResults/**/coverage.cobertura.xml`                                  | Coverlet from unit tests during `analyze:sonar:backend` |
+| Path                                                                        | Tool                                                |
+| --------------------------------------------------------------------------- | --------------------------------------------------- |
+| `sca/trivy-report.json`, `trivy-report.txt`                                 | Trivy filesystem (SCA)                              |
+| `sca/images-*.json`, `images-*.txt`                                         | Trivy Docker image scans (`security:images`)        |
+| `sca/npm-audit.json`, `dotnet-vulnerable.txt`                               | npm audit + dotnet vulnerable                       |
+| `secrets/report.json`, `scan.log`                                           | Gitleaks                                            |
+| `sast/report.json`, `report.sarif`, `scan.log`                              | Semgrep SAST                                        |
+| `fuzz/openapi.json`, `summary.txt`, `scan.log`, `bug_buckets/**`            | RESTler API fuzzing                                 |
+| `dast/frontend/report.html`, `report.json`, `scan.log`                      | OWASP ZAP baseline (SPA)                            |
+| `security-summary.json`, `security-summary.txt`                             | Orchestrator summary                                |
+| `sonar/token`, `*-scan.log`, `summary.txt`, `summary.json`, `*-report.json` | SonarQube (`npm run sonar`)                         |
+| FE `coverage/**/lcov.info`                                                  | Vitest coverage (before `sonar` / `sonar:frontend`) |
+| BE `TestResults/**/coverage.cobertura.xml`                                  | Coverlet from backend scan during `sonar`           |

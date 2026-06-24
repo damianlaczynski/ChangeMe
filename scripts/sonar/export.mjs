@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { ensureSonarToken, loadSonarConfig } from "./sonar-bootstrap.mjs";
+import { ensureSonarToken, loadSonarConfig } from "./bootstrap.mjs";
 
 const PROJECTS = [
   { key: "changeme-backend", name: "ChangeMe Backend" },
@@ -136,11 +136,11 @@ export async function exportSonarReports(root = process.cwd()) {
   const outDir = join(root, "artifacts", "sonar");
   mkdirSync(outDir, { recursive: true });
 
-  const tokenPath = join(outDir, "token");
+  const cachedTokenPath = join(outDir, "token");
   let token;
 
-  if (existsSync(tokenPath)) {
-    token = readFileSync(tokenPath, "utf8").trim();
+  if (existsSync(cachedTokenPath)) {
+    token = readFileSync(cachedTokenPath, "utf8").trim();
   } else {
     token = await ensureSonarToken(root);
   }
@@ -169,7 +169,7 @@ export async function exportSonarReports(root = process.cwd()) {
 
 if (
   import.meta.url.startsWith("file:") &&
-  process.argv[1]?.includes("sonar-export.mjs")
+  process.argv[1]?.includes("export.mjs")
 ) {
   await exportSonarReports();
 }

@@ -1,0 +1,124 @@
+# Security checks — npm run security:* (see docs/technical/security-checks.md)
+# Merge with app stack: docker compose -f docker-compose.yml -f docker-compose.security.yml ...
+services:
+  trivy-fs:
+    profiles:
+      - security
+    image: aquasec/trivy:latest
+    working_dir: /repo
+    volumes:
+      - .:/repo
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        set -e
+        mkdir -p /repo/artifacts/sca
+        trivy fs --scanners vuln --timeout 15m --severity HIGH,CRITICAL --ignore-unfixed \
+          --skip-dirs node_modules,bin,obj,.git,artifacts,.template-test,.template-test-output,coverage,playwright-report,test-results \
+          --format json --output /repo/artifacts/sca/trivy-report.json /repo
+        trivy fs --scanners vuln --timeout 15m --severity HIGH,CRITICAL --ignore-unfixed \
+          --skip-dirs node_modules,bin,obj,.git,artifacts,.template-test,.template-test-output,coverage,playwright-report,test-results \
+          --format table --output /repo/artifacts/sca/trivy-report.txt /repo
+        echo "Wrote artifacts/sca/trivy-report.json and trivy-report.txt"
+
+  trivy-images:
+    profiles:
+      - security
+    image: aquasec/trivy:latest
+    volumes:
+      - .:/repo
+      - /var/run/docker.sock:/var/run/docker.sock
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        set -e
+        mkdir -p /repo/artifacts/sca
+        for img in changeme-frontend changeme-backend; do
+          if trivy image --severity HIGH,CRITICAL --ignore-unfixed \
+            --format json --output "/repo/artifacts/sca/images-$${img}.json" "$$img" \
+            && trivy image --severity HIGH,CRITICAL --ignore-unfixed \
+            --format table --output "/repo/artifacts/sca/images-$${img}.txt" "$$img"; then
+            echo "Scanned image $$img"
+          else
+            echo "Skipping $$img (image not found — run npm run docker:build first)" \
+              > "/repo/artifacts/sca/images-$${img}.skipped.txt"
+          fi
+        done
+
+  gitleaks:
+    profiles:
+      - security
+    image: ghcr.io/gitleaks/gitleaks:latest
+    volumes:
+      - .:/repo
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        set -e
+        set -o pipefail
+        mkdir -p /repo/artifacts/secrets
+        gitleaks detect \
+          --source=/repo \
+          --config=/repo/config/gitleaks.toml \
+          $(if [ -d /repo/.git ]; then echo ""; else echo "--no-git"; fi) \
+          --report-path=/repo/artifacts/secrets/report.json \
+          --report-format=json \
+          --verbose 2>&1 | tee /repo/artifacts/secrets/scan.log
+
+  semgrep:
+    profiles:
+      - security
+    image: semgrep/semgrep:latest
+    working_dir: /repo
+    volumes:
+      - .:/repo
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        set -e
+        set -o pipefail
+        mkdir -p /repo/artifacts/sast
+        semgrep scan \
+          --config p/default --config p/csharp --config p/typescript \
+          --error \
+          --exclude node_modules --exclude bin --exclude obj \
+          --json-output=/repo/artifacts/sast/report.json \
+          --sarif-output=/repo/artifacts/sast/report.sarif \
+          . 2>&1 | tee /repo/artifacts/sast/scan.log
+
+  zap-frontend:
+    profiles:
+      - security
+    image: ghcr.io/zaproxy/zaproxy:stable
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./artifacts/dast/frontend:/zap/wrk:rw
+      - .:/repo
+    environment:
+      ZAP_TARGET_URL: ${ZAP_TARGET_URL:-}
+    networks:
+      - app-network
+    entrypoint: ["/bin/sh", "/repo/scripts/security/zap-frontend.sh"]
+
+  restler:
+    profiles:
+      - security
+    image: mcr.microsoft.com/restlerfuzzer/restler:v7.4.0
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - .:/repo
+    environment:
+      RESTLER_MODE: ${RESTLER_MODE:-fuzz-lean}
+      RESTLER_API_BASE: ${RESTLER_API_BASE:-}
+      RESTLER_OPENAPI_URL: ${RESTLER_OPENAPI_URL:-}
+      RESTLER_LOGIN_EMAIL: ${RESTLER_LOGIN_EMAIL:-}
+      RESTLER_LOGIN_PASSWORD: ${RESTLER_LOGIN_PASSWORD:-}
+    networks:
+      - app-network
+    entrypoint: ["/bin/sh", "/repo/scripts/security/restler.sh"]
+
+networks:
+  app-network:
+    driver: bridge

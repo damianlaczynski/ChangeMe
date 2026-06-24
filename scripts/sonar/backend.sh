@@ -2,7 +2,7 @@
 set -e
 
 if [ -z "$SONAR_TOKEN" ]; then
-  echo "SONAR_TOKEN is missing. Run npm run analyze:sonar (token is created automatically)."
+  echo "SONAR_TOKEN is missing. Run npm run sonar (token is created automatically)."
   exit 1
 fi
 

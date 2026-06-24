@@ -137,8 +137,14 @@ For cloud deployments, consider moving **`IFileStorageService`** to object stora
 | ------- | --------------- | ----------------------------- |
 | `test`  | `backend-tests` | `npm run docker:test:backend` |
 
-**Security and code analysis** — `docker-compose.analyze.yml` (profiles `security` / `analyze`; merged via `npm run compose:analyze`):
+**Security checks** — `docker-compose.security.yml` (profile `security`; merged via `npm run compose:security`):
 
-| Profile                | Service(s)                                                        | Command                                                                                                                                       |
-| ---------------------- | ----------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| `security` / `analyze` | `trivy-fs`, `gitleaks`, `semgrep`, `zap-baseline`, `sonarqube`, … | `npm run analyze:quick`, `analyze:all` (full), `analyze:sonar:up` — see [security-analysis.md](security-analysis.md); reports in `artifacts/` |
+| Profile    | Service(s)                                      | Command                                                                                                      |
+| ---------- | ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `security` | `trivy-fs`, `gitleaks`, `semgrep`, `restler`, … | `npm run security`, `security:quick` — see [security-checks.md](security-checks.md); reports in `artifacts/` |
+
+**SonarQube** — `docker-compose.sonar.yml` (profile `sonar`; merged via `npm run compose:sonar`):
+
+| Profile | Service(s)                                       | Command                                                                                                 |
+| ------- | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------- |
+| `sonar` | `sonarqube-db`, `sonarqube`, `sonar-frontend`, … | `npm run sonar`, `sonar:up` — see [sonar-analysis.md](sonar-analysis.md); reports in `artifacts/sonar/` |

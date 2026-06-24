@@ -3,7 +3,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 const root = process.cwd();
-const outDir = join(root, "artifacts", "audit");
+const outDir = join(root, "artifacts", "sca");
 mkdirSync(outDir, { recursive: true });
 
 let exitCode = 0;
@@ -38,8 +38,8 @@ console.log(`Wrote ${join(outDir, "dotnet-vulnerable.txt")}`);
 
 if (exitCode !== 0) {
   console.warn(
-    "Dependency audit reported vulnerabilities (see artifacts/audit/). Exit code is non-zero for npm run analyze:deps:audit only.",
+    "Dependency audit reported vulnerabilities (see artifacts/sca/).",
   );
 }
 
-process.exit(process.env.ANALYZE_AUDIT_STRICT === "1" ? exitCode : 0);
+process.exit(process.env.SECURITY_AUDIT_STRICT === "1" ? exitCode : 0);

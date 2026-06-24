@@ -25,22 +25,21 @@ pick_target() {
 TARGET=$(pick_target)
 
 if [ -z "$TARGET" ]; then
-  echo "Cannot reach the application."
+  echo "Cannot reach the frontend."
   echo ""
   echo "Start one of:"
-  echo "  npm run docker:up          (ZAP will use http://frontend on the Compose network)"
-  echo "  npm run start:all          (then set ZAP_TARGET_URL if host.docker.internal fails)"
+  echo "  npm run docker:up:detached   (ZAP uses http://frontend on the Compose network)"
+  echo "  npm run start:all            (then set ZAP_TARGET_URL if needed)"
   echo ""
-  echo "Override: ZAP_TARGET_URL=http://host.docker.internal:4200 npm run analyze:dast"
+  echo "Override: ZAP_TARGET_URL=http://host.docker.internal:4200"
   exit 1
 fi
 
-echo "ZAP target: $TARGET"
+echo "ZAP baseline target: $TARGET"
 
 cd /zap/wrk
-# Paths must be relative to /zap/wrk — absolute paths get doubled by the ZAP report job.
 zap-baseline.py \
   -t "$TARGET" \
-  -r zap-report.html \
-  -J zap-report.json \
+  -r report.html \
+  -J report.json \
   -I 2>&1 | tee scan.log
