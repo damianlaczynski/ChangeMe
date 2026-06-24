@@ -28,6 +28,7 @@ RUN dotnet publish src/ChangeMe.Backend.Web/ChangeMe.Backend.Web.csproj \
     --no-restore
 
 FROM base AS final
+USER root
 WORKDIR /app
 COPY --from=publish --chown=$APP_UID:$APP_UID /app/publish .
 RUN mkdir -p /app/storage && chown -R $APP_UID:$APP_UID /app/storage
