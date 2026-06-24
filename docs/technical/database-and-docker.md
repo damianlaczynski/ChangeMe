@@ -128,3 +128,23 @@ Per-feature upload limits (count, size, allowed extensions) live in domain const
 Include **`{FileStorage:RootPath}/Issue/`** in your backup plan **together with the application database**. Restoring only the database without files leaves broken download links; restoring files without matching metadata leaves orphaned blobs (cleaned up eventually by the cleanup job, but downloads will fail until then).
 
 For cloud deployments, consider moving **`IFileStorageService`** to object storage (S3, Azure Blob) with server-side encryption and lifecycle policies; the Issues slice is the reference pattern for metadata + opaque keys.
+
+## Compose profiles (optional services)
+
+**App stack and backend tests** — `docker-compose.yml` (profile `test` does not start with `npm run docker:up`):
+
+| Profile | Service(s)      | Command                       |
+| ------- | --------------- | ----------------------------- |
+| `test`  | `backend-tests` | `npm run docker:test:backend` |
+
+**Security checks** — `docker-compose.security.yml` (profile `security`; merged via `npm run compose:security`):
+
+| Profile    | Service(s)                                      | Command                                                                                                      |
+| ---------- | ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `security` | `trivy-fs`, `gitleaks`, `semgrep`, `restler`, … | `npm run security`, `security:quick` — see [security-checks.md](security-checks.md); reports in `artifacts/` |
+
+**SonarQube** — `docker-compose.sonar.yml` (profile `sonar`; merged via `npm run compose:sonar`):
+
+| Profile | Service(s)                                       | Command                                                                                                 |
+| ------- | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------- |
+| `sonar` | `sonarqube-db`, `sonarqube`, `sonar-frontend`, … | `npm run sonar`, `sonar:up` — see [sonar-analysis.md](sonar-analysis.md); reports in `artifacts/sonar/` |

@@ -102,15 +102,21 @@ playwright-report/
 blob-report/
 playwright/.cache/
 
+
 # Database
 *.db
 *.sqlite
 *.sqlite3
 
 # Template test
-artifacts/
+artifacts/*
+!artifacts/.gitkeep
+!artifacts/README.md
 .template-test/
 .template-test-output/
 
-# File storage
+# SonarQube
+**/.sonarqube/
+**/.scannerwork/
+
 src/ChangeMe.Backend/storage/

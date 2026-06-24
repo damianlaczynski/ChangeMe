@@ -71,6 +71,8 @@ This codebase gives you:
 - `src/ChangeMe.Backend` - .NET solution with source projects and tests
 - `docs/` - implementation and testing guidance
 - `docker-compose.yml` - local full-stack environment (frontend, backend, PostgreSQL, MailHog)
+- `docker-compose.security.yml` - optional security checks (see `docs/technical/security-checks.md`)
+- `docker-compose.sonar.yml` - optional SonarQube code quality (see `docs/technical/sonar-analysis.md`)
 - `AGENTS.md` - working guide for AI agents and contributors
 
 ## Getting Started
@@ -140,6 +142,33 @@ docker compose up --build
 ```
 
 This starts the frontend, backend, MailHog, and the database service defined in Compose.
+
+### Security checks (optional)
+
+Offline (~5–10 min):
+
+```powershell
+npm run security:quick
+```
+
+Full pipeline (needs running stack for API fuzzing + ZAP):
+
+```powershell
+npm run docker:up:detached
+npm run security
+```
+
+Reports under `artifacts/`. See `docs/technical/security-checks.md`.
+
+### SonarQube (optional)
+
+Code quality and coverage — separate from security checks (~2–4 GB RAM):
+
+```powershell
+npm run sonar
+```
+
+See `docs/technical/sonar-analysis.md`.
 
 ## Documentation
 
