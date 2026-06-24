@@ -26,16 +26,22 @@ public class GetUserSessionsHandler(
       return Result.Success(PaginationResult<AdminUserSessionDto>.Empty());
 
     var utcNow = DateTime.UtcNow;
-    var sessions = await context.UserSessions
-      .AsNoTracking()
-      .Where(x => x.UserId == query.Id && x.RevokedAt == null)
-      .ToListAsync(cancellationToken);
+    var sessionLifetimeDays = sessionLifetime.SessionLifetimeDays;
 
-    var activeSessions = UsersUtils.MapActiveSessions(sessions, utcNow, sessionLifetime).AsQueryable();
+    var activeSessionsQuery = context.UserSessions
+      .AsNoTracking()
+      .WhereActiveSessions(query.Id, utcNow, sessionLifetimeDays)
+      .Select(x => new AdminUserSessionDto(
+        x.Id,
+        x.DeviceBrowserLabel,
+        x.SignInMethod,
+        x.IpAddress,
+        x.SignedInAt,
+        x.LastActivityAt));
 
     query.PaginationParameters.SortField = MapSortField(query.PaginationParameters.SortField);
 
-    var pagedSessions = await activeSessions.ToPaginationResultAsync(
+    var pagedSessions = await activeSessionsQuery.ToPaginationResultAsync(
       x => x,
       query.PaginationParameters,
       cancellationToken);
