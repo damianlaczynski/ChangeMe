@@ -12,7 +12,22 @@ public static class PaginationQueryableExtensions
       PaginationParameters<TDestination> parameters,
       CancellationToken cancellationToken = default)
   {
-    IQueryable<TDestination> destinationQueryable = queryable.Select(selector);
+    IQueryable<TDestination> destinationQueryable;
+
+    if (CanSortOnSource<TSource>(parameters.SortField))
+    {
+      var sourceParameters = PaginationParameters<TSource>.Create(
+        parameters.PageNumber,
+        parameters.PageSize,
+        parameters.SortField,
+        parameters.Ascending);
+
+      destinationQueryable = ApplySorting(queryable, sourceParameters).Select(selector);
+    }
+    else
+    {
+      destinationQueryable = ApplySorting(queryable.Select(selector), parameters);
+    }
 
     var totalCount = await destinationQueryable.CountAsync(cancellationToken);
 
@@ -21,9 +36,7 @@ public static class PaginationQueryableExtensions
       return PaginationResult<TDestination>.Create(new List<TDestination>(), 0, parameters);
     }
 
-    var sortedQuery = ApplySorting(destinationQueryable, parameters);
-
-    var pagedQuery = sortedQuery
+    var pagedQuery = destinationQueryable
         .Skip((parameters.PageNumber - 1) * parameters.PageSize)
         .Take(parameters.PageSize);
 
@@ -62,6 +75,14 @@ public static class PaginationQueryableExtensions
         .ToList();
 
     return PaginationResult<TDestination>.Create(items, totalCount, parameters);
+  }
+
+  private static bool CanSortOnSource<TSource>(string sortField)
+  {
+    var type = typeof(TSource);
+
+    return type.GetProperty(sortField, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance) is not null
+      || type.GetProperty(PaginationParameters<TSource>.DefaultSortField, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance) is not null;
   }
 
   private static IQueryable<TEntity> ApplySorting<TEntity>(IQueryable<TEntity> queryable, PaginationParameters<TEntity> parameters)
