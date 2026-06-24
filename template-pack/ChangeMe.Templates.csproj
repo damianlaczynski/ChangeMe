@@ -30,13 +30,17 @@
              Exclude="
                ..\.git\**;
                ..\.angular\**;
+               ..\**\.angular\**;
                ..\.template-test\**;
+               ..\.template-test-output\**;
+               ..\**\.template-test-output\**;
                ..\template-pack\**;
                ..\artifacts\**;
                ..\**\bin\**;
                ..\**\obj\**;
                ..\**\node_modules\**;
                ..\**\dist\**;
+               ..\**\coverage\**;
                ..\**\.vs\**;
                ..\**\TestResults\**;
                ..\**\logs\**;
