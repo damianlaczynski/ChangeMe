@@ -156,9 +156,9 @@ export class ApiService {
 
   private humanizeFieldName(identifier: string): string {
     const normalized = identifier
-      .replace(/[[\].]/g, ' ')
-      .replace(/([a-z])([A-Z])/g, '$1 $2')
-      .replace(/_/g, ' ')
+      .replaceAll(/[[\].]/g, ' ')
+      .replaceAll(/([a-z])([A-Z])/g, '$1 $2')
+      .replaceAll('_', ' ')
       .trim()
       .toLowerCase();
 
@@ -167,7 +167,7 @@ export class ApiService {
 
   private normalizeResultStatus(status: unknown): ResultStatus {
     if (typeof status === 'number') {
-      return status as ResultStatus;
+      return status;
     }
 
     if (typeof status === 'string') {
@@ -218,17 +218,34 @@ export class ApiService {
         if (Array.isArray(value)) {
           value.forEach((item) => {
             if (item !== null && item !== undefined) {
-              httpParams = httpParams.append(key, item.toString());
+              httpParams = httpParams.append(key, this.serializeQueryParamValue(item));
             }
           });
 
           return;
         }
 
-        httpParams = httpParams.set(key, value.toString());
+        httpParams = httpParams.set(key, this.serializeQueryParamValue(value));
       });
     }
 
     return httpParams;
+  }
+
+  private serializeQueryParamValue(value: unknown): string {
+    if (
+      typeof value === 'string' ||
+      typeof value === 'number' ||
+      typeof value === 'boolean' ||
+      typeof value === 'bigint'
+    ) {
+      return String(value);
+    }
+
+    if (value instanceof Date) {
+      return value.toISOString();
+    }
+
+    return JSON.stringify(value);
   }
 }

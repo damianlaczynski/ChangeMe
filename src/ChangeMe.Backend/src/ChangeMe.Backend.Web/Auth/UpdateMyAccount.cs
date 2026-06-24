@@ -20,6 +20,8 @@ public sealed class UpdateMyAccountCommandValidator : Validator<UpdateMyAccountC
 {
   public UpdateMyAccountCommandValidator()
   {
+    RuleFor(x => x.Version).GreaterThanOrEqualTo(0);
+
     RuleFor(x => x.FirstName)
       .NotEmpty()
       .MaximumLength(UserConstraints.NAME_MAX_LENGTH);

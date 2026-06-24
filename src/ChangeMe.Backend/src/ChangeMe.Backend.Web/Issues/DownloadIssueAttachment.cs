@@ -31,7 +31,7 @@ public class DownloadIssueAttachment(IMediator mediator) : EndpointWithoutReques
 
     var content = result.Value;
     var response = HttpContext.Response;
-    response.Headers["X-Content-Type-Options"] = "nosniff";
+    response.Headers.XContentTypeOptions = "nosniff";
     response.ContentType = content.ContentType;
     response.Headers.ContentDisposition = new ContentDisposition
     {

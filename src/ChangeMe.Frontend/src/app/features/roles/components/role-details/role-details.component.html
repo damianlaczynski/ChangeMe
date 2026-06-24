@@ -108,15 +108,16 @@
       <p-table [value]="assignedUsers()" [loading]="isLoadingUsers()" stripedRows>
         <ng-template #header>
           <tr>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Status</th>
+            <th scope="col">Name</th>
+            <th scope="col">Email</th>
+            <th scope="col">Status</th>
             @if (canManageRoles()) {
-              <th>Actions</th>
+              <th scope="col">Actions</th>
             }
           </tr>
         </ng-template>
         <ng-template #body let-user>
+          @let membershipStatus = toUserMembershipStatus(user.deactivated);
           <tr>
             <td>
               <a
@@ -129,8 +130,8 @@
             <td>{{ user.email }}</td>
             <td>
               <p-tag
-                [value]="getAccountBadgeLabel(user.deactivated)"
-                [severity]="getAccountBadgeSeverity(user.deactivated)"
+                [value]="getUserStatusLabel(membershipStatus)"
+                [severity]="getUserStatusSeverity(membershipStatus)"
               />
             </td>
             @if (canManageRoles()) {

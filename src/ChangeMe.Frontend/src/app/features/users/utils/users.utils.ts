@@ -37,14 +37,8 @@ export function getUserStatusLabel(status: UserMembershipStatus): string {
   return status === 'Deactivated' ? 'Deactivated' : 'Active';
 }
 
-/** @deprecated Use getUserStatusLabel for full membership status; kept for role-details user rows. */
-export function getAccountBadgeLabel(deactivated: boolean): string {
+export function toUserMembershipStatus(deactivated: boolean): UserMembershipStatus {
   return deactivated ? 'Deactivated' : 'Active';
-}
-
-/** @deprecated Use getUserStatusSeverity for full membership status; kept for role-details user rows. */
-export function getAccountBadgeSeverity(deactivated: boolean): 'success' | 'danger' {
-  return deactivated ? 'danger' : 'success';
 }
 
 export function getUserStatusSeverity(

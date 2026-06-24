@@ -13,7 +13,9 @@ import { ConfirmationService, MessageService } from 'primeng/api';
 import { providePrimeNG } from 'primeng/config';
 
 import { LayoutService } from '@core/layout/services/layout.service';
+import { readCspNonce } from '@core/security/csp-nonce';
 import { authTokenInterceptor } from '@features/auth/interceptors/auth-token.interceptor';
+import { AuthService } from '@features/auth/services/auth.service';
 import Aura from '@primeuix/themes/aura';
 import { routes } from './app.routes';
 
@@ -26,8 +28,12 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideAppInitializer(() => {
       inject(LayoutService);
+      return inject(AuthService).initializeSession();
     }),
     providePrimeNG({
+      csp: {
+        nonce: readCspNonce()
+      },
       ripple: true,
       theme: {
         preset: Aura,

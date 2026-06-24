@@ -65,22 +65,22 @@ export class AuthService {
     };
   });
 
-  constructor() {
+  initializeSession(): Promise<void> {
     const storedSession = this.session();
     if (!storedSession) {
-      return;
+      return Promise.resolve();
     }
 
     if (this.getAccessTokenLifetimeMs(storedSession) <= 0) {
-      void this.refreshStoredSession().then((session) => {
+      return this.refreshStoredSession().then((session) => {
         if (!session) {
           this.clearLocalSession();
         }
       });
-      return;
     }
 
     this.scheduleRenewal(storedSession);
+    return Promise.resolve();
   }
 
   hasPermission(permissionCode: string): boolean {

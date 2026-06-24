@@ -142,7 +142,7 @@ export class IssueAttachmentsTabComponent {
           document.body.appendChild(anchor);
           anchor.click();
           anchor.remove();
-          window.setTimeout(() => URL.revokeObjectURL(url), 0);
+          globalThis.setTimeout(() => URL.revokeObjectURL(url), 0);
           this.downloadingAttachmentId.set(null);
         },
         error: (error: Error) => {

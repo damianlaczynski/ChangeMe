@@ -26,6 +26,7 @@ public static class IssueMappingExtensions
       AssignedToUserName = issue.AssignedToUserId.HasValue ? userLookup.GetValueOrDefault(issue.AssignedToUserId.Value) : null,
       CreatedAt = issue.CreatedAt,
       UpdatedAt = issue.UpdatedAt,
+      Version = issue.Version,
       LastActivityAt = issue.LastActivityAt,
       IsWatchedByCurrentUser = currentUserId.HasValue && issue.Watchers.Any(w => w.UserId == currentUserId.Value),
       WatchersCount = issue.Watchers.Count,
@@ -43,24 +44,18 @@ public static class IssueMappingExtensions
   }
 
   public static IssueHistoryEntryDto ToHistoryEntryDto(
-    IssueHistoryEventType eventType,
-    Guid actorUserId,
-    string summary,
-    string? previousValue,
-    string? currentValue,
-    DateTime createdAt,
-    Guid id,
+    this IssueHistoryEntryDto entry,
     IReadOnlyDictionary<Guid, string> userLookup) =>
     new()
     {
-      Id = id,
-      EventType = eventType,
-      ActorUserId = actorUserId,
-      ActorName = userLookup.GetValueOrDefault(actorUserId),
-      Summary = summary,
-      PreviousValue = FormatHistoryValue(eventType, previousValue, userLookup),
-      CurrentValue = FormatHistoryValue(eventType, currentValue, userLookup),
-      CreatedAt = createdAt
+      Id = entry.Id,
+      EventType = entry.EventType,
+      ActorUserId = entry.ActorUserId,
+      ActorName = userLookup.GetValueOrDefault(entry.ActorUserId),
+      Summary = entry.Summary,
+      PreviousValue = FormatHistoryValue(entry.EventType, entry.PreviousValue, userLookup),
+      CurrentValue = FormatHistoryValue(entry.EventType, entry.CurrentValue, userLookup),
+      CreatedAt = entry.CreatedAt
     };
 
   public static IEnumerable<Guid> CollectHistoryRelatedUserIds(IEnumerable<IssueHistoryEntryDto> entries)

@@ -6,21 +6,11 @@
     <base href="/" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..700&display=swap"
-      rel="stylesheet"
-    />
     <!-- PrimeNG dark mode: class on <html> before bootstrap (avoids light flash). See darkModeSelector in app.config.ts -->
     <script src="runtime-config.js"></script>
-    <script>
-      if (localStorage.getItem('theme') === 'dark') {
-        document.documentElement.classList.add('app-dark');
-      }
-    </script>
+    <script src="theme-init.js"></script>
   </head>
   <body>
-    <app-root></app-root>
+    <app-root ngCspNonce="__CSP_NONCE__"></app-root>
   </body>
 </html>

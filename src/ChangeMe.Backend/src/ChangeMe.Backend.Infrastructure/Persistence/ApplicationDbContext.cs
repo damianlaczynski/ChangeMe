@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using ChangeMe.Backend.Domain.Aggregates.Issue;
 using ChangeMe.Backend.Domain.Aggregates.Issue.Entities;
 using ChangeMe.Backend.Domain.Common.Attachments;
@@ -7,6 +7,7 @@ using ChangeMe.Backend.Domain.Aggregates.Roles;
 using ChangeMe.Backend.Domain.Aggregates.Sessions;
 using ChangeMe.Backend.Domain.Aggregates.Users;
 using ChangeMe.Backend.Domain.Aggregates.Users.Entities;
+using ChangeMe.Backend.Domain.Common;
 
 namespace ChangeMe.Backend.Infrastructure.Persistence;
 
@@ -39,11 +40,10 @@ public class ApplicationDbContext(
   {
     UpdateTimeStamps();
     UpdateUserInfo();
+    BumpVersions();
 
-    int result = await base.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-
+    var result = await base.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
     DispatchDomainEvents();
-
     return result;
   }
 
@@ -51,12 +51,21 @@ public class ApplicationDbContext(
   {
     UpdateTimeStamps();
     UpdateUserInfo();
+    BumpVersions();
 
     var result = base.SaveChanges();
-
     DispatchDomainEvents();
-
     return result;
+  }
+
+  private void BumpVersions()
+  {
+    foreach (var entry in ChangeTracker.Entries<Entity>()
+      .Where(e => e.State == EntityState.Modified))
+    {
+      var versionProperty = entry.Property(e => e.Version);
+      versionProperty.CurrentValue = versionProperty.OriginalValue + 1;
+    }
   }
 
   private void UpdateTimeStamps()
@@ -97,7 +106,7 @@ public class ApplicationDbContext(
 
     var entitiesWithEvents = ChangeTracker.Entries<HasDomainEventsBase>()
       .Select(e => e.Entity)
-      .Where(e => e.DomainEvents.Any())
+      .Where(e => e.DomainEvents.Count > 0)
       .ToArray();
 
     dispatcher.DispatchAndClearEvents(entitiesWithEvents);

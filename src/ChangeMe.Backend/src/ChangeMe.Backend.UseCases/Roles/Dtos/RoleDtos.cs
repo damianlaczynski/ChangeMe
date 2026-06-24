@@ -30,6 +30,7 @@ public sealed record RoleDetailsDto
   public bool IsSystem { get; init; }
   public int PermissionCount { get; init; }
   public int UserCount { get; init; }
+  public long Version { get; init; }
   public IReadOnlyList<RolePermissionItemDto> Permissions { get; init; } = [];
 }
 

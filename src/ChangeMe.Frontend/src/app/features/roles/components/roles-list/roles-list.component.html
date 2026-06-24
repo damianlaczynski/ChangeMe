@@ -43,27 +43,27 @@
   >
     <ng-template #header>
       <tr>
-        <th pSortableColumn="Name">
+        <th scope="col" pSortableColumn="Name">
           <div class="flex items-center gap-2">
             Name
             <p-sortIcon field="Name" />
           </div>
         </th>
-        <th>Description</th>
-        <th pSortableColumn="Permissions">
+        <th scope="col">Description</th>
+        <th scope="col" pSortableColumn="Permissions">
           <div class="flex items-center gap-2">
             Permissions
             <p-sortIcon field="Permissions" />
           </div>
         </th>
-        <th pSortableColumn="Users">
+        <th scope="col" pSortableColumn="Users">
           <div class="flex items-center gap-2">
             Users
             <p-sortIcon field="Users" />
           </div>
         </th>
-        <th>System</th>
-        <th>Actions</th>
+        <th scope="col">System</th>
+        <th scope="col">Actions</th>
       </tr>
     </ng-template>
     <ng-template #body let-role>

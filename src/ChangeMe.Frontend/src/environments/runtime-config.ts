@@ -5,9 +5,7 @@ export interface ChangeMeRuntimeConfig {
 }
 
 declare global {
-  interface Window {
-    __CHANGE_ME_CONFIG__?: ChangeMeRuntimeConfig;
-  }
+  var __CHANGE_ME_CONFIG__: ChangeMeRuntimeConfig | undefined;
 }
 
 /** Development: `environment.development.ts`. Production: `runtime-config.js` (required). */
@@ -16,10 +14,10 @@ export function getApiUrl(): string {
     return (environment as typeof environment & { apiUrl: string }).apiUrl;
   }
 
-  const url = window.__CHANGE_ME_CONFIG__?.apiUrl?.trim();
+  const url = globalThis.__CHANGE_ME_CONFIG__?.apiUrl?.trim();
   if (!url) {
     throw new Error(
-      'Missing window.__CHANGE_ME_CONFIG__.apiUrl. Set public/runtime-config.js or CHANGE_ME_API_URL at container start.'
+      'Missing globalThis.__CHANGE_ME_CONFIG__.apiUrl. Set public/runtime-config.js or CHANGE_ME_API_URL at container start.'
     );
   }
 

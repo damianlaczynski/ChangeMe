@@ -20,7 +20,7 @@ public static class IssuesUtils
       .AnyAsync(u => u.Id == assignedToUserId.Value, cancellationToken);
 
     if (!assigneeExists)
-      return Result.Invalid([new ValidationError(propertyName, AssignedUserDoesNotExistMessage)]);
+      return Result.Invalid(new ValidationError(propertyName, AssignedUserDoesNotExistMessage));
 
     return Result.Success();
   }

@@ -79,84 +79,65 @@ public class Issue : Entity, IAggregateRoot
     var normalizedDescription = description.Trim();
     var hadChanges = false;
 
-    if (!string.Equals(Title, normalizedTitle, StringComparison.Ordinal))
-    {
-      var historyResult = AddHistoryEntry(
-        IssueHistoryEventType.TITLE_CHANGED,
-        actorUserId,
-        "Issue title changed.",
-        Title,
-        normalizedTitle);
-      if (!historyResult.IsSuccess)
-        return historyResult.Map();
+    var titleChangeResult = TryApplyDetailChange(
+      !string.Equals(Title, normalizedTitle, StringComparison.Ordinal),
+      IssueHistoryEventType.TITLE_CHANGED,
+      actorUserId,
+      "Issue title changed.",
+      Title,
+      normalizedTitle,
+      () => Title = normalizedTitle);
+    if (!titleChangeResult.IsSuccess)
+      return titleChangeResult.Map();
+    hadChanges |= titleChangeResult.Value;
 
-      Title = normalizedTitle;
-      hadChanges = true;
-    }
+    var descriptionChangeResult = TryApplyDetailChange(
+      !string.Equals(Description, normalizedDescription, StringComparison.Ordinal),
+      IssueHistoryEventType.DESCRIPTION_CHANGED,
+      actorUserId,
+      "Issue description changed.",
+      Description,
+      normalizedDescription,
+      () => Description = normalizedDescription);
+    if (!descriptionChangeResult.IsSuccess)
+      return descriptionChangeResult.Map();
+    hadChanges |= descriptionChangeResult.Value;
 
-    if (!string.Equals(Description, normalizedDescription, StringComparison.Ordinal))
-    {
-      var historyResult = AddHistoryEntry(
-        IssueHistoryEventType.DESCRIPTION_CHANGED,
-        actorUserId,
-        "Issue description changed.",
-        Description,
-        normalizedDescription);
-      if (!historyResult.IsSuccess)
-        return historyResult.Map();
+    var priorityChangeResult = TryApplyDetailChange(
+      Priority != priority,
+      IssueHistoryEventType.PRIORITY_CHANGED,
+      actorUserId,
+      "Issue priority changed.",
+      Priority.ToString(),
+      priority.ToString(),
+      () => Priority = priority);
+    if (!priorityChangeResult.IsSuccess)
+      return priorityChangeResult.Map();
+    hadChanges |= priorityChangeResult.Value;
 
-      Description = normalizedDescription;
-      hadChanges = true;
-    }
+    var statusChangeResult = TryApplyDetailChange(
+      Status != status,
+      IssueHistoryEventType.STATUS_CHANGED,
+      actorUserId,
+      "Issue status changed.",
+      Status.ToString(),
+      status.ToString(),
+      () => Status = status);
+    if (!statusChangeResult.IsSuccess)
+      return statusChangeResult.Map();
+    hadChanges |= statusChangeResult.Value;
 
-    if (Priority != priority)
-    {
-      var historyResult = AddHistoryEntry(
-        IssueHistoryEventType.PRIORITY_CHANGED,
-        actorUserId,
-        "Issue priority changed.",
-        Priority.ToString(),
-        priority.ToString());
-      if (!historyResult.IsSuccess)
-        return historyResult.Map();
-
-      Priority = priority;
-      hadChanges = true;
-    }
-
-    if (Status != status)
-    {
-      var eventType = IsStatusCloseOrReopen(Status, status)
-        ? IssueHistoryEventType.STATUS_CHANGED
-        : IssueHistoryEventType.STATUS_CHANGED;
-
-      var historyResult = AddHistoryEntry(
-        eventType,
-        actorUserId,
-        "Issue status changed.",
-        Status.ToString(),
-        status.ToString());
-      if (!historyResult.IsSuccess)
-        return historyResult.Map();
-
-      Status = status;
-      hadChanges = true;
-    }
-
-    if (AssignedToUserId != assignedToUserId)
-    {
-      var historyResult = AddHistoryEntry(
-        IssueHistoryEventType.ASSIGNEE_CHANGED,
-        actorUserId,
-        "Issue assignee changed.",
-        AssignedToUserId?.ToString(),
-        assignedToUserId?.ToString());
-      if (!historyResult.IsSuccess)
-        return historyResult.Map();
-
-      AssignedToUserId = assignedToUserId;
-      hadChanges = true;
-    }
+    var assigneeChangeResult = TryApplyDetailChange(
+      AssignedToUserId != assignedToUserId,
+      IssueHistoryEventType.ASSIGNEE_CHANGED,
+      actorUserId,
+      "Issue assignee changed.",
+      AssignedToUserId?.ToString(),
+      assignedToUserId?.ToString(),
+      () => AssignedToUserId = assignedToUserId);
+    if (!assigneeChangeResult.IsSuccess)
+      return assigneeChangeResult.Map();
+    hadChanges |= assigneeChangeResult.Value;
 
     if (hadChanges)
       LastActivityAt = DateTime.UtcNow;
@@ -279,7 +260,7 @@ public class Issue : Entity, IAggregateRoot
     Guid actorUserId)
   {
     if (attachments.Count >= IssueConstraints.ATTACHMENT_MAX_ATTACHMENTS_PER_ISSUE)
-      return Result.Invalid([new ValidationError(nameof(Attachments), $"cannot exceed {IssueConstraints.ATTACHMENT_MAX_ATTACHMENTS_PER_ISSUE} attachments per issue")]);
+      return Result.Invalid(new ValidationError(nameof(Attachments), $"cannot exceed {IssueConstraints.ATTACHMENT_MAX_ATTACHMENTS_PER_ISSUE} attachments per issue"));
 
     var attachmentResult = IssueAttachment.Create(
       Id,
@@ -355,6 +336,26 @@ public class Issue : Entity, IAggregateRoot
 
   public bool IsWatchedBy(Guid userId) => watchers.Any(w => w.UserId == userId);
 
+  private Result<bool> TryApplyDetailChange(
+    bool hasChanged,
+    IssueHistoryEventType eventType,
+    Guid actorUserId,
+    string summary,
+    string? previousValue,
+    string? currentValue,
+    Action applyChange)
+  {
+    if (!hasChanged)
+      return Result.Success(false);
+
+    var historyResult = AddHistoryEntry(eventType, actorUserId, summary, previousValue, currentValue);
+    if (!historyResult.IsSuccess)
+      return historyResult.Map();
+
+    applyChange();
+    return Result.Success(true);
+  }
+
   private Result<IssueHistoryEntry> AddHistoryEntry(
     IssueHistoryEventType eventType,
     Guid actorUserId,
@@ -409,12 +410,6 @@ public class Issue : Entity, IAggregateRoot
       validationErrors.Add(new ValidationError(nameof(Status), "invalid status"));
 
     return validationErrors;
-  }
-
-  private static bool IsStatusCloseOrReopen(IssueStatus previousStatus, IssueStatus nextStatus)
-  {
-    return (previousStatus == IssueStatus.CLOSED && nextStatus != IssueStatus.CLOSED)
-      || (previousStatus != IssueStatus.CLOSED && nextStatus == IssueStatus.CLOSED);
   }
 }
 

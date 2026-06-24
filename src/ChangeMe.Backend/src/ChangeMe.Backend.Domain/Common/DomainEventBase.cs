@@ -6,7 +6,7 @@ namespace ChangeMe.Backend.Domain.Common;
 /// A base type for domain events. Depends on Mediator INotification.
 /// Includes DateOccurred which is set on creation.
 /// </summary>
-public abstract class DomainEventBase : Entity, IHasDomainEvents, INotification
+public abstract class DomainEventBase : Entity, INotification
 {
   /// <summary>
   /// The date and time the event occurred.

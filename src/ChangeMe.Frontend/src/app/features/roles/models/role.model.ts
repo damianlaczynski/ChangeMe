@@ -30,6 +30,7 @@ export interface RoleDetailsDto {
   isSystem: boolean;
   permissionCount: number;
   userCount: number;
+  version: number;
   permissions: RolePermissionItemDto[];
 }
 
@@ -57,6 +58,7 @@ export interface CreateRoleRequest {
 
 export interface UpdateRoleRequest {
   id: string;
+  version: number;
   name: string;
   description?: string | null;
   permissionCodes: string[];

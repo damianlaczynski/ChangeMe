@@ -1,3 +1,4 @@
+@import '@fontsource-variable/inter/index.css';
 @import 'tailwindcss';
 @import 'tailwindcss-primeui';
 @import 'primeicons/primeicons.css';
@@ -5,7 +6,7 @@
 @custom-variant dark (&:where(.app-dark, .app-dark *));
 
 @theme {
-  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
 }
 
 @layer base {

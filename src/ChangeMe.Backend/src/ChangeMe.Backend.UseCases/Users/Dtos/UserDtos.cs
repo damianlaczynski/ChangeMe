@@ -33,6 +33,7 @@ public sealed record UserDetailsDto
   public UserMembershipStatus Status { get; init; }
   public DateTime MemberSince { get; init; }
   public DateTime? LastSignInAt { get; init; }
+  public long Version { get; init; }
   public IReadOnlyList<UserRoleSummaryDto> Roles { get; init; } = [];
   public IReadOnlyList<EffectivePermissionDto> EffectivePermissions { get; init; } = [];
 }

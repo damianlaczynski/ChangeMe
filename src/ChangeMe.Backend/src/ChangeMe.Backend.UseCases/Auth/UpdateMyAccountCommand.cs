@@ -1,8 +1,10 @@
 using ChangeMe.Backend.UseCases.Auth.Dtos;
+using ChangeMe.Backend.Domain.Common;
 
 namespace ChangeMe.Backend.UseCases.Auth;
 
 public sealed record UpdateMyAccountCommand(
+  long Version,
   string FirstName,
   string LastName) : ICommand<MyAccountDto>;
 
@@ -19,6 +21,10 @@ public class UpdateMyAccountHandler(
     var user = await context.Users.FirstOrDefaultAsync(x => x.Id == userId, cancellationToken);
     if (user is null || !user.IsActive)
       return Result<MyAccountDto>.Unauthorized();
+
+    var versionCheck = ConcurrencyGuard.CheckExpectedVersion(user, command.Version);
+    if (!versionCheck.IsSuccess)
+      return versionCheck.Map();
 
     var updateResult = user.UpdateProfile(command.FirstName, command.LastName);
     if (!updateResult.IsSuccess)

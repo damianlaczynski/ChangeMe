@@ -36,6 +36,16 @@ import { Tooltip } from 'primeng/tooltip';
 
 type IssueDetailsTab = 'comments' | 'attachments' | 'history';
 
+function resolveIssueDetailsTab(
+  tab: string | number | null | undefined
+): IssueDetailsTab {
+  if (tab === 'history' || tab === 'attachments') {
+    return tab;
+  }
+
+  return 'comments';
+}
+
 @Component({
   selector: 'app-issue-details',
   imports: [
@@ -89,14 +99,7 @@ export class IssueDetailsComponent {
     this.route.queryParamMap
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((params) => {
-        const tab = params.get('tab');
-        this.activeTab.set(
-          tab === 'history'
-            ? 'history'
-            : tab === 'attachments'
-              ? 'attachments'
-              : 'comments'
-        );
+        this.activeTab.set(resolveIssueDetailsTab(params.get('tab')));
       });
 
     effect(() => {
@@ -114,12 +117,7 @@ export class IssueDetailsComponent {
   }
 
   onTabChange(tab: string | number | undefined): void {
-    const value: IssueDetailsTab =
-      tab === 'history'
-        ? 'history'
-        : tab === 'attachments'
-          ? 'attachments'
-          : 'comments';
+    const value = resolveIssueDetailsTab(tab);
     if (this.activeTab() === value) {
       return;
     }

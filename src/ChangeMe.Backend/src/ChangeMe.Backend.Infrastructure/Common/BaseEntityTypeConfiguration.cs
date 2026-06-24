@@ -20,6 +20,10 @@ public abstract class BaseEntityTypeConfiguration<TEntity> : IEntityTypeConfigur
 
     builder.Property(e => e.UpdatedAt);
 
+    builder.Property(e => e.Version)
+      .IsConcurrencyToken()
+      .HasDefaultValue(0L);
+
     builder.Property(e => e.IsDeleted)
         .HasDefaultValue(false);
 

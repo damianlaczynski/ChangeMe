@@ -12,7 +12,7 @@ public sealed class LocalFileStorageService(IOptions<FileStorageOptions> options
     CancellationToken cancellationToken)
   {
     if (!TryGetFilePath(container, ownerId, storageKey, out var targetPath))
-      return Result.Invalid([new ValidationError(nameof(storageKey), "storage key is invalid")]);
+      return Result.Invalid(new ValidationError(nameof(storageKey), "storage key is invalid"));
 
     var ownerDirectory = Path.GetDirectoryName(targetPath)!;
 
@@ -51,7 +51,7 @@ public sealed class LocalFileStorageService(IOptions<FileStorageOptions> options
     CancellationToken cancellationToken)
   {
     if (!TryGetFilePath(container, ownerId, storageKey, out var filePath))
-      return Task.FromResult(Result<Stream>.Invalid([new ValidationError(nameof(storageKey), "storage key is invalid")]));
+      return Task.FromResult(Result<Stream>.Invalid(new ValidationError(nameof(storageKey), "storage key is invalid")));
 
     if (!File.Exists(filePath))
       return Task.FromResult(Result<Stream>.NotFound());
@@ -76,7 +76,7 @@ public sealed class LocalFileStorageService(IOptions<FileStorageOptions> options
     CancellationToken cancellationToken)
   {
     if (!TryGetFilePath(container, ownerId, storageKey, out var filePath))
-      return Task.FromResult(Result.Invalid([new ValidationError(nameof(storageKey), "storage key is invalid")]));
+      return Task.FromResult(Result.Invalid(new ValidationError(nameof(storageKey), "storage key is invalid")));
 
     try
     {

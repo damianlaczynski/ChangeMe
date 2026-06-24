@@ -7,8 +7,8 @@
     <NoWarn>$(NoWarn);NU5128</NoWarn>
 
     <PackageId>ChangeMe</PackageId>
-    <Version>2.0.0</Version>
-    <PackageReleaseNotes>See CHANGELOG.md — API v1, same-origin Docker proxy, RBAC, session auth, Playwright E2E, attachments, root npm scripts, Mediator, slnx.</PackageReleaseNotes>
+    <Version>2.1.0</Version>
+    <PackageReleaseNotes>See CHANGELOG.md — optimistic concurrency, API rate limiting, security headers (CSP nonce), Docker hardening.</PackageReleaseNotes>
     <Title>ChangeMe</Title>
     <Authors>Damian Łączyński</Authors>
     <Description>Full-stack dotnet new starter template with Angular frontend, layered ASP.NET backend, PostgreSQL, Docker Compose, tests, and project documentation.</Description>
@@ -30,13 +30,17 @@
              Exclude="
                ..\.git\**;
                ..\.angular\**;
+               ..\**\.angular\**;
                ..\.template-test\**;
+               ..\.template-test-output\**;
+               ..\**\.template-test-output\**;
                ..\template-pack\**;
                ..\artifacts\**;
                ..\**\bin\**;
                ..\**\obj\**;
                ..\**\node_modules\**;
                ..\**\dist\**;
+               ..\**\coverage\**;
                ..\**\.vs\**;
                ..\**\TestResults\**;
                ..\**\logs\**;

@@ -1,5 +1,6 @@
 using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UseCases.Auth.Dtos;
+using ChangeMe.Backend.UseCases.Users.Utils;
 
 namespace ChangeMe.Backend.UseCases.Auth;
 
@@ -19,28 +20,23 @@ public class GetMySessionsHandler(
 
     var utcNow = DateTime.UtcNow;
     var currentSessionId = userAccessor.SessionId;
+    var sessionLifetimeDays = sessionLifetime.SessionLifetimeDays;
 
-    var sessions = await context.UserSessions
+    var activeSessionsQuery = context.UserSessions
       .AsNoTracking()
-      .Where(x => x.UserId == userId && x.RevokedAt == null)
-      .ToListAsync(cancellationToken);
+      .WhereActiveSessions(userId, utcNow, sessionLifetimeDays);
 
-    var activeSessions = sessions
-      .Where(x => sessionLifetime.IsActive(x, utcNow))
-      .Select(x => new UserSessionDto(
+    query.PaginationParameters.SortField = MapSortField(query.PaginationParameters.SortField);
+
+    var pagedSessions = await activeSessionsQuery.ToPaginationResultAsync(
+      x => new UserSessionDto(
         x.Id,
         x.DeviceBrowserLabel,
         x.SignInMethod,
         x.IpAddress,
         x.SignedInAt,
         x.LastActivityAt,
-        currentSessionId.HasValue && x.Id == currentSessionId.Value))
-      .AsQueryable();
-
-    query.PaginationParameters.SortField = MapSortField(query.PaginationParameters.SortField);
-
-    var pagedSessions = await activeSessions.ToPaginationResultAsync(
-      x => x,
+        currentSessionId.HasValue && x.Id == currentSessionId.Value),
       query.PaginationParameters,
       cancellationToken);
 

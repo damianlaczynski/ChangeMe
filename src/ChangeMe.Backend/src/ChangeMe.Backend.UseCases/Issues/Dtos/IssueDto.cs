@@ -34,6 +34,7 @@ public class IssueDto
   public string? AssignedToUserName { get; set; }
   public DateTime CreatedAt { get; set; }
   public DateTime? UpdatedAt { get; set; }
+  public long Version { get; set; }
   public DateTime LastActivityAt { get; set; }
   public bool IsWatchedByCurrentUser { get; set; }
   public int WatchersCount { get; set; }
@@ -58,6 +59,7 @@ public class IssueDetailsDto
   public string? AssignedToUserName { get; set; }
   public DateTime CreatedAt { get; set; }
   public DateTime? UpdatedAt { get; set; }
+  public long Version { get; set; }
   public DateTime LastActivityAt { get; set; }
   public bool IsWatchedByCurrentUser { get; set; }
   public int WatchersCount { get; set; }

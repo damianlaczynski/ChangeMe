@@ -2,7 +2,6 @@ using ChangeMe.Backend.Domain.Aggregates.Roles;
 using ChangeMe.Backend.Domain.Aggregates.Sessions;
 using ChangeMe.Backend.Domain.Aggregates.Users;
 using ChangeMe.Backend.Domain.Authorization;
-using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UseCases.Users.Dtos;
 
 namespace ChangeMe.Backend.UseCases.Users.Utils;
@@ -132,23 +131,15 @@ public static class UsersUtils
       session.Revoke(utcNow);
   }
 
-  public static IReadOnlyList<AdminUserSessionDto> MapActiveSessions(
-    IEnumerable<UserSession> sessions,
+  public static IQueryable<UserSession> WhereActiveSessions(
+    this IQueryable<UserSession> sessions,
+    Guid userId,
     DateTime utcNow,
-    ISessionLifetimeService sessionLifetime)
-  {
-    return sessions
-      .Where(x => sessionLifetime.IsActive(x, utcNow))
-      .OrderByDescending(x => x.LastActivityAt)
-      .Select(x => new AdminUserSessionDto(
-        x.Id,
-        x.DeviceBrowserLabel,
-        x.SignInMethod,
-        x.IpAddress,
-        x.SignedInAt,
-        x.LastActivityAt))
-      .ToList();
-  }
+    int sessionLifetimeDays) =>
+    sessions.Where(x =>
+      x.UserId == userId
+      && x.RevokedAt == null
+      && x.SignedInAt.AddDays(sessionLifetimeDays) > utcNow);
 
   public static Task<bool> IsProfileEmailTakenAsync(
     ApplicationDbContext context,

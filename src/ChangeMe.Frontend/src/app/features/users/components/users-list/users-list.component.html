@@ -84,28 +84,28 @@
   >
     <ng-template #header>
       <tr>
-        <th pSortableColumn="Name">
+        <th scope="col" pSortableColumn="Name">
           <div class="flex items-center gap-2">
             Name
             <p-sortIcon field="Name" />
           </div>
         </th>
-        <th>Email</th>
-        <th>Status</th>
-        <th>Roles</th>
-        <th pSortableColumn="LastSignIn">
+        <th scope="col">Email</th>
+        <th scope="col">Status</th>
+        <th scope="col">Roles</th>
+        <th scope="col" pSortableColumn="LastSignIn">
           <div class="flex items-center gap-2">
             Last sign-in
             <p-sortIcon field="LastSignIn" />
           </div>
         </th>
-        <th pSortableColumn="CreatedAt">
+        <th scope="col" pSortableColumn="CreatedAt">
           <div class="flex items-center gap-2">
             Created at
             <p-sortIcon field="CreatedAt" />
           </div>
         </th>
-        <th>Actions</th>
+        <th scope="col">Actions</th>
       </tr>
     </ng-template>
     <ng-template #body let-user>

@@ -1,3 +1,4 @@
+using Ardalis.Result;
 using ChangeMe.Backend.Domain.Aggregates.Issue.Enums;
 using ChangeMe.Backend.Domain.Aggregates.Notifications;
 using ChangeMe.Backend.Domain.Aggregates.Notifications.Enums;
@@ -93,8 +94,7 @@ public class IssueNotificationService(
         recipient.Email,
         issue.Title,
         message,
-        issue.Id,
-        cancellationToken);
+        issue.Id);
 
       notificationResult.Value.MarkEmailSent();
       await context.SaveChangesAsync(cancellationToken);
@@ -179,20 +179,18 @@ public class IssueNotificationService(
         recipient.Email,
         issue.Title,
         message,
-        issue.Id,
-        cancellationToken);
+        issue.Id);
 
       notificationResult.Value.MarkEmailSent();
       await context.SaveChangesAsync(cancellationToken);
     }
   }
 
-  private Task SendIssueEmailAsync(
+  private Task<Result> SendIssueEmailAsync(
     string recipientEmail,
     string issueTitle,
     string message,
-    Guid issueId,
-    CancellationToken cancellationToken)
+    Guid issueId)
   {
     var issueUrl = $"{authOptions.Value.FrontendBaseUrl.TrimEnd('/')}/issues/{issueId}";
     var body = BrandedEmailTemplates.BuildNotificationEmail(

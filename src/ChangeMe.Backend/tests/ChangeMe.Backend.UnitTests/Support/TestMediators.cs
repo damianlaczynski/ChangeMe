@@ -1,5 +1,6 @@
 using Ardalis.Result;
 using ChangeMe.Backend.Infrastructure.Persistence;
+using ChangeMe.Backend.UseCases.Roles;
 using ChangeMe.Backend.UseCases.Users;
 using Mediator;
 
@@ -70,6 +71,23 @@ internal sealed class GetUserByIdDispatchingTestMediator(ApplicationDbContext co
     {
       var handler = new GetUserByIdHandler(context);
       var result = await handler.Handle(getUserQuery, cancellationToken);
+      return (TResponse)(object)result!;
+    }
+
+    throw new NotSupportedException($"Unsupported request: {request.GetType().Name}");
+  }
+}
+
+internal sealed class GetRoleByIdDispatchingTestMediator(ApplicationDbContext context) : TestMediatorBase
+{
+  public override async ValueTask<TResponse> Send<TResponse>(
+    IRequest<TResponse> request,
+    CancellationToken cancellationToken = default)
+  {
+    if (request is GetRoleByIdQuery getRoleQuery)
+    {
+      var handler = new GetRoleByIdHandler(context);
+      var result = await handler.Handle(getRoleQuery, cancellationToken);
       return (TResponse)(object)result!;
     }
 

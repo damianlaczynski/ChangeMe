@@ -41,15 +41,7 @@ public class GetIssueHistoryHandler(ApplicationDbContext context)
       cancellationToken);
 
     var items = paged.Items
-      .Select(entry => IssueMappingExtensions.ToHistoryEntryDto(
-        entry.EventType,
-        entry.ActorUserId,
-        entry.Summary,
-        entry.PreviousValue,
-        entry.CurrentValue,
-        entry.CreatedAt,
-        entry.Id,
-        userLookup))
+      .Select(entry => entry.ToHistoryEntryDto(userLookup))
       .ToList();
 
     return Result.Success(PaginationResult<IssueHistoryEntryDto>.Create(
