@@ -4,6 +4,7 @@ set -e
 API_URL="${CHANGE_ME_API_URL:-/api/v1}"
 CONFIG_PATH=/usr/share/nginx/html/runtime-config.js
 HEADERS_PATH=/etc/nginx/snippets/security-headers.conf
+HEADERS_TEMPLATE_PATH=/etc/nginx/snippets/security-headers.conf.template
 escaped_url=$(printf '%s' "$API_URL" | sed 's/\\/\\\\/g; s/"/\\"/g')
 
 cat > "$CONFIG_PATH" <<EOF
@@ -20,6 +21,7 @@ case "$API_URL" in
     ;;
 esac
 
+cp "$HEADERS_TEMPLATE_PATH" "$HEADERS_PATH"
 sed -i "s#__CSP_CONNECT_SRC_EXTRA__#${csp_connect_src_extra}#g" "$HEADERS_PATH"
 
 exec nginx -g 'daemon off;'

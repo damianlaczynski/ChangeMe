@@ -15,7 +15,7 @@ RUN apk add --no-cache nginx-module-njs \
 
 COPY src/ChangeMe.Frontend/nginx.conf /etc/nginx/conf.d/default.conf
 COPY src/ChangeMe.Frontend/nginx/00-csp-nonce.conf /etc/nginx/conf.d/00-csp-nonce.conf
-COPY src/ChangeMe.Frontend/nginx/security-headers.conf /etc/nginx/snippets/security-headers.conf
+COPY src/ChangeMe.Frontend/nginx/security-headers.conf /etc/nginx/snippets/security-headers.conf.template
 COPY src/ChangeMe.Frontend/nginx/csp-nonce.js /etc/nginx/njs/csp-nonce.js
 COPY src/ChangeMe.Frontend/docker-entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
