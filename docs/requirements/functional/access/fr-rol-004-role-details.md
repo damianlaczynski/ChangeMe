@@ -41,7 +41,7 @@ An authorized administrator must be able to review a role's metadata, permission
 
 ### Assigned users section
 
-- Inherits `FR-UI-001` (**Detail and section screens** → **Embedded lists**) for pagination and section loading unless stated below.
+- Inherits `FR-UI-001` (**Detail and section screens** → **Embedded lists**) unless stated below.
 - Section title: **`Assigned users`**
 - Visible with permission **Roles.View**.
 - Table columns:
@@ -54,7 +54,7 @@ An authorized administrator must be able to review a role's metadata, permission
 | **Actions** | **Remove from role** when the user has **Roles.Manage**.                                                   |
 
 - Default sort within section: **Name**, ascending.
-- Search field placeholder within section: **`Search assigned users...`**; filters **name** and **email** (case-insensitive).
+- Search field placeholder within section: **`Search assigned users...`**; matches **name** and **email**.
 - Empty state: **`No users are assigned to this role.`**
 
 ### Header actions

@@ -1,9 +1,10 @@
 ﻿using ChangeMe.Backend.UseCases.Users;
 using ChangeMe.Backend.UseCases.Users.Dtos;
+using QueryGrid.Abstractions;
 
 namespace ChangeMe.Backend.Web.Users;
 
-public class GetUsers(IMediator mediator) : BaseEndpoint<GetUsersQuery, PaginationResult<UserListItemDto>>(mediator)
+public class GetUsers(IMediator mediator) : BaseEndpoint<GetUsersQuery, GridResult<UserListItemDto>>(mediator)
 {
   protected override void ConfigureEndpoint()
   {

@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
+import { GridQuery, GridResult } from '@query-grid/core';
 import { ApiService } from '@shared/api/services/api.service';
-import { PaginationResult } from '@shared/data/models/pagination-result.model';
 import { Observable } from 'rxjs';
 import {
   AdminUserSessionDto,
@@ -10,8 +10,7 @@ import {
   RoleAssignmentOptionDto,
   UpdateUserRequest,
   UserDetailsDto,
-  UserListItemDto,
-  UserSearchParameters
+  UserListItemDto
 } from '../models/user.model';
 
 @Injectable({
@@ -21,13 +20,10 @@ export class UsersService {
   private readonly apiService = inject(ApiService);
   private readonly baseEndpoint = 'users';
 
-  getUsers(
-    params: UserSearchParameters
-  ): Observable<PaginationResult<UserListItemDto>> {
-    return this.apiService.getPaginated<UserListItemDto, UserSearchParameters>(
-      this.baseEndpoint,
-      params
-    );
+  getUsers(grid: GridQuery): Observable<GridResult<UserListItemDto>> {
+    return this.apiService.get<GridResult<UserListItemDto>>(this.baseEndpoint, {
+      grid
+    });
   }
 
   getUserById(id: string): Observable<UserDetailsDto> {
@@ -74,16 +70,11 @@ export class UsersService {
 
   getUserSessions(
     id: string,
-    params: {
-      pageNumber: number;
-      pageSize: number;
-      sortField?: string;
-      ascending?: boolean;
-    }
-  ): Observable<PaginationResult<AdminUserSessionDto>> {
-    return this.apiService.getPaginated<AdminUserSessionDto, typeof params>(
+    grid: GridQuery
+  ): Observable<GridResult<AdminUserSessionDto>> {
+    return this.apiService.get<GridResult<AdminUserSessionDto>>(
       `${this.baseEndpoint}/${id}/sessions`,
-      params
+      { grid }
     );
   }
 

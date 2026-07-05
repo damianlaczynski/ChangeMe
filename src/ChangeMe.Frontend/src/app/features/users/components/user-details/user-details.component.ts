@@ -29,7 +29,10 @@ import {
 } from '@features/users/utils/users.utils';
 import { PermissionCodes } from '@shared/authorization/permission-codes';
 import { BackButtonComponent } from '@shared/components/back-button/back-button.component';
-import { PaginationResult } from '@shared/data/models/pagination-result.model';
+import {
+  createGridQuery,
+  DEFAULT_GRID_PAGE_SIZE
+} from '@shared/data/utils/grid.utils';
 import { ConfirmationService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
@@ -75,15 +78,10 @@ export class UserDetailsComponent {
 
   readonly formatUserName = formatUserName;
   readonly sessions = signal<AdminUserSessionDto[]>([]);
-  readonly sessionsPagination = signal<PaginationResult<AdminUserSessionDto> | null>(
-    null
+  readonly sessionsGrid = signal(
+    createGridQuery({ sort: [{ field: 'LastActivityAt', desc: true }] })
   );
-  readonly sessionsQuery = signal({
-    pageNumber: 1,
-    pageSize: 10,
-    sortField: 'LastActivityAt',
-    ascending: false
-  });
+  readonly sessionsTotalCount = signal(0);
   readonly errorMessage = signal<string | null>(null);
   readonly isLoading = signal(true);
   readonly isLoadingSessions = signal(false);
@@ -92,6 +90,7 @@ export class UserDetailsComponent {
 
   readonly UserMessages = UserMessages;
   readonly formatIpAddress = formatIpAddress;
+  readonly DEFAULT_GRID_PAGE_SIZE = DEFAULT_GRID_PAGE_SIZE;
   readonly getUserStatusLabel = getUserStatusLabel;
   readonly getUserStatusSeverity = getUserStatusSeverity;
   readonly canManageUsers = () =>
@@ -199,11 +198,15 @@ export class UserDetailsComponent {
   }
 
   onSessionsPageChange(event: PaginatorState): void {
-    this.sessionsQuery.update((current) => ({
-      ...current,
-      pageNumber: (event.page ?? 0) + 1,
-      pageSize: event.rows ?? current.pageSize
-    }));
+    const take = event.rows ?? DEFAULT_GRID_PAGE_SIZE;
+    const skip = event.first ?? 0;
+    this.sessionsGrid.set(
+      createGridQuery({
+        skip,
+        take,
+        sort: [{ field: 'LastActivityAt', desc: true }]
+      })
+    );
     this.loadSessions(this.id());
   }
 
@@ -211,12 +214,12 @@ export class UserDetailsComponent {
     this.isLoadingSessions.set(true);
 
     this.usersService
-      .getUserSessions(userId, this.sessionsQuery())
+      .getUserSessions(userId, this.sessionsGrid())
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (result) => {
           this.sessions.set(result.items);
-          this.sessionsPagination.set(result);
+          this.sessionsTotalCount.set(result.totalCount);
           this.isLoadingSessions.set(false);
           this.hasLoadedSessions.set(true);
         },

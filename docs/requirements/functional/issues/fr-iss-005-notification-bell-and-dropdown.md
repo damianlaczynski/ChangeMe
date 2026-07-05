@@ -28,12 +28,12 @@ There is no separate **Notifications** screen or sidebar entry.
 
 ### Notification dropdown panel
 
-- Inherits `FR-UI-001` default page size (**10**) and section loading; overrides list control with tabbed **Show more** append loading (not a full-page paginator).
+- Inherits `FR-UI-001` (**Detail and section screens** → **Embedded lists**); overrides list control with tabbed **Show more** append loading (not a full-page paginator).
 - Panel header: `**Notifications`**, **unread count**, and **total count\*\* when loaded.
 - **Refresh** reloads the notification list.
 - **Mark all as read** marks every unread notification as read when any unread items exist.
 - Scrollable body with tabs: **Unread** and **Read**.
-- Each tab loads notifications sorted **newest first** (`CreatedAt` descending).
+- Each tab loads notifications sorted **newest first**.
 - When more notifications exist beyond the loaded pages, a **Show more** control appears at the bottom of the active tab; each activation loads the next page and **appends** it to the list.
 - **Show more** is hidden when all notifications in that tab are loaded; while loading, the button shows a loading state and already loaded items remain visible.
 - Switching tabs reloads that tab from **page 1**.

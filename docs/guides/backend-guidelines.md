@@ -77,6 +77,7 @@ REST routes are versioned in the URL (`/api/v1/...`). Version and prefix live in
 
 - Handlers live in the same file as their request contract in `UseCases/<Feature>/`.
 - Return `Result<T>` consistently.
+- **Grid list endpoints** (Issues, Users, Roles, and embedded lists such as comments, history, attachments, notifications, sessions, assigned users) accept a `GridQuery` on the request (query parameter `grid`, JSON) and return `GridResult<T>` from `QueryGrid.Abstractions`. Project to a list DTO, then call `ToGridResultAsync` from `QueryGrid.EntityFrameworkCore`. Invalid grid input is handled by the global exception handler — do not catch `GridValidationException` in handlers. Mark searchable DTO properties with `[GridSearchable]`; use `[GridIgnore]` for display-only or non-queryable fields. See `UseCases/Issues/GetAllIssuesQuery.cs` as the reference handler.
 - Use `ApplicationDbContext` for persistence from the handler layer.
 - After `SaveChangesAsync`, return API DTOs through an existing query via `mediator.Send` — do not instantiate query handlers with `new`.
 - For create commands that return a resource body, wrap the query result in `Result.Created(dto, "/resource/{id}")` so `BaseEndpoint` responds with `201 Created`.

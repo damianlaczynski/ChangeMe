@@ -1,9 +1,15 @@
+using QueryGrid.Abstractions;
+
 namespace ChangeMe.Backend.UseCases.Roles.Dtos;
 
 public sealed record RoleListItemDto
 {
   public Guid Id { get; init; }
+
+  [GridSearchable]
   public string Name { get; init; } = string.Empty;
+
+  [GridSearchable]
   public string? Description { get; init; }
   public int PermissionCount { get; init; }
   public int UserCount { get; init; }
@@ -37,9 +43,14 @@ public sealed record RoleDetailsDto
 public sealed record RoleAssignedUserDto
 {
   public Guid Id { get; init; }
+
+  [GridSearchable]
   public string FirstName { get; init; } = string.Empty;
+
+  [GridSearchable]
   public string LastName { get; init; } = string.Empty;
+
+  [GridSearchable]
   public string Email { get; init; } = string.Empty;
   public bool Deactivated { get; init; }
 }
-

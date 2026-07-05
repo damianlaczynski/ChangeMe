@@ -1,5 +1,4 @@
-import { PaginationParameters } from '@shared/data/models/pagination-parameters.model';
-import { PaginationResult } from '@shared/data/models/pagination-result.model';
+import { GridResult } from '@query-grid/core';
 
 export interface NotificationDto {
   id: string;
@@ -15,11 +14,7 @@ export interface NotificationDto {
 
 export interface NotificationListDto {
   unreadCount: number;
-  page: PaginationResult<NotificationDto>;
-}
-
-export interface NotificationSearchParameters extends PaginationParameters {
-  isRead?: boolean;
+  page: GridResult<NotificationDto>;
 }
 
 export interface NotificationRealtimeMessage {

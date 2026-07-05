@@ -3,6 +3,7 @@ using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UnitTests.Support;
 using ChangeMe.Backend.UseCases.Users;
 using ChangeMe.Backend.UseCases.Users.Dtos;
+using QueryGrid.Abstractions;
 
 namespace ChangeMe.Backend.UnitTests.UseCases.Users;
 
@@ -35,8 +36,16 @@ public sealed class GetUsersHandlerTests
     var result = await handler.Handle(
       new GetUsersQuery
       {
-        Status = [UserMembershipStatus.Deactivated],
-        PaginationParameters = PaginationParameters<UserListItemDto>.Create()
+        Grid = new GridQuery
+        {
+          Take = 10,
+          Filter = new FilterCondition
+          {
+            Field = nameof(UserListItemDto.Status),
+            Operator = FilterOperator.Eq,
+            Value = UserMembershipStatus.Deactivated
+          }
+        }
       },
       cancellationToken);
 

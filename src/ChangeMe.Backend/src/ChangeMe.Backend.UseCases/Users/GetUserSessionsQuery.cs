@@ -1,58 +1,48 @@
 using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UseCases.Users.Dtos;
 using ChangeMe.Backend.UseCases.Users.Utils;
+using QueryGrid.Abstractions;
+using QueryGrid.EntityFrameworkCore;
 
 namespace ChangeMe.Backend.UseCases.Users;
 
-public sealed class GetUserSessionsQuery : PaginationQuery<AdminUserSessionDto>
+public sealed class GetUserSessionsQuery : IQuery<GridResult<AdminUserSessionDto>>
 {
   public Guid Id { get; set; }
+  public GridQuery Grid { get; set; } = new();
 }
 
 public class GetUserSessionsHandler(
   ApplicationDbContext context,
-  ISessionLifetimeService sessionLifetime) : IQueryHandler<GetUserSessionsQuery, PaginationResult<AdminUserSessionDto>>
+  ISessionLifetimeService sessionLifetime) : IQueryHandler<GetUserSessionsQuery, GridResult<AdminUserSessionDto>>
 {
-  public async ValueTask<Result<PaginationResult<AdminUserSessionDto>>> Handle(
+  public async ValueTask<Result<GridResult<AdminUserSessionDto>>> Handle(
     GetUserSessionsQuery query,
     CancellationToken cancellationToken)
   {
     var userExists = await context.Users.AnyAsync(x => x.Id == query.Id, cancellationToken);
     if (!userExists)
-      return Result<PaginationResult<AdminUserSessionDto>>.NotFound();
+      return Result<GridResult<AdminUserSessionDto>>.NotFound();
 
     var user = await context.Users.AsNoTracking().FirstAsync(x => x.Id == query.Id, cancellationToken);
     if (!user.IsActive)
-      return Result.Success(PaginationResult<AdminUserSessionDto>.Empty());
+      return Result.Success(new GridResult<AdminUserSessionDto>());
 
     var utcNow = DateTime.UtcNow;
     var sessionLifetimeDays = sessionLifetime.SessionLifetimeDays;
 
-    var activeSessionsQuery = context.UserSessions
+    var projected = context.UserSessions
       .AsNoTracking()
-      .WhereActiveSessions(query.Id, utcNow, sessionLifetimeDays);
-
-    query.PaginationParameters.SortField = MapSortField(query.PaginationParameters.SortField);
-
-    var pagedSessions = await activeSessionsQuery.ToPaginationResultAsync(
-      x => new AdminUserSessionDto(
+      .WhereActiveSessions(query.Id, utcNow, sessionLifetimeDays)
+      .Select(x => new AdminUserSessionDto(
         x.Id,
         x.DeviceBrowserLabel,
         x.SignInMethod,
         x.IpAddress,
         x.SignedInAt,
-        x.LastActivityAt),
-      query.PaginationParameters,
-      cancellationToken);
+        x.LastActivityAt));
 
-    return Result.Success(pagedSessions);
+    var grid = await projected.ToGridResultAsync(query.Grid, cancellationToken: cancellationToken);
+    return Result.Success(grid);
   }
-
-  private static string MapSortField(string sortField) =>
-    sortField switch
-    {
-      "SignedInAt" => nameof(AdminUserSessionDto.SignedInAt),
-      "DeviceBrowserLabel" => nameof(AdminUserSessionDto.DeviceBrowserLabel),
-      "LastActivityAt" or _ => nameof(AdminUserSessionDto.LastActivityAt)
-    };
 }

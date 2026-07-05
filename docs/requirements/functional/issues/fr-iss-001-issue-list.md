@@ -52,12 +52,9 @@ The user must be able to browse all issues, search, filter, sort, navigate to de
 
 ### Search and filters
 
-- Inherits `FR-UI-001` (**Administrative list screens**) for filters panel, applied filter chips, pagination, loading, and overflow menu visibility unless stated below.
-- **Status** filter: multi-select; empty selection means no restriction.
-- **Priority** filter: multi-select; empty selection means no restriction.
-- **Assigned to** filter: single-select user list from assignable users (FR-USR-005); clearable.
-- **Watched by me** filter: checkbox; when selected, shows only issues watched by the current user.
-- **My issues** filter: checkbox; when selected, shows only issues **created by** or **assigned to** the current user.
+- Inherits `FR-UI-001` (**Administrative list screens**) unless stated below.
+- **Filterable columns**: **Title**, **Status**, **Priority**, **Assigned to** (assignable users per FR-USR-005), **Created at**, **Last activity**.
+- Global search placeholder: **`Search issues…`**; matches issue identifier, **Title**, and **Description**.
 
 ## Non-functional requirements
 

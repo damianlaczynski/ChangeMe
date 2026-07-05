@@ -12,7 +12,10 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { IssueHistoryEntryDto } from '@features/issues/models/issue.model';
 import { IssuesService } from '@features/issues/services/issues.service';
 import { getIssueHistoryEventVisual } from '@features/issues/utils/issue.utils';
-import { PaginationResult } from '@shared/data/models/pagination-result.model';
+import {
+  createIssueTabGridQuery,
+  hasMoreGridItems
+} from '@shared/data/utils/grid.utils';
 import { PrimeTemplate } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Message } from 'primeng/message';
@@ -44,22 +47,14 @@ export class IssueHistoryTabComponent {
   readonly getIssueHistoryEventVisual = getIssueHistoryEventVisual;
 
   readonly historyEntries = signal<IssueHistoryEntryDto[]>([]);
-  readonly historyPagination = signal<PaginationResult<IssueHistoryEntryDto> | null>(
-    null
-  );
-  readonly historyQuery = signal({
-    pageNumber: 1,
-    pageSize: 10,
-    sortField: 'CreatedAt',
-    ascending: false
-  });
+  readonly historyTotalCount = signal(0);
   readonly loadError = signal<string | null>(null);
   readonly isLoadingHistory = signal(false);
   readonly isLoadingMoreHistory = signal(false);
   readonly hasLoadedHistory = signal(false);
 
-  readonly canShowMoreHistory = computed(
-    () => this.historyPagination()?.hasNext ?? false
+  readonly canShowMoreHistory = computed(() =>
+    hasMoreGridItems(this.historyEntries().length, this.historyTotalCount())
   );
 
   private lastLoadedIssueId: string | null = null;
@@ -78,34 +73,26 @@ export class IssueHistoryTabComponent {
   }
 
   showMoreHistory(): void {
-    const pagination = this.historyPagination();
-    if (!pagination?.hasNext || this.isLoadingMoreHistory()) {
+    if (!this.canShowMoreHistory() || this.isLoadingMoreHistory()) {
       return;
     }
 
     this.loadHistory(this.issueId(), {
       append: true,
-      pageNumber: pagination.currentPage + 1
+      skip: this.historyEntries().length
     });
   }
 
   private reloadHistoryFromStart(issueId: string): void {
-    this.historyQuery.set({
-      pageNumber: 1,
-      pageSize: 10,
-      sortField: 'CreatedAt',
-      ascending: false
-    });
     this.loadHistory(issueId);
   }
 
   private loadHistory(
     issueId: string,
-    options: { append?: boolean; pageNumber?: number } = {}
+    options: { append?: boolean; skip?: number } = {}
   ): void {
     const append = options.append ?? false;
-    const pageNumber = options.pageNumber ?? this.historyQuery().pageNumber;
-    const query = { ...this.historyQuery(), pageNumber };
+    const skip = options.skip ?? 0;
     const requestId = ++this.historyRequestId;
 
     if (append) {
@@ -117,7 +104,7 @@ export class IssueHistoryTabComponent {
     this.loadError.set(null);
 
     this.issuesService
-      .getIssueHistory(issueId, query)
+      .getIssueHistory(issueId, createIssueTabGridQuery(skip))
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (result) => {
@@ -131,13 +118,7 @@ export class IssueHistoryTabComponent {
             this.historyEntries.set(result.items);
           }
 
-          this.historyQuery.set({
-            pageNumber: result.currentPage,
-            pageSize: result.pageSize,
-            sortField: 'CreatedAt',
-            ascending: false
-          });
-          this.historyPagination.set(result);
+          this.historyTotalCount.set(result.totalCount);
           this.isLoadingHistory.set(false);
           this.isLoadingMoreHistory.set(false);
           this.hasLoadedHistory.set(true);

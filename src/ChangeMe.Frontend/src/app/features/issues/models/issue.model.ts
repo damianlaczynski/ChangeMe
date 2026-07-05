@@ -1,5 +1,3 @@
-import { PaginationParameters } from '@shared/data/models/pagination-parameters.model';
-
 export interface IssueDto {
   id: string;
   title: string;
@@ -51,21 +49,6 @@ export interface IssueAttachmentDto {
   uploadedByName?: string | null;
   createdAt: string;
   canDelete: boolean;
-}
-
-export interface IssueAttachmentsSearchParameters extends PaginationParameters {
-  sortField?: string;
-  ascending?: boolean;
-}
-
-export interface IssueCommentsSearchParameters extends PaginationParameters {
-  sortField?: string;
-  ascending?: boolean;
-}
-
-export interface IssueHistorySearchParameters extends PaginationParameters {
-  sortField?: string;
-  ascending?: boolean;
 }
 
 export interface AcceptanceCriterionDto {
@@ -126,15 +109,6 @@ export interface UpdateIssueRequest {
 export interface UpdateIssueAcceptanceCriterionPayload {
   id?: string;
   content: string;
-}
-
-export interface IssueSearchParameters extends PaginationParameters {
-  searchText?: string;
-  statuses?: IssueStatus[];
-  priorities?: IssuePriority[];
-  assignedToUserId?: string | null;
-  watchedByMe?: boolean;
-  createdByMe?: boolean;
 }
 
 export interface IssueWatchStateDto {

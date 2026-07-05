@@ -22,8 +22,7 @@ test.describe('issues smoke', () => {
     await createIssue(apiClient, issueTitle);
 
     await gotoIssuesList(page);
-    await page.getByPlaceholder('Search issues...').fill(issueTitle);
-    await page.getByRole('button', { name: 'Search' }).click();
+    await page.getByPlaceholder('Search issues…').fill(issueTitle);
 
     await expect(page.getByRole('link', { name: issueTitle })).toBeVisible();
   });

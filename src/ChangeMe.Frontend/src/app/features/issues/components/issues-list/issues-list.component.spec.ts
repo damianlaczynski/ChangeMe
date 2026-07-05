@@ -1,38 +1,68 @@
+import { computed, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { ToastService } from '@core/toast/services/toast.service';
-import {
-  IssueDto,
-  IssuePriority,
-  IssueSearchParameters,
-  IssueStatus
-} from '@features/issues/models/issue.model';
+import { IssueDto } from '@features/issues/models/issue.model';
 import { IssuesService } from '@features/issues/services/issues.service';
-import { PaginationResult } from '@shared/data/models/pagination-result.model';
-import { createEmptyPaginationResult } from '@shared/data/utils/pagination.utils';
+import { GridResourceFactory, type GridResource } from '@query-grid/primeng';
+import type { GridQuery } from '@query-grid/core';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { of } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { IssuesComponent } from './issues-list.component';
 
+function createMockGrid(
+  initialQuery: GridQuery = {
+    skip: 0,
+    take: 10,
+    sort: [{ field: 'LastActivityAt', desc: true }]
+  }
+): GridResource<IssueDto> {
+  const query = signal<GridQuery>(initialQuery);
+  const totalCount = signal(0);
+
+  return {
+    query,
+    items: signal<IssueDto[]>([]),
+    totalCount,
+    loading: signal(false),
+    error: signal(null),
+    page: computed(() => Math.floor((query().skip ?? 0) / (query().take ?? 10)) + 1),
+    pageCount: computed(() =>
+      query().take ? Math.ceil(totalCount() / (query().take ?? 10)) : 0
+    ),
+    setPage: vi.fn(),
+    setTake: vi.fn(),
+    setSort: vi.fn(),
+    setFilter: vi.fn(),
+    setSearch: vi.fn(),
+    patchQuery: vi.fn((patch) => query.update((current) => ({ ...current, ...patch }))),
+    resetQuery: vi.fn(() => query.set(initialQuery)),
+    reload: vi.fn()
+  };
+}
+
 describe('IssuesComponent', () => {
   let fixture: ComponentFixture<IssuesComponent>;
   let component: IssuesComponent;
+  let mockGrid: GridResource<IssueDto>;
   let issuesService: {
     getAllIssues: ReturnType<typeof vi.fn>;
     getAssignableUsers: ReturnType<typeof vi.fn>;
   };
 
-  const defaultQuery: IssueSearchParameters = {
-    pageNumber: 1,
-    pageSize: 10,
-    sortField: 'LastActivityAt',
-    ascending: false
-  };
-
   beforeEach(async () => {
+    mockGrid = createMockGrid();
     issuesService = {
-      getAllIssues: vi.fn(() => of(createEmptyPaginationResult<IssueDto>(defaultQuery))),
+      getAllIssues: vi.fn(() =>
+        of({
+          items: [],
+          totalCount: 0,
+          skip: 0,
+          take: 10,
+          sort: [{ field: 'LastActivityAt', desc: true }]
+        })
+      ),
       getAssignableUsers: vi.fn(() =>
         of([{ id: 'user-1', displayLabel: 'Ada Lovelace' }])
       )
@@ -45,7 +75,11 @@ describe('IssuesComponent', () => {
         MessageService,
         ConfirmationService,
         ToastService,
-        { provide: IssuesService, useValue: issuesService }
+        { provide: IssuesService, useValue: issuesService },
+        {
+          provide: GridResourceFactory,
+          useValue: { create: () => mockGrid }
+        }
       ]
     }).compileComponents();
 
@@ -54,138 +88,19 @@ describe('IssuesComponent', () => {
     fixture.detectChanges();
   });
 
-  it('maps filter form values into the list query', () => {
-    component.filtersForm.patchValue({
-      searchText: '  regression  ',
-      statuses: [IssueStatus.NEW, IssueStatus.IN_PROGRESS],
-      priorities: [IssuePriority.HIGH],
-      assignedToUserId: 'user-1',
-      watchedByMe: true,
-      createdByMe: true
-    });
-
-    component.applyFilters();
-
-    expect(component.query()).toEqual({
-      ...defaultQuery,
-      pageNumber: 1,
-      searchText: 'regression',
-      statuses: [IssueStatus.NEW, IssueStatus.IN_PROGRESS],
-      priorities: [IssuePriority.HIGH],
-      assignedToUserId: 'user-1',
-      watchedByMe: true,
-      createdByMe: true
-    });
-  });
-
-  it('omits empty filter values from the list query', () => {
-    component.filtersForm.patchValue({
-      searchText: '   ',
-      statuses: [],
-      priorities: [],
-      assignedToUserId: null,
-      watchedByMe: false,
-      createdByMe: false
-    });
-
-    component.applyFilters();
-
-    expect(component.query()).toEqual({
-      ...defaultQuery,
-      pageNumber: 1,
-      searchText: undefined,
-      statuses: undefined,
-      priorities: undefined,
-      assignedToUserId: null,
-      watchedByMe: false,
-      createdByMe: false
-    });
-  });
-
-  it('builds applied filter chips from the active query', () => {
-    component.filtersForm.patchValue({
-      searchText: 'auth',
-      statuses: [IssueStatus.NEW],
-      priorities: [IssuePriority.CRITICAL],
-      assignedToUserId: 'user-1',
-      watchedByMe: true,
-      createdByMe: true
-    });
-    component.applyFilters();
-
-    expect(component.appliedFilterChips()).toEqual([
-      { id: 'search', label: 'Search: auth' },
-      { id: `status-${IssueStatus.NEW}`, label: 'Status: New' },
-      { id: `priority-${IssuePriority.CRITICAL}`, label: 'Priority: Critical' },
-      { id: 'assignee', label: 'Assignee: Ada Lovelace' },
-      { id: 'watched-by-me', label: 'Watched by me' },
-      { id: 'my-issues', label: 'My issues' }
+  it('loads assignable users for the assigned-to column filter', () => {
+    expect(component.assignedToFilter().options).toEqual([
+      { label: 'Ada Lovelace', value: 'user-1' }
     ]);
   });
 
-  it('removes a single filter chip from the form and query', () => {
-    component.filtersForm.patchValue({
-      searchText: 'auth',
-      statuses: [IssueStatus.NEW, IssueStatus.CLOSED]
-    });
-    component.applyFilters();
-
-    component.removeAppliedFilter({
-      id: `status-${IssueStatus.NEW}`,
-      label: 'Status: New'
-    });
-
-    expect(component.filtersForm.controls.statuses.value).toEqual([IssueStatus.CLOSED]);
-    expect(component.query().statuses).toEqual([IssueStatus.CLOSED]);
+  it('reloads the grid on refresh', () => {
+    component.refresh();
+    expect(mockGrid.reload).toHaveBeenCalled();
   });
 
-  it('clears all filters and resets pagination to page one', () => {
-    component.filtersForm.patchValue({
-      searchText: 'auth',
-      statuses: [IssueStatus.NEW],
-      watchedByMe: true
-    });
-    component.applyFilters();
-    component.query.set({ ...component.query(), pageNumber: 3 });
-
-    component.clearFilters();
-
-    expect(component.filtersForm.getRawValue()).toEqual({
-      searchText: '',
-      statuses: [],
-      priorities: [],
-      assignedToUserId: null,
-      watchedByMe: false,
-      createdByMe: false
-    });
-    expect(component.query()).toEqual({
-      ...defaultQuery,
-      pageNumber: 1,
-      searchText: undefined,
-      statuses: undefined,
-      priorities: undefined,
-      assignedToUserId: null,
-      watchedByMe: false,
-      createdByMe: false
-    });
-  });
-
-  it('ignores invalid paginator page changes', () => {
-    const pagination: PaginationResult<IssueDto> = {
-      items: [],
-      currentPage: 1,
-      pageSize: 10,
-      totalCount: 12,
-      totalPages: 2,
-      hasPrevious: false,
-      hasNext: true
-    };
-
-    component.pagination.set(pagination);
-    component.query.set({ ...defaultQuery, pageNumber: 1 });
-
-    component.onPageChange({ page: 5 });
-
-    expect(component.query().pageNumber).toBe(1);
+  it('surfaces grid errors as a message', () => {
+    mockGrid.error.set(new Error('Boom'));
+    expect(component.errorMessage()).toBe('Boom');
   });
 });

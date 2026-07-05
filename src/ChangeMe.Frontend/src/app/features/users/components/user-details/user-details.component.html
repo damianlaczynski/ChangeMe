@@ -182,12 +182,12 @@
             </ng-template>
           </p-table>
 
-          @if (sessionsPagination(); as pagination) {
+          @if (hasLoadedSessions()) {
             <p-paginator
               class="mt-4"
-              [rows]="pagination.pageSize"
-              [totalRecords]="pagination.totalCount"
-              [first]="(pagination.currentPage - 1) * pagination.pageSize"
+              [rows]="sessionsGrid().take ?? DEFAULT_GRID_PAGE_SIZE"
+              [totalRecords]="sessionsTotalCount()"
+              [first]="sessionsGrid().skip ?? 0"
               (onPageChange)="onSessionsPageChange($event)"
             />
           }

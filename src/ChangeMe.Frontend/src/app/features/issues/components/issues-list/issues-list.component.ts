@@ -7,17 +7,10 @@ import {
   signal,
   viewChild
 } from '@angular/core';
-import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
-import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { ToastService } from '@core/toast/services/toast.service';
-import {
-  IssueAssignableUserDto,
-  IssueDto,
-  IssuePriority,
-  IssueSearchParameters,
-  IssueStatus
-} from '@features/issues/models/issue.model';
+import { IssueAssignableUserDto, IssueDto } from '@features/issues/models/issue.model';
 import { IssuesService } from '@features/issues/services/issues.service';
 import {
   getDeleteIssueConfirmMessage,
@@ -29,58 +22,37 @@ import {
   issuePriorities,
   issueStatuses
 } from '@features/issues/utils/issue.utils';
-import { AppliedFiltersChipsComponent } from '@shared/components/applied-filters-chips/applied-filters-chips.component';
-import { PaginationResult } from '@shared/data/models/pagination-result.model';
-import { createEmptyPaginationResult } from '@shared/data/utils/pagination.utils';
-import { AppliedFilterChip } from '@shared/models/applied-filter-chip.model';
+import {
+  GridResourceFactory,
+  PrimeDataGridComponent,
+  QgColumnDirective,
+  QgEmptyDirective,
+  type GridColumnFilter,
+  type GridResource
+} from '@query-grid/primeng';
+import { getGridListEmptyMessage } from '@shared/data/utils/grid.utils';
 import { ConfirmationService, MenuItem } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
-import { Checkbox } from 'primeng/checkbox';
-import { InputText } from 'primeng/inputtext';
 import { Menu } from 'primeng/menu';
 import { Message } from 'primeng/message';
-import { MultiSelect } from 'primeng/multiselect';
-import { Paginator } from 'primeng/paginator';
-import { Panel } from 'primeng/panel';
-import { Select } from 'primeng/select';
-import { TableModule } from 'primeng/table';
 import { Tag } from 'primeng/tag';
 import { Tooltip } from 'primeng/tooltip';
-import { PaginatorState } from 'primeng/types/paginator';
-import { catchError, of, switchMap, tap } from 'rxjs';
-
-type IssuesFilterForm = {
-  searchText: FormControl<string>;
-  statuses: FormControl<IssueStatus[]>;
-  priorities: FormControl<IssuePriority[]>;
-  assignedToUserId: FormControl<string | null>;
-  watchedByMe: FormControl<boolean>;
-  createdByMe: FormControl<boolean>;
-};
-
-type IssueSortField = 'Id' | 'Title' | 'CreatedAt' | 'LastActivityAt';
 
 @Component({
   selector: 'app-issues',
   imports: [
     CommonModule,
-    ReactiveFormsModule,
     RouterLink,
     Card,
     Button,
-    InputText,
-    MultiSelect,
-    Select,
-    Checkbox,
-    TableModule,
-    Paginator,
     Message,
     Tag,
-    Panel,
     Tooltip,
     Menu,
-    AppliedFiltersChipsComponent
+    PrimeDataGridComponent,
+    QgColumnDirective,
+    QgEmptyDirective
   ],
   templateUrl: './issues-list.component.html'
 })
@@ -88,248 +60,53 @@ export class IssuesComponent {
   private readonly issuesService = inject(IssuesService);
   private readonly confirmationService = inject(ConfirmationService);
   private readonly toastService = inject(ToastService);
+  private readonly gridFactory = inject(GridResourceFactory);
   private readonly destroyRef = inject(DestroyRef);
 
-  readonly issuePriorities = issuePriorities;
-  readonly issueStatuses = issueStatuses;
   readonly getIssueStatusLabel = getIssueStatusLabel;
   readonly getIssueStatusSeverity = getIssueStatusSeverity;
   readonly getIssuePriorityLabel = getIssuePriorityLabel;
   readonly getIssuePrioritySeverity = getIssuePrioritySeverity;
+  readonly issueStatuses = issueStatuses;
+  readonly issuePriorities = issuePriorities;
 
-  readonly issues = signal<IssueDto[]>([]);
-  readonly pagination = signal<PaginationResult<IssueDto> | null>(null);
-  readonly query = signal<IssueSearchParameters>({
-    pageNumber: 1,
-    pageSize: 10,
-    sortField: 'LastActivityAt',
-    ascending: false
-  });
-  readonly isLoading = signal(true);
-  readonly hasLoaded = signal(false);
-  readonly errorMessage = signal<string | null>(null);
   readonly assignableUsers = signal<IssueAssignableUserDto[]>([]);
-  readonly isLoadingAssignableUsers = signal(false);
   readonly pendingWatchIssueIds = signal<string[]>([]);
   readonly pendingDeleteIssueIds = signal<string[]>([]);
-  readonly filtersCollapsed = signal(true);
   readonly issueActionItems = signal<MenuItem[]>([]);
   private readonly issueActionsMenu = viewChild.required<Menu>('issueActionsMenu');
 
-  readonly appliedFilterChips = computed(() => {
-    const query = this.query();
-    const chips: AppliedFilterChip[] = [];
+  readonly grid: GridResource<IssueDto>;
 
-    const search = query.searchText?.trim();
-    if (search) {
-      chips.push({ id: 'search', label: `Search: ${search}` });
-    }
+  readonly assignedToFilter = computed<GridColumnFilter>(() => ({
+    type: 'enum',
+    options: this.assignableUsers().map((user) => ({
+      label: user.displayLabel,
+      value: user.id
+    }))
+  }));
 
-    for (const status of query.statuses ?? []) {
-      chips.push({
-        id: `status-${status}`,
-        label: `Status: ${getIssueStatusLabel(status)}`
-      });
-    }
-
-    for (const priority of query.priorities ?? []) {
-      chips.push({
-        id: `priority-${priority}`,
-        label: `Priority: ${getIssuePriorityLabel(priority)}`
-      });
-    }
-
-    if (query.assignedToUserId) {
-      const assignee = this.assignableUsers().find(
-        (user) => user.id === query.assignedToUserId
-      );
-      chips.push({
-        id: 'assignee',
-        label: `Assignee: ${assignee?.displayLabel ?? 'Unknown'}`
-      });
-    }
-
-    if (query.watchedByMe) {
-      chips.push({ id: 'watched-by-me', label: 'Watched by me' });
-    }
-
-    if (query.createdByMe) {
-      chips.push({ id: 'my-issues', label: 'My issues' });
-    }
-
-    return chips;
+  readonly errorMessage = computed(() => {
+    const error = this.grid.error();
+    return error instanceof Error ? error.message : error ? String(error) : null;
   });
 
-  readonly hasAppliedFilters = computed(() => this.appliedFilterChips().length > 0);
-
-  readonly filtersForm = new FormGroup<IssuesFilterForm>({
-    searchText: new FormControl('', { nonNullable: true }),
-    statuses: new FormControl<IssueStatus[]>([], { nonNullable: true }),
-    priorities: new FormControl<IssuePriority[]>([], { nonNullable: true }),
-    assignedToUserId: new FormControl<string | null>(null),
-    watchedByMe: new FormControl(false, { nonNullable: true }),
-    createdByMe: new FormControl(false, { nonNullable: true })
-  });
+  readonly emptyMessage = computed(() => getGridListEmptyMessage(this.grid.query()));
 
   constructor() {
+    this.grid = this.gridFactory.create<IssueDto>({
+      destroyRef: this.destroyRef,
+      load: (query) => this.issuesService.getAllIssues(query),
+      defaultSort: [{ field: 'LastActivityAt', desc: true }],
+      defaultTake: 10,
+      persistState: { key: 'changeme.issues-list', storage: 'session' }
+    });
+
     this.loadAssignableUsers();
-
-    toObservable(this.query)
-      .pipe(
-        tap(() => {
-          this.isLoading.set(true);
-          this.errorMessage.set(null);
-        }),
-        switchMap((query) =>
-          this.issuesService.getAllIssues(query).pipe(
-            catchError((error: Error) => {
-              this.errorMessage.set(error.message);
-              return of(createEmptyPaginationResult<IssueDto>(query));
-            })
-          )
-        ),
-        takeUntilDestroyed(this.destroyRef)
-      )
-      .subscribe((result) => {
-        this.issues.set(result.items);
-        this.pagination.set(result);
-        this.isLoading.set(false);
-        this.hasLoaded.set(true);
-      });
   }
 
-  onFiltersCollapsedChange(collapsed: boolean | undefined): void {
-    this.filtersCollapsed.set(collapsed ?? true);
-  }
-
-  applyFilters(): void {
-    const formValue = this.filtersForm.getRawValue();
-
-    this.query.set({
-      ...this.query(),
-      pageNumber: 1,
-      searchText: formValue.searchText.trim() || undefined,
-      statuses: formValue.statuses.length > 0 ? formValue.statuses : undefined,
-      priorities: formValue.priorities.length > 0 ? formValue.priorities : undefined,
-      assignedToUserId: formValue.assignedToUserId,
-      watchedByMe: formValue.watchedByMe,
-      createdByMe: formValue.createdByMe
-    });
-  }
-
-  removeAppliedFilter(chip: AppliedFilterChip): void {
-    const nextQuery = { ...this.query(), pageNumber: 1 };
-
-    if (chip.id === 'search') {
-      this.filtersForm.patchValue({ searchText: '' });
-      this.query.set({ ...nextQuery, searchText: undefined });
-      return;
-    }
-
-    if (chip.id.startsWith('status-')) {
-      const status = chip.id.slice('status-'.length) as IssueStatus;
-      const statuses = (nextQuery.statuses ?? []).filter((value) => value !== status);
-      this.filtersForm.patchValue({ statuses });
-      this.query.set({
-        ...nextQuery,
-        statuses: statuses.length > 0 ? statuses : undefined
-      });
-      return;
-    }
-
-    if (chip.id.startsWith('priority-')) {
-      const priority = chip.id.slice('priority-'.length) as IssuePriority;
-      const priorities = (nextQuery.priorities ?? []).filter(
-        (value) => value !== priority
-      );
-      this.filtersForm.patchValue({ priorities });
-      this.query.set({
-        ...nextQuery,
-        priorities: priorities.length > 0 ? priorities : undefined
-      });
-      return;
-    }
-
-    if (chip.id === 'assignee') {
-      this.filtersForm.patchValue({ assignedToUserId: null });
-      this.query.set({ ...nextQuery, assignedToUserId: null });
-      return;
-    }
-
-    if (chip.id === 'watched-by-me') {
-      this.filtersForm.patchValue({ watchedByMe: false });
-      this.query.set({ ...nextQuery, watchedByMe: false });
-      return;
-    }
-
-    if (chip.id === 'my-issues') {
-      this.filtersForm.patchValue({ createdByMe: false });
-      this.query.set({ ...nextQuery, createdByMe: false });
-    }
-  }
-
-  clearFilters(): void {
-    this.filtersForm.reset({
-      searchText: '',
-      statuses: [],
-      priorities: [],
-      assignedToUserId: null,
-      watchedByMe: false,
-      createdByMe: false
-    });
-
-    this.query.set({
-      ...this.query(),
-      pageNumber: 1,
-      searchText: undefined,
-      statuses: undefined,
-      priorities: undefined,
-      assignedToUserId: null,
-      watchedByMe: false,
-      createdByMe: false
-    });
-  }
-
-  onPageChange(event: PaginatorState): void {
-    const pageNumber = (event.page ?? 0) + 1;
-    const currentPagination = this.pagination();
-    if (
-      !currentPagination ||
-      pageNumber < 1 ||
-      pageNumber > currentPagination.totalPages
-    ) {
-      return;
-    }
-
-    this.query.set({
-      ...this.query(),
-      pageNumber
-    });
-  }
-
-  onTableSort(event: { field?: string | null; order?: number | null }): void {
-    if (!event.field || event.order == null || event.order === 0) {
-      return;
-    }
-
-    const sortField = event.field as IssueSortField;
-    const ascending = event.order === 1;
-    const currentQuery = this.query();
-
-    if (currentQuery.sortField === sortField && currentQuery.ascending === ascending) {
-      return;
-    }
-
-    this.query.set({
-      ...currentQuery,
-      pageNumber: 1,
-      sortField,
-      ascending
-    });
-  }
-
-  trackIssue(_index: number, issue: IssueDto): string {
-    return issue.id;
+  refresh(): void {
+    this.grid.reload();
   }
 
   openIssueActionsMenu(event: Event, issue: IssueDto): void {
@@ -371,30 +148,6 @@ export class IssuesComponent {
     return this.pendingDeleteIssueIds().includes(issueId);
   }
 
-  private deleteIssue(issue: IssueDto): void {
-    if (this.isDeletePending(issue.id)) {
-      return;
-    }
-
-    this.setDeletePending(issue.id, true);
-    this.errorMessage.set(null);
-
-    this.issuesService
-      .deleteIssue(issue.id)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: () => {
-          this.refreshCurrentPage();
-          this.setDeletePending(issue.id, false);
-          this.toastService.success('Issue deleted', issue.title);
-        },
-        error: (error: Error) => {
-          this.toastService.showApiError(error, 'Could not delete issue');
-          this.setDeletePending(issue.id, false);
-        }
-      });
-  }
-
   getWatchTooltip(issue: IssueDto): string {
     const watchers = this.formatWatchersCount(issue.watchersCount);
     return issue.isWatchedByCurrentUser
@@ -415,7 +168,7 @@ export class IssuesComponent {
 
     request.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (watchState) => {
-        this.issues.update((items) =>
+        this.grid.items.update((items) =>
           items.map((item) =>
             item.id === watchState.issueId
               ? {
@@ -428,8 +181,7 @@ export class IssuesComponent {
         );
         this.setWatchPending(issue.id, false);
       },
-      error: (error: Error) => {
-        this.errorMessage.set(error.message);
+      error: () => {
         this.setWatchPending(issue.id, false);
       }
     });
@@ -439,34 +191,36 @@ export class IssuesComponent {
     return this.pendingWatchIssueIds().includes(issueId);
   }
 
-  refresh(): void {
-    this.query.set({
-      ...this.query(),
-      pageNumber: 1
-    });
-  }
+  private deleteIssue(issue: IssueDto): void {
+    if (this.isDeletePending(issue.id)) {
+      return;
+    }
 
-  private loadAssignableUsers(): void {
-    this.isLoadingAssignableUsers.set(true);
+    this.setDeletePending(issue.id, true);
 
     this.issuesService
-      .getAssignableUsers()
+      .deleteIssue(issue.id)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (users) => {
-          this.assignableUsers.set(users);
-          this.isLoadingAssignableUsers.set(false);
+        next: () => {
+          this.grid.reload();
+          this.setDeletePending(issue.id, false);
+          this.toastService.success('Issue deleted', issue.title);
         },
-        error: () => {
-          this.isLoadingAssignableUsers.set(false);
+        error: (error: Error) => {
+          this.toastService.showApiError(error, 'Could not delete issue');
+          this.setDeletePending(issue.id, false);
         }
       });
   }
 
-  private refreshCurrentPage(): void {
-    this.query.set({
-      ...this.query()
-    });
+  private loadAssignableUsers(): void {
+    this.issuesService
+      .getAssignableUsers()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (users) => this.assignableUsers.set(users)
+      });
   }
 
   private setWatchPending(issueId: string, isPending: boolean): void {

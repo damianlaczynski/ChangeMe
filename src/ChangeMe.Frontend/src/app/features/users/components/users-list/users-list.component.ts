@@ -7,8 +7,7 @@ import {
   signal,
   viewChild
 } from '@angular/core';
-import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
-import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { ToastService } from '@core/toast/services/toast.service';
 import {
@@ -16,10 +15,7 @@ import {
   formatUserReference
 } from '@core/user/utils/user-display.utils';
 import { AuthService } from '@features/auth/services/auth.service';
-import {
-  UserListItemDto,
-  UserSearchParameters
-} from '@features/users/models/user.model';
+import { UserListItemDto } from '@features/users/models/user.model';
 import { UsersService } from '@features/users/services/users.service';
 import {
   getActivateConfirmMessage,
@@ -27,54 +23,39 @@ import {
   getUserStatusLabel,
   getUserStatusSeverity,
   statusFilters,
-  UserMembershipStatus,
   UserMessages
 } from '@features/users/utils/users.utils';
+import {
+  GridResourceFactory,
+  PrimeDataGridComponent,
+  QgColumnDirective,
+  QgEmptyDirective,
+  type GridResource
+} from '@query-grid/primeng';
 import { PermissionCodes } from '@shared/authorization/permission-codes';
-import { AppliedFiltersChipsComponent } from '@shared/components/applied-filters-chips/applied-filters-chips.component';
-import { PaginationResult } from '@shared/data/models/pagination-result.model';
-import { createEmptyPaginationResult } from '@shared/data/utils/pagination.utils';
-import { AppliedFilterChip } from '@shared/models/applied-filter-chip.model';
+import { getGridListEmptyMessage } from '@shared/data/utils/grid.utils';
 import { ConfirmationService, MenuItem } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
-import { InputText } from 'primeng/inputtext';
 import { Menu } from 'primeng/menu';
 import { Message } from 'primeng/message';
-import { MultiSelect } from 'primeng/multiselect';
-import { Paginator } from 'primeng/paginator';
-import { Panel } from 'primeng/panel';
-import { TableModule } from 'primeng/table';
 import { Tag } from 'primeng/tag';
 import { Tooltip } from 'primeng/tooltip';
-import { PaginatorState } from 'primeng/types/paginator';
-import { catchError, of, switchMap, tap } from 'rxjs';
-
-type UsersFilterForm = {
-  searchText: FormControl<string>;
-  status: FormControl<UserMembershipStatus[]>;
-};
-
-type UserSortField = 'Name' | 'CreatedAt' | 'LastSignIn';
 
 @Component({
   selector: 'app-users-list',
   imports: [
     DatePipe,
-    ReactiveFormsModule,
     RouterLink,
     Card,
     Button,
-    InputText,
-    MultiSelect,
-    TableModule,
-    Paginator,
     Message,
     Tag,
-    Panel,
     Menu,
-    AppliedFiltersChipsComponent,
-    Tooltip
+    Tooltip,
+    PrimeDataGridComponent,
+    QgColumnDirective,
+    QgEmptyDirective
   ],
   templateUrl: './users-list.component.html'
 })
@@ -86,6 +67,7 @@ export class UsersListComponent {
   private readonly authService = inject(AuthService);
   private readonly confirmationService = inject(ConfirmationService);
   private readonly toastService = inject(ToastService);
+  private readonly gridFactory = inject(GridResourceFactory);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly statusFilters = statusFilters;
@@ -94,20 +76,10 @@ export class UsersListComponent {
   readonly UserMessages = UserMessages;
   readonly permissionCodes = PermissionCodes;
 
-  readonly users = signal<UserListItemDto[]>([]);
-  readonly pagination = signal<PaginationResult<UserListItemDto> | null>(null);
-  readonly query = signal<UserSearchParameters>({
-    pageNumber: 1,
-    pageSize: 10,
-    sortField: 'Name',
-    ascending: true
-  });
-  readonly isLoading = signal(true);
-  readonly hasLoaded = signal(false);
-  readonly errorMessage = signal<string | null>(null);
-  readonly filtersCollapsed = signal(true);
   readonly userActionItems = signal<MenuItem[]>([]);
   private readonly userActionsMenu = viewChild.required<Menu>('userActionsMenu');
+
+  readonly grid: GridResource<UserListItemDto>;
 
   readonly canManageUsers = computed(() =>
     this.authService.hasPermission(PermissionCodes.usersManage)
@@ -121,111 +93,25 @@ export class UsersListComponent {
     this.authService.hasPermission(PermissionCodes.usersDeactivate)
   );
 
-  readonly filtersForm = new FormGroup<UsersFilterForm>({
-    searchText: new FormControl('', { nonNullable: true }),
-    status: new FormControl<UserMembershipStatus[]>([], { nonNullable: true })
+  readonly errorMessage = computed(() => {
+    const error = this.grid.error();
+    return error instanceof Error ? error.message : error ? String(error) : null;
   });
 
-  readonly appliedFilterChips = computed(() => {
-    const activeQuery = this.query();
-    const chips: AppliedFilterChip[] = [];
-
-    for (const status of activeQuery.status ?? []) {
-      chips.push({
-        id: `status-${status}`,
-        label: `Status: ${getUserStatusLabel(status)}`
-      });
-    }
-
-    return chips;
-  });
-
-  readonly hasAppliedFilters = computed(() => this.appliedFilterChips().length > 0);
+  readonly emptyMessage = computed(() => getGridListEmptyMessage(this.grid.query()));
 
   constructor() {
-    toObservable(this.query)
-      .pipe(
-        tap(() => {
-          this.isLoading.set(true);
-          this.errorMessage.set(null);
-        }),
-        switchMap((params) =>
-          this.usersService.getUsers(params).pipe(
-            catchError((error: Error) => {
-              this.errorMessage.set(error.message);
-              return of(createEmptyPaginationResult<UserListItemDto>(params));
-            })
-          )
-        ),
-        takeUntilDestroyed(this.destroyRef)
-      )
-      .subscribe((result) => {
-        this.users.set(result.items);
-        this.pagination.set(result);
-        this.isLoading.set(false);
-        this.hasLoaded.set(true);
-      });
-  }
-
-  applyFilters(): void {
-    const { searchText, status } = this.filtersForm.getRawValue();
-    this.query.update((current) => ({
-      ...current,
-      pageNumber: 1,
-      searchText: searchText.trim() || undefined,
-      status: status.length > 0 ? status : undefined
-    }));
-  }
-
-  clearFilters(): void {
-    this.filtersForm.reset({ searchText: '', status: [] });
-    this.query.update((current) => ({
-      ...current,
-      pageNumber: 1,
-      searchText: undefined,
-      status: undefined
-    }));
-  }
-
-  onFiltersCollapsedChange(collapsed: boolean | undefined): void {
-    this.filtersCollapsed.set(collapsed ?? true);
-  }
-
-  onPageChange(event: PaginatorState): void {
-    const pageSize = event.rows ?? this.query().pageSize ?? 10;
-    const pageNumber = Math.floor((event.first ?? 0) / pageSize) + 1;
-    const currentQuery = this.query();
-
-    if (currentQuery.pageNumber === pageNumber && currentQuery.pageSize === pageSize) {
-      return;
-    }
-
-    this.query.set({
-      ...currentQuery,
-      pageNumber,
-      pageSize
+    this.grid = this.gridFactory.create<UserListItemDto>({
+      destroyRef: this.destroyRef,
+      load: (query) => this.usersService.getUsers(query),
+      defaultSort: [{ field: 'LastName', desc: false }],
+      defaultTake: 10,
+      persistState: { key: 'changeme.users-list', storage: 'session' }
     });
   }
 
-  onTableSort(event: { field?: string | null; order?: number | null }): void {
-    if (!event.field || event.order == null || event.order === 0) {
-      return;
-    }
-
-    const sortField = event.field as UserSortField;
-    const ascending = event.order === 1;
-    const currentQuery = this.query();
-
-    if (currentQuery.sortField === sortField && currentQuery.ascending === ascending) {
-      return;
-    }
-
-    this.query.set({
-      ...currentQuery,
-      pageNumber: 1,
-      sortField,
-      ascending
-    });
+  refresh(): void {
+    this.grid.reload();
   }
 
   openUserActionsMenu(event: Event, user: UserListItemDto): void {
@@ -294,9 +180,10 @@ export class UsersListComponent {
       .subscribe({
         next: () => {
           this.toastService.success(UserMessages.userDeactivated);
-          this.refreshList();
+          this.grid.reload();
         },
-        error: (error: Error) => this.errorMessage.set(error.message)
+        error: (error: Error) =>
+          this.toastService.showApiError(error, 'Could not deactivate user')
       });
   }
 
@@ -307,28 +194,10 @@ export class UsersListComponent {
       .subscribe({
         next: () => {
           this.toastService.success(UserMessages.userActivated);
-          this.refreshList();
+          this.grid.reload();
         },
-        error: (error: Error) => this.errorMessage.set(error.message)
+        error: (error: Error) =>
+          this.toastService.showApiError(error, 'Could not activate user')
       });
-  }
-
-  refresh(): void {
-    this.query.set({ ...this.query(), pageNumber: 1 });
-  }
-
-  private refreshList(): void {
-    this.refresh();
-  }
-
-  removeAppliedFilter(chip: AppliedFilterChip): void {
-    if (chip.id.startsWith('status-')) {
-      const status = chip.id.slice('status-'.length) as UserMembershipStatus;
-      const values = this.filtersForm.controls.status.value.filter(
-        (item) => item !== status
-      );
-      this.filtersForm.controls.status.setValue(values);
-      this.applyFilters();
-    }
   }
 }

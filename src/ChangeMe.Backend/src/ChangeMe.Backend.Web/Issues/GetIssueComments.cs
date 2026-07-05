@@ -1,10 +1,11 @@
 ﻿using ChangeMe.Backend.UseCases.Issues;
 using ChangeMe.Backend.UseCases.Issues.Dtos;
+using QueryGrid.Abstractions;
 
 namespace ChangeMe.Backend.Web.Issues;
 
 public class GetIssueComments(IMediator mediator)
-  : BaseEndpoint<GetIssueCommentsQuery, PaginationResult<IssueCommentDto>>(mediator)
+  : BaseEndpoint<GetIssueCommentsQuery, GridResult<IssueCommentDto>>(mediator)
 {
   protected override void ConfigureEndpoint()
   {

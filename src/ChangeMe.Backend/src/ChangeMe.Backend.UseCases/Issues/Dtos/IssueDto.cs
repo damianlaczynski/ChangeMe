@@ -1,4 +1,5 @@
 using ChangeMe.Backend.Domain.Aggregates.Issue.Enums;
+using QueryGrid.Abstractions;
 
 namespace ChangeMe.Backend.UseCases.Issues.Dtos;
 
@@ -23,8 +24,13 @@ public class IssueAttachmentContentDto
 
 public class IssueDto
 {
+  [GridSearchable]
   public Guid Id { get; set; }
+
+  [GridSearchable]
   public string Title { get; set; } = string.Empty;
+
+  [GridSearchable]
   public string Description { get; set; } = string.Empty;
   public IssueStatus Status { get; set; }
   public IssuePriority Priority { get; set; }

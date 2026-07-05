@@ -1,53 +1,45 @@
 using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.UseCases.Auth.Dtos;
 using ChangeMe.Backend.UseCases.Users.Utils;
+using QueryGrid.Abstractions;
+using QueryGrid.EntityFrameworkCore;
 
 namespace ChangeMe.Backend.UseCases.Auth;
 
-public sealed class GetMySessionsQuery : PaginationQuery<UserSessionDto> { }
+public sealed class GetMySessionsQuery : IQuery<GridResult<UserSessionDto>>
+{
+  public GridQuery Grid { get; set; } = new();
+}
 
 public class GetMySessionsHandler(
   ApplicationDbContext context,
   IUserAccessor userAccessor,
-  ISessionLifetimeService sessionLifetime) : IQueryHandler<GetMySessionsQuery, PaginationResult<UserSessionDto>>
+  ISessionLifetimeService sessionLifetime) : IQueryHandler<GetMySessionsQuery, GridResult<UserSessionDto>>
 {
-  public async ValueTask<Result<PaginationResult<UserSessionDto>>> Handle(
+  public async ValueTask<Result<GridResult<UserSessionDto>>> Handle(
     GetMySessionsQuery query,
     CancellationToken cancellationToken)
   {
     if (userAccessor.UserId is not Guid userId)
-      return Result<PaginationResult<UserSessionDto>>.Unauthorized();
+      return Result<GridResult<UserSessionDto>>.Unauthorized();
 
     var utcNow = DateTime.UtcNow;
     var currentSessionId = userAccessor.SessionId;
     var sessionLifetimeDays = sessionLifetime.SessionLifetimeDays;
 
-    var activeSessionsQuery = context.UserSessions
+    var projected = context.UserSessions
       .AsNoTracking()
-      .WhereActiveSessions(userId, utcNow, sessionLifetimeDays);
-
-    query.PaginationParameters.SortField = MapSortField(query.PaginationParameters.SortField);
-
-    var pagedSessions = await activeSessionsQuery.ToPaginationResultAsync(
-      x => new UserSessionDto(
+      .WhereActiveSessions(userId, utcNow, sessionLifetimeDays)
+      .Select(x => new UserSessionDto(
         x.Id,
         x.DeviceBrowserLabel,
         x.SignInMethod,
         x.IpAddress,
         x.SignedInAt,
         x.LastActivityAt,
-        currentSessionId.HasValue && x.Id == currentSessionId.Value),
-      query.PaginationParameters,
-      cancellationToken);
+        currentSessionId.HasValue && x.Id == currentSessionId.Value));
 
-    return Result.Success(pagedSessions);
+    var grid = await projected.ToGridResultAsync(query.Grid, cancellationToken: cancellationToken);
+    return Result.Success(grid);
   }
-
-  private static string MapSortField(string sortField) =>
-    sortField switch
-    {
-      "SignedInAt" => nameof(UserSessionDto.SignedInAt),
-      "DeviceBrowserLabel" => nameof(UserSessionDto.DeviceBrowserLabel),
-      "LastActivityAt" or _ => nameof(UserSessionDto.LastActivityAt)
-    };
 }

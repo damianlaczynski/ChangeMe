@@ -1,15 +1,13 @@
 import { Injectable, inject } from '@angular/core';
+import { GridQuery, GridResult } from '@query-grid/core';
 import { ApiService } from '@shared/api/services/api.service';
-import { PaginationResult } from '@shared/data/models/pagination-result.model';
 import { Observable } from 'rxjs';
 import {
   CreateRoleRequest,
   PermissionCatalogItemDto,
   RoleAssignedUserDto,
-  RoleAssignedUsersSearchParameters,
   RoleDetailsDto,
   RoleListItemDto,
-  RoleSearchParameters,
   UpdateRoleRequest
 } from '../models/role.model';
 
@@ -20,13 +18,10 @@ export class RolesService {
   private readonly apiService = inject(ApiService);
   private readonly baseEndpoint = 'roles';
 
-  getRoles(
-    params: RoleSearchParameters
-  ): Observable<PaginationResult<RoleListItemDto>> {
-    return this.apiService.getPaginated<RoleListItemDto, RoleSearchParameters>(
-      this.baseEndpoint,
-      params
-    );
+  getRoles(grid: GridQuery): Observable<GridResult<RoleListItemDto>> {
+    return this.apiService.get<GridResult<RoleListItemDto>>(this.baseEndpoint, {
+      grid
+    });
   }
 
   getRoleById(id: string): Observable<RoleDetailsDto> {
@@ -56,12 +51,12 @@ export class RolesService {
 
   getRoleAssignedUsers(
     roleId: string,
-    params: RoleAssignedUsersSearchParameters
-  ): Observable<PaginationResult<RoleAssignedUserDto>> {
-    return this.apiService.getPaginated<
-      RoleAssignedUserDto,
-      RoleAssignedUsersSearchParameters
-    >(`${this.baseEndpoint}/${roleId}/users`, params);
+    grid: GridQuery
+  ): Observable<GridResult<RoleAssignedUserDto>> {
+    return this.apiService.get<GridResult<RoleAssignedUserDto>>(
+      `${this.baseEndpoint}/${roleId}/users`,
+      { grid }
+    );
   }
 
   removeUserFromRole(roleId: string, userId: string): Observable<boolean> {

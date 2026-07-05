@@ -33,8 +33,8 @@ export class NotificationsPanelComponent {
   readonly isLoading = this.notificationsService.isLoading;
   readonly hasLoaded = this.notificationsService.hasLoaded;
   readonly errorMessage = this.notificationsService.errorMessage;
-  readonly unreadPagination = this.notificationsService.unreadPagination;
-  readonly readPagination = this.notificationsService.readPagination;
+  readonly unreadTotalCount = this.notificationsService.unreadTotalCount;
+  readonly readTotalCount = this.notificationsService.readTotalCount;
   readonly canShowMoreUnread = this.notificationsService.canShowMoreUnread;
   readonly canShowMoreRead = this.notificationsService.canShowMoreRead;
   readonly isLoadingMoreUnread = this.notificationsService.isLoadingMoreUnread;

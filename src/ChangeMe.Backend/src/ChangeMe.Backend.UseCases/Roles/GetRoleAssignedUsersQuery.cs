@@ -1,63 +1,39 @@
 using ChangeMe.Backend.UseCases.Roles.Dtos;
+using QueryGrid.Abstractions;
+using QueryGrid.EntityFrameworkCore;
 
 namespace ChangeMe.Backend.UseCases.Roles;
 
-public sealed class GetRoleAssignedUsersQuery : PaginationQuery<RoleAssignedUserDto>
+public sealed class GetRoleAssignedUsersQuery : IQuery<GridResult<RoleAssignedUserDto>>
 {
   public Guid RoleId { get; set; }
-  public string? SearchText { get; set; }
+  public GridQuery Grid { get; set; } = new();
 }
 
 public class GetRoleAssignedUsersHandler(ApplicationDbContext context)
-  : IQueryHandler<GetRoleAssignedUsersQuery, PaginationResult<RoleAssignedUserDto>>
+  : IQueryHandler<GetRoleAssignedUsersQuery, GridResult<RoleAssignedUserDto>>
 {
-  public async ValueTask<Result<PaginationResult<RoleAssignedUserDto>>> Handle(
+  public async ValueTask<Result<GridResult<RoleAssignedUserDto>>> Handle(
     GetRoleAssignedUsersQuery query,
     CancellationToken cancellationToken)
   {
     var roleExists = await context.Roles.AsNoTracking().AnyAsync(x => x.Id == query.RoleId, cancellationToken);
     if (!roleExists)
-      return Result<PaginationResult<RoleAssignedUserDto>>.NotFound();
+      return Result<GridResult<RoleAssignedUserDto>>.NotFound();
 
-    var usersQuery = context.Users
+    var projected = context.Users
       .AsNoTracking()
-      .Where(u => u.Roles.Any(ur => ur.RoleId == query.RoleId));
+      .Where(u => u.Roles.Any(ur => ur.RoleId == query.RoleId))
+      .Select(u => new RoleAssignedUserDto
+      {
+        Id = u.Id,
+        FirstName = u.FirstName,
+        LastName = u.LastName,
+        Email = u.Email,
+        Deactivated = u.Deactivated
+      });
 
-    if (!string.IsNullOrWhiteSpace(query.SearchText))
-    {
-      var searchText = query.SearchText.Trim();
-      usersQuery = usersQuery.Where(u =>
-        EF.Functions.ILike(u.FirstName, $"%{searchText}%")
-        || EF.Functions.ILike(u.LastName, $"%{searchText}%")
-        || EF.Functions.ILike(u.Email, $"%{searchText}%"));
-    }
-
-    var projected = usersQuery.Select(u => new RoleAssignedUserDto
-    {
-      Id = u.Id,
-      FirstName = u.FirstName,
-      LastName = u.LastName,
-      Email = u.Email,
-      Deactivated = u.Deactivated
-    });
-
-    query.PaginationParameters.SortField = MapSortField(query.PaginationParameters.SortField);
-
-    var pagedUsers = await projected.ToPaginationResultAsync(
-      x => x,
-      query.PaginationParameters,
-      cancellationToken);
-
-    return Result.Success(pagedUsers);
+    var grid = await projected.ToGridResultAsync(query.Grid, cancellationToken: cancellationToken);
+    return Result.Success(grid);
   }
-
-  private static string MapSortField(string sortField) =>
-    sortField switch
-    {
-      "Name" or "DisplayName" or "FullName" or "LastName" => nameof(RoleAssignedUserDto.LastName),
-      "FirstName" => nameof(RoleAssignedUserDto.FirstName),
-      "Email" => nameof(RoleAssignedUserDto.Email),
-      "Deactivated" => nameof(RoleAssignedUserDto.Deactivated),
-      _ => nameof(RoleAssignedUserDto.LastName)
-    };
 }

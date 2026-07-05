@@ -6,52 +6,47 @@ import {
   signal,
   viewChild
 } from '@angular/core';
-import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
-import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { ToastService } from '@core/toast/services/toast.service';
 import { AuthService } from '@features/auth/services/auth.service';
-import {
-  RoleListItemDto,
-  RoleSearchParameters
-} from '@features/roles/models/role.model';
+import { RoleListItemDto } from '@features/roles/models/role.model';
 import { RolesService } from '@features/roles/services/roles.service';
 import {
   formatDescription,
   getDeleteRoleConfirmMessage,
   RoleMessages
 } from '@features/roles/utils/roles.utils';
+import {
+  GridResourceFactory,
+  PrimeDataGridComponent,
+  QgColumnDirective,
+  QgEmptyDirective,
+  type GridResource
+} from '@query-grid/primeng';
 import { PermissionCodes } from '@shared/authorization/permission-codes';
-import { PaginationResult } from '@shared/data/models/pagination-result.model';
-import { createEmptyPaginationResult } from '@shared/data/utils/pagination.utils';
+import { getGridListEmptyMessage } from '@shared/data/utils/grid.utils';
 import { ConfirmationService, MenuItem } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
-import { InputText } from 'primeng/inputtext';
 import { Menu } from 'primeng/menu';
 import { Message } from 'primeng/message';
-import { Paginator, PaginatorState } from 'primeng/paginator';
-import { TableModule } from 'primeng/table';
 import { Tag } from 'primeng/tag';
 import { Tooltip } from 'primeng/tooltip';
-import { catchError, of, switchMap, tap } from 'rxjs';
-
-type RoleSortField = 'Name' | 'Users' | 'Permissions';
 
 @Component({
   selector: 'app-roles-list',
   imports: [
-    ReactiveFormsModule,
     RouterLink,
     Card,
     Button,
-    InputText,
-    TableModule,
     Message,
     Tag,
     Menu,
-    Paginator,
-    Tooltip
+    Tooltip,
+    PrimeDataGridComponent,
+    QgColumnDirective,
+    QgEmptyDirective
   ],
   templateUrl: './roles-list.component.html'
 })
@@ -60,94 +55,41 @@ export class RolesListComponent {
   private readonly authService = inject(AuthService);
   private readonly confirmationService = inject(ConfirmationService);
   private readonly toastService = inject(ToastService);
+  private readonly gridFactory = inject(GridResourceFactory);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly RoleMessages = RoleMessages;
   readonly formatDescription = formatDescription;
   readonly permissionCodes = PermissionCodes;
 
-  readonly roles = signal<RoleListItemDto[]>([]);
-  readonly pagination = signal<PaginationResult<RoleListItemDto> | null>(null);
-  readonly query = signal<RoleSearchParameters>({
-    pageNumber: 1,
-    pageSize: 10,
-    sortField: 'Name',
-    ascending: true
-  });
-  readonly isLoading = signal(true);
-  readonly hasLoaded = signal(false);
-  readonly errorMessage = signal<string | null>(null);
   readonly roleActionItems = signal<MenuItem[]>([]);
   private readonly roleActionsMenu = viewChild.required<Menu>('roleActionsMenu');
+
+  readonly grid: GridResource<RoleListItemDto>;
 
   readonly canManageRoles = computed(() =>
     this.authService.hasPermission(PermissionCodes.rolesManage)
   );
 
-  readonly filtersForm = new FormGroup({
-    searchText: new FormControl('', { nonNullable: true })
+  readonly errorMessage = computed(() => {
+    const error = this.grid.error();
+    return error instanceof Error ? error.message : error ? String(error) : null;
   });
 
+  readonly emptyMessage = computed(() => getGridListEmptyMessage(this.grid.query()));
+
   constructor() {
-    toObservable(this.query)
-      .pipe(
-        tap(() => {
-          this.isLoading.set(true);
-          this.errorMessage.set(null);
-        }),
-        switchMap((params) =>
-          this.rolesService.getRoles(params).pipe(
-            catchError((error: Error) => {
-              this.errorMessage.set(error.message);
-              return of(createEmptyPaginationResult<RoleListItemDto>(params));
-            })
-          )
-        ),
-        takeUntilDestroyed(this.destroyRef)
-      )
-      .subscribe((result) => {
-        this.roles.set(result.items);
-        this.pagination.set(result);
-        this.isLoading.set(false);
-        this.hasLoaded.set(true);
-      });
-  }
-
-  applyFilters(): void {
-    this.query.update((current) => ({
-      ...current,
-      pageNumber: 1,
-      searchText: this.filtersForm.controls.searchText.value.trim() || undefined
-    }));
-  }
-
-  onTableSort(event: { field?: string | null; order?: number | null }): void {
-    if (!event.field || event.order == null || event.order === 0) {
-      return;
-    }
-
-    const sortField = event.field as RoleSortField;
-    const ascending = event.order === 1;
-    const currentQuery = this.query();
-
-    if (currentQuery.sortField === sortField && currentQuery.ascending === ascending) {
-      return;
-    }
-
-    this.query.set({
-      ...currentQuery,
-      pageNumber: 1,
-      sortField,
-      ascending
+    this.grid = this.gridFactory.create<RoleListItemDto>({
+      destroyRef: this.destroyRef,
+      load: (query) => this.rolesService.getRoles(query),
+      defaultSort: [{ field: 'Name', desc: false }],
+      defaultTake: 10,
+      persistState: { key: 'changeme.roles-list', storage: 'session' }
     });
   }
 
-  onPageChange(event: PaginatorState): void {
-    this.query.update((current) => ({
-      ...current,
-      pageNumber: (event.page ?? 0) + 1,
-      pageSize: event.rows ?? current.pageSize
-    }));
+  refresh(): void {
+    this.grid.reload();
   }
 
   openRoleActionsMenu(event: Event, role: RoleListItemDto): void {
@@ -183,20 +125,19 @@ export class RolesListComponent {
       header: 'Delete role',
       message: getDeleteRoleConfirmMessage(role.name),
       accept: () => {
-        this.rolesService.deleteRole(role.id).subscribe({
-          next: () => {
-            this.toastService.success(RoleMessages.roleDeleted);
-            this.query.update((current) => ({ ...current }));
-          },
-          error: (error: Error) => {
-            this.toastService.error(error.message);
-          }
-        });
+        this.rolesService
+          .deleteRole(role.id)
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe({
+            next: () => {
+              this.toastService.success(RoleMessages.roleDeleted);
+              this.grid.reload();
+            },
+            error: (error: Error) => {
+              this.toastService.error(error.message);
+            }
+          });
       }
     });
-  }
-
-  refresh(): void {
-    this.query.update((current) => ({ ...current, pageNumber: 1 }));
   }
 }

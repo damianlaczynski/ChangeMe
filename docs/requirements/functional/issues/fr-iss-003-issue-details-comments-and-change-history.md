@@ -45,7 +45,7 @@ inherits_fr: [FR-UI-001]
 
 ### Comments section
 
-- Inherits `FR-UI-001` (**Detail and section screens** → **Embedded lists**) for default page size (**10**) and section loading; overrides pagination with **Show more** append loading (below).
+- Inherits `FR-UI-001` (**Detail and section screens** → **Embedded lists**); overrides list control with **Show more** append loading (below).
 - Layout order (top to bottom): **Add a comment** form (textarea and **Add comment** button), then the comments list, then **Show more** when more comments exist.
 - The comment form is **always above** the list, including when the list is empty or loading.
 - Users add comments to an issue.
@@ -66,7 +66,7 @@ inherits_fr: [FR-UI-001]
 
 ### Change history section
 
-- Inherits `FR-UI-001` (**Detail and section screens** → **Embedded lists**) for default page size (**10**) and section loading; overrides pagination with **Show more** append loading (below).
+- Inherits `FR-UI-001` (**Detail and section screens** → **Embedded lists**); overrides list control with **Show more** append loading (below).
 - **History** tab shows an activity timeline.
 - History includes: issue creation, status change, priority change, assignee change, title edit, description edit, acceptance-criterion add, update, and remove, attachment add, and attachment remove.
 - Each entry: **summary** (event type), **acting user**, **date and time**, and **Before** / **After** when values apply.

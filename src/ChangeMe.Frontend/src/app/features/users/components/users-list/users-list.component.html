@@ -1,71 +1,17 @@
 <p-card
   class="mb-4"
-  header="Users"
+  header="Users list"
   subheader="Browse, search and manage user accounts."
 >
-  <form class="p-fluid" [formGroup]="filtersForm" (ngSubmit)="applyFilters()">
-    <div class="flex flex-col gap-1.5 mb-4">
-      <div class="flex flex-wrap items-center gap-2">
-        <input
-          id="searchText"
-          type="text"
-          pInputText
-          [formControl]="filtersForm.controls.searchText"
-          placeholder="Search users..."
-          class="min-w-0 flex-1"
-        />
-        <p-button type="submit" label="Search" icon="pi pi-search" />
-        @if (canCreateUsers()) {
-          <p-button
-            label="Create user"
-            icon="pi pi-user-plus"
-            [routerLink]="['/users/create']"
-          />
-        }
-      </div>
-    </div>
-
-    <p-panel
-      header="Filters"
-      [toggleable]="true"
-      [collapsed]="filtersCollapsed()"
-      (collapsedChange)="onFiltersCollapsedChange($event)"
-      class="mb-4"
-    >
-      <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        <div class="flex flex-col gap-1.5">
-          <label for="status">Status</label>
-          <p-multiselect
-            inputId="status"
-            [formControl]="filtersForm.controls.status"
-            [options]="statusFilters"
-            optionLabel="label"
-            optionValue="value"
-            placeholder="Any status"
-            display="chip"
-          />
-        </div>
-      </div>
-
-      <div class="mt-4 flex flex-wrap items-center justify-end gap-2">
-        <p-button
-          type="button"
-          label="Clear filters"
-          icon="pi pi-filter-slash"
-          severity="secondary"
-          [outlined]="true"
-          [disabled]="!hasAppliedFilters()"
-          (onClick)="clearFilters()"
-        />
-        <p-button type="submit" label="Apply filters" icon="pi pi-filter" />
-      </div>
-    </p-panel>
-
-    <app-applied-filters-chips
-      [chips]="appliedFilterChips()"
-      (chipRemove)="removeAppliedFilter($event)"
-    />
-  </form>
+  <div class="mb-4 flex justify-end">
+    @if (canCreateUsers()) {
+      <p-button
+        label="Create user"
+        icon="pi pi-user-plus"
+        [routerLink]="['/users/create']"
+      />
+    }
+  </div>
 
   @if (errorMessage()) {
     <p-message severity="error" class="mb-4">{{ errorMessage() }}</p-message>
@@ -73,123 +19,108 @@
 
   <p-menu #userActionsMenu [model]="userActionItems()" [popup]="true" />
 
-  <p-table
-    [value]="users()"
-    [loading]="isLoading() && !hasLoaded()"
-    [sortField]="query().sortField"
-    [sortOrder]="query().ascending ? 1 : -1"
-    [customSort]="true"
-    (onSort)="onTableSort($event)"
-    stripedRows
-  >
-    <ng-template #header>
-      <tr>
-        <th scope="col" pSortableColumn="Name">
-          <div class="flex items-center gap-2">
-            Name
-            <p-sortIcon field="Name" />
-          </div>
-        </th>
-        <th scope="col">Email</th>
-        <th scope="col">Status</th>
-        <th scope="col">Roles</th>
-        <th scope="col" pSortableColumn="LastSignIn">
-          <div class="flex items-center gap-2">
-            Last sign-in
-            <p-sortIcon field="LastSignIn" />
-          </div>
-        </th>
-        <th scope="col" pSortableColumn="CreatedAt">
-          <div class="flex items-center gap-2">
-            Created at
-            <p-sortIcon field="CreatedAt" />
-          </div>
-        </th>
-        <th scope="col">Actions</th>
-      </tr>
+  <qg-prime-data-grid [grid]="grid" dataKey="id" searchPlaceholder="Search users…">
+    <ng-template
+      qgColumn="LastName"
+      header="Name"
+      [filter]="{ type: 'text', placeholder: 'Name contains…' }"
+      let-user
+    >
+      <a
+        class="text-primary font-medium hover:underline"
+        [routerLink]="['/users', user.id]"
+      >
+        {{ formatUserName(user) || '—' }}
+      </a>
     </ng-template>
-    <ng-template #body let-user>
-      <tr>
-        <td>
-          <a
-            class="text-primary font-medium hover:underline"
-            [routerLink]="['/users', user.id]"
-          >
-            {{ formatUserName(user) || '—' }}
-          </a>
-        </td>
-        <td>{{ user.email }}</td>
-        <td>
-          <p-tag
-            [value]="getUserStatusLabel(user.status)"
-            [severity]="getUserStatusSeverity(user.status)"
-          />
-        </td>
-        <td>
-          <div class="flex flex-wrap gap-1">
-            @for (roleName of user.roleNames; track roleName) {
-              <p-tag [value]="roleName" severity="secondary" />
-            }
-          </div>
-        </td>
-        <td>
-          @if (user.lastSignInAt) {
-            {{ user.lastSignInAt | date: 'dd.MM.yyyy HH:mm' }}
-          } @else {
-            {{ UserMessages.neverSignedIn }}
-          }
-        </td>
-        <td>{{ user.createdAt | date: 'dd.MM.yyyy HH:mm' }}</td>
-        <td>
-          <p-button
-            type="button"
-            icon="pi pi-ellipsis-v"
-            severity="secondary"
-            [text]="true"
-            size="small"
-            pTooltip="User actions"
-            tooltipPosition="top"
-            [attr.aria-label]="'Actions for ' + formatUserReference(user)"
-            (onClick)="openUserActionsMenu($event, user)"
-          />
-        </td>
-      </tr>
-    </ng-template>
-    <ng-template #emptymessage>
-      <tr>
-        <td colspan="7">
-          <div class="flex flex-col items-center gap-2 py-4">
-            <p class="text-muted-color m-0 text-center">No users found</p>
-            <div class="flex flex-wrap items-center justify-center gap-2">
-              @if (canCreateUsers()) {
-                <p-button
-                  size="small"
-                  label="Create user"
-                  icon="pi pi-user-plus"
-                  [routerLink]="['/users/create']"
-                />
-              }
-              <p-button
-                size="small"
-                label="Refresh"
-                icon="pi pi-refresh"
-                severity="secondary"
-                [outlined]="true"
-                (onClick)="refresh()"
-              />
-            </div>
-          </div>
-        </td>
-      </tr>
-    </ng-template>
-  </p-table>
 
-  @if (hasLoaded()) {
-    <p-paginator
-      [rows]="pagination()?.pageSize ?? 10"
-      [totalRecords]="pagination()?.totalCount ?? 0"
-      [first]="((pagination()?.currentPage ?? 1) - 1) * (pagination()?.pageSize ?? 10)"
-      (onPageChange)="onPageChange($event)"
-    />
-  }
+    <ng-template
+      qgColumn="Email"
+      header="Email"
+      [filter]="{ type: 'text', placeholder: 'Email contains…' }"
+      let-user
+    >
+      {{ user.email }}
+    </ng-template>
+
+    <ng-template
+      qgColumn="Status"
+      header="Status"
+      [filter]="{ type: 'enum', options: statusFilters }"
+      let-user
+    >
+      <p-tag
+        [value]="getUserStatusLabel(user.status)"
+        [severity]="getUserStatusSeverity(user.status)"
+      />
+    </ng-template>
+
+    <ng-template qgColumn="RoleNames" header="Roles" [sortable]="false" let-user>
+      <div class="flex flex-wrap gap-1">
+        @for (roleName of user.roleNames; track roleName) {
+          <p-tag [value]="roleName" severity="secondary" />
+        }
+      </div>
+    </ng-template>
+
+    <ng-template
+      qgColumn="LastSignInAt"
+      header="Last sign-in"
+      [filter]="{ type: 'date' }"
+      let-user
+    >
+      @if (user.lastSignInAt) {
+        {{ user.lastSignInAt | date: 'dd.MM.yyyy HH:mm' }}
+      } @else {
+        {{ UserMessages.neverSignedIn }}
+      }
+    </ng-template>
+
+    <ng-template
+      qgColumn="CreatedAt"
+      header="Created at"
+      [filter]="{ type: 'date' }"
+      let-user
+    >
+      {{ user.createdAt | date: 'dd.MM.yyyy HH:mm' }}
+    </ng-template>
+
+    <ng-template qgColumn="actions" header="" [sortable]="false" let-user>
+      <p-button
+        type="button"
+        icon="pi pi-ellipsis-v"
+        severity="secondary"
+        [text]="true"
+        size="small"
+        pTooltip="User actions"
+        tooltipPosition="top"
+        [attr.aria-label]="'Actions for ' + formatUserReference(user)"
+        (onClick)="openUserActionsMenu($event, user)"
+      />
+    </ng-template>
+
+    <ng-template qgEmpty>
+      <div class="flex flex-col items-center gap-2 py-4">
+        <p class="text-muted-color m-0 text-center">{{ emptyMessage() }}</p>
+        <div class="flex flex-wrap items-center justify-center gap-2">
+          @if (canCreateUsers()) {
+            <p-button
+              size="small"
+              label="Create user"
+              icon="pi pi-user-plus"
+              [routerLink]="['/users/create']"
+            />
+          }
+          <p-button
+            size="small"
+            label="Refresh"
+            icon="pi pi-refresh"
+            severity="secondary"
+            [outlined]="true"
+            (onClick)="refresh()"
+          />
+        </div>
+      </div>
+    </ng-template>
+  </qg-prime-data-grid>
 </p-card>

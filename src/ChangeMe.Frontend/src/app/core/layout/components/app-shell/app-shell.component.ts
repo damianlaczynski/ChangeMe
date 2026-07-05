@@ -2,7 +2,6 @@ import { BreakpointObserver } from '@angular/cdk/layout';
 import { Component, computed, DestroyRef, inject } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
-import { filter, map } from 'rxjs/operators';
 import { SidebarNavComponent } from '@core/layout/components/sidebar-nav/sidebar-nav.component';
 import { LayoutNavItem } from '@core/layout/models/layout-nav-item.model';
 import { LayoutService } from '@core/layout/services/layout.service';
@@ -12,6 +11,7 @@ import { NotificationsBellComponent } from '@features/notifications/components/n
 import { PermissionCodes } from '@shared/authorization/permission-codes';
 import { Button } from 'primeng/button';
 import { Drawer } from 'primeng/drawer';
+import { filter, map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-shell',
@@ -46,13 +46,13 @@ export class AppShellComponent {
 
   readonly authenticatedNavItems = computed<LayoutNavItem[]>(() => {
     const items: LayoutNavItem[] = [
-      { label: 'Issues', icon: 'pi pi-list', routerLink: '/issues', exact: true },
+      { label: 'Issues list', icon: 'pi pi-list', routerLink: '/issues', exact: true },
       { label: 'Create issue', icon: 'pi pi-plus', routerLink: '/issues/create' }
     ];
 
     if (this.authService.hasPermission(PermissionCodes.usersView)) {
       items.push({
-        label: 'Users',
+        label: 'Users list',
         icon: 'pi pi-users',
         routerLink: '/users',
         exact: true
@@ -61,7 +61,7 @@ export class AppShellComponent {
 
     if (this.authService.hasPermission(PermissionCodes.rolesView)) {
       items.push({
-        label: 'Roles',
+        label: 'Roles list',
         icon: 'pi pi-shield',
         routerLink: '/roles',
         exact: true

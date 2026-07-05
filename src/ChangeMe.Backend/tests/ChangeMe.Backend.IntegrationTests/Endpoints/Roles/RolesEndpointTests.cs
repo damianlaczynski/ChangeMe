@@ -5,6 +5,8 @@ using ChangeMe.Backend.Domain.Authorization;
 using ChangeMe.Backend.IntegrationTests.Fixtures;
 using ChangeMe.Backend.IntegrationTests.Support;
 using ChangeMe.Backend.UseCases.Roles.Utils;
+using QueryGrid.Abstractions;
+using QueryGrid.Abstractions.Serialization;
 
 namespace ChangeMe.Backend.IntegrationTests.Endpoints.Roles;
 
@@ -48,8 +50,10 @@ public sealed class RolesEndpointTests(BackendWebApplicationFactory factory)
       cancellationToken,
       description: marker);
 
+    var grid = GridQueryJson.Serialize(new GridQuery { Take = 10, Search = marker });
+
     var response = await admin.Client.GetAsync(
-      $"/api/v1/roles?searchText={Uri.EscapeDataString(marker)}",
+      $"/api/v1/roles?grid={Uri.EscapeDataString(grid)}",
       cancellationToken);
 
     Assert.Equal(HttpStatusCode.OK, response.StatusCode);
