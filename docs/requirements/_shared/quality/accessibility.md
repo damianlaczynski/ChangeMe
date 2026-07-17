@@ -1,7 +1,7 @@
 ---
 id: NFR-A11Y-001
 title: Accessibility
-type: non-functional
+type: quality
 status: active
 ---
 

@@ -5,9 +5,9 @@ domain: identity
 type: functional
 status: active
 depends_on: [FR-AUTH-003, FR-USR-001]
-inherits_nfr:
+inherits_conventions: [STD-ACC-001, STD-LST-002, STD-MSG-001, STD-OP-001]
+inherits_quality:
   [NFR-QUAL-001, NFR-A11Y-001, NFR-I18N-001, NFR-PERF-001, NFR-RSP-001]
-inherits_fr: [FR-UI-001]
 ---
 
 ## Goal
@@ -16,39 +16,33 @@ The user must be able to review active sign-in sessions and revoke sessions they
 
 ## Functional requirements
 
-### Active sessions on My account
+### Authorization
 
-- Inherits `FR-UI-001` (**Detail and section screens** → **Embedded lists**) unless stated below.
-- Section on **My account** (FR-USR-001), not a separate screen.
-- Section title: **Active sessions**; collapsible panel; default **collapsed**.
-- Requires permission **Sessions.ViewOwn**.
+- **Sessions.ViewOwn**: required to view active sessions.
+- **Sessions.ManageOwn**: required to revoke non-current sessions and use **Sign out everywhere** (FR-AUTH-003).
 
-| Column               | Description                                                                                  |
-| -------------------- | -------------------------------------------------------------------------------------------- |
-| **Device / browser** | Label in format **`{Browser} on {Platform}`** (for example **`Chrome on Windows`**).         |
-| **IP address**       | Secondary line under device/browser; shows session IP or **`Unknown`**.                      |
-| **Signed in at**     | Session start date and time.                                                                 |
-| **Last activity**    | Date and time of last credential renewal or authenticated activity.                          |
-| **Current**          | Badge **`Current session`** on the row for the browser the user is signed in with.           |
-| **Actions**          | **Revoke** button on every row except the current session (requires **Sessions.ManageOwn**). |
+### Data
 
-- The list shows **active sessions only**; revoked sessions do not appear.
-- Empty state: **`No active sessions.`**
+- Each active session exposes **device / browser label** (format **`{Browser} on {Platform}`**), **IP address** (or **`Unknown`**), **signed in at**, **last activity**, and whether it is the **current session**.
+- Only **active** sessions are shown; revoked sessions do not appear.
+- Inherits STD-LST-002 unless stated below.
 
-### Actions
+### Operations
 
-- **Revoke** on a non-current row opens confirmation dialog: **`Revoke this session? That device will be signed out.`**
-- On confirm, that session is revoked and the row is removed from the list without reloading the entire screen.
-- The **Revoke** button is **not shown** on the **Current session** row; the user signs out the current browser via **Logout** (FR-AUTH-003).
-- **Sign out everywhere** is a header action (FR-AUTH-003); requires **Sessions.ManageOwn**.
+- View all active sessions on **My account** (FR-USR-001).
+- Revoke a non-current session after confirmation.
+- The current session cannot be revoked individually; the user signs out the current browser via logout (FR-AUTH-003).
 
-### Permissions and visibility
+### Validation
 
-- **Sessions.ViewOwn**: required to show the **Active sessions** section and view the list.
-- **Sessions.ManageOwn**: required for **Revoke** on non-current rows and **Sign out everywhere**.
+- **Revoke session**: confirmation message **`Revoke this session? That device will be signed out.`**
 
-## Non-functional requirements
+### Business rules
 
-- Inherits `docs/requirements/_shared/non-functional/product-quality.md` (`NFR-QUAL-001`) and linked NFR documents.
-- Inherits `docs/requirements/_shared/functional/ui-patterns.md` (`FR-UI-001`) for shared list, form, and feedback behavior unless stated above.
-- Document only overrides in this section when this specification differs from inherited NFR or UI patterns.
+- Revoking a session signs out that device on next activity.
+
+## Quality requirements
+
+- Inherits `docs/requirements/_shared/quality/product-quality.md` (`NFR-QUAL-001`) and linked quality documents.
+- Inherits `docs/requirements/_shared/conventions/product-standards.md` (`CONV-001`) unless stated above.
+- Document only overrides in this section when this specification differs from inherited quality or convention standards.

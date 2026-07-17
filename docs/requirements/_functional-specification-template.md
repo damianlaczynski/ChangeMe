@@ -1,8 +1,9 @@
 # Functional specification template
 
 > Copy the block below to `docs/requirements/functional/<domain>/fr-<area>-<nnn>-<slug>.md`.
-> **How to write the content:** `docs/requirements/requirements-authoring-guide.md`.
-> **Workflow and change record:** `docs/requirements/requirements-change-process.md`.
+> **Layers:** `docs/requirements/_shared/README.md`.
+> **How to write:** `docs/requirements/requirements-authoring-guide.md`.
+> **Workflow:** `docs/requirements/requirements-change-process.md`.
 
 ```markdown
 ---
@@ -12,44 +13,41 @@ domain: identity | users | invitations | access | passkeys | issues
 type: functional
 status: active
 depends_on: [FR-YYY-MMM]
-inherits_nfr:
+inherits_conventions: [STD-MSG-001, STD-VAL-001, STD-ACC-001]
+inherits_quality:
   [NFR-QUAL-001, NFR-A11Y-001, NFR-I18N-001, NFR-PERF-001, NFR-RSP-001]
-inherits_fr: [FR-UI-001]
 ---
 
 ## Goal
 
-The user must be able to `<main business outcome>`.
+The system must `<main business outcome>`.
 
 ## Functional requirements
 
-### Access
+### Authorization
 
-- Screen: **Screen name**
-- `<permission, navigation, and visibility rules>`
+- `<permission and access rules>`
 
-### `<Feature section>`
+### Data
 
-- `<behavior description>`
+- `<entities, fields, constraints, defaults>`
+
+### Operations
+
+- `<what the user or system can do and the result>`
 
 ### Validation
 
-- **`<Field>`**: `<validation rule>`.
-- Validation errors are shown next to the relevant fields without closing the form.
+- **`<Field>`**: `<validation rule>`; rejection message: **`<exact message>`** when applicable.
 
-### Form actions
+### Business rules
 
-- **Cancel** button — `<behavior>`.
-- **Save** button — `<success / failure behavior>`.
+- `<state transitions, side effects, consistency rules>`
 
-### States and business rules
+## Quality requirements
 
-- `<business rule>`
-
-## Non-functional requirements
-
-- Inherits `docs/requirements/_shared/non-functional/product-quality.md` (`NFR-QUAL-001`) and linked NFR documents.
-- Inherits `docs/requirements/_shared/functional/ui-patterns.md` (`FR-UI-001`) unless stated above.
+- Inherits `docs/requirements/_shared/quality/product-quality.md` (`NFR-QUAL-001`) and linked quality documents.
+- Inherits `docs/requirements/_shared/conventions/product-standards.md` (`CONV-001`) via `inherits_conventions` unless stated above.
 - Document only overrides below.
 
 ## Out of scope

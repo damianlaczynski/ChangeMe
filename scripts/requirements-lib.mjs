@@ -55,40 +55,64 @@ export function collectFunctionalFiles() {
   return files;
 }
 
-export function collectReferenceDocs() {
-  const dir = path.join(ROOT, "_shared", "reference");
+export function collectDomainDocs() {
+  const dir = path.join(ROOT, "_shared", "domain");
   return listMarkdownFiles(dir).map((file) => ({
     file,
-    relPath: `_shared/reference/${file}`,
+    relPath: `_shared/domain/${file}`,
     path: path.join(dir, file),
   }));
 }
 
+/** @deprecated use collectDomainDocs */
+export function collectReferenceDocs() {
+  return collectDomainDocs();
+}
+
 function collectSharedDocs(subdir, expectedType) {
   const dir = path.join(ROOT, "_shared", subdir);
-  return listMarkdownFiles(dir).map((file) => {
-    const filePath = path.join(dir, file);
-    const content = fs.readFileSync(filePath, "utf8");
-    const meta = parseFrontmatter(content) ?? {};
-    return {
-      id: meta.id ?? "",
-      title: meta.title ?? "",
-      type: meta.type ?? "",
-      status: meta.status ?? "active",
-      file,
-      relPath: `_shared/${subdir}/${file}`,
-      path: filePath,
-      expectedType,
-    };
-  });
+  return listMarkdownFiles(dir)
+    .filter((file) => file !== "README.md")
+    .map((file) => {
+      const filePath = path.join(dir, file);
+      const content = fs.readFileSync(filePath, "utf8");
+      const meta = parseFrontmatter(content) ?? {};
+      return {
+        id: meta.id ?? "",
+        title: meta.title ?? "",
+        type: meta.type ?? "",
+        status: meta.status ?? "active",
+        file,
+        relPath: `_shared/${subdir}/${file}`,
+        path: filePath,
+        expectedType,
+        content,
+      };
+    });
 }
 
+export function collectQualityDocs() {
+  return collectSharedDocs("quality", "quality");
+}
+
+/** @deprecated use collectQualityDocs */
 export function collectNfrDocs() {
-  return collectSharedDocs("non-functional", "non-functional");
+  return collectQualityDocs();
 }
 
-export function collectSharedFunctionalDocs() {
-  return collectSharedDocs("functional", "functional");
+export function collectConventionDocs() {
+  return collectSharedDocs("conventions", "conventions");
+}
+
+export function collectStdIdsFromConventions() {
+  const ids = new Set();
+  const stdRe = /^## (STD-[A-Z]+-\d{3})\b/gm;
+  for (const doc of collectConventionDocs()) {
+    for (const m of doc.content.matchAll(stdRe)) {
+      ids.add(m[1]);
+    }
+  }
+  return ids;
 }
 
 export function formatDomainLabel(domain) {

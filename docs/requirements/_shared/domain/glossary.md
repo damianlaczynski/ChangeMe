@@ -28,4 +28,4 @@ The following terms describe observable account state, not implementation detail
 
 - Login and sessions: FR-AUTH-001
 - User administration: `docs/requirements/functional/users/`
-- Account model (admin UI): `docs/requirements/_shared/reference/account-model.md`
+- Account model (admin UI): `docs/requirements/_shared/domain/account-model.md`

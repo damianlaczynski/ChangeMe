@@ -1,8 +1,17 @@
 # Implementation guides
 
-> **Scope:** how to write and verify code in this repository — not product behaviour or deployment configuration.
->
-> For product rules (`FR-*`), see [`docs/requirements/`](../requirements/). For run and configure, see [`docs/technical/`](../technical/).
+> **L5 — Implementation.** How to write and verify code in this repository — not product behaviour or deployment configuration.
+
+## Requirements layers (read before implementing)
+
+| Layer           | Location                                                                           | When to read                               |
+| --------------- | ---------------------------------------------------------------------------------- | ------------------------------------------ |
+| L4 Capabilities | [`docs/requirements/functional/`](../requirements/functional/)                     | Always — the feature you are building      |
+| L2 Conventions  | [`product-standards.md`](../requirements/_shared/conventions/product-standards.md) | UI — lists, forms, validation UX, feedback |
+| L1 Domain       | [`docs/requirements/_shared/domain/`](../requirements/_shared/domain/)             | Terms, account model, permissions          |
+| L3 Quality      | [`docs/requirements/_shared/quality/`](../requirements/_shared/quality/)           | Performance, a11y, i18n when relevant      |
+
+Full layer index: [`docs/requirements/_shared/README.md`](../requirements/_shared/README.md). **L4 overrides L2; this folder (L5) never defines product behaviour.**
 
 ## Documents
 
@@ -17,20 +26,20 @@
 
 ## Start here by task
 
-| Task                              | Documents                                                                                                       |
-| --------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| First orientation in the codebase | [repo-map.md](repo-map.md)                                                                                      |
-| Frontend change                   | [repo-map.md](repo-map.md) + [frontend-guidelines.md](frontend-guidelines.md)                                   |
-| Backend change                    | [repo-map.md](repo-map.md) + [backend-guidelines.md](backend-guidelines.md)                                     |
-| New endpoint or screen end-to-end | [feature-recipes.md](feature-recipes.md) + relevant guidelines + [testing-guidelines.md](testing-guidelines.md) |
-| Verify before PR                  | [testing-guidelines.md](testing-guidelines.md) + [`AGENTS.md`](../../AGENTS.md) (commands)                      |
+| Task                              | Documents                                                                                                                                                                                                                                          |
+| --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| First orientation in the codebase | [repo-map.md](repo-map.md)                                                                                                                                                                                                                         |
+| Frontend change                   | Target `FR-*` + [product-standards.md](../requirements/_shared/conventions/product-standards.md) + [frontend-guidelines.md](frontend-guidelines.md) + [testing-guidelines.md](testing-guidelines.md#mapping-std--to-test-layers) when adding tests |
+| Backend change                    | Target `FR-*` + [backend-guidelines.md](backend-guidelines.md)                                                                                                                                                                                     |
+| New endpoint or screen end-to-end | Target `FR-*` + [feature-recipes.md](feature-recipes.md) + relevant guidelines + [testing-guidelines.md](testing-guidelines.md)                                                                                                                    |
+| Verify before PR                  | [testing-guidelines.md](testing-guidelines.md) + [`AGENTS.md`](../../AGENTS.md) (commands)                                                                                                                                                         |
 
 ## Relationship to other docs
 
-| Folder                       | Use for                              |
-| ---------------------------- | ------------------------------------ |
-| `docs/guides/` (this folder) | How to _implement_                   |
-| `docs/requirements/`         | What the product _must do_           |
-| `docs/technical/`            | How to _run and configure_ the stack |
+| Folder                       | Layer | Use for                              |
+| ---------------------------- | ----- | ------------------------------------ |
+| `docs/guides/` (this folder) | L5    | How to _implement_ in this repo      |
+| `docs/requirements/`         | L1–L4 | What the product _must do_           |
+| `docs/technical/`            | —     | How to _run and configure_ the stack |
 
 Commands shared across areas: [`AGENTS.md`](../../AGENTS.md).

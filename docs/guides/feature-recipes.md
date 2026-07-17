@@ -1,6 +1,8 @@
 # Feature Recipes
 
-> Scope: short implementation recipes for common tasks in this repository.
+> **L5 — Implementation.** Short recipes for common tasks in this repository.
+>
+> Before starting: read the target `FR-*` (L4). For UI work, read [`product-standards.md`](../requirements/_shared/conventions/product-standards.md) (L2).
 
 ## Add a backend endpoint
 

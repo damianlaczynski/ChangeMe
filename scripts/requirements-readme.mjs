@@ -8,9 +8,9 @@ const manifest = fs.existsSync(manifestPath)
   ? JSON.parse(fs.readFileSync(manifestPath, "utf8"))
   : {
       functional: [],
-      non_functional: [],
-      reference: [],
-      shared_functional: [],
+      quality: [],
+      conventions: [],
+      domain: [],
     };
 
 const byDomain = {};
@@ -20,43 +20,51 @@ for (const spec of manifest.functional ?? []) {
 
 let md = `# Requirements index
 
-> Functional specifications (\`FR-*\`), non-functional requirements (\`NFR-*\`), and reference docs.
-> Start: \`docs/requirements/requirements-change-process.md\`. Authoring: \`docs/requirements/requirements-authoring-guide.md\`. Validate: \`npm run requirements:validate\`.
+> Five layers: **Domain** · **Conventions** · **Quality** · **Capabilities (FR-*)** · **Implementation (guides)**.
+> Layer index: \`_shared/README.md\`. Start: \`requirements-change-process.md\`. Authoring: \`requirements-authoring-guide.md\`. Validate: \`npm run requirements:validate\`.
 
-## Reference documents (\`_shared/reference/\`)
+## L1 — Domain (\`_shared/domain/\`)
 
 | Document | File |
 | -------- | ---- |
 `;
 
-for (const doc of manifest.reference ?? []) {
+for (const doc of manifest.domain ?? []) {
   const fileName = doc.file.split("/").pop();
+  if (fileName === "README.md") {
+    md += `| Layer index | [README.md](${doc.file}) |\n`;
+    continue;
+  }
   md += `| ${fileName} | [${fileName}](${doc.file}) |\n`;
 }
 
 md += `
-## Shared functional patterns (\`_shared/functional/\`)
+## L2 — Conventions (\`_shared/conventions/\`)
 
 | ID | Title | File |
 | -- | ----- | ---- |
 `;
 
-for (const s of manifest.shared_functional ?? []) {
+for (const s of manifest.conventions ?? []) {
   const fileName = s.file.split("/").pop();
   md += `| ${s.id} | ${s.title || fileName} | [${fileName}](${s.file}) |\n`;
 }
 
 md += `
-## Non-functional requirements (\`_shared/non-functional/\`)
+| — | [STD index & checklist](_shared/conventions/README.md) | [README.md](_shared/conventions/README.md) |
+
+## L3 — Quality (\`_shared/quality/\`)
 
 | ID | Title | File |
 | -- | ----- | ---- |
 `;
 
-for (const n of manifest.non_functional ?? []) {
+for (const n of manifest.quality ?? []) {
   const fileName = n.file.split("/").pop();
   md += `| ${n.id} | ${n.title || fileName} | [${fileName}](${n.file}) |\n`;
 }
+
+md += `| — | Quality index | [README.md](_shared/quality/README.md) |\n`;
 
 md += `
 ## Pending changes
@@ -71,7 +79,7 @@ for (const domain of domainOrder) {
   const specs = byDomain[domain];
   if (!specs?.length) continue;
   const label = formatDomainLabel(domain);
-  md += `\n## ${label} (\`functional/${domain}/\`)\n\n| ID | Title | File |\n| -- | ----- | ---- |\n`;
+  md += `\n## L4 — ${label} (\`functional/${domain}/\`)\n\n| ID | Title | File |\n| -- | ----- | ---- |\n`;
   for (const s of specs.sort((a, b) => a.id.localeCompare(b.id))) {
     const fileName = s.file.split("/").pop();
     md += `| ${s.id} | ${s.title} | [${fileName}](${s.file}) |\n`;

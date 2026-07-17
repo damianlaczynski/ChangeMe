@@ -5,9 +5,9 @@ domain: access
 type: functional
 status: active
 depends_on: [FR-ROL-003]
-inherits_nfr:
+inherits_conventions: [STD-ACC-001, STD-LST-001, STD-MSG-001, STD-OP-001]
+inherits_quality:
   [NFR-QUAL-001, NFR-A11Y-001, NFR-I18N-001, NFR-PERF-001, NFR-RSP-001]
-inherits_fr: [FR-UI-001]
 ---
 
 ## Goal
@@ -16,51 +16,30 @@ An authorized administrator must be able to browse roles, search and sort them, 
 
 ## Functional requirements
 
-### Search and actions bar
+### Authorization
 
-- Screen: **Roles list**
-- Sidebar entry **Roles** is visible only with permission **Roles.View**.
-- **Add role** button opens **Create role** (FR-ROL-003); visible only with permission **Roles.Manage**.
+- **Roles.View**: required to browse roles and open role details.
+- **Roles.Manage**: required to create, edit, and delete custom roles.
 
-### Roles table
+### Data
 
-| Column          | Description                                                            |
-| --------------- | ---------------------------------------------------------------------- |
-| **Name**        | Role name; link to **Role details**.                                   |
-| **Description** | Role description text, or em dash (**`—`**) when empty.                |
-| **Permissions** | Exact format: **`{n} permissions`** where `{n}` is the assigned count. |
-| **Users**       | Exact format: **`{n} users`** where `{n}` is the assignment count.     |
-| **System**      | Badge **`System`** for seeded roles; blank for custom roles.           |
-| **Actions**     | Overflow menu (see below).                                             |
-
-### Sorting
-
-- Sortable columns: **Name**, **Users**, **Permissions**.
-- Default sort: **Name**, ascending.
-
-### Search and filters
-
-- Inherits `FR-UI-001` (**Administrative list screens**) unless stated below.
-- **Filterable columns**: **Name**, **Description**, **Permissions**, **Users**.
+- Each role exposes **name**, **description**, assigned **permission** count, assigned **user** count, and whether it is a **system** role.
+- Inherits STD-LST-001 unless stated below.
+- **Filterable** attributes: name, description, permission count, user count.
 - Global search matches **name** and **description**.
+- Default sort: **name**, ascending.
 
-### Row overflow menu
+### Operations
 
-| Action           | Permission required | Behavior                                                              |
-| ---------------- | ------------------- | --------------------------------------------------------------------- |
-| **Open details** | **Roles.View**      | Opens **Role details**.                                               |
-| **Edit role**    | **Roles.Manage**    | Opens **Edit role** for custom roles only.                            |
-| **Delete role**  | **Roles.Manage**    | Shown for custom roles only; confirmation and behavior in FR-ROL-003. |
+- Browse all roles.
+- Open role details (FR-ROL-004).
+- Create a custom role (FR-ROL-003).
+- Edit a custom role (FR-ROL-003).
+- Delete a custom role (FR-ROL-003).
+- **System** roles (**Administrator**, **User**) cannot be edited or deleted from the list.
 
-- **Edit role** and **Delete role** are **not shown** for system roles (**Administrator**, **User**); system roles are opened via **Open details** only.
+## Quality requirements
 
-### Permissions and visibility
-
-- **Roles.View**: required for **Roles list** and **Open details**.
-- **Roles.Manage**: required for **Add role**, **Edit role**, and **Delete role**.
-
-## Non-functional requirements
-
-- Inherits `docs/requirements/_shared/non-functional/product-quality.md` (`NFR-QUAL-001`) and linked NFR documents.
-- Inherits `docs/requirements/_shared/functional/ui-patterns.md` (`FR-UI-001`) for shared list, form, and feedback behavior unless stated above.
-- Document only overrides in this section when this specification differs from inherited NFR or UI patterns.
+- Inherits `docs/requirements/_shared/quality/product-quality.md` (`NFR-QUAL-001`) and linked quality documents.
+- Inherits `docs/requirements/_shared/conventions/product-standards.md` (`CONV-001`) unless stated above.
+- Document only overrides in this section when this specification differs from inherited quality or convention standards.

@@ -5,9 +5,9 @@ domain: users
 type: functional
 status: active
 depends_on: [FR-USR-003, FR-USR-005]
-inherits_nfr:
+inherits_conventions: [STD-ACC-001, STD-LST-001, STD-MSG-001]
+inherits_quality:
   [NFR-QUAL-001, NFR-A11Y-001, NFR-I18N-001, NFR-PERF-001, NFR-RSP-001]
-inherits_fr: [FR-UI-001]
 ---
 
 ## Goal
@@ -16,52 +16,30 @@ An authorized administrator must be able to browse users, search and filter them
 
 ## Functional requirements
 
-### Search and actions bar
+### Authorization
 
-- Screen: **Users list**
-- Sidebar entry **Users** is visible only with permission **Users.View**.
-- **Create user** button opens **Create user** (FR-USR-003); visible only with permission **Users.Manage**.
+- **Users.View**: required to browse users and open user details.
+- **Users.Manage**: required to create and edit users.
+- **Users.Deactivate**: required to deactivate and activate users.
 
-### Users table
+### Data
 
-| Column           | Description                                                                                          |
-| ---------------- | ---------------------------------------------------------------------------------------------------- |
-| **Name**         | **First name** and **Last name** when set; **`—`** when both empty; link to **User details**.        |
-| **Email**        | User email address.                                                                                  |
-| **Status**       | **`Active`** or **`Deactivated`**.                                                                   |
-| **Roles**        | One status badge per assigned role showing the role name.                                            |
-| **Last sign-in** | Most recent session **signed in at** across all sessions; **`Never`** when the user has no sessions. |
-| **Created at**   | Account creation date and time.                                                                      |
-| **Actions**      | Overflow menu (see below).                                                                           |
-
-### Search and filters
-
-- Inherits `FR-UI-001` (**Administrative list screens**) unless stated below.
-- **Filterable columns**: **Name**, **Email**, **Status** (**`Active`**, **`Deactivated`**), **Last sign-in**, **Created at**.
+- Each user exposes **name**, **email**, **status** (**Active** / **Deactivated**), assigned **roles**, **last sign-in**, and **created at**.
+- Inherits STD-LST-001 unless stated below.
+- **Filterable** attributes: name, email, status, last sign-in, created at.
 - Global search matches **first name**, **last name**, and **email**.
+- Default sort: **name** (last name), ascending.
 
-### Sorting
+### Operations
 
-- Sortable columns: **Name** (last name), **Created at**, **Last sign-in**.
-- Default sort: **Name** (last name), ascending.
+- Browse all users.
+- Create a user (FR-USR-003).
+- Open user details (FR-USR-004).
+- Edit a user (FR-USR-003).
+- Deactivate or activate a user (FR-USR-005).
 
-### Row overflow menu
+## Quality requirements
 
-| Action           | Permission required  | Behavior                                                   |
-| ---------------- | -------------------- | ---------------------------------------------------------- |
-| **Open details** | **Users.View**       | Opens **User details**.                                    |
-| **Edit**         | **Users.Manage**     | Opens **Edit user**.                                       |
-| **Deactivate**   | **Users.Deactivate** | Shown only when **Deactivated** is **false** (FR-USR-005). |
-| **Activate**     | **Users.Deactivate** | Shown only when **Deactivated** is **true** (FR-USR-005).  |
-
-### Permissions and visibility
-
-- **Users.View**: required for **Users list** and **Open details**.
-- **Users.Manage**: required for **Create user** and **Edit**.
-- **Users.Deactivate**: required for **Deactivate** and **Activate**.
-
-## Non-functional requirements
-
-- Inherits `docs/requirements/_shared/non-functional/product-quality.md` (`NFR-QUAL-001`) and linked NFR documents.
-- Inherits `docs/requirements/_shared/functional/ui-patterns.md` (`FR-UI-001`) for shared list, form, and feedback behavior unless stated above.
-- Document only overrides in this section when this specification differs from inherited NFR or UI patterns.
+- Inherits `docs/requirements/_shared/quality/product-quality.md` (`NFR-QUAL-001`) and linked quality documents.
+- Inherits `docs/requirements/_shared/conventions/product-standards.md` (`CONV-001`) unless stated above.
+- Document only overrides in this section when this specification differs from inherited quality or convention standards.

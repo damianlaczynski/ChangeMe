@@ -4,10 +4,10 @@ title: Permission Catalog and Effective Permissions
 domain: access
 type: functional
 status: active
-depends_on: [FR-AUTH-001, FR-AUTH-002, FR-ROL-005, FR-USR-001, FR-USR-005]
-inherits_nfr:
+depends_on: [FR-AUTH-001, FR-AUTH-002, FR-ROL-005, FR-USR-005]
+inherits_conventions: [STD-ACC-001, STD-MSG-001]
+inherits_quality:
   [NFR-QUAL-001, NFR-A11Y-001, NFR-I18N-001, NFR-PERF-001, NFR-RSP-001]
-inherits_fr: [FR-UI-001]
 ---
 
 ## Goal
@@ -16,7 +16,7 @@ The system must define a fixed set of permissions and determine each user's effe
 
 ## Functional requirements
 
-### Permission catalog
+### Data
 
 The catalog contains exactly these permissions:
 
@@ -33,31 +33,30 @@ The catalog contains exactly these permissions:
 | **Sessions.ManageAny** | Manage user sessions | Revoke sessions of any user, including **Revoke all sessions**.               | Sessions |
 
 - New permissions are added only by updating requirements and a subsequent release; administrators cannot create new permission codes in the UI.
-- **Out of scope:** issue-level permissions. Issues remain available to all authenticated users with **Deactivated** false until a separate functional specification introduces issue permissions.
 
-### Effective permissions
+### Operations
 
 - A user has **one or more roles**. Effective permissions are the **union** of all permissions from assigned roles, without duplicates.
 - After sign-in or credential renewal (FR-AUTH-001, FR-AUTH-002), the user receives their current effective permission set.
-- **My account** (FR-USR-001) reflects the current effective permission set when opened.
 - After an administrator changes role assignments (FR-ROL-005), the new permissions apply when the affected user next renews credentials or signs in again.
-
-### Access denial
-
-- A signed-in user who lacks a required permission cannot perform the protected action; the system rejects the action with message **`You do not have permission to perform this action.`**
+- A signed-in user who lacks a required permission cannot perform the protected action; rejection message: **`You do not have permission to perform this action.`**
 - A guest cannot perform actions that require sign-in.
 
-### States and business rules
+### Validation
 
-- A role with zero permissions cannot be saved; validation error: **`At least one permission is required.`**
+- A role with zero permissions cannot be saved; rejection message: **`At least one permission is required.`**
+
+### Business rules
+
 - Users with **Deactivated** true cannot sign in and have no effective permissions (FR-USR-005).
+- Permission names in FR-ROL-001 control capability access across **Users**, **Roles**, **Auth**, and **Sessions** specifications.
 
-### Permissions and visibility
+## Out of scope
 
-- Permission names in FR-ROL-001 are used across **Users**, **Roles**, **Auth**, and **Sessions** specifications to control screen and action visibility.
+- Issue-level permissions. Issues remain available to all authenticated users with **Deactivated** false until a separate functional specification introduces issue permissions.
 
-## Non-functional requirements
+## Quality requirements
 
-- Inherits `docs/requirements/_shared/non-functional/product-quality.md` (`NFR-QUAL-001`) and linked NFR documents.
-- Inherits `docs/requirements/_shared/functional/ui-patterns.md` (`FR-UI-001`) for shared list, form, and feedback behavior unless stated above.
-- Document only overrides in this section when this specification differs from inherited NFR or UI patterns.
+- Inherits `docs/requirements/_shared/quality/product-quality.md` (`NFR-QUAL-001`) and linked quality documents.
+- Inherits `docs/requirements/_shared/conventions/product-standards.md` (`CONV-001`) unless stated above.
+- Document only overrides in this section when this specification differs from inherited quality or convention standards.

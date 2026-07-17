@@ -5,61 +5,52 @@ domain: access
 type: functional
 status: active
 depends_on: [FR-ROL-004, FR-USR-003, FR-USR-004, FR-USR-005]
-inherits_nfr:
+inherits_conventions: [STD-ACC-001, STD-MSG-001, STD-VAL-001]
+inherits_quality:
   [NFR-QUAL-001, NFR-A11Y-001, NFR-I18N-001, NFR-PERF-001, NFR-RSP-001]
-inherits_fr: [FR-UI-001]
 ---
 
 ## Goal
 
-An authorized administrator must be able to assign roles to users from **Create user** and **Edit user**, and remove a user from a role from **Role details**, using consistent rules in both places.
+An authorized administrator must be able to assign roles to users and remove users from roles using consistent rules from either user or role administration.
 
 ## Functional requirements
 
-### Entry point — Users administration
+### Authorization
 
-- Role assignment for a user is performed on **Create user** and **Edit user** (FR-USR-003); there is no separate role-assignment screen under **Users**.
-- **Roles** multi-select lists all roles sorted by **name** ascending; each option shows role **name** and **System** badge when applicable.
-- At least **one** role must be selected before save.
-- Saving **Create user** or **Edit user** replaces the user's entire role set with the selected set.
-- The **Roles** field is visible and editable only with permission **Roles.Manage**.
-- Without **Roles.Manage**, **Create user** is **not available** (every new user must receive role assignment at creation).
-- **Permissions** preview on create/edit follows FR-USR-003.
+- **Roles.Manage**: required to assign roles on user create/edit and to remove users from a role.
+- **Roles.View**: allows read-only role and permission display when the user lacks **Roles.Manage**.
 
-- **User details** (FR-USR-004) shows assigned roles and effective permissions read-only; role badges link to **Role details**.
-- Role changes are made only through **Edit user**, not from **User details**.
+### Data
 
-### Entry point — Roles administration
+- Every user has at least one role at all times.
+- Role assignment replaces the user's entire role set with the selected set on save.
+- All roles are available for selection, sorted by **name** ascending.
 
-- **Role details** (FR-ROL-004) shows the **Assigned users** section and **Remove from role** per user.
-- On successful **Remove from role**, show toast **`User removed from role.`** and refresh the **Assigned users** list in place.
-- Adding a user to a role is done by editing the user (**Edit user**) and selecting the role in the **Roles** multi-select.
+### Operations
+
+- Assign roles when creating or editing a user (FR-USR-003).
+- View assigned roles and effective permissions read-only on user details (FR-USR-004).
+- Remove a user from a role on role details (FR-ROL-004).
+- Role changes are made only through user edit, not from user details.
 
 ### Validation
 
-- **Roles** (on **Create user** and **Edit user**): at least one role selected; error: **`At least one role is required.`**
-- **Remove from role** (on **Role details**): must not leave the user with zero roles; error: **`Each user must have at least one role. Assign another role before removing this one.`**
+- **Roles** on user create/edit: at least one role selected; rejection message: **`At least one role is required.`**
+- **Remove from role**: must not leave the user with zero roles; rejection message: **`Each user must have at least one role. Assign another role before removing this one.`**
+- Self role change from any entry point is rejected; rejection message: **`You cannot change your own roles.`**
 
-### Self-service restrictions
+### Business rules
 
-- Standard users cannot change their own roles.
-- On **Edit user**, when the administrator edits **their own** account, the **Roles** field and **Permissions** preview are **not shown**.
-- Self role change from any entry point is rejected with message **`You cannot change your own roles.`**
-
-### States and business rules
-
-- Assignment changes from either entry point use the same replace semantics and validation rules.
+- Without **Roles.Manage**, user create is **not available** (every new user must receive role assignment at creation).
+- Standard users cannot change their own roles; the **Roles** field is hidden when an administrator edits their own account.
+- Assignment changes use the same replace semantics and validation rules from either entry point.
 - Changes take effect for the affected user after credential renewal or next sign-in.
 - Changing role assignments does **not** revoke active sessions.
 - A user with **Deactivated** true can remain assigned to a role; deactivation is controlled in FR-USR-005.
 
-### Permissions and visibility
+## Quality requirements
 
-- **Roles.Manage**: required for the **Roles** field on **Create user** / **Edit user** and for **Remove from role** on **Role details**.
-- **Roles.View**: allows read-only **Roles** and **Permissions** on **User details** and read-only **Assigned users** on **Role details** when the user lacks **Roles.Manage**.
-
-## Non-functional requirements
-
-- Inherits `docs/requirements/_shared/non-functional/product-quality.md` (`NFR-QUAL-001`) and linked NFR documents.
-- Inherits `docs/requirements/_shared/functional/ui-patterns.md` (`FR-UI-001`) for shared list, form, and feedback behavior unless stated above.
-- Document only overrides in this section when this specification differs from inherited NFR or UI patterns.
+- Inherits `docs/requirements/_shared/quality/product-quality.md` (`NFR-QUAL-001`) and linked quality documents.
+- Inherits `docs/requirements/_shared/conventions/product-standards.md` (`CONV-001`) unless stated above.
+- Document only overrides in this section when this specification differs from inherited quality or convention standards.

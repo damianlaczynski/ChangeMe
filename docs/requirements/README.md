@@ -1,38 +1,42 @@
 # Requirements index
 
-> Functional specifications (`FR-*`), non-functional requirements (`NFR-*`), and reference docs.
-> Start: `docs/requirements/requirements-change-process.md`. Authoring: `docs/requirements/requirements-authoring-guide.md`. Validate: `npm run requirements:validate`.
+> Five layers: **Domain** · **Conventions** · **Quality** · **Capabilities (FR-*)** · **Implementation (guides)**.
+> Layer index: `_shared/README.md`. Start: `requirements-change-process.md`. Authoring: `requirements-authoring-guide.md`. Validate: `npm run requirements:validate`.
 
-## Reference documents (`_shared/reference/`)
+## L1 — Domain (`_shared/domain/`)
 
 | Document | File |
 | -------- | ---- |
-| account-model.md | [account-model.md](_shared/reference/account-model.md) |
-| glossary.md | [glossary.md](_shared/reference/glossary.md) |
-| permissions.md | [permissions.md](_shared/reference/permissions.md) |
+| account-model.md | [account-model.md](_shared/domain/account-model.md) |
+| glossary.md | [glossary.md](_shared/domain/glossary.md) |
+| permissions.md | [permissions.md](_shared/domain/permissions.md) |
+| Layer index | [README.md](_shared/domain/README.md) |
 
-## Shared functional patterns (`_shared/functional/`)
-
-| ID | Title | File |
-| -- | ----- | ---- |
-| FR-UI-001 | Shared UI and UX Patterns | [ui-patterns.md](_shared/functional/ui-patterns.md) |
-
-## Non-functional requirements (`_shared/non-functional/`)
+## L2 — Conventions (`_shared/conventions/`)
 
 | ID | Title | File |
 | -- | ----- | ---- |
-| NFR-A11Y-001 | Accessibility | [accessibility.md](_shared/non-functional/accessibility.md) |
-| NFR-I18N-001 | Internationalization and Copy | [internationalization.md](_shared/non-functional/internationalization.md) |
-| NFR-PERF-001 | Performance and Scale | [performance-and-scale.md](_shared/non-functional/performance-and-scale.md) |
-| NFR-QUAL-001 | Product Quality (Index) | [product-quality.md](_shared/non-functional/product-quality.md) |
-| NFR-RSP-001 | Responsiveness and Layout | [responsiveness.md](_shared/non-functional/responsiveness.md) |
+| CONV-001 | Product Standards | [product-standards.md](_shared/conventions/product-standards.md) |
+
+| — | [STD index & checklist](_shared/conventions/README.md) | [README.md](_shared/conventions/README.md) |
+
+## L3 — Quality (`_shared/quality/`)
+
+| ID | Title | File |
+| -- | ----- | ---- |
+| NFR-A11Y-001 | Accessibility | [accessibility.md](_shared/quality/accessibility.md) |
+| NFR-I18N-001 | Internationalization and Copy | [internationalization.md](_shared/quality/internationalization.md) |
+| NFR-PERF-001 | Performance and Scale | [performance-and-scale.md](_shared/quality/performance-and-scale.md) |
+| NFR-QUAL-001 | Product Quality (Index) | [product-quality.md](_shared/quality/product-quality.md) |
+| NFR-RSP-001 | Responsiveness and Layout | [responsiveness.md](_shared/quality/responsiveness.md) |
+| — | Quality index | [README.md](_shared/quality/README.md) |
 
 ## Pending changes
 
 See [changes/](changes/) for open requirement deltas.
 
 
-## Access (`functional/access/`)
+## L4 — Access (`functional/access/`)
 
 | ID | Title | File |
 | -- | ----- | ---- |
@@ -43,7 +47,7 @@ See [changes/](changes/) for open requirement deltas.
 | FR-ROL-005 | Role and User Assignments | [fr-rol-005-role-and-user-assignments.md](functional/access/fr-rol-005-role-and-user-assignments.md) |
 | FR-ROL-006 | Initial Administrator and System Roles | [fr-rol-006-initial-administrator-and-system-roles.md](functional/access/fr-rol-006-initial-administrator-and-system-roles.md) |
 
-## Identity (`functional/identity/`)
+## L4 — Identity (`functional/identity/`)
 
 | ID | Title | File |
 | -- | ----- | ---- |
@@ -53,7 +57,7 @@ See [changes/](changes/) for open requirement deltas.
 | FR-AUTH-004 | My Sessions | [fr-auth-004-my-sessions.md](functional/identity/fr-auth-004-my-sessions.md) |
 | FR-AUTH-008 | Password Policy | [fr-auth-008-password-policy.md](functional/identity/fr-auth-008-password-policy.md) |
 
-## Issues (`functional/issues/`)
+## L4 — Issues (`functional/issues/`)
 
 | ID | Title | File |
 | -- | ----- | ---- |
@@ -64,7 +68,7 @@ See [changes/](changes/) for open requirement deltas.
 | FR-ISS-005 | Notification Bell and Dropdown | [fr-iss-005-notification-bell-and-dropdown.md](functional/issues/fr-iss-005-notification-bell-and-dropdown.md) |
 | FR-ISS-006 | Issue Attachments | [fr-iss-006-issue-attachments.md](functional/issues/fr-iss-006-issue-attachments.md) |
 
-## Users (`functional/users/`)
+## L4 — Users (`functional/users/`)
 
 | ID | Title | File |
 | -- | ----- | ---- |

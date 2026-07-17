@@ -18,7 +18,7 @@
 - Test work or bugfix verification: read `docs/guides/testing-guidelines.md`.
 - Cross-stack feature: read all four docs above before editing.
 - Auth deployment, Docker, CI, or local stack: read `docs/technical/README.md`, then the linked technical doc (`deployment.md` for production runtime URL and checklist).
-- Requirement changes: read `docs/requirements/requirements-change-process.md`; new or updated `FR-*` authoring rules in `docs/requirements/requirements-authoring-guide.md`; pending deltas in `docs/requirements/changes/`; validate with `npm run requirements:validate`.
+- Requirement changes: read `docs/requirements/requirements-change-process.md`; authoring in `docs/requirements/requirements-authoring-guide.md`; **five layers** in `docs/requirements/_shared/README.md`; product behavior defaults in `docs/requirements/_shared/conventions/product-standards.md`; pending deltas in `docs/requirements/changes/`; validate with `npm run requirements:validate`.
 
 ## Commands
 
@@ -107,3 +107,19 @@ Configuration in containers: `appsettings.json` + `appsettings.Development.json`
 - Prefer extending an existing feature slice over creating a parallel pattern.
 - Keep docs current when introducing a new enforced convention.
 - Do not assume files visible in the IDE are committed; verify against the filesystem first.
+
+## Requirements layers (product analysis)
+
+Five layers — see `docs/requirements/_shared/README.md`:
+
+| Layer             | Path                                                         | When to read                                   |
+| ----------------- | ------------------------------------------------------------ | ---------------------------------------------- |
+| L1 Domain         | `docs/requirements/_shared/domain/`                          | Terms, account model, permissions              |
+| L2 Conventions    | `docs/requirements/_shared/conventions/product-standards.md` | Any UI — lists, forms, validation UX, feedback |
+| L3 Quality        | `docs/requirements/_shared/quality/`                         | Performance, a11y, i18n                        |
+| L4 Capabilities   | `docs/requirements/functional/FR-*`                          | The feature you are implementing               |
+| L5 Implementation | `docs/guides/`                                               | Code patterns in this repo                     |
+
+**Override rule:** L4 overrides L2; L5 never defines product behavior.
+
+**After implementing UI:** run the **Implementation review checklist** at the end of `product-standards.md` for each `STD-*` in the target `FR-*` `inherits_conventions`.

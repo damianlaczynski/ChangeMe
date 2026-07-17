@@ -1,6 +1,8 @@
 # Frontend Guidelines
 
-> Scope: current conventions for writing Angular code in this frontend. This file is intentionally short and only documents patterns already present in the repository or immediately adjacent to them.
+> **L5 — Implementation.** Scope: current conventions for writing Angular code in this frontend.
+>
+> **Product behaviour** (lists, forms, validation UX, toasts): [`product-standards.md`](../requirements/_shared/conventions/product-standards.md) (L2). **Feature rules**: target `FR-*` (L4). This file covers _how_ to implement in Angular/PrimeNG.
 
 ## Stack summary
 
