@@ -27,6 +27,9 @@ public class UploadIssueAttachmentHandler(
     if (userAccessor.UserId is not Guid actorUserId)
       return Result<IssueAttachmentDto>.Unauthorized();
 
+    if (!IssueAuthorization.CanManageAttachments(userAccessor))
+      return Result<IssueAttachmentDto>.Forbidden(IssueAuthorization.PermissionDeniedMessage);
+
     var validationResult = fileContentValidator.Validate(
       command.OriginalFileName,
       command.DeclaredContentType,
@@ -104,7 +107,7 @@ public class UploadIssueAttachmentHandler(
       UploadedByUserId = actorUserId,
       UploadedByName = userLookup.GetValueOrDefault(actorUserId),
       CreatedAt = attachment.CreatedAt,
-      CanDelete = true
+      CanDelete = IssueAuthorization.CanDeleteAttachment(userAccessor, actorUserId, actorUserId)
     }, $"/issues/{issue.Id}/attachments/{attachment.Id}");
   }
 }

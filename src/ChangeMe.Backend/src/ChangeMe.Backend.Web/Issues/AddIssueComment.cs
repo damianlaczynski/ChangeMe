@@ -8,6 +8,7 @@ public class AddIssueComment(IMediator mediator) : BaseEndpoint<AddIssueCommentC
 {
   protected override void ConfigureEndpoint()
   {
+    RequirePermission(PermissionCodes.IssuesView);
     Post("/issues/{issueId}/comments");
     Summary(s =>
     {

@@ -1,0 +1,107 @@
+@if (isLoading()) {
+  <div class="flex flex-1 items-center justify-center py-12">
+    <p-progressSpinner ariaLabel="Loading invitation" />
+  </div>
+} @else if (loadError()) {
+  <app-auth-page title="Invitation" subtitle="This link cannot be used.">
+    <p-message severity="error">{{ loadError() }}</p-message>
+  </app-auth-page>
+} @else {
+  <app-auth-page
+    title="Create your account"
+    subtitle="Complete your profile to join ChangeMe."
+  >
+    <form
+      class="p-fluid flex flex-col gap-4"
+      [formGroup]="form"
+      (ngSubmit)="onSubmit()"
+    >
+      <div class="flex flex-col gap-1.5">
+        <label for="email">Email</label>
+        <input id="email" type="email" pInputText [formControl]="form.controls.email" />
+      </div>
+
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div class="flex flex-col gap-1.5">
+          <label for="firstName">First name</label>
+          <input
+            id="firstName"
+            type="text"
+            pInputText
+            [formControl]="form.controls.firstName"
+            [invalid]="shouldShowError(form.controls.firstName)"
+          />
+          @if (
+            shouldShowError(form.controls.firstName) &&
+            form.controls.firstName.errors?.['required']
+          ) {
+            <p-message severity="error" variant="simple">
+              First name is required.
+            </p-message>
+          }
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <label for="lastName">Last name</label>
+          <input
+            id="lastName"
+            type="text"
+            pInputText
+            [formControl]="form.controls.lastName"
+            [invalid]="shouldShowError(form.controls.lastName)"
+          />
+          @if (
+            shouldShowError(form.controls.lastName) &&
+            form.controls.lastName.errors?.['required']
+          ) {
+            <p-message severity="error" variant="simple">
+              Last name is required.
+            </p-message>
+          }
+        </div>
+      </div>
+
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div class="flex flex-col gap-1.5">
+          <label for="password">Password</label>
+          <p-password
+            inputId="password"
+            autocomplete="new-password"
+            [formControl]="form.controls.password"
+            [feedback]="true"
+            [toggleMask]="true"
+            fluid
+            [invalid]="shouldShowError(form.controls.password)"
+          />
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <label for="confirmPassword">Confirm password</label>
+          <p-password
+            inputId="confirmPassword"
+            autocomplete="new-password"
+            [formControl]="form.controls.confirmPassword"
+            [feedback]="false"
+            [toggleMask]="true"
+            fluid
+            [invalid]="shouldShowError(form.controls.confirmPassword)"
+          />
+        </div>
+      </div>
+
+      @if (form.touched && form.errors?.['passwordMismatch']) {
+        <p-message severity="error" variant="simple">Passwords do not match.</p-message>
+      }
+
+      @if (submitError()) {
+        <p-message severity="error">{{ submitError() }}</p-message>
+      }
+
+      <p-button
+        type="submit"
+        [label]="isSubmitting() ? 'Creating account...' : 'Create account'"
+        icon="pi pi-user-plus"
+        [loading]="isSubmitting()"
+        styleClass="w-full"
+      />
+    </form>
+  </app-auth-page>
+}

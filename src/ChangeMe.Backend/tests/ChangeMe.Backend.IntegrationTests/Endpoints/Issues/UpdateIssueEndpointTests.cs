@@ -19,7 +19,8 @@ public sealed class UpdateIssueEndpointTests(BackendWebApplicationFactory factor
   public async Task PutIssue_WhenRequestIsValid_ShouldUpdateIssueAndSynchronizeAcceptanceCriteria()
   {
     var cancellationToken = TestContext.Current.CancellationToken;
-    using var client = await TestAuthHelper.CreateAuthenticatedClientAsync(factory, cancellationToken);
+    var admin = await TestAuthHelper.CreateAdministratorUserAsync(factory, cancellationToken);
+    using var client = admin.Client;
 
     var issueId = await IssueTestHelper.SeedIssueAsync(
       factory,
@@ -90,7 +91,8 @@ public sealed class UpdateIssueEndpointTests(BackendWebApplicationFactory factor
   public async Task PutIssue_WhenVersionIsStale_ShouldReturnConflict()
   {
     var cancellationToken = TestContext.Current.CancellationToken;
-    using var client = await TestAuthHelper.CreateAuthenticatedClientAsync(factory, cancellationToken);
+    var admin = await TestAuthHelper.CreateAdministratorUserAsync(factory, cancellationToken);
+    using var client = admin.Client;
 
     var issueId = await IssueTestHelper.SeedIssueAsync(
       factory,

@@ -1,5 +1,6 @@
 using ChangeMe.Backend.Infrastructure.FileStorage;
 using ChangeMe.Backend.UseCases.Issues.Dtos;
+using ChangeMe.Backend.UseCases.Issues.Utils;
 
 namespace ChangeMe.Backend.UseCases.Issues;
 
@@ -16,6 +17,9 @@ public class GetIssueAttachmentContentHandler(
   {
     if (userAccessor.UserId is null)
       return Result<IssueAttachmentContentDto>.Unauthorized();
+
+    if (!IssueAuthorization.CanView(userAccessor))
+      return Result<IssueAttachmentContentDto>.Forbidden(IssueAuthorization.PermissionDeniedMessage);
 
     var attachment = await context.IssueAttachments
       .AsNoTracking()

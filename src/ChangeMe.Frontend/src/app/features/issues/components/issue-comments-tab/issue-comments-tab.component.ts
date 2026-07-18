@@ -16,8 +16,10 @@ import {
   Validators
 } from '@angular/forms';
 import { ToastService } from '@core/toast/services/toast.service';
+import { AuthService } from '@features/auth/services/auth.service';
 import { IssueCommentDto } from '@features/issues/models/issue.model';
 import { IssuesService } from '@features/issues/services/issues.service';
+import { canCommentOnIssue } from '@features/issues/utils/issue-permissions.utils';
 import { IssueCommentConstraints } from '@features/issues/utils/issue.utils';
 import {
   createIssueTabGridQuery,
@@ -40,8 +42,11 @@ type CommentForm = {
 })
 export class IssueCommentsTabComponent {
   readonly issueId = input.required<string>();
+  readonly createdBy = input.required<string>();
+  readonly assignedToUserId = input<string | null>();
 
   private readonly issuesService = inject(IssuesService);
+  private readonly authService = inject(AuthService);
   private readonly toastService = inject(ToastService);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -59,6 +64,13 @@ export class IssueCommentsTabComponent {
 
   readonly canShowMoreComments = computed(() =>
     hasMoreGridItems(this.comments().length, this.commentsTotalCount())
+  );
+
+  readonly canAddComment = computed(() =>
+    canCommentOnIssue(this.authService, {
+      createdBy: this.createdBy(),
+      assignedToUserId: this.assignedToUserId()
+    })
   );
 
   readonly commentForm = new FormGroup<CommentForm>({

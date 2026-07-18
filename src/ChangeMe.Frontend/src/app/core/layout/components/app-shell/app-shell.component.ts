@@ -37,6 +37,9 @@ export class AppShellComponent {
   readonly formatUserReference = formatUserReference;
   readonly isAuthenticated = this.authService.isAuthenticated;
   readonly showAuthenticatedChrome = computed(() => this.isAuthenticated());
+  readonly canViewIssueNotifications = computed(() =>
+    this.authService.hasPermission(PermissionCodes.issuesView)
+  );
   readonly isDesktop = toSignal(
     this.breakpointObserver
       .observe('(min-width: 768px)')
@@ -45,10 +48,33 @@ export class AppShellComponent {
   );
 
   readonly authenticatedNavItems = computed<LayoutNavItem[]>(() => {
-    const items: LayoutNavItem[] = [
-      { label: 'Issues list', icon: 'pi pi-list', routerLink: '/issues', exact: true },
-      { label: 'Create issue', icon: 'pi pi-plus', routerLink: '/issues/create' }
-    ];
+    const items: LayoutNavItem[] = [];
+
+    if (this.authService.hasPermission(PermissionCodes.issuesView)) {
+      items.push({
+        label: 'Issues list',
+        icon: 'pi pi-list',
+        routerLink: '/issues',
+        exact: true
+      });
+    }
+
+    if (this.authService.hasPermission(PermissionCodes.issuesCreate)) {
+      items.push({
+        label: 'Create issue',
+        icon: 'pi pi-plus',
+        routerLink: '/issues/create'
+      });
+    }
+
+    if (this.authService.hasPermission(PermissionCodes.usersInvite)) {
+      items.push({
+        label: 'Invitations',
+        icon: 'pi pi-envelope',
+        routerLink: '/invitations',
+        exact: true
+      });
+    }
 
     if (this.authService.hasPermission(PermissionCodes.usersView)) {
       items.push({

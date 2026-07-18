@@ -14,7 +14,8 @@ public sealed class DeleteIssueEndpointTests(BackendWebApplicationFactory factor
   public async Task DeleteIssue_WhenIssueExists_ShouldDeleteIssue()
   {
     var cancellationToken = TestContext.Current.CancellationToken;
-    using var client = await TestAuthHelper.CreateAuthenticatedClientAsync(factory, cancellationToken);
+    var admin = await TestAuthHelper.CreateAdministratorUserAsync(factory, cancellationToken);
+    using var client = admin.Client;
 
     var issueId = await IssueTestHelper.SeedIssueAsync(
       factory,

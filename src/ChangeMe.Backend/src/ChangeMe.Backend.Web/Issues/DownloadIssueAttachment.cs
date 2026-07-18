@@ -11,6 +11,7 @@ public class DownloadIssueAttachment(IMediator mediator) : EndpointWithoutReques
   {
     Get("/issues/{IssueId}/attachments/{AttachmentId}/content");
     Version(ApiVersionConfig.CurrentVersion);
+    Policies(PermissionCodes.IssuesView);
     AuthSchemes(JwtBearerDefaults.AuthenticationScheme);
     Summary(s => s.Summary = "Download issue attachment content");
   }

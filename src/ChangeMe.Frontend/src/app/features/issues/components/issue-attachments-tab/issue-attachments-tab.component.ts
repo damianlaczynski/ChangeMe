@@ -10,17 +10,19 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ToastService } from '@core/toast/services/toast.service';
+import { AuthService } from '@features/auth/services/auth.service';
 import { IssueAttachmentDto } from '@features/issues/models/issue.model';
 import { IssuesService } from '@features/issues/services/issues.service';
+import { canManageIssueAttachments } from '@features/issues/utils/issue-permissions.utils';
 import {
   getDeleteAttachmentConfirmMessage,
   issueAttachmentAccept
 } from '@features/issues/utils/issue.utils';
+import { formatFileSize } from '@shared/data/utils/file-size.utils';
 import {
   createIssueTabGridQuery,
   hasMoreGridItems
 } from '@shared/data/utils/grid.utils';
-import { formatFileSize } from '@shared/data/utils/file-size.utils';
 import { ConfirmationService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { FileUpload } from 'primeng/fileupload';
@@ -38,6 +40,7 @@ export class IssueAttachmentsTabComponent {
   readonly issueId = input.required<string>();
 
   private readonly issuesService = inject(IssuesService);
+  private readonly authService = inject(AuthService);
   private readonly toastService = inject(ToastService);
   private readonly confirmationService = inject(ConfirmationService);
   private readonly destroyRef = inject(DestroyRef);
@@ -60,6 +63,10 @@ export class IssueAttachmentsTabComponent {
 
   readonly canShowMoreAttachments = computed(() =>
     hasMoreGridItems(this.attachments().length, this.attachmentsTotalCount())
+  );
+
+  readonly canUploadAttachments = computed(() =>
+    canManageIssueAttachments(this.authService)
   );
 
   private lastLoadedIssueId: string | null = null;

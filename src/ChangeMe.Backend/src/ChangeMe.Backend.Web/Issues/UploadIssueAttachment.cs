@@ -18,6 +18,7 @@ public class UploadIssueAttachment(IMediator mediator) : Endpoint<UploadIssueAtt
   {
     Post("/issues/{IssueId}/attachments");
     Version(ApiVersionConfig.CurrentVersion);
+    Policies(PermissionCodes.IssuesManageAttachments);
     AllowFileUploads();
     AuthSchemes(JwtBearerDefaults.AuthenticationScheme);
     Summary(s => s.Summary = "Upload issue attachment");

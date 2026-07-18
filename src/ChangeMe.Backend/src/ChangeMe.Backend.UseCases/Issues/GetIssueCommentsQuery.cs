@@ -11,13 +11,17 @@ public sealed class GetIssueCommentsQuery : IQuery<GridResult<IssueCommentDto>>
   public GridQuery Grid { get; set; } = new();
 }
 
-public class GetIssueCommentsHandler(ApplicationDbContext context)
-  : IQueryHandler<GetIssueCommentsQuery, GridResult<IssueCommentDto>>
+public class GetIssueCommentsHandler(
+  ApplicationDbContext context,
+  IUserAccessor userAccessor) : IQueryHandler<GetIssueCommentsQuery, GridResult<IssueCommentDto>>
 {
   public async ValueTask<Result<GridResult<IssueCommentDto>>> Handle(
     GetIssueCommentsQuery query,
     CancellationToken cancellationToken)
   {
+    if (!IssueAuthorization.CanView(userAccessor))
+      return Result<GridResult<IssueCommentDto>>.Forbidden(IssueAuthorization.PermissionDeniedMessage);
+
     var issueExists = await context.Issues.AsNoTracking().AnyAsync(i => i.Id == query.IssueId, cancellationToken);
     if (!issueExists)
       return Result<GridResult<IssueCommentDto>>.NotFound();

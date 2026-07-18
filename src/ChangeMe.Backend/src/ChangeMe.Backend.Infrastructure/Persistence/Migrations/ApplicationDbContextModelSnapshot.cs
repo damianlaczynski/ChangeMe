@@ -23,6 +23,100 @@ namespace ChangeMe.Backend.Infrastructure.Persistence.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("ChangeMe.Backend.Domain.Aggregates.Invitations.Entities.InvitationRole", b =>
+                {
+                    b.Property<Guid>("InvitationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("RoleId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("InvitationId", "RoleId");
+
+                    b.ToTable("invitation_roles", "changeme_backend");
+                });
+
+            modelBuilder.Entity("ChangeMe.Backend.Domain.Aggregates.Invitations.Invitation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("AcceptedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(320)
+                        .HasColumnType("character varying(320)");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("FirstName")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<Guid>("InvitedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<string>("LastName")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("NormalizedEmail")
+                        .IsRequired()
+                        .HasMaxLength(320)
+                        .HasColumnType("character varying(320)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<string>("TokenHash")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<long>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasDefaultValue(0L);
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExpiresAt");
+
+                    b.HasIndex("Id");
+
+                    b.HasIndex("NormalizedEmail");
+
+                    b.HasIndex("Status");
+
+                    b.HasIndex("TokenHash")
+                        .IsUnique();
+
+                    b.ToTable("invitations", "changeme_backend");
+                });
+
             modelBuilder.Entity("ChangeMe.Backend.Domain.Aggregates.Issue.Entities.IssueAcceptanceCriterion", b =>
                 {
                     b.Property<Guid>("Id")
@@ -656,6 +750,15 @@ namespace ChangeMe.Backend.Infrastructure.Persistence.Migrations
                     b.HasDiscriminator().HasValue("Issue");
                 });
 
+            modelBuilder.Entity("ChangeMe.Backend.Domain.Aggregates.Invitations.Entities.InvitationRole", b =>
+                {
+                    b.HasOne("ChangeMe.Backend.Domain.Aggregates.Invitations.Invitation", null)
+                        .WithMany("Roles")
+                        .HasForeignKey("InvitationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("ChangeMe.Backend.Domain.Aggregates.Issue.Entities.IssueAcceptanceCriterion", b =>
                 {
                     b.HasOne("ChangeMe.Backend.Domain.Aggregates.Issue.Issue", null)
@@ -729,6 +832,11 @@ namespace ChangeMe.Backend.Infrastructure.Persistence.Migrations
                         .HasForeignKey("OwnerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("ChangeMe.Backend.Domain.Aggregates.Invitations.Invitation", b =>
+                {
+                    b.Navigation("Roles");
                 });
 
             modelBuilder.Entity("ChangeMe.Backend.Domain.Aggregates.Issue.Issue", b =>

@@ -1,5 +1,6 @@
 using ChangeMe.Backend.UseCases.Issues.Dtos;
 using ChangeMe.Backend.UseCases.Issues.Services;
+using ChangeMe.Backend.UseCases.Issues.Utils;
 
 namespace ChangeMe.Backend.UseCases.Issues;
 
@@ -24,6 +25,9 @@ public class AddIssueCommentHandler(
 
     if (issue is null)
       return Result.NotFound();
+
+    if (!IssueAuthorization.CanComment(userAccessor, issue, actorUserId))
+      return Result.Forbidden(IssueAuthorization.PermissionDeniedMessage);
 
     var commentResult = issue.AddComment(command.Content);
     if (!commentResult.IsSuccess)

@@ -2,8 +2,10 @@ using Ardalis.Result;
 using ChangeMe.Backend.Domain.Aggregates.Issue.Enums;
 using ChangeMe.Backend.Domain.Aggregates.Notifications;
 using ChangeMe.Backend.Domain.Aggregates.Notifications.Enums;
+using ChangeMe.Backend.Domain.Authorization;
 using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.Infrastructure.Email;
+using ChangeMe.Backend.UseCases.Issues.Utils;
 using Microsoft.Extensions.Options;
 
 namespace ChangeMe.Backend.UseCases.Issues.Services;
@@ -32,11 +34,13 @@ public class IssueNotificationService(
     if (issue is null || historyEntry is null)
       return;
 
-    var recipientIds = issue.Watchers
-      .Select(w => w.UserId)
-      .Where(userId => userId != actorUserId)
-      .Distinct()
-      .ToList();
+    var recipientIds = await IssuesUtils.FilterUserIdsWithPermissionAsync(
+      context,
+      issue.Watchers
+        .Select(w => w.UserId)
+        .Where(userId => userId != actorUserId),
+      PermissionCodes.IssuesView,
+      cancellationToken);
 
     if (recipientIds.Count == 0)
       return;
@@ -119,11 +123,13 @@ public class IssueNotificationService(
     if (issue is null || comment is null)
       return;
 
-    var recipientIds = issue.Watchers
-      .Select(w => w.UserId)
-      .Where(userId => userId != actorUserId)
-      .Distinct()
-      .ToList();
+    var recipientIds = await IssuesUtils.FilterUserIdsWithPermissionAsync(
+      context,
+      issue.Watchers
+        .Select(w => w.UserId)
+        .Where(userId => userId != actorUserId),
+      PermissionCodes.IssuesView,
+      cancellationToken);
 
     if (recipientIds.Count == 0)
       return;

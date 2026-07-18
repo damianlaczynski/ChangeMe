@@ -4,7 +4,7 @@ title: Issue Attachments
 domain: issues
 type: functional
 status: active
-depends_on: [FR-ISS-003, FR-ISS-004]
+depends_on: [FR-ISS-003, FR-ISS-004, FR-ISS-007]
 inherits_conventions:
   [STD-ACC-001, STD-LST-002, STD-MSG-001, STD-OP-001, STD-VAL-001]
 inherits_quality:
@@ -19,8 +19,9 @@ Authenticated users must be able to attach files to an issue, review them, downl
 
 ### Authorization
 
-- Available only to authenticated users (same as FR-ISS-003).
-- **Delete** is available only to the user who **uploaded** the attachment.
+- Upload: **Issues.ManageAttachments** (FR-ISS-007).
+- Download: **Issues.View** (FR-ISS-007).
+- **Delete**: **Issues.ManageAttachments** and the acting user must be **uploaded by** on that attachment.
 
 ### Data
 

@@ -6,6 +6,7 @@ public class WatchIssue(IMediator mediator) : BaseEndpoint<WatchIssueCommand, Is
 {
   protected override void ConfigureEndpoint()
   {
+    RequirePermission(PermissionCodes.IssuesView);
     Post("/issues/{issueId}/watch");
     Summary(s =>
     {
@@ -19,6 +20,7 @@ public class UnwatchIssue(IMediator mediator) : BaseEndpoint<UnwatchIssueCommand
 {
   protected override void ConfigureEndpoint()
   {
+    RequirePermission(PermissionCodes.IssuesView);
     Delete("/issues/{issueId}/watch");
     Summary(s =>
     {

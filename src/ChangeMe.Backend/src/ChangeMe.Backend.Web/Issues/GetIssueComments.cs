@@ -9,6 +9,7 @@ public class GetIssueComments(IMediator mediator)
 {
   protected override void ConfigureEndpoint()
   {
+    RequirePermission(PermissionCodes.IssuesView);
     Get("/issues/{IssueId}/comments");
     Summary(s => s.Summary = "Get issue comments");
   }

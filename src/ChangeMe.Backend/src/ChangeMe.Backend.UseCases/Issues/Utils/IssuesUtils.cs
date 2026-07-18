@@ -1,5 +1,7 @@
 using ChangeMe.Backend.Domain.Aggregates.Issue;
 using ChangeMe.Backend.Domain.Aggregates.Issue.Enums;
+using ChangeMe.Backend.Domain.Authorization;
+
 namespace ChangeMe.Backend.UseCases.Issues.Utils;
 
 public static class IssuesUtils
@@ -82,4 +84,24 @@ public static class IssuesUtils
       IssueHistoryEventType.ACCEPTANCE_CRITERION_REMOVED or
       IssueHistoryEventType.ATTACHMENT_ADDED or
       IssueHistoryEventType.ATTACHMENT_REMOVED;
+
+  public static async Task<HashSet<Guid>> FilterUserIdsWithPermissionAsync(
+    ApplicationDbContext context,
+    IEnumerable<Guid> userIds,
+    string permissionCode,
+    CancellationToken cancellationToken)
+  {
+    var distinctUserIds = userIds.Distinct().ToList();
+    if (distinctUserIds.Count == 0)
+      return [];
+
+    var matchingUserIds = await context.Users
+      .AsNoTracking()
+      .Where(u => distinctUserIds.Contains(u.Id) && !u.Deactivated)
+      .Where(u => u.Roles.Any(ur => ur.Role.Permissions.Any(p => p.PermissionCode == permissionCode)))
+      .Select(u => u.Id)
+      .ToListAsync(cancellationToken);
+
+    return matchingUserIds.ToHashSet();
+  }
 }

@@ -29,7 +29,7 @@ public sealed class GetAssignableUsersHandlerTests
     await context.Users.AddRangeAsync(activeUser, deactivatedUser);
     await context.SaveChangesAsync(cancellationToken);
 
-    var handler = new GetAssignableUsersHandler(context);
+    var handler = new GetAssignableUsersHandler(context, new FakeUserAccessor());
     var result = await handler.Handle(new GetAssignableUsersQuery(), cancellationToken);
 
     Assert.True(result.IsSuccess);

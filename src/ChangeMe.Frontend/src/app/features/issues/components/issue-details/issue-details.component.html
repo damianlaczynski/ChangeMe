@@ -6,35 +6,43 @@
   <div class="mb-4 flex flex-wrap items-center gap-2">
     <app-back-button label="Back to issues list" [route]="['/issues']" />
     @if (issue(); as currentIssue) {
-      <p-button
-        label="Edit"
-        icon="pi pi-pencil"
-        severity="secondary"
-        [outlined]="true"
-        size="small"
-        [routerLink]="['/issues', currentIssue.id, 'edit']"
-      />
-      <p-button
-        [label]="currentIssue.watchersCount.toString()"
-        [icon]="currentIssue.isWatchedByCurrentUser ? 'pi pi-bell-slash' : 'pi pi-bell'"
-        [severity]="currentIssue.isWatchedByCurrentUser ? 'success' : 'secondary'"
-        [outlined]="!currentIssue.isWatchedByCurrentUser"
-        size="small"
-        [loading]="isTogglingWatch()"
-        [pTooltip]="getWatchTooltip(currentIssue)"
-        tooltipPosition="top"
-        [attr.aria-label]="getWatchTooltip(currentIssue)"
-        (onClick)="toggleWatch()"
-      />
-      <p-button
-        label="Delete"
-        icon="pi pi-trash"
-        severity="danger"
-        [outlined]="true"
-        size="small"
-        [loading]="isDeleting()"
-        (onClick)="confirmDeleteIssue()"
-      />
+      @if (canEditIssue()) {
+        <p-button
+          label="Edit"
+          icon="pi pi-pencil"
+          severity="secondary"
+          [outlined]="true"
+          size="small"
+          [routerLink]="['/issues', currentIssue.id, 'edit']"
+        />
+      }
+      @if (canWatchIssue()) {
+        <p-button
+          [label]="currentIssue.watchersCount.toString()"
+          [icon]="
+            currentIssue.isWatchedByCurrentUser ? 'pi pi-bell-slash' : 'pi pi-bell'
+          "
+          [severity]="currentIssue.isWatchedByCurrentUser ? 'success' : 'secondary'"
+          [outlined]="!currentIssue.isWatchedByCurrentUser"
+          size="small"
+          [loading]="isTogglingWatch()"
+          [pTooltip]="getWatchTooltip(currentIssue)"
+          tooltipPosition="top"
+          [attr.aria-label]="getWatchTooltip(currentIssue)"
+          (onClick)="toggleWatch()"
+        />
+      }
+      @if (canDeleteIssue()) {
+        <p-button
+          label="Delete"
+          icon="pi pi-trash"
+          severity="danger"
+          [outlined]="true"
+          size="small"
+          [loading]="isDeleting()"
+          (onClick)="confirmDeleteIssue()"
+        />
+      }
     }
   </div>
 
@@ -130,7 +138,11 @@
         <p-tabpanels>
           <p-tabpanel value="comments">
             @if (activeTab() === 'comments') {
-              <app-issue-comments-tab [issueId]="currentIssue.id" />
+              <app-issue-comments-tab
+                [issueId]="currentIssue.id"
+                [createdBy]="currentIssue.createdBy"
+                [assignedToUserId]="currentIssue.assignedToUserId"
+              />
             }
           </p-tabpanel>
 

@@ -11,13 +11,17 @@ public sealed class GetIssueHistoryQuery : IQuery<GridResult<IssueHistoryEntryDt
   public GridQuery Grid { get; set; } = new();
 }
 
-public class GetIssueHistoryHandler(ApplicationDbContext context)
-  : IQueryHandler<GetIssueHistoryQuery, GridResult<IssueHistoryEntryDto>>
+public class GetIssueHistoryHandler(
+  ApplicationDbContext context,
+  IUserAccessor userAccessor) : IQueryHandler<GetIssueHistoryQuery, GridResult<IssueHistoryEntryDto>>
 {
   public async ValueTask<Result<GridResult<IssueHistoryEntryDto>>> Handle(
     GetIssueHistoryQuery query,
     CancellationToken cancellationToken)
   {
+    if (!IssueAuthorization.CanView(userAccessor))
+      return Result<GridResult<IssueHistoryEntryDto>>.Forbidden(IssueAuthorization.PermissionDeniedMessage);
+
     var issueExists = await context.Issues.AsNoTracking().AnyAsync(i => i.Id == query.IssueId, cancellationToken);
     if (!issueExists)
       return Result<GridResult<IssueHistoryEntryDto>>.NotFound();

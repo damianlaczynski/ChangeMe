@@ -4,7 +4,7 @@ title: Notification Bell and Dropdown
 domain: issues
 type: functional
 status: active
-depends_on: [FR-ISS-004]
+depends_on: [FR-ISS-004, FR-ISS-007]
 inherits_conventions: [STD-ACC-001, STD-LST-002, STD-MSG-001]
 inherits_quality:
   [NFR-QUAL-001, NFR-A11Y-001, NFR-I18N-001, NFR-PERF-001, NFR-RSP-001]
@@ -17,6 +17,11 @@ The user must be able to review new and historical notifications related to watc
 There is no separate notifications area in the application navigation.
 
 ## Functional requirements
+
+### Authorization
+
+- Notification bell and dropdown: **Issues.View** (FR-ISS-007).
+- Opening a notification to issue details requires **Issues.View** on the linked issue.
 
 ### Data
 

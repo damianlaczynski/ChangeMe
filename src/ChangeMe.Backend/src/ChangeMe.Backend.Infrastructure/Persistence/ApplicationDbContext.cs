@@ -1,4 +1,6 @@
 using System.Reflection;
+using ChangeMe.Backend.Domain.Aggregates.Invitations;
+using ChangeMe.Backend.Domain.Aggregates.Invitations.Entities;
 using ChangeMe.Backend.Domain.Aggregates.Issue;
 using ChangeMe.Backend.Domain.Aggregates.Issue.Entities;
 using ChangeMe.Backend.Domain.Common.Attachments;
@@ -23,6 +25,8 @@ public class ApplicationDbContext(
   public DbSet<IssueAttachment> IssueAttachments => Set<IssueAttachment>();
   public DbSet<IssueHistoryEntry> IssueHistoryEntries => Set<IssueHistoryEntry>();
   public DbSet<IssueWatcher> IssueWatchers => Set<IssueWatcher>();
+  public DbSet<Invitation> Invitations => Set<Invitation>();
+  public DbSet<InvitationRole> InvitationRoles => Set<InvitationRole>();
   public DbSet<Notification> Notifications => Set<Notification>();
   public DbSet<User> Users => Set<User>();
   public DbSet<Role> Roles => Set<Role>();

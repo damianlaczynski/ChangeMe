@@ -32,7 +32,7 @@ On first startup, the system ensures these roles exist:
 | Role              | Permissions                                        |
 | ----------------- | -------------------------------------------------- |
 | **Administrator** | All permissions from FR-ROL-001.                   |
-| **User**          | **Sessions.ViewOwn**, **Sessions.ManageOwn** only. |
+| **User**          | **Sessions.ViewOwn**, **Sessions.ManageOwn**, **Issues.View**, **Issues.Create**, **Issues.Comment**. |
 
 ### Operations
 

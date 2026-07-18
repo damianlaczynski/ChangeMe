@@ -4,7 +4,7 @@ title: Watching Issues and Push / Email Notifications
 domain: issues
 type: functional
 status: active
-depends_on: [FR-ISS-002, FR-ISS-006]
+depends_on: [FR-ISS-002, FR-ISS-006, FR-ISS-007]
 inherits_conventions: [STD-ACC-001, STD-MSG-001]
 inherits_quality:
   [NFR-QUAL-001, NFR-A11Y-001, NFR-I18N-001, NFR-PERF-001, NFR-RSP-001]
@@ -15,6 +15,11 @@ inherits_quality:
 The user must be able to watch selected issues and receive in-app push notifications and email about related activity.
 
 ## Functional requirements
+
+### Authorization
+
+- Watch or unwatch: **Issues.View** (FR-ISS-007).
+- Notifications are delivered only to watchers with **Issues.View** at delivery time (FR-ISS-007).
 
 ### Operations
 

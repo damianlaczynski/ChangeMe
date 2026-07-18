@@ -4,7 +4,7 @@ title: Issue List
 domain: issues
 type: functional
 status: active
-depends_on: [FR-AUTH-001, FR-USR-005]
+depends_on: [FR-AUTH-001, FR-USR-005, FR-ISS-007]
 inherits_conventions: [STD-ACC-001, STD-LST-001, STD-MSG-001, STD-OP-001]
 inherits_quality:
   [NFR-QUAL-001, NFR-A11Y-001, NFR-I18N-001, NFR-PERF-001, NFR-RSP-001]
@@ -18,7 +18,12 @@ The user must be able to browse all issues, search, filter, sort, open details, 
 
 ### Authorization
 
-- Available only to authenticated users (FR-AUTH-001).
+- **Issues** navigation: **Issues.View** or **Issues.Create** (FR-ISS-007).
+- Browse, search, filter, sort, and open details: **Issues.View**.
+- Create: **Issues.Create** (FR-ISS-002).
+- Edit: **Issues.Edit**, with author and assignee overrides per FR-ISS-007.
+- Delete: **Issues.Delete**.
+- Watch or unwatch: **Issues.View** (FR-ISS-004).
 
 ### Data
 

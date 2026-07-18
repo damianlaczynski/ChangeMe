@@ -9,6 +9,7 @@ public class CreateIssue(IMediator mediator) : BaseEndpoint<CreateIssueCommand, 
 {
   protected override void ConfigureEndpoint()
   {
+    RequirePermission(PermissionCodes.IssuesCreate);
     Post("/issues");
     Summary(s =>
     {

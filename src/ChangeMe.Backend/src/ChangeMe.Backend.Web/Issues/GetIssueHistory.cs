@@ -9,6 +9,7 @@ public class GetIssueHistory(IMediator mediator)
 {
   protected override void ConfigureEndpoint()
   {
+    RequirePermission(PermissionCodes.IssuesView);
     Get("/issues/{IssueId}/history");
     Summary(s => s.Summary = "Get issue history");
   }

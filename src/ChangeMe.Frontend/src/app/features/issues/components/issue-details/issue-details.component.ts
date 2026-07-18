@@ -11,11 +11,17 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ToastService } from '@core/toast/services/toast.service';
+import { AuthService } from '@features/auth/services/auth.service';
 import { IssueAttachmentsTabComponent } from '@features/issues/components/issue-attachments-tab/issue-attachments-tab.component';
 import { IssueCommentsTabComponent } from '@features/issues/components/issue-comments-tab/issue-comments-tab.component';
 import { IssueHistoryTabComponent } from '@features/issues/components/issue-history-tab/issue-history-tab.component';
 import { IssueDetailsDto } from '@features/issues/models/issue.model';
 import { IssuesService } from '@features/issues/services/issues.service';
+import {
+  canDeleteIssues,
+  canEditAnyIssueField,
+  canWatchIssues
+} from '@features/issues/utils/issue-permissions.utils';
 import {
   getDeleteIssueConfirmMessage,
   getIssuePriorityLabel,
@@ -74,6 +80,7 @@ export class IssueDetailsComponent {
   readonly id = input<string>();
 
   private readonly issuesService = inject(IssuesService);
+  private readonly authService = inject(AuthService);
   private readonly confirmationService = inject(ConfirmationService);
   private readonly toastService = inject(ToastService);
   private readonly route = inject(ActivatedRoute);
@@ -87,6 +94,12 @@ export class IssueDetailsComponent {
 
   readonly issue = signal<IssueDetailsDto | null>(null);
   readonly pageTitle = computed(() => this.issue()?.title ?? 'Issue Details');
+  readonly canEditIssue = computed(() => {
+    const currentIssue = this.issue();
+    return currentIssue ? canEditAnyIssueField(this.authService, currentIssue) : false;
+  });
+  readonly canDeleteIssue = computed(() => canDeleteIssues(this.authService));
+  readonly canWatchIssue = computed(() => canWatchIssues(this.authService));
   readonly isLoading = signal(true);
   readonly loadError = signal<string | null>(null);
   readonly isTogglingWatch = signal(false);

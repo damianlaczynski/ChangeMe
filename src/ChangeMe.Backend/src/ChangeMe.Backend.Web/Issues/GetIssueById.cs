@@ -7,6 +7,7 @@ public class GetIssueById(IMediator _mediator) : BaseEndpoint<GetIssueByIdQuery,
 {
   protected override void ConfigureEndpoint()
   {
+    RequirePermission(PermissionCodes.IssuesView);
     Get("/issues/{id}");
     Summary(s =>
     {

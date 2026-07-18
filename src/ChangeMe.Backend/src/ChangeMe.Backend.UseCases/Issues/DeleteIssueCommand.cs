@@ -1,4 +1,5 @@
 using ChangeMe.Backend.Infrastructure.FileStorage;
+using ChangeMe.Backend.UseCases.Issues.Utils;
 
 namespace ChangeMe.Backend.UseCases.Issues;
 
@@ -7,10 +8,14 @@ public record DeleteIssueCommand(
 
 public class DeleteIssueHandler(
   ApplicationDbContext context,
+  IUserAccessor userAccessor,
   IFileStorageService fileStorageService) : ICommandHandler<DeleteIssueCommand, Guid>
 {
   public async ValueTask<Result<Guid>> Handle(DeleteIssueCommand command, CancellationToken cancellationToken)
   {
+    if (!IssueAuthorization.CanDelete(userAccessor))
+      return Result<Guid>.Forbidden(IssueAuthorization.PermissionDeniedMessage);
+
     var issue = await context.Issues
       .Include(i => i.Attachments)
       .FirstOrDefaultAsync(i => i.Id == command.Id, cancellationToken);

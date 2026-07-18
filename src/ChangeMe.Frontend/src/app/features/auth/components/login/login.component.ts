@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -9,6 +9,7 @@ import { ActivatedRoute } from '@angular/router';
 import { AuthPageComponent } from '@features/auth/components/auth-page/auth-page.component';
 import { AuthService } from '@features/auth/services/auth.service';
 import { AuthConstraints, AuthMessages } from '@features/auth/utils/auth.utils';
+import { InvitationMessages } from '@features/invitations/utils/invitations.utils';
 import { Button } from 'primeng/button';
 import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
@@ -27,11 +28,12 @@ import { Password } from 'primeng/password';
   ],
   templateUrl: './login.component.html'
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly route = inject(ActivatedRoute);
 
   readonly errorMessage = signal('');
+  readonly successMessage = signal('');
   readonly isSubmitting = signal(false);
   readonly authConstraints = AuthConstraints;
 
@@ -53,6 +55,12 @@ export class LoginComponent {
       ]
     })
   });
+
+  ngOnInit(): void {
+    if (this.route.snapshot.queryParamMap.get('accepted') === 'true') {
+      this.successMessage.set(InvitationMessages.accountCreated);
+    }
+  }
 
   onSubmit(): void {
     if (this.form.invalid || this.isSubmitting()) {

@@ -6,6 +6,7 @@ public class DeleteIssue(IMediator _mediator) : BaseEndpoint<DeleteIssueCommand,
 {
   protected override void ConfigureEndpoint()
   {
+    RequirePermission(PermissionCodes.IssuesDelete);
     Delete("/issues/{id}");
     Summary(s =>
     {

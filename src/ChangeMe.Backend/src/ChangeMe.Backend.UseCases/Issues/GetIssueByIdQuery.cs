@@ -11,6 +11,9 @@ public class GetIssueByIdHandler(
 {
   public async ValueTask<Result<IssueDetailsDto>> Handle(GetIssueByIdQuery query, CancellationToken cancellationToken)
   {
+    if (!IssueAuthorization.CanView(userAccessor))
+      return Result.Forbidden(IssueAuthorization.PermissionDeniedMessage);
+
     var issue = await context.Issues
       .AsNoTracking()
       .Include(i => i.AcceptanceCriteria)

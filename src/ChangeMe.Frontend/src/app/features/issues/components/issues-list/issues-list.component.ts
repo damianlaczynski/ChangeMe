@@ -10,8 +10,16 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { ToastService } from '@core/toast/services/toast.service';
+import { AuthService } from '@features/auth/services/auth.service';
 import { IssueAssignableUserDto, IssueDto } from '@features/issues/models/issue.model';
 import { IssuesService } from '@features/issues/services/issues.service';
+import {
+  canCreateIssues,
+  canDeleteIssues,
+  canEditAnyIssueField,
+  canViewIssues,
+  canWatchIssues
+} from '@features/issues/utils/issue-permissions.utils';
 import {
   getDeleteIssueConfirmMessage,
   getIssuePriorityLabel,
@@ -58,6 +66,7 @@ import { Tooltip } from 'primeng/tooltip';
 })
 export class IssuesComponent {
   private readonly issuesService = inject(IssuesService);
+  private readonly authService = inject(AuthService);
   private readonly confirmationService = inject(ConfirmationService);
   private readonly toastService = inject(ToastService);
   private readonly gridFactory = inject(GridResourceFactory);
@@ -77,6 +86,10 @@ export class IssuesComponent {
   private readonly issueActionsMenu = viewChild.required<Menu>('issueActionsMenu');
 
   readonly grid: GridResource<IssueDto>;
+
+  readonly canCreateIssues = computed(() => canCreateIssues(this.authService));
+  readonly canViewIssues = computed(() => canViewIssues(this.authService));
+  readonly canWatchIssues = computed(() => canWatchIssues(this.authService));
 
   readonly assignedToFilter = computed<GridColumnFilter>(() => ({
     type: 'enum',
@@ -110,26 +123,43 @@ export class IssuesComponent {
   }
 
   openIssueActionsMenu(event: Event, issue: IssueDto): void {
-    this.issueActionItems.set([
-      {
+    const items: MenuItem[] = [];
+
+    if (this.canViewIssues()) {
+      items.push({
         label: 'Open details',
         icon: 'pi pi-eye',
         routerLink: ['/issues', issue.id]
-      },
-      { separator: true },
-      {
+      });
+    }
+
+    if (canEditAnyIssueField(this.authService, issue)) {
+      if (items.length > 0) {
+        items.push({ separator: true });
+      }
+
+      items.push({
         label: 'Edit issue',
         icon: 'pi pi-pencil',
         routerLink: ['/issues', issue.id, 'edit']
-      },
-      {
+      });
+    }
+
+    if (canDeleteIssues(this.authService)) {
+      if (items.length > 0 && !items.at(-1)?.separator) {
+        items.push({ separator: true });
+      }
+
+      items.push({
         label: 'Delete issue',
         icon: 'pi pi-trash',
         ...issueDeleteMenuItemDangerClasses,
         disabled: this.isDeletePending(issue.id),
         command: () => this.confirmDeleteIssue(issue)
-      }
-    ]);
+      });
+    }
+
+    this.issueActionItems.set(items);
     this.issueActionsMenu().toggle(event);
   }
 
@@ -189,6 +219,14 @@ export class IssuesComponent {
 
   isWatchPending(issueId: string): boolean {
     return this.pendingWatchIssueIds().includes(issueId);
+  }
+
+  canShowIssueActions(issue: IssueDto): boolean {
+    return (
+      this.canViewIssues() ||
+      canEditAnyIssueField(this.authService, issue) ||
+      canDeleteIssues(this.authService)
+    );
   }
 
   private deleteIssue(issue: IssueDto): void {

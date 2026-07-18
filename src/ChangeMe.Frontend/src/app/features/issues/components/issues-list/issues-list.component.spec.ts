@@ -2,10 +2,11 @@ import { computed, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { ToastService } from '@core/toast/services/toast.service';
+import { AuthService } from '@features/auth/services/auth.service';
 import { IssueDto } from '@features/issues/models/issue.model';
 import { IssuesService } from '@features/issues/services/issues.service';
-import { GridResourceFactory, type GridResource } from '@query-grid/primeng';
 import type { GridQuery } from '@query-grid/core';
+import { GridResourceFactory, type GridResource } from '@query-grid/primeng';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { of } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -51,8 +52,17 @@ describe('IssuesComponent', () => {
     getAssignableUsers: ReturnType<typeof vi.fn>;
   };
 
+  let authServiceMock: {
+    hasPermission: ReturnType<typeof vi.fn>;
+    currentUser: ReturnType<typeof vi.fn>;
+  };
+
   beforeEach(async () => {
     mockGrid = createMockGrid();
+    authServiceMock = {
+      hasPermission: vi.fn(() => true),
+      currentUser: vi.fn(() => ({ id: 'user-1' }))
+    };
     issuesService = {
       getAllIssues: vi.fn(() =>
         of({
@@ -79,6 +89,10 @@ describe('IssuesComponent', () => {
         {
           provide: GridResourceFactory,
           useValue: { create: () => mockGrid }
+        },
+        {
+          provide: AuthService,
+          useValue: authServiceMock
         }
       ]
     }).compileComponents();
@@ -102,5 +116,15 @@ describe('IssuesComponent', () => {
   it('surfaces grid errors as a message', () => {
     mockGrid.error.set(new Error('Boom'));
     expect(component.errorMessage()).toBe('Boom');
+  });
+
+  it('hides create action without Issues.Create permission', () => {
+    authServiceMock.hasPermission.mockImplementation(
+      (code: string) => code !== 'Issues.Create'
+    );
+    const localFixture = TestBed.createComponent(IssuesComponent);
+    const localComponent = localFixture.componentInstance;
+    localFixture.detectChanges();
+    expect(localComponent.canCreateIssues()).toBe(false);
   });
 });

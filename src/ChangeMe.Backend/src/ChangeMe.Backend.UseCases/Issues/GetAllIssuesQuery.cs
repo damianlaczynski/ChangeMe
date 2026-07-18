@@ -1,5 +1,6 @@
 using ChangeMe.Backend.Domain.Aggregates.Users;
 using ChangeMe.Backend.UseCases.Issues.Dtos;
+using ChangeMe.Backend.UseCases.Issues.Utils;
 using QueryGrid.Abstractions;
 using QueryGrid.EntityFrameworkCore;
 
@@ -18,6 +19,9 @@ public class GetAllIssuesHandler(
   {
     if (userAccessor.UserId is not Guid currentUserId)
       return Result.Unauthorized();
+
+    if (!IssueAuthorization.CanView(userAccessor))
+      return Result.Forbidden(IssueAuthorization.PermissionDeniedMessage);
 
     var projectedIssues = context.Issues
       .AsNoTracking()

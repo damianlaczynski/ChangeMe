@@ -31,6 +31,13 @@ The catalog contains exactly these permissions:
 | **Sessions.ManageOwn** | Manage own sessions  | Revoke non-current own sessions and use **Sign out everywhere**.              | Sessions |
 | **Sessions.ViewAny**   | View user sessions   | View active sessions of any user in **User details**.                         | Sessions |
 | **Sessions.ManageAny** | Manage user sessions | Revoke sessions of any user, including **Revoke all sessions**.               | Sessions |
+| **Users.Invite**       | Invite users         | Create, list, resend, and revoke user invitations.                            | Users    |
+| **Issues.View**        | View issues          | View the issues list, details, comments, history, and download attachments.   | Issues   |
+| **Issues.Create**      | Create issues        | Create new issues.                                                            | Issues   |
+| **Issues.Edit**        | Edit issues          | Edit any issue's core fields and assignee.                                    | Issues   |
+| **Issues.Delete**      | Delete issues        | Delete issues.                                                                | Issues   |
+| **Issues.Comment**     | Comment on issues    | Add comments on any issue.                                                    | Issues   |
+| **Issues.ManageAttachments** | Manage issue attachments | Upload attachments and delete attachments the user uploaded.          | Issues   |
 
 - New permissions are added only by updating requirements and a subsequent release; administrators cannot create new permission codes in the UI.
 
@@ -49,11 +56,12 @@ The catalog contains exactly these permissions:
 ### Business rules
 
 - Users with **Deactivated** true cannot sign in and have no effective permissions (FR-USR-005).
-- Permission names in FR-ROL-001 control capability access across **Users**, **Roles**, **Auth**, and **Sessions** specifications.
+- Permission names in FR-ROL-001 control capability access across **Users**, **Roles**, **Auth**, **Sessions**, **Issues**, and **Invitations** specifications.
+- Issue permission usage and participant overrides: FR-ISS-007.
 
 ## Out of scope
 
-- Issue-level permissions. Issues remain available to all authenticated users with **Deactivated** false until a separate functional specification introduces issue permissions.
+- Custom permission codes created by administrators in the UI.
 
 ## Quality requirements
 

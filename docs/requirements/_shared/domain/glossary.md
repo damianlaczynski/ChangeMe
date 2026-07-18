@@ -24,8 +24,17 @@ The following terms describe observable account state, not implementation detail
 | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
 | **Profile email** | The **current email** on the ChangeMe account; used for sign-in and display. Shown as **Email** on **My account** and admin screens. |
 
+## User invitations
+
+| Term                  | Meaning                                                                                                                              |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| **Invitation**        | Administrator-initiated request for a person to create an account by accepting a time-limited link (FR-INV-001).                     |
+| **Invitation status** | **Pending**, **Accepted**, **Expired**, or **Revoked**; see FR-INV-001 for transitions.                                             |
+| **Accept invitation** | Guest flow where the invitee sets profile and password and the system creates an active account with assigned roles (FR-INV-001).   |
+
 ## Cross-references
 
 - Login and sessions: FR-AUTH-001
 - User administration: `docs/requirements/functional/users/`
+- User invitations: `docs/requirements/functional/invitations/fr-inv-001-user-invitations.md` (`FR-INV-001`)
 - Account model (admin UI): `docs/requirements/_shared/domain/account-model.md`

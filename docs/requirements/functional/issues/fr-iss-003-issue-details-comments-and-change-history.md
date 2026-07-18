@@ -4,7 +4,7 @@ title: Issue Details, Comments, and Change History
 domain: issues
 type: functional
 status: active
-depends_on: [FR-ISS-002, FR-ISS-004, FR-ISS-006]
+depends_on: [FR-ISS-002, FR-ISS-004, FR-ISS-006, FR-ISS-007]
 inherits_conventions:
   [STD-ACC-001, STD-LST-002, STD-MSG-001, STD-OP-001, STD-VAL-001]
 inherits_quality:
@@ -19,7 +19,11 @@ The user must be able to review full issue data, add comments, track change hist
 
 ### Authorization
 
-- Available only to authenticated users.
+- View details, comments, and history: **Issues.View** (FR-ISS-007).
+- Edit: **Issues.Edit**, with author and assignee overrides per FR-ISS-007.
+- Delete: **Issues.Delete**.
+- Add comment: **Issues.Comment**, with author override per FR-ISS-007.
+- Watch or unwatch: **Issues.View** (FR-ISS-004).
 
 ### Data
 

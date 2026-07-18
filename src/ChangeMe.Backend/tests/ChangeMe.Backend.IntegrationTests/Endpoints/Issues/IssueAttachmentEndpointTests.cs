@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
 using ChangeMe.Backend.Domain.Aggregates.Issue;
+using ChangeMe.Backend.Domain.Authorization;
 using ChangeMe.Backend.Domain.Aggregates.Issue.Enums;
 using ChangeMe.Backend.Infrastructure.FileStorage;
 using ChangeMe.Backend.Infrastructure.Persistence;
@@ -21,7 +22,8 @@ public sealed class IssueAttachmentEndpointTests(BackendWebApplicationFactory fa
   public async Task UploadIssueAttachment_WhenRequestIsValid_ShouldPersistAttachmentAndHistory()
   {
     var cancellationToken = TestContext.Current.CancellationToken;
-    using var client = await TestAuthHelper.CreateAuthenticatedClientAsync(factory, cancellationToken);
+    var admin = await TestAuthHelper.CreateAdministratorUserAsync(factory, cancellationToken);
+    using var client = admin.Client;
 
     var issueId = await IssueTestHelper.SeedIssueAsync(
       factory,
@@ -55,7 +57,8 @@ public sealed class IssueAttachmentEndpointTests(BackendWebApplicationFactory fa
   public async Task UploadIssueAttachment_WhenContentDoesNotMatchExtension_ShouldReturnBadRequest()
   {
     var cancellationToken = TestContext.Current.CancellationToken;
-    using var client = await TestAuthHelper.CreateAuthenticatedClientAsync(factory, cancellationToken);
+    var admin = await TestAuthHelper.CreateAdministratorUserAsync(factory, cancellationToken);
+    using var client = admin.Client;
 
     var issueId = await IssueTestHelper.SeedIssueAsync(
       factory,
@@ -76,7 +79,8 @@ public sealed class IssueAttachmentEndpointTests(BackendWebApplicationFactory fa
   public async Task UploadIssueAttachment_WhenTextExtensionContainsPdfContent_ShouldReturnBadRequest()
   {
     var cancellationToken = TestContext.Current.CancellationToken;
-    using var client = await TestAuthHelper.CreateAuthenticatedClientAsync(factory, cancellationToken);
+    var admin = await TestAuthHelper.CreateAdministratorUserAsync(factory, cancellationToken);
+    using var client = admin.Client;
 
     var issueId = await IssueTestHelper.SeedIssueAsync(
       factory,
@@ -104,7 +108,8 @@ public sealed class IssueAttachmentEndpointTests(BackendWebApplicationFactory fa
   public async Task DownloadIssueAttachment_WhenAttachmentExists_ShouldReturnFileContent()
   {
     var cancellationToken = TestContext.Current.CancellationToken;
-    using var client = await TestAuthHelper.CreateAuthenticatedClientAsync(factory, cancellationToken);
+    var admin = await TestAuthHelper.CreateAdministratorUserAsync(factory, cancellationToken);
+    using var client = admin.Client;
 
     var issueId = await IssueTestHelper.SeedIssueAsync(
       factory,
@@ -149,7 +154,13 @@ public sealed class IssueAttachmentEndpointTests(BackendWebApplicationFactory fa
   public async Task DeleteIssueAttachment_WhenUploaderDeletesAttachment_ShouldRemoveMetadataAndFile()
   {
     var cancellationToken = TestContext.Current.CancellationToken;
-    var authUser = await TestAuthHelper.CreateAuthenticatedUserAsync(factory, cancellationToken);
+    var authUser = await TestAuthHelper.CreateUserWithPermissionsAsync(
+      factory,
+      [
+        PermissionCodes.IssuesView,
+        PermissionCodes.IssuesManageAttachments
+      ],
+      cancellationToken);
     using var client = authUser.Client;
 
     var issueId = await IssueTestHelper.SeedIssueAsync(
@@ -190,7 +201,13 @@ public sealed class IssueAttachmentEndpointTests(BackendWebApplicationFactory fa
   public async Task DeleteIssueAttachment_WhenDifferentUserDeletesAttachment_ShouldReturnForbidden()
   {
     var cancellationToken = TestContext.Current.CancellationToken;
-    var uploader = await TestAuthHelper.CreateAuthenticatedUserAsync(factory, cancellationToken);
+    var uploader = await TestAuthHelper.CreateUserWithPermissionsAsync(
+      factory,
+      [
+        PermissionCodes.IssuesView,
+        PermissionCodes.IssuesManageAttachments
+      ],
+      cancellationToken);
     using var uploaderClient = uploader.Client;
 
     var issueId = await IssueTestHelper.SeedIssueAsync(
@@ -230,7 +247,8 @@ public sealed class IssueAttachmentEndpointTests(BackendWebApplicationFactory fa
   public async Task UploadIssueAttachment_WhenIssueAlreadyHasMaxAttachments_ShouldReturnBadRequest()
   {
     var cancellationToken = TestContext.Current.CancellationToken;
-    using var client = await TestAuthHelper.CreateAuthenticatedClientAsync(factory, cancellationToken);
+    var admin = await TestAuthHelper.CreateAdministratorUserAsync(factory, cancellationToken);
+    using var client = admin.Client;
 
     var issueId = await IssueTestHelper.SeedIssueAsync(
       factory,
@@ -268,7 +286,8 @@ public sealed class IssueAttachmentEndpointTests(BackendWebApplicationFactory fa
   public async Task DeleteIssue_WhenIssueHasAttachments_ShouldRemoveStoredFiles()
   {
     var cancellationToken = TestContext.Current.CancellationToken;
-    using var client = await TestAuthHelper.CreateAuthenticatedClientAsync(factory, cancellationToken);
+    var admin = await TestAuthHelper.CreateAdministratorUserAsync(factory, cancellationToken);
+    using var client = admin.Client;
 
     var issueId = await IssueTestHelper.SeedIssueAsync(
       factory,

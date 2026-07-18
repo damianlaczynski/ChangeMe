@@ -32,8 +32,9 @@ public class DeleteIssueAttachmentHandler(
     if (attachment is null)
       return Result<Guid>.NotFound();
 
-    if (attachment.CreatedBy != actorUserId)
-      return Result<Guid>.Forbidden();
+    if (attachment.CreatedBy != actorUserId
+        || !IssueAuthorization.CanDeleteAttachment(userAccessor, attachment.CreatedBy, actorUserId))
+      return Result<Guid>.Forbidden(IssueAuthorization.PermissionDeniedMessage);
 
     var storageContainer = attachment.StorageContainer;
     var storageOwnerId = attachment.OwnerId;

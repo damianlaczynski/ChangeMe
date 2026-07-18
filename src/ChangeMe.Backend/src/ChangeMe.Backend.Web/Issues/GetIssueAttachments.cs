@@ -9,6 +9,7 @@ public class GetIssueAttachments(IMediator mediator)
 {
   protected override void ConfigureEndpoint()
   {
+    RequirePermission(PermissionCodes.IssuesView);
     Get("/issues/{IssueId}/attachments");
     Summary(s => s.Summary = "Get issue attachments");
   }

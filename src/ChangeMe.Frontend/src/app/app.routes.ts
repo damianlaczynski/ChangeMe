@@ -5,9 +5,13 @@ import { MyAccountComponent } from '@features/auth/components/my-account/my-acco
 import { authGuard } from '@features/auth/guards/auth.guard';
 import { guestGuard } from '@features/auth/guards/guest.guard';
 import {
+  anyPermissionGuard,
   permissionGuard,
   permissionsGuard
 } from '@features/auth/guards/permission.guard';
+import { AcceptInvitationComponent } from '@features/invitations/components/accept-invitation/accept-invitation.component';
+import { CreateInvitationComponent } from '@features/invitations/components/create-invitation/create-invitation.component';
+import { InvitationsListComponent } from '@features/invitations/components/invitations-list/invitations-list.component';
 import { CreateIssueComponent } from '@features/issues/components/create-issue/create-issue.component';
 import { EditIssueComponent } from '@features/issues/components/edit-issue/edit-issue.component';
 import { IssueDetailsComponent } from '@features/issues/components/issue-details/issue-details.component';
@@ -34,24 +38,34 @@ export const routes: Routes = [
     canActivate: [guestGuard]
   },
   {
+    path: 'invitations/accept/:token',
+    component: AcceptInvitationComponent
+  },
+  {
     path: 'issues',
     component: IssuesComponent,
-    canActivate: [authGuard]
+    canActivate: [authGuard, permissionGuard(PermissionCodes.issuesView, '/account')]
   },
   {
     path: 'issues/create',
     component: CreateIssueComponent,
-    canActivate: [authGuard]
+    canActivate: [authGuard, permissionGuard(PermissionCodes.issuesCreate, '/issues')]
   },
   {
     path: 'issues/:id',
     component: IssueDetailsComponent,
-    canActivate: [authGuard]
+    canActivate: [authGuard, permissionGuard(PermissionCodes.issuesView, '/account')]
   },
   {
     path: 'issues/:id/edit',
     component: EditIssueComponent,
-    canActivate: [authGuard]
+    canActivate: [
+      authGuard,
+      anyPermissionGuard(
+        [PermissionCodes.issuesEdit, PermissionCodes.issuesView],
+        '/issues'
+      )
+    ]
   },
   {
     path: 'account',
@@ -62,6 +76,16 @@ export const routes: Routes = [
     path: 'account/edit',
     component: EditMyAccountComponent,
     canActivate: [authGuard]
+  },
+  {
+    path: 'invitations',
+    component: InvitationsListComponent,
+    canActivate: [authGuard, permissionGuard(PermissionCodes.usersInvite)]
+  },
+  {
+    path: 'invitations/create',
+    component: CreateInvitationComponent,
+    canActivate: [authGuard, permissionGuard(PermissionCodes.usersInvite)]
   },
   {
     path: 'users',

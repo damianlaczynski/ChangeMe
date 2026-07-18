@@ -1,10 +1,12 @@
 <p-card header="Issues list" subheader="Browse, filter and monitor issues.">
   <div class="mb-4 flex justify-end">
-    <p-button
-      label="Add issue"
-      icon="pi pi-plus"
-      [routerLink]="['/issues', 'create']"
-    />
+    @if (canCreateIssues()) {
+      <p-button
+        label="Add issue"
+        icon="pi pi-plus"
+        [routerLink]="['/issues', 'create']"
+      />
+    }
   </div>
 
   @if (errorMessage()) {
@@ -82,29 +84,33 @@
 
     <ng-template qgColumn="actions" header="" [sortable]="false" let-issue>
       <div class="flex flex-wrap items-center gap-2">
-        <p-button
-          [label]="issue.watchersCount.toString()"
-          [icon]="issue.isWatchedByCurrentUser ? 'pi pi-bell-slash' : 'pi pi-bell'"
-          [severity]="issue.isWatchedByCurrentUser ? 'success' : 'secondary'"
-          [outlined]="!issue.isWatchedByCurrentUser"
-          size="small"
-          [loading]="isWatchPending(issue.id)"
-          [pTooltip]="getWatchTooltip(issue)"
-          tooltipPosition="top"
-          [attr.aria-label]="getWatchTooltip(issue)"
-          (onClick)="toggleWatch(issue)"
-        />
-        <p-button
-          type="button"
-          icon="pi pi-ellipsis-v"
-          severity="secondary"
-          [text]="true"
-          size="small"
-          pTooltip="Issue actions"
-          tooltipPosition="top"
-          [attr.aria-label]="'Actions for ' + issue.title"
-          (onClick)="openIssueActionsMenu($event, issue)"
-        />
+        @if (canWatchIssues()) {
+          <p-button
+            [label]="issue.watchersCount.toString()"
+            [icon]="issue.isWatchedByCurrentUser ? 'pi pi-bell-slash' : 'pi pi-bell'"
+            [severity]="issue.isWatchedByCurrentUser ? 'success' : 'secondary'"
+            [outlined]="!issue.isWatchedByCurrentUser"
+            size="small"
+            [loading]="isWatchPending(issue.id)"
+            [pTooltip]="getWatchTooltip(issue)"
+            tooltipPosition="top"
+            [attr.aria-label]="getWatchTooltip(issue)"
+            (onClick)="toggleWatch(issue)"
+          />
+        }
+        @if (canShowIssueActions(issue)) {
+          <p-button
+            type="button"
+            icon="pi pi-ellipsis-v"
+            severity="secondary"
+            [text]="true"
+            size="small"
+            pTooltip="Issue actions"
+            tooltipPosition="top"
+            [attr.aria-label]="'Actions for ' + issue.title"
+            (onClick)="openIssueActionsMenu($event, issue)"
+          />
+        }
       </div>
     </ng-template>
 
@@ -112,12 +118,14 @@
       <div class="flex flex-col items-center gap-2 py-4">
         <p class="text-center text-muted-color">{{ emptyMessage() }}</p>
         <div class="flex flex-wrap items-center gap-2">
-          <p-button
-            size="small"
-            label="Add issue"
-            icon="pi pi-plus"
-            [routerLink]="['/issues', 'create']"
-          />
+          @if (canCreateIssues()) {
+            <p-button
+              size="small"
+              label="Add issue"
+              icon="pi pi-plus"
+              [routerLink]="['/issues', 'create']"
+            />
+          }
           <p-button
             size="small"
             label="Refresh"

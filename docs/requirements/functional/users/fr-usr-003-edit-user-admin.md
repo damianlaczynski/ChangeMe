@@ -51,7 +51,7 @@ An authorized administrator must be able to create a new user with a password an
 
 **Permissions preview** (when **Roles** field is visible):
 
-- Shows the union of permissions from currently selected roles (FR-ROL-001), grouped by **Users**, **Roles**, **Sessions**, with the granting role names per permission.
+- Shows the union of permissions from currently selected roles (FR-ROL-001), grouped by **Users**, **Roles**, **Sessions**, and **Issues**, with the granting role names per permission.
 - Updates immediately when the **Roles** selection changes, before save.
 
 ### Operations

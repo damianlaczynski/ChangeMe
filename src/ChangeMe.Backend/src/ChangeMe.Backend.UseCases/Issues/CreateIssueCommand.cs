@@ -26,6 +26,9 @@ public class CreateIssueHandler(
     if (userAccessor.UserId is not Guid actorUserId)
       return Result.Unauthorized();
 
+    if (!IssueAuthorization.CanCreate(userAccessor))
+      return Result.Forbidden(IssueAuthorization.PermissionDeniedMessage);
+
     var assigneeValidation = await IssuesUtils.ValidateAssigneeExistsAsync(
       context,
       command.AssignedToUserId,

@@ -45,6 +45,54 @@ internal static class TestAuthHelper
     return await LoginAsUserAsync(factory, email, DefaultUserPassword, cancellationToken);
   }
 
+  public static async Task<AuthenticatedTestUser> CreateUserWithRoleAsync(
+    BackendWebApplicationFactory factory,
+    Guid roleId,
+    CancellationToken cancellationToken = default)
+  {
+    var admin = await CreateAdministratorUserAsync(factory, cancellationToken);
+    var email = $"role-user-{Guid.NewGuid():N}@example.com";
+
+    var createResponse = await admin.Client.PostAsJsonAsync("/api/v1/users", new
+    {
+      FirstName = "Role",
+      LastName = "User",
+      Email = email,
+      Password = DefaultUserPassword,
+      RoleIds = new[] { roleId }
+    }, cancellationToken);
+
+    createResponse.EnsureSuccessStatusCode();
+
+    return await LoginAsUserAsync(factory, email, DefaultUserPassword, cancellationToken);
+  }
+
+  public static async Task<AuthenticatedTestUser> CreateUserWithPermissionsAsync(
+    BackendWebApplicationFactory factory,
+    IReadOnlyList<string> permissionCodes,
+    CancellationToken cancellationToken = default)
+  {
+    var admin = await CreateAdministratorUserAsync(factory, cancellationToken);
+    var roleId = await RolesTestHelper.CreateCustomRoleAsync(
+      admin.Client,
+      cancellationToken,
+      permissionCodes: permissionCodes);
+    var email = $"perm-user-{Guid.NewGuid():N}@example.com";
+
+    var createResponse = await admin.Client.PostAsJsonAsync("/api/v1/users", new
+    {
+      FirstName = "Perm",
+      LastName = "User",
+      Email = email,
+      Password = DefaultUserPassword,
+      RoleIds = new[] { roleId }
+    }, cancellationToken);
+
+    createResponse.EnsureSuccessStatusCode();
+
+    return await LoginAsUserAsync(factory, email, DefaultUserPassword, cancellationToken);
+  }
+
   public static async Task<AuthenticatedTestUser> CreateAdministratorUserAsync(
     BackendWebApplicationFactory factory,
     CancellationToken cancellationToken = default)

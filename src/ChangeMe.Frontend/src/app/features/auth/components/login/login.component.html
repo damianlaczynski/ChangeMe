@@ -63,6 +63,10 @@
       }
     </div>
 
+    @if (successMessage()) {
+      <p-message severity="success">{{ successMessage() }}</p-message>
+    }
+
     @if (errorMessage()) {
       <p-message severity="error">{{ errorMessage() }}</p-message>
     }

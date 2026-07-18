@@ -1,3 +1,5 @@
+using ChangeMe.Backend.UseCases.Issues.Utils;
+
 namespace ChangeMe.Backend.UseCases.Issues;
 
 public record WatchIssueCommand(Guid IssueId) : ICommand<IssueWatchStateDto>;
@@ -18,6 +20,9 @@ public class WatchIssueHandler(
   {
     if (userAccessor.UserId is not Guid actorUserId)
       return Result.Unauthorized();
+
+    if (!IssueAuthorization.CanView(userAccessor))
+      return Result.Forbidden(IssueAuthorization.PermissionDeniedMessage);
 
     var issue = await context.Issues
       .Include(i => i.Watchers)
@@ -50,6 +55,9 @@ public class UnwatchIssueHandler(
   {
     if (userAccessor.UserId is not Guid actorUserId)
       return Result<IssueWatchStateDto>.Unauthorized();
+
+    if (!IssueAuthorization.CanView(userAccessor))
+      return Result<IssueWatchStateDto>.Forbidden(IssueAuthorization.PermissionDeniedMessage);
 
     var issue = await context.Issues
       .Include(i => i.Watchers)

@@ -39,6 +39,14 @@ public class UpdateIssueHandler(
     if (issue is null)
       return Result.NotFound();
 
+    var permissionCheck = IssueAuthorization.ValidateUpdatePermissions(
+      userAccessor,
+      issue,
+      actorUserId,
+      command);
+    if (!permissionCheck.IsSuccess)
+      return permissionCheck.Map();
+
     var versionCheck = ConcurrencyGuard.CheckExpectedVersion(issue, command.Version);
     if (!versionCheck.IsSuccess)
       return versionCheck.Map();

@@ -9,6 +9,7 @@
 | -------- | ---- |
 | account-model.md | [account-model.md](_shared/domain/account-model.md) |
 | glossary.md | [glossary.md](_shared/domain/glossary.md) |
+| issue-model.md | [issue-model.md](_shared/domain/issue-model.md) |
 | permissions.md | [permissions.md](_shared/domain/permissions.md) |
 | Layer index | [README.md](_shared/domain/README.md) |
 
@@ -57,6 +58,12 @@ See [changes/](changes/) for open requirement deltas.
 | FR-AUTH-004 | My Sessions | [fr-auth-004-my-sessions.md](functional/identity/fr-auth-004-my-sessions.md) |
 | FR-AUTH-008 | Password Policy | [fr-auth-008-password-policy.md](functional/identity/fr-auth-008-password-policy.md) |
 
+## L4 — Invitations (`functional/invitations/`)
+
+| ID | Title | File |
+| -- | ----- | ---- |
+| FR-INV-001 | User Invitations | [fr-inv-001-user-invitations.md](functional/invitations/fr-inv-001-user-invitations.md) |
+
 ## L4 — Issues (`functional/issues/`)
 
 | ID | Title | File |
@@ -67,6 +74,7 @@ See [changes/](changes/) for open requirement deltas.
 | FR-ISS-004 | Watching Issues and Push / Email Notifications | [fr-iss-004-watching-issues-and-push-email-notifications.md](functional/issues/fr-iss-004-watching-issues-and-push-email-notifications.md) |
 | FR-ISS-005 | Notification Bell and Dropdown | [fr-iss-005-notification-bell-and-dropdown.md](functional/issues/fr-iss-005-notification-bell-and-dropdown.md) |
 | FR-ISS-006 | Issue Attachments | [fr-iss-006-issue-attachments.md](functional/issues/fr-iss-006-issue-attachments.md) |
+| FR-ISS-007 | Issue Permissions and Access Rules | [fr-iss-007-issue-permissions.md](functional/issues/fr-iss-007-issue-permissions.md) |
 
 ## L4 — Users (`functional/users/`)
 

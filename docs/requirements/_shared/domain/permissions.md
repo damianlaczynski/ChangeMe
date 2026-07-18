@@ -15,6 +15,13 @@ The catalog contains exactly these permissions:
 | **Sessions.ManageOwn** | Manage own sessions  | Revoke non-current own sessions and use **Sign out everywhere**.              | Sessions |
 | **Sessions.ViewAny**   | View user sessions   | View active sessions of any user in **User details**.                         | Sessions |
 | **Sessions.ManageAny** | Manage user sessions | Revoke sessions of any user, including **Revoke all sessions**.               | Sessions |
+| **Users.Invite**       | Invite users         | Create, list, resend, and revoke user invitations.                            | Users    |
+| **Issues.View**        | View issues          | View the issues list, details, comments, history, and download attachments.   | Issues   |
+| **Issues.Create**      | Create issues        | Create new issues.                                                            | Issues   |
+| **Issues.Edit**        | Edit issues          | Edit any issue's core fields and assignee.                                    | Issues   |
+| **Issues.Delete**      | Delete issues        | Delete issues.                                                                | Issues   |
+| **Issues.Comment**     | Comment on issues    | Add comments on any issue.                                                    | Issues   |
+| **Issues.ManageAttachments** | Manage issue attachments | Upload attachments and delete attachments the user uploaded.          | Issues   |
 
 ## Effective permissions
 
@@ -22,6 +29,6 @@ The catalog contains exactly these permissions:
 - Users with **Deactivated** true cannot sign in and have no effective permissions (FR-USR-005).
 - Access denial message: **`You do not have permission to perform this action.`**
 
-## Out of scope
+## Issue access
 
-Issue-level permissions are not defined yet. Issues remain available to all authenticated users with **Deactivated** false until a separate REQ introduces issue permissions.
+Issue permissions and participant overrides (author, assignee): `docs/requirements/functional/issues/fr-iss-007-issue-permissions.md` (`FR-ISS-007`).

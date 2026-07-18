@@ -1,3 +1,4 @@
+using ChangeMe.Backend.Domain.Authorization;
 using ChangeMe.Backend.UseCases.Issues.Dtos;
 using ChangeMe.Backend.UseCases.Issues.Utils;
 using QueryGrid.Abstractions;
@@ -22,6 +23,9 @@ public class GetIssueAttachmentsHandler(
     if (userAccessor.UserId is not Guid currentUserId)
       return Result<GridResult<IssueAttachmentDto>>.Unauthorized();
 
+    if (!IssueAuthorization.CanView(userAccessor))
+      return Result<GridResult<IssueAttachmentDto>>.Forbidden(IssueAuthorization.PermissionDeniedMessage);
+
     var issueExists = await context.Issues.AsNoTracking().AnyAsync(i => i.Id == query.IssueId, cancellationToken);
     if (!issueExists)
       return Result<GridResult<IssueAttachmentDto>>.NotFound();
@@ -38,6 +42,7 @@ public class GetIssueAttachmentsHandler(
         UploadedByUserId = a.CreatedBy,
         CreatedAt = a.CreatedAt,
         CanDelete = a.CreatedBy == currentUserId
+          && userAccessor.HasPermission(PermissionCodes.IssuesManageAttachments)
       });
 
     var grid = await projected.ToGridResultAsync(query.Grid, cancellationToken: cancellationToken);
