@@ -36,7 +36,8 @@
     "docker:build": "docker compose build",
     "docker:logs": "docker compose logs -f",
     "docker:test:backend": "docker compose --profile test run --rm backend-tests",
-    "requirements:validate": "node scripts/requirements-validate.mjs"
+    "requirements:validate": "node scripts/requirements-validate.mjs",
+    "pack:backend": "dotnet pack template-pack/ChangeMe.Templates.csproj -c Release"
   },
   "devDependencies": {
     "concurrently": "^10.0.3"
