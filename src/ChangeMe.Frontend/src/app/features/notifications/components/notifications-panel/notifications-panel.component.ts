@@ -1,27 +1,29 @@
-import { CommonModule } from '@angular/common';
+import { DatePipe } from '@angular/common';
 import { Component, inject, output, signal } from '@angular/core';
 import { Router } from '@angular/router';
+import {
+  ButtonComponent,
+  IconComponent,
+  MessageBarComponent,
+  SpinnerComponent,
+  TabsComponent,
+  type Tab
+} from '@laczynski/ui';
 import { NotificationDto } from '@features/notifications/models/notification.model';
 import { NotificationsService } from '@features/notifications/services/notifications.service';
-import { Button } from 'primeng/button';
-import { Message } from 'primeng/message';
-import { ProgressSpinner } from 'primeng/progressspinner';
-import { Tab, TabList, TabPanel, TabPanels, Tabs } from 'primeng/tabs';
 
 @Component({
   selector: 'app-notifications-panel',
   imports: [
-    CommonModule,
-    Button,
-    Message,
-    ProgressSpinner,
-    Tabs,
-    TabList,
-    Tab,
-    TabPanels,
-    TabPanel
+    DatePipe,
+    ButtonComponent,
+    IconComponent,
+    MessageBarComponent,
+    SpinnerComponent,
+    TabsComponent
   ],
-  templateUrl: './notifications-panel.component.html'
+  templateUrl: './notifications-panel.component.html',
+  styleUrl: './notifications-panel.component.scss'
 })
 export class NotificationsPanelComponent {
   private readonly router = inject(Router);
@@ -43,6 +45,12 @@ export class NotificationsPanelComponent {
   readonly closed = output<void>();
 
   readonly activeTab = signal<'unread' | 'read'>('unread');
+  readonly selectedTabId = signal<string | number>('unread');
+
+  readonly notificationTabs: Tab[] = [
+    { id: 'unread', label: 'Unread' },
+    { id: 'read', label: 'Read' }
+  ];
 
   openNotification(notification: NotificationDto): void {
     if (!notification.isRead) {
@@ -74,13 +82,14 @@ export class NotificationsPanelComponent {
     this.notificationsService.showMoreRead();
   }
 
-  onTabChange(tab: string | number | undefined): void {
-    const value: 'unread' | 'read' = tab === 'read' ? 'read' : 'unread';
+  onTabChange(tabId: string | number): void {
+    const value: 'unread' | 'read' = tabId === 'read' ? 'read' : 'unread';
     if (value === this.activeTab()) {
       return;
     }
 
     this.activeTab.set(value);
+    this.selectedTabId.set(value);
 
     if (value === 'read') {
       this.notificationsService.reloadReadFromStart();

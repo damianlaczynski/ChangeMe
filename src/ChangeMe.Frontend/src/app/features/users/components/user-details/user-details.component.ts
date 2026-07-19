@@ -33,15 +33,15 @@ import {
   createGridQuery,
   DEFAULT_GRID_PAGE_SIZE
 } from '@shared/data/utils/grid.utils';
-import { ConfirmationService } from 'primeng/api';
-import { Button } from 'primeng/button';
-import { Card } from 'primeng/card';
-import { Message } from 'primeng/message';
-import { Paginator, PaginatorState } from 'primeng/paginator';
-import { Panel } from 'primeng/panel';
-import { ProgressSpinner } from 'primeng/progressspinner';
-import { TableModule } from 'primeng/table';
-import { Tag } from 'primeng/tag';
+import {
+  ButtonComponent,
+  MessageBarComponent,
+  PaginationComponent,
+  type PaginationConfig,
+  SpinnerComponent,
+  TagComponent
+} from '@laczynski/ui';
+import { ConfirmService } from '@core/confirm/services/confirm.service';
 
 @Component({
   selector: 'app-user-details',
@@ -49,14 +49,11 @@ import { Tag } from 'primeng/tag';
     DatePipe,
     RouterLink,
     BackButtonComponent,
-    Card,
-    Button,
-    Message,
-    Tag,
-    TableModule,
-    Paginator,
-    Panel,
-    ProgressSpinner,
+    ButtonComponent,
+    MessageBarComponent,
+    TagComponent,
+    PaginationComponent,
+    SpinnerComponent,
     EffectivePermissionsComponent
   ],
   templateUrl: './user-details.component.html'
@@ -66,7 +63,7 @@ export class UserDetailsComponent {
 
   private readonly usersService = inject(UsersService);
   private readonly authService = inject(AuthService);
-  private readonly confirmationService = inject(ConfirmationService);
+  private readonly confirmService = inject(ConfirmService);
   private readonly toastService = inject(ToastService);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -102,6 +99,25 @@ export class UserDetailsComponent {
   readonly canManageSessions = () =>
     this.authService.hasPermission(PermissionCodes.sessionsManageAny);
 
+  readonly sessionsPaginationConfig = computed<PaginationConfig>(() => {
+    const grid = this.sessionsGrid();
+    const pageSize = grid.take ?? DEFAULT_GRID_PAGE_SIZE;
+    const skip = grid.skip ?? 0;
+    const totalItems = this.sessionsTotalCount();
+    const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+
+    return {
+      currentPage: Math.floor(skip / pageSize) + 1,
+      totalPages,
+      totalItems,
+      pageSize,
+      showPageNumbers: true,
+      showFirstLast: true,
+      showInfo: true,
+      showPageSizeSelector: false
+    };
+  });
+
   constructor() {
     effect(() => {
       this.id();
@@ -115,12 +131,12 @@ export class UserDetailsComponent {
       return;
     }
 
-    this.confirmationService.confirm({
+    this.confirmService.confirm({
       header: 'Deactivate user',
       message: getDeactivateConfirmMessage(formatUserReference(profile)),
-      icon: 'pi pi-exclamation-triangle',
-      acceptButtonProps: { label: 'Deactivate', severity: 'danger' },
-      rejectButtonProps: { label: 'Cancel', severity: 'secondary', outlined: true },
+      acceptLabel: 'Deactivate',
+      rejectLabel: 'Cancel',
+      acceptVariant: 'danger',
       accept: () => this.deactivateUser()
     });
   }
@@ -131,34 +147,34 @@ export class UserDetailsComponent {
       return;
     }
 
-    this.confirmationService.confirm({
+    this.confirmService.confirm({
       header: 'Activate user',
       message: getActivateConfirmMessage(formatUserReference(profile)),
-      icon: 'pi pi-exclamation-triangle',
-      acceptButtonProps: { label: 'Activate', severity: 'success' },
-      rejectButtonProps: { label: 'Cancel', severity: 'secondary', outlined: true },
+      acceptLabel: 'Activate',
+      rejectLabel: 'Cancel',
+      acceptVariant: 'success',
       accept: () => this.activateUser()
     });
   }
 
   confirmRevokeAllSessions(): void {
-    this.confirmationService.confirm({
+    this.confirmService.confirm({
       header: UserMessages.revokeAllSessionsTitle,
       message: UserMessages.revokeAllSessionsMessage,
-      icon: 'pi pi-exclamation-triangle',
-      acceptButtonProps: { label: 'Revoke all', severity: 'danger' },
-      rejectButtonProps: { label: 'Cancel', severity: 'secondary', outlined: true },
+      acceptLabel: 'Revoke all',
+      rejectLabel: 'Cancel',
+      acceptVariant: 'danger',
       accept: () => this.revokeAllSessions()
     });
   }
 
   confirmRevokeSession(session: AdminUserSessionDto): void {
-    this.confirmationService.confirm({
+    this.confirmService.confirm({
       header: UserMessages.revokeSessionTitle,
       message: UserMessages.revokeSessionMessage,
-      icon: 'pi pi-exclamation-triangle',
-      acceptButtonProps: { label: 'Revoke', severity: 'danger' },
-      rejectButtonProps: { label: 'Cancel', severity: 'secondary', outlined: true },
+      acceptLabel: 'Revoke',
+      rejectLabel: 'Cancel',
+      acceptVariant: 'danger',
       accept: () => this.revokeSession(session)
     });
   }
@@ -197,9 +213,9 @@ export class UserDetailsComponent {
       });
   }
 
-  onSessionsPageChange(event: PaginatorState): void {
-    const take = event.rows ?? DEFAULT_GRID_PAGE_SIZE;
-    const skip = event.first ?? 0;
+  onSessionsPageChange(page: number): void {
+    const take = this.sessionsGrid().take ?? DEFAULT_GRID_PAGE_SIZE;
+    const skip = (page - 1) * take;
     this.sessionsGrid.set(
       createGridQuery({
         skip,

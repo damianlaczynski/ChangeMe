@@ -1,127 +1,137 @@
-<p-card
-  class="mb-4"
-  [header]="pageTitle()"
-  subheader="Update profile, roles, and account status"
->
-  <div class="mb-4 flex flex-wrap items-center gap-2">
+<section class="app-page app-page--form app-page--wide" aria-label="Edit user">
+  <header class="app-page__header">
+    <h1 class="app-page__title">{{ pageTitle() }}</h1>
+    <p class="app-page__subtitle">Update profile, roles, and account status</p>
+  </header>
+
+  <div class="app-page__toolbar">
     <app-back-button label="Back to user details" [route]="['/users', id()]" />
   </div>
 
-  @if (isLoading()) {
-    <div class="flex flex-col items-center gap-2 py-8">
-      <p-progressSpinner ariaLabel="Loading user form" />
-      <p class="text-muted-color m-0 text-sm">Loading user data...</p>
-    </div>
-  } @else if (loadError()) {
-    <div class="flex flex-col items-center gap-2">
-      <p-message severity="error">{{ loadError() }}</p-message>
-      <p-button
-        size="small"
-        label="Try again"
-        icon="pi pi-refresh"
-        severity="secondary"
-        [outlined]="true"
-        [loading]="isLoading()"
-        (onClick)="refresh()"
-      />
-    </div>
-  } @else {
-    <form
-      class="p-fluid flex flex-col gap-4"
-      [formGroup]="form"
-      (ngSubmit)="onSubmit()"
-    >
-      <p-panel header="Profile" [toggleable]="true">
-        <div class="grid gap-4 sm:grid-cols-2">
-          <div class="flex flex-col gap-1.5">
-            <label for="firstName">First name</label>
-            <input
-              id="firstName"
-              type="text"
-              pInputText
-              [formControl]="form.controls.firstName"
-              [invalid]="shouldShowError(form.controls.firstName)"
-            />
-          </div>
-          <div class="flex flex-col gap-1.5">
-            <label for="lastName">Last name</label>
-            <input
-              id="lastName"
-              type="text"
-              pInputText
-              [formControl]="form.controls.lastName"
-              [invalid]="shouldShowError(form.controls.lastName)"
-            />
-          </div>
-        </div>
-
-        <div class="mt-4 flex flex-col gap-1.5">
-          <label for="email">Email</label>
-          <input
-            id="email"
-            type="email"
-            pInputText
-            [formControl]="form.controls.email"
-            [invalid]="shouldShowError(form.controls.email)"
-          />
-        </div>
-      </p-panel>
-
-      @if (showRolesField()) {
-        <p-panel header="Roles" [toggleable]="true">
-          <div class="flex flex-col gap-1.5">
-            <label for="roles">Roles</label>
-            <p-multiselect
-              inputId="roles"
-              [formControl]="form.controls.roleIds"
-              [options]="roleOptions()"
-              optionLabel="name"
-              optionValue="id"
-              placeholder="Select roles"
-              display="chip"
-              [invalid]="shouldShowError(form.controls.roleIds)"
-            />
-          </div>
-        </p-panel>
-
-        <app-effective-permissions
-          [permissions]="effectivePermissions()"
-          [roleIdsSelected]="form.controls.roleIds.value.length > 0"
-        />
-      }
-
-      @if (showStatusField()) {
-        <p-panel header="Account status" [toggleable]="true">
-          <div class="flex items-center gap-2">
-            <p-checkbox
-              inputId="deactivated"
-              [formControl]="form.controls.deactivated"
-              [binary]="true"
-            />
-            <label for="deactivated">Deactivated</label>
-          </div>
-        </p-panel>
-      }
-
-      @if (submitError()) {
-        <p-message severity="error">{{ submitError() }}</p-message>
-      }
-
-      <div class="flex flex-wrap items-center justify-end gap-2">
-        <p-button
-          type="button"
-          label="Cancel"
-          severity="secondary"
-          [outlined]="true"
-          [routerLink]="['/users', id()]"
-        />
-        <p-button
-          type="submit"
-          [label]="isSubmitting() ? 'Saving...' : 'Save changes'"
-          icon="pi pi-save"
-          [loading]="isSubmitting()"
+  <div class="app-page__body app-page__body--form">
+    @if (isLoading()) {
+      <div class="app-center-state">
+        <ui-spinner size="medium" ariaLabel="Loading user form" />
+        <p class="app-muted">Loading user data...</p>
+      </div>
+    } @else if (loadError()) {
+      <div class="app-center-state">
+        <ui-message-bar [title]="loadError()!" variant="danger" />
+        <ui-button
+          text="Try again"
+          icon="arrow_sync"
+          variant="secondary"
+          appearance="outline"
+          [loading]="isLoading()"
+          (click)="refresh()"
         />
       </div>
-    </form>
-  }
-</p-card>
+    } @else {
+      <form class="app-form-workspace" [formGroup]="form" (ngSubmit)="onSubmit()">
+        <div class="app-form-workspace__scroll app-stack-md">
+          <ui-accordion appDefaultExpanded label="Profile" icon="person">
+            <div class="app-stack-md">
+              <div class="app-form__grid app-form__grid--two">
+                <ui-text
+                  label="First name"
+                  [formControl]="form.controls.firstName"
+                  [required]="true"
+                  [errorText]="
+                    fieldError(
+                      form.controls.firstName,
+                      UserFieldErrors.firstName,
+                      submitted()
+                    )
+                  "
+                />
+                <ui-text
+                  label="Last name"
+                  [formControl]="form.controls.lastName"
+                  [required]="true"
+                  [errorText]="
+                    fieldError(
+                      form.controls.lastName,
+                      UserFieldErrors.lastName,
+                      submitted()
+                    )
+                  "
+                />
+              </div>
+              <ui-text
+                label="Email"
+                type="email"
+                [formControl]="form.controls.email"
+                [required]="true"
+                [errorText]="
+                  fieldError(form.controls.email, UserFieldErrors.email, submitted())
+                "
+              />
+            </div>
+          </ui-accordion>
+
+          @if (showRolesField()) {
+            <ui-accordion appDefaultExpanded label="Roles" icon="people">
+              <ui-dropdown
+                label="Roles"
+                placeholder="Select roles"
+                mode="multi"
+                [items]="roleItems()"
+                [formControl]="form.controls.roleIds"
+                [required]="true"
+                [errorText]="
+                  fieldError(
+                    form.controls.roleIds,
+                    UserFieldErrors.roleIds,
+                    submitted()
+                  )
+                "
+              />
+            </ui-accordion>
+
+            <app-effective-permissions
+              [permissions]="effectivePermissions()"
+              [roleIdsSelected]="form.controls.roleIds.value.length > 0"
+            />
+          }
+
+          @if (showStatusField()) {
+            <ui-accordion
+              appDefaultExpanded
+              label="Account status"
+              icon="person_prohibited"
+            >
+              <ui-checkbox
+                label="Deactivated"
+                labelPosition="after"
+                [formControl]="form.controls.deactivated"
+              />
+            </ui-accordion>
+          }
+
+          @if (submitError()) {
+            <ui-message-bar [title]="submitError()!" variant="danger" />
+          }
+        </div>
+
+        <footer class="app-form-workspace__footer">
+          <div class="app-form__actions">
+            <ui-button
+              type="button"
+              text="Cancel"
+              variant="secondary"
+              appearance="outline"
+              [routerLink]="['/users', id()]"
+            />
+            <ui-button
+              type="submit"
+              [text]="isSubmitting() ? 'Saving...' : 'Save changes'"
+              icon="save"
+              variant="primary"
+              [loading]="isSubmitting()"
+            />
+          </div>
+        </footer>
+      </form>
+    }
+  </div>
+</section>

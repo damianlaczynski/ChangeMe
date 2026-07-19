@@ -1,201 +1,145 @@
-<p-card
-  class="mb-4"
-  header="Create Issue"
-  subheader="Create a new issue and move to its details page after saving"
->
-  <div class="mb-4 flex flex-wrap items-center gap-2">
+<section class="app-page app-page--form app-page--wide" aria-label="Create issue">
+  <header class="app-page__header">
+    <h1 class="app-page__title">Create Issue</h1>
+    <p class="app-page__subtitle">
+      Create a new issue and move to its details page after saving
+    </p>
+  </header>
+
+  <div class="app-page__toolbar">
     <app-back-button label="Back to issues list" [route]="['/issues']" />
   </div>
 
-  <form class="p-fluid flex flex-col gap-4" [formGroup]="form" (ngSubmit)="onSubmit()">
-    <p-panel header="Issue details" [toggleable]="true">
-      <div class="flex flex-col gap-1.5">
-        <label for="title">Title</label>
-        <input
-          id="title"
-          type="text"
-          pInputText
-          [formControl]="form.controls.title"
-          placeholder="e.g. Login button disabled on mobile"
-          [invalid]="form.controls.title.touched && form.controls.title.errors"
-        />
-        @if (shouldShowError(form.controls.title)) {
-          @if (form.controls.title.errors?.['required']) {
-            <p-message severity="error" variant="simple">Title is required</p-message>
-          }
-          @if (form.controls.title.errors?.['minlength']) {
-            <p-message severity="error" variant="simple">
-              Title must be at least
-              {{ issueConstraints.TITLE_MIN_LENGTH }} characters
-            </p-message>
-          }
-          @if (form.controls.title.errors?.['maxlength']) {
-            <p-message severity="error" variant="simple">
-              Title must be at most {{ issueConstraints.TITLE_MAX_LENGTH }} characters
-            </p-message>
-          }
-        }
-      </div>
+  <div class="app-page__body app-page__body--form">
+    <form class="app-form-workspace" [formGroup]="form" (ngSubmit)="onSubmit()">
+      <div class="app-form-workspace__scroll app-stack-md">
+        <ui-accordion appDefaultExpanded label="Issue details" icon="document">
+          <div class="app-stack-md">
+            <ui-text
+              label="Title"
+              placeholder="e.g. Login button disabled on mobile"
+              [formControl]="form.controls.title"
+              [required]="true"
+              [errorText]="
+                fieldError(form.controls.title, IssueFieldErrors.title, submitted())
+              "
+            />
 
-      <div class="mt-4 flex flex-col gap-1.5">
-        <label for="description">Description</label>
-        <textarea
-          id="description"
-          pTextarea
-          [formControl]="form.controls.description"
-          rows="5"
-          placeholder="What is wrong, who is affected, and what should happen instead..."
-          [invalid]="
-            form.controls.description.touched && form.controls.description.errors
-          "
-        ></textarea>
-        @if (shouldShowError(form.controls.description)) {
-          @if (form.controls.description.errors?.['required']) {
-            <p-message severity="error" variant="simple">
-              Description is required
-            </p-message>
-          }
-          @if (form.controls.description.errors?.['maxlength']) {
-            <p-message severity="error" variant="simple">
-              Description must be at most
-              {{ issueConstraints.DESCRIPTION_MAX_LENGTH }} characters
-            </p-message>
-          }
-        }
-      </div>
+            <ui-textarea
+              label="Description"
+              placeholder="What is wrong, who is affected, and what should happen instead..."
+              [rows]="5"
+              [formControl]="form.controls.description"
+              [required]="true"
+              [errorText]="
+                fieldError(
+                  form.controls.description,
+                  IssueFieldErrors.description,
+                  submitted()
+                )
+              "
+            />
 
-      <div class="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        <div class="flex flex-col gap-1.5">
-          <label for="status">Status</label>
-          <p-select
-            inputId="status"
-            [formControl]="form.controls.status"
-            [options]="issueStatuses()"
-            optionLabel="label"
-            optionValue="value"
-            [invalid]="form.controls.status.touched && form.controls.status.errors"
-          />
-        </div>
-
-        <div class="flex flex-col gap-1.5">
-          <label for="priority">Priority</label>
-          <p-select
-            inputId="priority"
-            [formControl]="form.controls.priority"
-            [options]="issuePriorities()"
-            optionLabel="label"
-            optionValue="value"
-            [invalid]="form.controls.priority.touched && form.controls.priority.errors"
-          />
-        </div>
-
-        <div class="flex flex-col gap-1.5">
-          <label for="assignedToUserId">Assigned to</label>
-          <p-select
-            inputId="assignedToUserId"
-            [formControl]="form.controls.assignedToUserId"
-            [options]="assignableUsers()"
-            optionLabel="displayLabel"
-            optionValue="id"
-            placeholder="Unassigned"
-            [showClear]="true"
-            [loading]="isLoadingAssignableUsers()"
-          />
-        </div>
-      </div>
-
-      <div class="mt-4 flex items-center gap-2">
-        <p-checkbox
-          [formControl]="form.controls.watchAfterCreate"
-          inputId="watchAfterCreate"
-          binary
-        />
-        <label class="cursor-pointer" for="watchAfterCreate">Watch after create</label>
-      </div>
-    </p-panel>
-
-    <p-panel header="Acceptance criteria" [toggleable]="true">
-      <div class="flex flex-col gap-3">
-        @for (criterion of form.controls.acceptanceCriteria.controls; track $index) {
-          <div class="p-4">
-            <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
-              <span class="font-medium">Criterion {{ $index + 1 }}</span>
-              <p-button
-                type="button"
-                label="Remove"
-                icon="pi pi-trash"
-                severity="danger"
-                [outlined]="true"
-                size="small"
-                (onClick)="removeAcceptanceCriterion($index)"
+            <div class="app-form__grid">
+              <ui-dropdown
+                label="Status"
+                [items]="statusItems()"
+                [formControl]="form.controls.status"
+              />
+              <ui-dropdown
+                label="Priority"
+                [items]="priorityItems()"
+                [formControl]="form.controls.priority"
+              />
+              <ui-dropdown
+                label="Assigned to"
+                placeholder="Unassigned"
+                [items]="assignableUserItems()"
+                [clearable]="true"
+                [formControl]="form.controls.assignedToUserId"
               />
             </div>
-            <div class="flex flex-col gap-1.5">
-              <label class="sr-only" [for]="'acceptance-criterion-' + $index">
-                Acceptance criterion {{ $index + 1 }}
-              </label>
-              <textarea
-                [id]="'acceptance-criterion-' + $index"
-                pTextarea
-                [formControl]="criterion.controls.content"
-                rows="3"
-                placeholder="e.g. User can sign in with valid credentials on mobile"
-                [invalid]="
-                  criterion.controls.content.touched &&
-                  criterion.controls.content.errors
-                "
-              ></textarea>
-              @if (
-                criterion.controls.content.errors &&
-                (criterion.controls.content.touched || isSubmitted())
-              ) {
-                @if (criterion.controls.content.errors['required']) {
-                  <p-message severity="error" variant="simple">
-                    Acceptance criterion is required
-                  </p-message>
-                }
-                @if (criterion.controls.content.errors['maxlength']) {
-                  <p-message severity="error" variant="simple">
-                    Acceptance criterion must be at most
-                    {{ issueAcceptanceCriteriaConstraints.CONTENT_MAX_LENGTH }}
-                    characters
-                  </p-message>
-                }
-              }
-            </div>
+
+            <ui-checkbox
+              label="Watch after create"
+              labelPosition="after"
+              [formControl]="form.controls.watchAfterCreate"
+            />
           </div>
+        </ui-accordion>
+
+        <ui-accordion
+          appDefaultExpanded
+          label="Acceptance criteria"
+          icon="checkmark_circle"
+        >
+          <div class="app-stack-md">
+            @for (
+              criterion of form.controls.acceptanceCriteria.controls;
+              track $index
+            ) {
+              <div class="app-criterion-card app-stack-sm">
+                <div class="app-row app-row--between">
+                  <span class="app-section-title">Criterion {{ $index + 1 }}</span>
+                  <ui-button
+                    type="button"
+                    text="Remove"
+                    icon="delete"
+                    variant="danger"
+                    appearance="outline"
+                    (click)="removeAcceptanceCriterion($index)"
+                  />
+                </div>
+                <ui-textarea
+                  [label]="'Acceptance criterion ' + ($index + 1)"
+                  placeholder="e.g. User can sign in with valid credentials on mobile"
+                  [rows]="3"
+                  [formControl]="criterion.controls.content"
+                  [required]="true"
+                  [errorText]="
+                    fieldError(
+                      criterion.controls.content,
+                      IssueFieldErrors.acceptanceCriterion,
+                      submitted()
+                    )
+                  "
+                />
+              </div>
+            }
+
+            <ui-button
+              type="button"
+              text="Add acceptance criterion"
+              icon="add"
+              variant="secondary"
+              appearance="outline"
+              (click)="addAcceptanceCriterion()"
+            />
+          </div>
+        </ui-accordion>
+
+        @if (submitError()) {
+          <ui-message-bar [title]="submitError()!" variant="danger" />
         }
       </div>
 
-      <div class="mt-4">
-        <p-button
-          type="button"
-          label="Add acceptance criterion"
-          icon="pi pi-plus"
-          severity="secondary"
-          [outlined]="true"
-          (onClick)="addAcceptanceCriterion()"
-        />
-      </div>
-    </p-panel>
-
-    @if (submitError()) {
-      <p-message severity="error">{{ submitError() }}</p-message>
-    }
-
-    <div class="flex flex-wrap items-center justify-end gap-2">
-      <p-button
-        label="Cancel"
-        severity="secondary"
-        [outlined]="true"
-        (onClick)="cancel()"
-      />
-      <p-button
-        type="submit"
-        [label]="isSubmitting() ? 'Creating issue...' : 'Create issue'"
-        icon="pi pi-check"
-        [loading]="isSubmitting()"
-      />
-    </div>
-  </form>
-</p-card>
+      <footer class="app-form-workspace__footer">
+        <div class="app-form__actions">
+          <ui-button
+            text="Cancel"
+            variant="secondary"
+            appearance="outline"
+            (click)="cancel()"
+          />
+          <ui-button
+            type="submit"
+            [text]="isSubmitting() ? 'Creating issue...' : 'Create issue'"
+            icon="checkmark"
+            variant="primary"
+            [loading]="isSubmitting()"
+          />
+        </div>
+      </footer>
+    </form>
+  </div>
+</section>

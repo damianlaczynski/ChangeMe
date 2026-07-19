@@ -1,49 +1,42 @@
 import { Component, computed, input } from '@angular/core';
-import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { FormControl } from '@angular/forms';
+import { CardComponent } from '@laczynski/ui';
 import { PermissionCatalogItemDto } from '@features/roles/models/role.model';
 import {
   RoleMessages,
   groupEffectivePermissions
 } from '@features/roles/utils/roles.utils';
-import { Checkbox } from 'primeng/checkbox';
-import { Message } from 'primeng/message';
 
 @Component({
   selector: 'app-permission-checklist',
-  imports: [ReactiveFormsModule, Checkbox, Message],
+  imports: [CardComponent],
   template: `
-    <div class="flex flex-col gap-4">
+    <div class="app-stack-md">
       @if (showFormError()) {
-        <p-message severity="error">{{ RoleMessages.atLeastOnePermission }}</p-message>
+        <span class="input-label input-label--error input-label--medium" role="status">
+          {{ RoleMessages.atLeastOnePermission }}
+        </span>
       }
 
       @for (group of groupedPermissions(); track group.group) {
-        <div class="flex flex-col gap-2">
-          <h4
-            class="text-muted-color m-0 text-sm font-semibold tracking-wide uppercase"
-          >
-            {{ group.group }}
-          </h4>
-          <div class="flex flex-col gap-3">
+        <section class="app-field-group" [attr.aria-label]="group.group">
+          <h4 class="app-field-group__title">{{ group.group }}</h4>
+          <div class="app-card-grid">
             @for (permission of group.items; track permission.code) {
-              <label
-                class="border-surface-200 flex cursor-pointer gap-3 rounded-lg border p-3 dark:border-surface-700"
+              <ui-card
+                appearance="filled-alternative"
+                [checkbox]="true"
+                [selected]="isChecked(permission.code)"
+                [checkboxAriaLabel]="permission.label"
+                [ariaLabel]="permission.label"
+                (selectedChange)="togglePermission(permission.code, $event)"
               >
-                <p-checkbox
-                  [inputId]="permission.code"
-                  [formControl]="control()"
-                  [value]="permission.code"
-                />
-                <span class="flex flex-col gap-1">
-                  <span class="text-color font-medium">{{ permission.label }}</span>
-                  <span class="text-muted-color text-sm">
-                    {{ permission.description }}
-                  </span>
-                </span>
-              </label>
+                <div uiCardHeader>{{ permission.label }}</div>
+                <p uiCardBody>{{ permission.description }}</p>
+              </ui-card>
             }
           </div>
-        </div>
+        </section>
       }
     </div>
   `
@@ -58,4 +51,17 @@ export class PermissionChecklistComponent {
   readonly groupedPermissions = computed(() =>
     groupEffectivePermissions(this.catalog())
   );
+
+  isChecked(code: string): boolean {
+    return this.control().value.includes(code);
+  }
+
+  togglePermission(code: string, checked: boolean): void {
+    const current = this.control().value;
+    const next = checked
+      ? [...current, code]
+      : current.filter((value) => value !== code);
+    this.control().setValue(next);
+    this.control().markAsDirty();
+  }
 }

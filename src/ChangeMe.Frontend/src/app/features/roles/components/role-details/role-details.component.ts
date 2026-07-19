@@ -39,16 +39,16 @@ import {
   createGridQuery,
   DEFAULT_GRID_PAGE_SIZE
 } from '@shared/data/utils/grid.utils';
-import { ConfirmationService } from 'primeng/api';
-import { Button } from 'primeng/button';
-import { Card } from 'primeng/card';
-import { InputText } from 'primeng/inputtext';
-import { Message } from 'primeng/message';
-import { Paginator, PaginatorState } from 'primeng/paginator';
-import { Panel } from 'primeng/panel';
-import { ProgressSpinner } from 'primeng/progressspinner';
-import { TableModule } from 'primeng/table';
-import { Tag } from 'primeng/tag';
+import {
+  ButtonComponent,
+  MessageBarComponent,
+  PaginationComponent,
+  type PaginationConfig,
+  SpinnerComponent,
+  TagComponent,
+  TextComponent
+} from '@laczynski/ui';
+import { ConfirmService } from '@core/confirm/services/confirm.service';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
 
 @Component({
@@ -57,15 +57,12 @@ import { debounceTime, distinctUntilChanged } from 'rxjs';
     ReactiveFormsModule,
     RouterLink,
     BackButtonComponent,
-    Card,
-    Button,
-    InputText,
-    TableModule,
-    Message,
-    Tag,
-    Paginator,
-    Panel,
-    ProgressSpinner,
+    ButtonComponent,
+    TextComponent,
+    MessageBarComponent,
+    TagComponent,
+    PaginationComponent,
+    SpinnerComponent,
     EffectivePermissionsComponent
   ],
   templateUrl: './role-details.component.html'
@@ -79,7 +76,7 @@ export class RoleDetailsComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly authService = inject(AuthService);
-  private readonly confirmationService = inject(ConfirmationService);
+  private readonly confirmService = inject(ConfirmService);
   private readonly toastService = inject(ToastService);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -107,6 +104,25 @@ export class RoleDetailsComponent {
   readonly canManageRoles = computed(() =>
     this.authService.hasPermission(PermissionCodes.rolesManage)
   );
+
+  readonly assignedUsersPaginationConfig = computed<PaginationConfig>(() => {
+    const grid = this.assignedUsersGrid();
+    const pageSize = grid.take ?? DEFAULT_GRID_PAGE_SIZE;
+    const skip = grid.skip ?? 0;
+    const totalItems = this.assignedUsersTotalCount();
+    const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+
+    return {
+      currentPage: Math.floor(skip / pageSize) + 1,
+      totalPages,
+      totalItems,
+      pageSize,
+      showPageNumbers: true,
+      showFirstLast: true,
+      showInfo: true,
+      showPageSizeSelector: false
+    };
+  });
 
   constructor() {
     this.route.queryParamMap
@@ -153,9 +169,9 @@ export class RoleDetailsComponent {
     this.loadRole();
   }
 
-  onAssignedUsersPageChange(event: PaginatorState): void {
-    const take = event.rows ?? DEFAULT_GRID_PAGE_SIZE;
-    const skip = event.first ?? 0;
+  onAssignedUsersPageChange(page: number): void {
+    const take = this.assignedUsersGrid().take ?? DEFAULT_GRID_PAGE_SIZE;
+    const skip = (page - 1) * take;
     this.assignedUsersGrid.update((current) =>
       createGridQuery({
         skip,
@@ -208,9 +224,12 @@ export class RoleDetailsComponent {
       return;
     }
 
-    this.confirmationService.confirm({
+    this.confirmService.confirm({
       header: 'Delete role',
       message: getDeleteRoleConfirmMessage(current.name),
+      acceptLabel: 'Delete',
+      rejectLabel: 'Cancel',
+      acceptVariant: 'danger',
       accept: () => {
         this.rolesService.deleteRole(current.id).subscribe({
           next: () => {
@@ -229,12 +248,15 @@ export class RoleDetailsComponent {
       return;
     }
 
-    this.confirmationService.confirm({
+    this.confirmService.confirm({
       header: 'Remove from role',
       message: getRemoveUserFromRoleConfirmMessage(
         formatUserReference(user),
         current.name
       ),
+      acceptLabel: 'Remove',
+      rejectLabel: 'Cancel',
+      acceptVariant: 'danger',
       accept: () => {
         this.rolesService.removeUserFromRole(current.id, user.id).subscribe({
           next: () => {

@@ -1,224 +1,166 @@
-<div
-  class="flex max-h-[min(28rem,70dvh)] w-96 max-w-[calc(100vw-1.5rem)] flex-col overflow-hidden"
->
-  <header class="border-surface-200 shrink-0 border-b px-4 py-3">
-    <div class="flex items-start justify-between gap-3">
-      <div class="min-w-0">
-        <h2 class="text-color m-0 text-base font-semibold leading-tight">
-          Notifications
-        </h2>
-        @if (isLoading() && !hasLoaded()) {
-          <p class="text-muted-color m-0 mt-1 text-sm">Loading...</p>
-        } @else {
-          <p class="text-muted-color m-0 mt-1 text-sm">
-            <span class="text-color font-medium">{{ unreadCount() }}</span>
-            unread
-            @if (unreadTotalCount()) {
-              <span class="text-muted-color">
-                · {{ unreadTotalCount() }} unread shown
-              </span>
+<div class="popover-panel notifications-panel">
+  <div class="popover-panel__header">
+    <div class="notifications-panel__header-row">
+      <div class="notifications-panel__header-copy">
+        <div class="popover-panel__title">Notifications</div>
+        <div class="popover-panel__description">
+          @if (isLoading() && !hasLoaded()) {
+            Loading notifications...
+          } @else if (unreadCount() > 0) {
+            <strong>{{ unreadCount() }}</strong> unread
+            @if (activeTab() === 'unread' && unreadTotalCount()) {
+              <span>· {{ unreadTotalCount() }} shown</span>
             }
-          </p>
-        }
+            @if (activeTab() === 'read' && readTotalCount()) {
+              <span>· {{ readTotalCount() }} read shown</span>
+            }
+          } @else {
+            You're all caught up.
+          }
+        </div>
       </div>
-      <div class="flex shrink-0 items-center gap-0.5">
-        <p-button
-          icon="pi pi-refresh"
-          severity="secondary"
-          [text]="true"
-          [rounded]="true"
-          size="small"
+
+      <div class="notifications-panel__header-actions">
+        <ui-button
+          icon="arrow_sync"
+          variant="secondary"
+          appearance="subtle"
+          shape="circular"
           ariaLabel="Refresh notifications"
           [loading]="isLoading()"
-          (onClick)="notificationsService.loadNotifications()"
+          (click)="notificationsService.loadNotifications()"
         />
-        <p-button
-          icon="pi pi-check-circle"
-          severity="secondary"
-          [text]="true"
-          [rounded]="true"
-          size="small"
+        <ui-button
+          icon="checkmark_circle"
+          variant="secondary"
+          appearance="subtle"
+          shape="circular"
           ariaLabel="Mark all as read"
           [disabled]="unreadCount() === 0"
-          (onClick)="markAllAsRead()"
+          (click)="markAllAsRead()"
         />
       </div>
     </div>
-  </header>
+  </div>
+
+  <ui-tabs
+    class="notifications-panel__tabs"
+    [tabs]="notificationTabs"
+    [selectedTabId]="selectedTabId()"
+    (selectedTabIdChange)="onTabChange($event)"
+    appearance="subtle"
+    variant="primary"
+    [fullWidth]="true"
+  />
 
   @if (errorMessage()) {
-    <p-message severity="error" class="mx-4 mt-3 mb-0 block">
-      {{ errorMessage() }}
-    </p-message>
+    <div class="notifications-panel__error">
+      <ui-message-bar [title]="errorMessage()!" variant="danger" />
+    </div>
   }
 
-  @if (isLoading() && !hasLoaded()) {
-    <div
-      class="flex min-h-0 flex-1 flex-col items-center justify-center gap-2 overflow-y-auto px-4 py-12"
-    >
-      <p-progressSpinner ariaLabel="Loading notifications" styleClass="h-8 w-8" />
-      <p class="text-muted-color m-0 text-sm">Loading notifications...</p>
+  <div class="popover-panel__body notifications-panel__body">
+    @if (isLoading() && !hasLoaded()) {
+      <div class="notifications-panel__state">
+        <ui-spinner ariaLabel="Loading notifications" />
+        <span>Loading notifications...</span>
+      </div>
+    } @else if (activeTab() === 'unread') {
+      <ul class="notifications-panel__list">
+        @if (unreadNotifications().length > 0) {
+          @for (notification of unreadNotifications(); track notification.id) {
+            <li class="notifications-panel__item">
+              <button
+                type="button"
+                class="notifications-panel__item-button"
+                (click)="openNotification(notification)"
+              >
+                <span
+                  class="notifications-panel__status notifications-panel__status--unread"
+                  aria-hidden="true"
+                ></span>
+                <span class="notifications-panel__item-copy">
+                  <span class="notifications-panel__item-header">
+                    <span class="notifications-panel__item-title">
+                      {{ notification.issueTitle }}
+                    </span>
+                    <time class="notifications-panel__item-time">
+                      {{ notification.createdAt | date: 'dd.MM HH:mm' }}
+                    </time>
+                  </span>
+                  <span class="notifications-panel__item-message">
+                    {{ notification.message }}
+                  </span>
+                </span>
+              </button>
+              <div class="notifications-panel__item-action">
+                <ui-button
+                  icon="checkmark"
+                  variant="secondary"
+                  appearance="subtle"
+                  shape="circular"
+                  ariaLabel="Mark as read"
+                  (click)="markAsRead($event, notification)"
+                />
+              </div>
+            </li>
+          }
+        } @else {
+          <li class="notifications-panel__empty">
+            <ui-icon icon="mail_inbox" />
+            <span>No unread notifications</span>
+          </li>
+        }
+      </ul>
+    } @else {
+      <ul class="notifications-panel__list">
+        @if (readNotifications().length > 0) {
+          @for (notification of readNotifications(); track notification.id) {
+            <li class="notifications-panel__item">
+              <button
+                type="button"
+                class="notifications-panel__item-button"
+                (click)="openNotification(notification)"
+              >
+                <span class="notifications-panel__status" aria-hidden="true"></span>
+                <span class="notifications-panel__item-copy">
+                  <span class="notifications-panel__item-header">
+                    <span class="notifications-panel__item-title">
+                      {{ notification.issueTitle }}
+                    </span>
+                    <time class="notifications-panel__item-time">
+                      {{ notification.createdAt | date: 'dd.MM HH:mm' }}
+                    </time>
+                  </span>
+                  <span class="notifications-panel__item-message">
+                    {{ notification.message }}
+                  </span>
+                </span>
+              </button>
+            </li>
+          }
+        } @else {
+          <li class="notifications-panel__empty">
+            <ui-icon icon="mail_inbox" />
+            <span>No read notifications</span>
+          </li>
+        }
+      </ul>
+    }
+  </div>
+
+  @if (
+    (activeTab() === 'unread' && canShowMoreUnread()) ||
+    (activeTab() === 'read' && canShowMoreRead())
+  ) {
+    <div class="popover-panel__footer notifications-panel__footer">
+      <ui-button
+        text="Show more"
+        appearance="subtle"
+        variant="secondary"
+        [loading]="activeTab() === 'unread' ? isLoadingMoreUnread() : isLoadingMoreRead()"
+        (click)="activeTab() === 'unread' ? showMoreUnread() : showMoreRead()"
+      />
     </div>
-  } @else {
-    <p-tabs
-      [value]="activeTab()"
-      class="flex min-h-0 flex-1 flex-col"
-      (valueChange)="onTabChange($event)"
-    >
-      <p-tablist class="shrink-0 px-2">
-        <p-tab value="unread">
-          Unread
-          @if (unreadNotifications().length > 0) {
-            <span
-              class="bg-primary text-primary-contrast ml-1.5 inline-flex min-w-5 items-center justify-center rounded-full px-1.5 py-0.5 text-xs font-semibold leading-none"
-            >
-              {{ unreadNotifications().length }}
-            </span>
-          }
-        </p-tab>
-        <p-tab value="read">
-          Read
-          @if (readNotifications().length > 0) {
-            <span
-              class="bg-surface-200 text-muted-color ml-1.5 inline-flex min-w-5 items-center justify-center rounded-full px-1.5 py-0.5 text-xs font-medium leading-none dark:bg-surface-700"
-            >
-              {{ readNotifications().length }}
-            </span>
-          }
-        </p-tab>
-      </p-tablist>
-
-      <p-tabpanels class="min-h-0 flex-1 overflow-y-auto overscroll-y-contain">
-        <p-tabpanel value="unread">
-          <ul class="m-0 list-none p-0">
-            @if (unreadNotifications().length > 0) {
-              @for (
-                notification of unreadNotifications();
-                track notification.id;
-                let last = $last
-              ) {
-                <li
-                  [class.border-b]="!last"
-                  class="border-surface-200 group flex items-stretch"
-                >
-                  <button
-                    type="button"
-                    class="hover:bg-emphasis min-w-0 flex-1 items-start gap-3 px-4 py-3 text-left transition-colors dark:hover:bg-surface-800 flex"
-                    (click)="openNotification(notification)"
-                  >
-                    <span
-                      class="bg-primary mt-1.5 h-2 w-2 shrink-0 rounded-full"
-                      aria-hidden="true"
-                    ></span>
-                    <span class="min-w-0 flex-1">
-                      <span class="mb-0.5 flex items-baseline justify-between gap-2">
-                        <span class="text-color truncate text-sm font-medium">
-                          {{ notification.issueTitle }}
-                        </span>
-                        <time class="text-muted-color shrink-0 text-xs tabular-nums">
-                          {{ notification.createdAt | date: 'dd.MM HH:mm' }}
-                        </time>
-                      </span>
-                      <span
-                        class="text-muted-color line-clamp-2 block text-sm leading-snug"
-                      >
-                        {{ notification.message }}
-                      </span>
-                    </span>
-                  </button>
-                  <div class="flex shrink-0 items-center pr-1">
-                    <p-button
-                      icon="pi pi-check"
-                      severity="secondary"
-                      [text]="true"
-                      [rounded]="true"
-                      size="small"
-                      class="opacity-60 transition-opacity group-hover:opacity-100"
-                      ariaLabel="Mark as read"
-                      (onClick)="markAsRead($event, notification)"
-                    />
-                  </div>
-                </li>
-              }
-            } @else {
-              <li class="px-4 py-10 text-center">
-                <i
-                  class="pi pi-inbox text-muted-color mb-2 block text-2xl"
-                  aria-hidden="true"
-                ></i>
-                <p class="text-muted-color m-0 text-sm">No unread notifications</p>
-              </li>
-            }
-          </ul>
-          @if (canShowMoreUnread()) {
-            <div class="flex justify-center px-4 pb-3">
-              <p-button
-                type="button"
-                label="Show more"
-                [text]="true"
-                [loading]="isLoadingMoreUnread()"
-                (onClick)="showMoreUnread()"
-              />
-            </div>
-          }
-        </p-tabpanel>
-
-        <p-tabpanel value="read">
-          <ul class="m-0 list-none p-0">
-            @if (readNotifications().length > 0) {
-              @for (
-                notification of readNotifications();
-                track notification.id;
-                let last = $last
-              ) {
-                <li [class.border-b]="!last" class="border-surface-200">
-                  <button
-                    type="button"
-                    class="hover:bg-emphasis flex w-full items-start gap-3 px-4 py-3 text-left transition-colors dark:hover:bg-surface-800"
-                    (click)="openNotification(notification)"
-                  >
-                    <span class="mt-1.5 h-2 w-2 shrink-0" aria-hidden="true"></span>
-                    <span class="min-w-0 flex-1">
-                      <span class="mb-0.5 flex items-baseline justify-between gap-2">
-                        <span class="text-color truncate text-sm font-medium">
-                          {{ notification.issueTitle }}
-                        </span>
-                        <time class="text-muted-color shrink-0 text-xs tabular-nums">
-                          {{ notification.createdAt | date: 'dd.MM HH:mm' }}
-                        </time>
-                      </span>
-                      <span
-                        class="text-muted-color line-clamp-2 block text-sm leading-snug"
-                      >
-                        {{ notification.message }}
-                      </span>
-                    </span>
-                  </button>
-                </li>
-              }
-            } @else {
-              <li class="px-4 py-10 text-center">
-                <i
-                  class="pi pi-inbox text-muted-color mb-2 block text-2xl"
-                  aria-hidden="true"
-                ></i>
-                <p class="text-muted-color m-0 text-sm">No read notifications</p>
-              </li>
-            }
-          </ul>
-          @if (canShowMoreRead()) {
-            <div class="flex justify-center px-4 pb-3">
-              <p-button
-                type="button"
-                label="Show more"
-                [text]="true"
-                [loading]="isLoadingMoreRead()"
-                (onClick)="showMoreRead()"
-              />
-            </div>
-          }
-        </p-tabpanel>
-      </p-tabpanels>
-    </p-tabs>
   }
 </div>

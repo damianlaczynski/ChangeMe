@@ -1,133 +1,132 @@
-<p-card header="Issues list" subheader="Browse, filter and monitor issues.">
-  <div class="mb-4 flex justify-end">
-    <p-button
-      label="Add issue"
-      icon="pi pi-plus"
+<section class="app-page app-page--wide app-page--grid" aria-label="Issues list">
+  <header class="app-page__header">
+    <h1 class="app-page__title">Issues list</h1>
+    <p class="app-page__subtitle">Browse, filter and monitor issues.</p>
+  </header>
+
+  <div class="app-page__toolbar">
+    <ui-button
+      text="Add issue"
+      icon="add"
+      variant="primary"
       [routerLink]="['/issues', 'create']"
     />
   </div>
 
-  @if (errorMessage()) {
-    <p-message severity="error" class="mb-4">{{ errorMessage() }}</p-message>
-  }
+  <div class="app-page__body app-page__body--grid">
+    @if (errorMessage(); as message) {
+      <ui-message-bar [title]="message" variant="danger" />
+    }
 
-  <p-menu #issueActionsMenu [model]="issueActionItems()" [popup]="true" />
-
-  <qg-prime-data-grid [grid]="grid" dataKey="id" searchPlaceholder="Search issues…">
-    <ng-template
-      qgColumn="Title"
-      header="Title"
-      [filter]="{ type: 'text', placeholder: 'Title contains…' }"
-      let-issue
-    >
-      <a
-        class="text-primary font-medium hover:underline"
-        [routerLink]="['/issues', issue.id]"
+    <qg-ui-data-grid [grid]="grid" [pageSizeOptions]="[10, 25, 50]">
+      <ng-template
+        qgColumn="title"
+        header="Title"
+        [filter]="{ type: 'text', placeholder: 'Title…' }"
+        [qgColumnOf]="rowType"
+        width="220px"
+        let-issue
       >
-        {{ issue.title }}
-      </a>
-    </ng-template>
+        <a class="app-link" [routerLink]="['/issues', issue.id]">{{ issue.title }}</a>
+      </ng-template>
 
-    <ng-template
-      qgColumn="Status"
-      header="Status"
-      [filter]="{ type: 'enum', options: issueStatuses() }"
-      let-issue
-    >
-      <p-tag
-        [value]="getIssueStatusLabel(issue.status)"
-        [severity]="getIssueStatusSeverity(issue.status)"
-      />
-    </ng-template>
-
-    <ng-template
-      qgColumn="Priority"
-      header="Priority"
-      [filter]="{ type: 'enum', options: issuePriorities() }"
-      let-issue
-    >
-      <p-tag
-        [value]="getIssuePriorityLabel(issue.priority)"
-        [severity]="getIssuePrioritySeverity(issue.priority)"
-      />
-    </ng-template>
-
-    <ng-template
-      qgColumn="AssignedToUserId"
-      header="Assigned to"
-      [sortable]="false"
-      [filter]="assignedToFilter()"
-      let-issue
-    >
-      {{ issue.assignedToUserName || 'Unassigned' }}
-    </ng-template>
-
-    <ng-template
-      qgColumn="CreatedAt"
-      header="Created at"
-      [filter]="{ type: 'date' }"
-      let-issue
-    >
-      {{ issue.createdAt | date: 'dd.MM.yyyy HH:mm' }}
-    </ng-template>
-
-    <ng-template
-      qgColumn="LastActivityAt"
-      header="Last activity"
-      [filter]="{ type: 'date' }"
-      let-issue
-    >
-      {{ issue.lastActivityAt | date: 'dd.MM.yyyy HH:mm' }}
-    </ng-template>
-
-    <ng-template qgColumn="actions" header="" [sortable]="false" let-issue>
-      <div class="flex flex-wrap items-center gap-2">
-        <p-button
-          [label]="issue.watchersCount.toString()"
-          [icon]="issue.isWatchedByCurrentUser ? 'pi pi-bell-slash' : 'pi pi-bell'"
-          [severity]="issue.isWatchedByCurrentUser ? 'success' : 'secondary'"
-          [outlined]="!issue.isWatchedByCurrentUser"
-          size="small"
-          [loading]="isWatchPending(issue.id)"
-          [pTooltip]="getWatchTooltip(issue)"
-          tooltipPosition="top"
-          [attr.aria-label]="getWatchTooltip(issue)"
-          (onClick)="toggleWatch(issue)"
+      <ng-template
+        qgColumn="status"
+        header="Status"
+        [filter]="{ type: 'enum', options: issueStatuses() }"
+        [qgColumnOf]="rowType"
+        width="140px"
+        let-issue
+      >
+        <ui-tag
+          [text]="getIssueStatusLabel(issue.status)"
+          [variant]="getIssueStatusSeverity(issue.status)"
+          appearance="tint"
         />
-        <p-button
-          type="button"
-          icon="pi pi-ellipsis-v"
-          severity="secondary"
-          [text]="true"
-          size="small"
-          pTooltip="Issue actions"
-          tooltipPosition="top"
-          [attr.aria-label]="'Actions for ' + issue.title"
-          (onClick)="openIssueActionsMenu($event, issue)"
-        />
-      </div>
-    </ng-template>
+      </ng-template>
 
-    <ng-template qgEmpty>
-      <div class="flex flex-col items-center gap-2 py-4">
-        <p class="text-center text-muted-color">{{ emptyMessage() }}</p>
-        <div class="flex flex-wrap items-center gap-2">
-          <p-button
-            size="small"
-            label="Add issue"
-            icon="pi pi-plus"
-            [routerLink]="['/issues', 'create']"
+      <ng-template
+        qgColumn="priority"
+        header="Priority"
+        [filter]="{ type: 'enum', options: issuePriorities() }"
+        [qgColumnOf]="rowType"
+        width="140px"
+        let-issue
+      >
+        <ui-tag
+          [text]="getIssuePriorityLabel(issue.priority)"
+          [variant]="getIssuePrioritySeverity(issue.priority)"
+          appearance="tint"
+        />
+      </ng-template>
+
+      <ng-template
+        qgColumn="assignedToUserId"
+        header="Assigned to"
+        [sortable]="false"
+        [filter]="{ type: 'enum', options: assignableUserFilterOptions() }"
+        [qgColumnOf]="rowType"
+        width="180px"
+        let-issue
+      >
+        {{ issue.assignedToUserName || 'Unassigned' }}
+      </ng-template>
+
+      <ng-template
+        qgColumn="createdAt"
+        header="Created at"
+        [filter]="{ type: 'date' }"
+        [qgColumnOf]="rowType"
+        width="160px"
+        let-issue
+      >
+        {{ issue.createdAt | date: 'dd.MM.yyyy HH:mm' }}
+      </ng-template>
+
+      <ng-template
+        qgColumn="lastActivityAt"
+        header="Last activity"
+        [filter]="{ type: 'date' }"
+        [qgColumnOf]="rowType"
+        width="160px"
+        let-issue
+      >
+        {{ issue.lastActivityAt | date: 'dd.MM.yyyy HH:mm' }}
+      </ng-template>
+
+      <ng-template
+        qgColumn="actions"
+        header=""
+        [sortable]="false"
+        [qgColumnOf]="rowType"
+        width="140px"
+        let-issue
+      >
+        <div class="app-row">
+          <ui-button
+            [text]="issue.watchersCount.toString()"
+            [icon]="issue.isWatchedByCurrentUser ? 'alert_off' : 'alert'"
+            [variant]="issue.isWatchedByCurrentUser ? 'success' : 'secondary'"
+            [appearance]="issue.isWatchedByCurrentUser ? 'filled' : 'outline'"
+            [loading]="isWatchPending(issue.id)"
+            [uiTooltip]="getWatchTooltip(issue)"
+            uiTooltipPosition="top"
+            [attr.aria-label]="getWatchTooltip(issue)"
+            (click)="toggleWatch(issue)"
           />
-          <p-button
-            size="small"
-            label="Refresh"
-            icon="pi pi-refresh"
-            severity="secondary"
-            [outlined]="true"
-            (onClick)="refresh()"
+          <ui-menu
+            triggerVariant="dropdown"
+            [menuItems]="getIssueMenuItems(issue)"
+            icon="more_horizontal"
+            ariaLabel="Issue actions"
+            (menuItemClick)="onIssueMenuAction($event, issue)"
           />
         </div>
-      </div>
-    </ng-template>
-  </qg-prime-data-grid>
-</p-card>
+      </ng-template>
+
+      <ng-template qgEmpty>
+        <p>{{ getGridListEmptyMessage(grid.query()) }}</p>
+      </ng-template>
+    </qg-ui-data-grid>
+  </div>
+</section>

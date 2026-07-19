@@ -1,67 +1,71 @@
-<p-card
-  class="mb-4"
-  header="Create Role"
-  subheader="Define a custom role and its permissions"
->
-  <div class="mb-4 flex flex-wrap items-center gap-2">
+<section class="app-page app-page--form app-page--wide" aria-label="Create role">
+  <header class="app-page__header">
+    <h1 class="app-page__title">Create Role</h1>
+    <p class="app-page__subtitle">Define a custom role and its permissions</p>
+  </header>
+
+  <div class="app-page__toolbar">
     <app-back-button label="Back to roles list" [route]="['/roles']" />
   </div>
 
-  <form class="p-fluid flex flex-col gap-4" [formGroup]="form" (ngSubmit)="onSubmit()">
-    <p-panel header="Role details" [toggleable]="true">
-      <div class="flex flex-col gap-1.5">
-        <label for="name">Name</label>
-        <input
-          id="name"
-          type="text"
-          pInputText
-          [formControl]="form.controls.name"
-          [invalid]="shouldShowError(form.controls.name)"
-        />
-      </div>
+  <div class="app-page__body app-page__body--form">
+    <form class="app-form-workspace" [formGroup]="form" (ngSubmit)="onSubmit()">
+      <div class="app-form-workspace__scroll app-stack-md">
+        <ui-accordion appDefaultExpanded label="Role details" icon="shield">
+          <div class="app-stack-md">
+            <ui-text
+              label="Name"
+              [formControl]="form.controls.name"
+              [required]="true"
+              [errorText]="
+                fieldError(form.controls.name, RoleFieldErrors.name, submitted())
+              "
+            />
+            <ui-textarea
+              label="Description"
+              [rows]="3"
+              [formControl]="form.controls.description"
+              [errorText]="
+                fieldError(
+                  form.controls.description,
+                  RoleFieldErrors.description,
+                  submitted()
+                )
+              "
+            />
+          </div>
+        </ui-accordion>
 
-      <div class="mt-4 flex flex-col gap-1.5">
-        <label for="description">Description</label>
-        <textarea
-          id="description"
-          pTextarea
-          rows="3"
-          [formControl]="form.controls.description"
-          [invalid]="shouldShowError(form.controls.description)"
-        ></textarea>
-        @if (shouldShowError(form.controls.description)) {
-          <p-message severity="error" variant="simple">
-            {{ RoleMessages.descriptionTooLong }}
-          </p-message>
+        <ui-accordion appDefaultExpanded label="Permissions" icon="key">
+          <app-permission-checklist
+            [catalog]="catalog()"
+            [control]="form.controls.permissionCodes"
+            [showFormError]="permissionsError()"
+          />
+        </ui-accordion>
+
+        @if (submitError()) {
+          <ui-message-bar [title]="submitError()!" variant="danger" />
         }
       </div>
-    </p-panel>
 
-    <p-panel header="Permissions" [toggleable]="true">
-      <app-permission-checklist
-        [catalog]="catalog()"
-        [control]="form.controls.permissionCodes"
-        [showFormError]="permissionsError()"
-      />
-    </p-panel>
-
-    @if (submitError()) {
-      <p-message severity="error">{{ submitError() }}</p-message>
-    }
-
-    <div class="flex flex-wrap items-center justify-end gap-2">
-      <p-button
-        label="Cancel"
-        severity="secondary"
-        [outlined]="true"
-        (onClick)="cancel()"
-      />
-      <p-button
-        type="submit"
-        [label]="isSubmitting() ? 'Creating role...' : 'Create role'"
-        icon="pi pi-check"
-        [loading]="isSubmitting()"
-      />
-    </div>
-  </form>
-</p-card>
+      <footer class="app-form-workspace__footer">
+        <div class="app-form__actions">
+          <ui-button
+            text="Cancel"
+            variant="secondary"
+            appearance="outline"
+            (click)="cancel()"
+          />
+          <ui-button
+            type="submit"
+            [text]="isSubmitting() ? 'Creating role...' : 'Create role'"
+            icon="checkmark"
+            variant="primary"
+            [loading]="isSubmitting()"
+          />
+        </div>
+      </footer>
+    </form>
+  </div>
+</section>

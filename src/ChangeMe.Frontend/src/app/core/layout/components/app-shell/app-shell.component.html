@@ -1,146 +1,99 @@
-<div class="flex min-h-screen w-full bg-surface-50 dark:bg-surface-950">
+<div class="app-shell">
   @if (showAuthenticatedChrome()) {
-    <aside
-      class="sticky top-0 hidden h-screen shrink-0 flex-col border-r border-surface-200 bg-surface-0 transition-[width] duration-200 ease-in-out dark:border-surface-700 dark:bg-surface-900 md:flex"
-      [class.w-16]="layoutService.$sidebarCollapsed()"
-      [class.w-60]="!layoutService.$sidebarCollapsed()"
-      [attr.aria-expanded]="!layoutService.$sidebarCollapsed()"
-    >
-      <div
-        class="flex h-14 shrink-0 items-center border-b border-surface-200 px-3 dark:border-surface-700"
-        [class.justify-center]="layoutService.$sidebarCollapsed()"
-        [class.gap-2]="!layoutService.$sidebarCollapsed()"
-      >
-        <i class="pi pi-bolt text-primary text-xl" aria-hidden="true"></i>
-        @if (!layoutService.$sidebarCollapsed()) {
-          <span class="text-color truncate text-lg font-semibold">ChangeMe</span>
-        }
+    <header class="app-shell__header">
+      <div class="app-shell__header-start">
+        <ui-button
+          variant="primary"
+          appearance="outline"
+          shape="circular"
+          [icon]="sidebarOpen() ? 'dismiss' : 'navigation'"
+          [ariaLabel]="sidebarOpen() ? 'Hide navigation' : 'Show navigation'"
+          (click)="onMenuToggle()"
+        />
+        <h1 class="app-shell__brand">ChangeMe</h1>
       </div>
 
-      <div class="flex min-h-0 flex-1 flex-col overflow-y-auto">
-        <app-sidebar-nav
-          [items]="authenticatedNavItems()"
-          [collapsed]="layoutService.$sidebarCollapsed()"
-        />
-      </div>
-    </aside>
-
-    <p-drawer
-      class="md:hidden"
-      [visible]="layoutService.$mobileNavOpen()"
-      (visibleChange)="onMobileNavVisibleChange($event)"
-      position="left"
-      [modal]="true"
-      [dismissible]="true"
-      [showCloseIcon]="true"
-      header="ChangeMe"
-      styleClass="app-shell-drawer !w-[min(100vw,18rem)]"
-    >
-      <app-sidebar-nav
-        [items]="authenticatedNavItems()"
-        [collapsed]="false"
-        (navigate)="layoutService.closeMobileNav()"
-      />
-    </p-drawer>
-  }
-
-  <div class="flex min-w-0 flex-1 flex-col">
-    @if (showAuthenticatedChrome()) {
-      <header
-        class="sticky top-0 z-20 flex h-14 shrink-0 items-center gap-2 border-b border-surface-200 bg-surface-0 px-3 dark:border-surface-700 dark:bg-surface-900 md:px-4"
-      >
-        <p-button
-          [icon]="
-            isDesktop() && layoutService.$sidebarCollapsed()
-              ? 'pi pi-angle-right'
-              : 'pi pi-bars'
-          "
-          [rounded]="true"
-          [text]="true"
-          severity="secondary"
-          [attr.aria-label]="
-            isDesktop()
-              ? layoutService.$sidebarCollapsed()
-                ? 'Expand sidebar'
-                : 'Collapse sidebar'
-              : 'Open navigation menu'
-          "
-          (onClick)="onMenuToggle()"
-        />
-
-        <span class="text-color truncate text-lg font-semibold md:hidden">
-          ChangeMe
+      <div class="app-shell__header-actions">
+        <app-notifications-bell />
+        <button
+          type="button"
+          class="app-theme-toggle"
+          (click)="layoutService.toggleTheme()"
+          [attr.aria-label]="themeLabel()"
+        >
+          <ui-icon [icon]="themeIcon()" />
+          <span class="app-theme-toggle__label">{{ themeLabel() }}</span>
+        </button>
+        <span class="app-shell__user-label">
+          {{ formatUserReference(currentUser()!) }}
         </span>
+        <ui-button
+          text="Logout"
+          icon="sign_out"
+          variant="secondary"
+          appearance="outline"
+          class="app-shell__logout-desktop"
+          (click)="logout()"
+        />
+        <ui-button
+          icon="sign_out"
+          variant="secondary"
+          appearance="subtle"
+          shape="circular"
+          ariaLabel="Logout"
+          class="app-shell__logout-mobile"
+          (click)="logout()"
+        />
+      </div>
+    </header>
 
-        <div class="flex-1"></div>
-
-        <div class="flex flex-wrap items-center gap-1 sm:gap-2">
-          <app-notifications-bell />
-          <p-button
-            [icon]="layoutService.$themeMode() === 'dark' ? 'pi pi-sun' : 'pi pi-moon'"
-            [rounded]="true"
-            [text]="true"
-            severity="secondary"
-            [attr.aria-label]="
-              layoutService.$themeMode() === 'dark'
-                ? 'Switch to light mode'
-                : 'Switch to dark mode'
-            "
-            (onClick)="layoutService.toggleTheme()"
-          />
-          <span
-            class="text-muted-color hidden max-w-[12rem] truncate text-sm lg:inline"
-          >
-            {{ formatUserReference(currentUser()!) }}
-          </span>
-          <p-button
-            label="Logout"
-            icon="pi pi-sign-out"
-            severity="secondary"
-            [outlined]="true"
-            size="small"
-            class="hidden sm:inline-flex"
-            (onClick)="logout()"
-          />
-          <p-button
-            icon="pi pi-sign-out"
-            severity="secondary"
-            [rounded]="true"
-            [text]="true"
-            class="sm:hidden"
-            ariaLabel="Logout"
-            (onClick)="logout()"
+    <div class="app-shell__workspace">
+      <ui-drawer
+        class="app-shell__sidebar-drawer"
+        [type]="isMobile() ? 'overlay' : 'inline'"
+        position="left"
+        size="small"
+        [title]="isMobile() ? 'Menu' : ''"
+        [modalType]="isMobile() ? 'modal' : 'alert'"
+        [bodyScrollable]="true"
+        [closable]="isMobile()"
+        [visible]="sidebarOpen()"
+        (close)="closeSidebar()"
+      >
+        <div class="app-sidebar">
+          <app-sidebar-nav
+            [items]="authenticatedNavItems()"
+            (navigate)="onSidebarNavigate()"
           />
         </div>
-      </header>
-    } @else {
-      <header
-        class="flex h-14 shrink-0 items-center justify-between gap-4 border-b border-surface-200 bg-surface-0 px-4 dark:border-surface-700 dark:bg-surface-900"
-      >
-        <span class="text-color flex items-center gap-2 text-lg font-semibold">
-          <i class="pi pi-bolt text-primary" aria-hidden="true"></i>
-          ChangeMe
-        </span>
-        <nav class="flex items-center gap-2" aria-label="Account navigation">
-          <p-button
-            [icon]="layoutService.$themeMode() === 'dark' ? 'pi pi-sun' : 'pi pi-moon'"
-            [rounded]="true"
-            [text]="true"
-            severity="secondary"
-            [attr.aria-label]="
-              layoutService.$themeMode() === 'dark'
-                ? 'Switch to light mode'
-                : 'Switch to dark mode'
-            "
-            (onClick)="layoutService.toggleTheme()"
-          />
-          <p-button label="Login" [text]="true" [routerLink]="['/login']" />
-        </nav>
-      </header>
-    }
+      </ui-drawer>
 
-    <main class="mx-auto flex w-full max-w-6xl min-h-0 flex-1 flex-col p-4 md:p-6">
+      <main class="app-shell__content">
+        <router-outlet />
+      </main>
+    </div>
+  } @else {
+    <header class="app-guest-header">
+      <span class="app-guest-header__brand">
+        <ui-icon icon="flash" />
+        ChangeMe
+      </span>
+      <nav class="app-row" aria-label="Account navigation">
+        <button
+          type="button"
+          class="app-theme-toggle"
+          (click)="layoutService.toggleTheme()"
+          [attr.aria-label]="themeLabel()"
+        >
+          <ui-icon [icon]="themeIcon()" />
+          <span class="app-theme-toggle__label">{{ themeLabel() }}</span>
+        </button>
+        <ui-button text="Login" appearance="subtle" (click)="navigateToLogin()" />
+      </nav>
+    </header>
+
+    <main class="app-shell__content app-shell__content--guest">
       <router-outlet />
     </main>
-  </div>
+  }
 </div>

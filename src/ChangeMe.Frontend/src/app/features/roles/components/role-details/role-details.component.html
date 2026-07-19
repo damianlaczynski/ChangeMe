@@ -1,172 +1,176 @@
-<p-card
-  class="mb-4"
-  [header]="pageTitle()"
-  subheader="Review role metadata, permissions, and assigned users"
->
-  <div class="mb-4 flex flex-wrap items-center gap-2">
-    <app-back-button label="Back to roles list" [route]="['/roles']" />
-    @if (role(); as current) {
-      @if (canManageRoles() && !current.isSystem) {
-        <p-button
-          label="Edit"
-          icon="pi pi-pencil"
-          severity="secondary"
-          [outlined]="true"
-          size="small"
-          [routerLink]="['/roles', current.id, 'edit']"
-        />
-        <p-button
-          label="Delete"
-          icon="pi pi-trash"
-          severity="danger"
-          [outlined]="true"
-          size="small"
-          (onClick)="confirmDeleteRole()"
-        />
+<section class="app-page app-page--wide" aria-label="Role details">
+  <header class="app-page__header">
+    <h1 class="app-page__title">{{ pageTitle() }}</h1>
+    <p class="app-page__subtitle">
+      Review role metadata, permissions, and assigned users
+    </p>
+  </header>
+
+  <div class="app-page__body app-stack-md">
+    <div class="app-page__toolbar">
+      <app-back-button label="Back to roles list" [route]="['/roles']" />
+      @if (role(); as current) {
+        @if (canManageRoles() && !current.isSystem) {
+          <ui-button
+            text="Edit"
+            icon="edit"
+            variant="secondary"
+            appearance="outline"
+            [routerLink]="['/roles', current.id, 'edit']"
+          />
+          <ui-button
+            text="Delete"
+            icon="delete"
+            variant="danger"
+            appearance="outline"
+            (click)="confirmDeleteRole()"
+          />
+        }
       }
+    </div>
+
+    @if (showSystemRoleEditBlockedMessage()) {
+      <ui-message-bar
+        [title]="RoleMessages.systemRoleCannotBeModified"
+        variant="warning"
+      />
+    }
+
+    @if (isLoading()) {
+      <div class="app-center-state">
+        <ui-spinner size="medium" ariaLabel="Loading role details" />
+        <p class="app-muted">Loading role details...</p>
+      </div>
+    } @else if (errorMessage()) {
+      <div class="app-center-state">
+        <ui-message-bar [title]="errorMessage()!" variant="danger" />
+        <ui-button
+          text="Try again"
+          icon="arrow_sync"
+          variant="secondary"
+          appearance="outline"
+          [loading]="isLoading()"
+          (click)="refresh()"
+        />
+      </div>
+    } @else if (role(); as current) {
+      <div class="app-workspace-panel">
+        <div class="app-workspace-panel__facts">
+          @if (current.isSystem) {
+            <div class="app-workspace-stat">
+              <span class="app-workspace-stat__label">Type</span>
+              <span class="app-workspace-stat__value">System role</span>
+            </div>
+          }
+          <div class="app-workspace-stat">
+            <span class="app-workspace-stat__label">Permissions</span>
+            <span class="app-workspace-stat__value">
+              {{ RoleMessages.permissionsCount(current.permissionCount) }}
+            </span>
+          </div>
+          <div class="app-workspace-stat">
+            <span class="app-workspace-stat__label">Assigned users</span>
+            <span class="app-workspace-stat__value">
+              {{ RoleMessages.usersCount(current.userCount) }}
+            </span>
+          </div>
+        </div>
+
+        <section class="app-workspace-panel__block">
+          <h2 class="app-workspace-panel__heading">Description</h2>
+          <div class="app-workspace-panel__surface">
+            <p class="app-workspace-panel__text">
+              {{ formatDescription(current.description) }}
+            </p>
+          </div>
+        </section>
+
+        @if (current.permissions.length > 0) {
+          <app-effective-permissions
+            header="Permissions"
+            [permissions]="current.permissions"
+            [showFromRoles]="false"
+          />
+        }
+
+        <section class="app-workspace-panel__block">
+          <h2 class="app-workspace-panel__heading">Assigned users</h2>
+          <div class="app-workspace-panel__surface app-stack-md">
+            <ui-text
+              label="Search assigned users"
+              placeholder="Search assigned users..."
+              [formControl]="usersSearchControl"
+            />
+
+            <div class="app-data-table">
+              <table class="app-data-table__table">
+                <thead>
+                  <tr>
+                    <th scope="col">Name</th>
+                    <th scope="col">Email</th>
+                    <th scope="col">Account</th>
+                    @if (canManageRoles()) {
+                      <th scope="col">Actions</th>
+                    }
+                  </tr>
+                </thead>
+                <tbody>
+                  @if (isLoadingUsers()) {
+                    <tr>
+                      <td [attr.colspan]="canManageRoles() ? 4 : 3">
+                        <ui-spinner ariaLabel="Loading assigned users" />
+                      </td>
+                    </tr>
+                  } @else if (assignedUsers().length > 0) {
+                    @for (user of assignedUsers(); track user.id) {
+                      @let membershipStatus = toUserMembershipStatus(user.deactivated);
+                      <tr>
+                        <td>
+                          <a class="app-link" [routerLink]="['/users', user.id]">
+                            {{ formatUserName(user) || '—' }}
+                          </a>
+                        </td>
+                        <td>{{ user.email }}</td>
+                        <td>
+                          <ui-tag
+                            [text]="getUserStatusLabel(membershipStatus)"
+                            [variant]="getUserStatusSeverity(membershipStatus)"
+                            appearance="tint"
+                          />
+                        </td>
+                        @if (canManageRoles()) {
+                          <td>
+                            <ui-button
+                              text="Remove from role"
+                              icon="person_delete"
+                              variant="danger"
+                              appearance="subtle"
+                              (click)="confirmRemoveUser(user)"
+                            />
+                          </td>
+                        }
+                      </tr>
+                    }
+                  } @else if (hasLoadedUsers()) {
+                    <tr>
+                      <td [attr.colspan]="canManageRoles() ? 4 : 3">
+                        <p class="app-workspace-panel__empty">{{ RoleMessages.noAssignedUsers }}</p>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+
+            @if (hasLoadedUsers()) {
+              <ui-pagination
+                [config]="assignedUsersPaginationConfig()"
+                (pageChange)="onAssignedUsersPageChange($event)"
+              />
+            }
+          </div>
+        </section>
+      </div>
     }
   </div>
-
-  @if (showSystemRoleEditBlockedMessage()) {
-    <p-message class="mb-4" severity="warn">
-      {{ RoleMessages.systemRoleCannotBeModified }}
-    </p-message>
-  }
-
-  @if (isLoading()) {
-    <div class="flex flex-col items-center gap-2 py-8">
-      <p-progressSpinner ariaLabel="Loading role details" />
-      <p class="text-muted-color m-0 text-sm">Loading role details...</p>
-    </div>
-  } @else if (errorMessage()) {
-    <div class="flex flex-col items-center gap-2">
-      <p-message severity="error">{{ errorMessage() }}</p-message>
-      <p-button
-        size="small"
-        label="Try again"
-        icon="pi pi-refresh"
-        severity="secondary"
-        [outlined]="true"
-        [loading]="isLoading()"
-        (onClick)="refresh()"
-      />
-    </div>
-  } @else if (role(); as current) {
-    <dl
-      class="mb-6 grid gap-4 rounded-lg border border-surface-200 p-4 sm:grid-cols-2 lg:grid-cols-3"
-    >
-      <div class="flex flex-col gap-1">
-        <dt class="text-muted-color text-sm">Name</dt>
-        <dd class="m-0 font-medium">{{ current.name }}</dd>
-      </div>
-      <div class="flex flex-col gap-1 sm:col-span-2">
-        <dt class="text-muted-color text-sm">Description</dt>
-        <dd class="m-0 font-medium">{{ formatDescription(current.description) }}</dd>
-      </div>
-      @if (current.isSystem) {
-        <div class="flex flex-col gap-1">
-          <dt class="text-muted-color text-sm">System</dt>
-          <dd class="m-0"><p-tag value="System" severity="info" /></dd>
-        </div>
-      }
-      <div class="flex flex-col gap-1">
-        <dt class="text-muted-color text-sm">Permissions</dt>
-        <dd class="m-0 font-medium">
-          {{ RoleMessages.permissionsCount(current.permissionCount) }}
-        </dd>
-      </div>
-      <div class="flex flex-col gap-1">
-        <dt class="text-muted-color text-sm">Assigned users</dt>
-        <dd class="m-0 font-medium">
-          {{ RoleMessages.usersCount(current.userCount) }}
-        </dd>
-      </div>
-    </dl>
-
-    @if (current.permissions.length > 0) {
-      <app-effective-permissions
-        class="mb-4"
-        header="Permissions"
-        [permissions]="current.permissions"
-        [showFromRoles]="false"
-      />
-    }
-
-    <p-panel header="Assigned users" [toggleable]="true">
-      <div class="mb-4 flex flex-col gap-1.5">
-        <label for="assignedUsersSearch">Search assigned users</label>
-        <input
-          id="assignedUsersSearch"
-          type="text"
-          pInputText
-          [formControl]="usersSearchControl"
-          placeholder="Search assigned users..."
-          class="w-full"
-        />
-      </div>
-
-      <p-table [value]="assignedUsers()" [loading]="isLoadingUsers()" stripedRows>
-        <ng-template #header>
-          <tr>
-            <th scope="col">Name</th>
-            <th scope="col">Email</th>
-            <th scope="col">Account</th>
-            @if (canManageRoles()) {
-              <th scope="col">Actions</th>
-            }
-          </tr>
-        </ng-template>
-        <ng-template #body let-user>
-          @let membershipStatus = toUserMembershipStatus(user.deactivated);
-          <tr>
-            <td>
-              <a
-                class="text-primary font-medium hover:underline"
-                [routerLink]="['/users', user.id]"
-              >
-                {{ formatUserName(user) || '—' }}
-              </a>
-            </td>
-            <td>{{ user.email }}</td>
-            <td>
-              <p-tag
-                [value]="getUserStatusLabel(membershipStatus)"
-                [severity]="getUserStatusSeverity(membershipStatus)"
-              />
-            </td>
-            @if (canManageRoles()) {
-              <td>
-                <p-button
-                  label="Remove from role"
-                  icon="pi pi-user-minus"
-                  severity="danger"
-                  [text]="true"
-                  size="small"
-                  (onClick)="confirmRemoveUser(user)"
-                />
-              </td>
-            }
-          </tr>
-        </ng-template>
-        <ng-template #emptymessage>
-          <tr>
-            <td [attr.colspan]="canManageRoles() ? 4 : 3">
-              <p class="text-muted-color m-0 py-4 text-center">
-                {{ RoleMessages.noAssignedUsers }}
-              </p>
-            </td>
-          </tr>
-        </ng-template>
-      </p-table>
-
-      @if (hasLoadedUsers()) {
-        <p-paginator
-          [rows]="assignedUsersGrid().take ?? DEFAULT_GRID_PAGE_SIZE"
-          [totalRecords]="assignedUsersTotalCount()"
-          [first]="assignedUsersGrid().skip ?? 0"
-          (onPageChange)="onAssignedUsersPageChange($event)"
-        />
-      }
-    </p-panel>
-  }
-</p-card>
+</section>

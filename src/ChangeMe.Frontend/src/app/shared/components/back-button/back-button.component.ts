@@ -1,18 +1,17 @@
 import { Component, inject, input } from '@angular/core';
 import { Router } from '@angular/router';
-import { Button } from 'primeng/button';
+import { ButtonComponent } from '@laczynski/ui';
 
 @Component({
   selector: 'app-back-button',
-  imports: [Button],
+  imports: [ButtonComponent],
   template: `
-    <p-button
-      [label]="label()"
-      size="small"
-      icon="pi pi-arrow-left"
-      severity="secondary"
-      [outlined]="true"
-      (onClick)="onBack()"
+    <ui-button
+      [text]="label()"
+      icon="arrow_left"
+      variant="secondary"
+      appearance="outline"
+      (click)="onBack()"
     />
   `
 })

@@ -2,11 +2,11 @@
 
 > **L5 — Implementation.** Scope: current conventions for writing Angular code in this frontend.
 >
-> **Product behaviour** (lists, forms, validation UX, toasts): [`product-standards.md`](../requirements/_shared/conventions/product-standards.md) (L2). **Feature rules**: target `FR-*` (L4). This file covers _how_ to implement in Angular/PrimeNG.
+> **Product behaviour** (lists, forms, validation UX, toasts): [`product-standards.md`](../requirements/_shared/conventions/product-standards.md) (L2). **Feature rules**: target `FR-*` (L4). This file covers _how_ to implement in Angular with **@laczynski/ui**.
 
 ## Stack summary
 
-Angular 21 standalone application with strict TypeScript settings, ESLint, and Prettier. UI components come from **PrimeNG** with the **Aura**-based `AppPreset` from `@primeuix/themes`. Layout and spacing use **Tailwind CSS v4** with the official `tailwindcss-primeui` plugin. State currently uses a mix of Angular signals and RxJS Observables. HTTP calls go through a shared `ApiService`. Feature code is grouped under `src/app/features`.
+Angular 21 standalone application with strict TypeScript settings, ESLint, and Prettier. UI components come from [**@laczynski/ui**](https://ui.laczynski.dev/) — a Fluent-inspired Angular component library. Global layout and page chrome use shared SCSS in `src/styles.scss` backed by Laczynski design tokens (`--color-*`). State uses a mix of Angular signals and RxJS Observables. HTTP calls go through a shared `ApiService`. Feature code is grouped under `src/app/features`.
 
 For dev server, lint, format, and test commands from `src/ChangeMe.Frontend` or from the repository root (`npm run start:frontend`, `npm run lint:frontend`, and related scripts), see `AGENTS.md`.
 
@@ -25,7 +25,7 @@ For dev server, lint, format, and test commands from `src/ChangeMe.Frontend` or 
 ### Standalone components
 
 - New components should remain standalone.
-- Declare Angular and router dependencies in the component `imports` array.
+- Declare Angular and Laczynski UI dependencies in the component `imports` array.
 - Keep route components under `features/<feature>/components/<component-name>/`.
 
 ### State and data loading
@@ -68,50 +68,61 @@ For dev server, lint, format, and test commands from `src/ChangeMe.Frontend` or 
 - Keep user-facing text consistent within a feature. If a feature is already English-only in UI text, do not partially localize one screen.
 - Prefer moving formatting or mapping logic out of templates when it starts to obscure the markup.
 
-## PrimeNG
+## @laczynski/ui
 
 ### Global setup
 
-- Theme and PrimeNG providers are configured once in `src/app/app.config.ts` through `providePrimeNG()`. PrimeNG v21 uses CSS-based animations; do not add deprecated `provideAnimationsAsync()`.
-- Ripple is enabled globally via `ripple: true` in `providePrimeNG()`.
-- Shared icon styles are imported globally from `src/tailwind.css` (`primeicons`).
-- Do not add a second UI kit beside PrimeNG for application screens.
+- Library styles are registered once in `angular.json` via `src/styles.scss`, which `@use`s `@laczynski/ui/src/lib/scss/main`.
+- Icon sprite assets are copied from `node_modules/@laczynski/ui/assets/icons` to `/assets/icons` in `angular.json`.
+- Root shell renders `<ui-toast-container />` and `<app-confirm-dialog />` in `app.component.ts`.
+- Do not add a second UI kit beside `@laczynski/ui` for application screens.
 
 ### Component usage
 
-- Import PrimeNG modules in the standalone `imports` array of the component that uses them. Do not create a global `SharedModule`.
-- Prefer PrimeNG form controls (`pInputText`, `pTextarea`, `p-select`, `p-multiselect`, `p-checkbox`, `p-password`) with reactive forms and `[formControl]` binding instead of native HTML inputs.
-- For validated fields, bind invalid state to PrimeNG: `[invalid]="form.controls.field.touched && form.controls.field.errors"`.
-- Wrap page content in `p-card` when a screen needs a clear content frame; use `p-fluid` on forms that should stretch inputs to the container width.
-- Use `p-message` for inline validation and request errors. Put the message copy inside the tag (`<p-message>…</p-message>`); do not use the deprecated `text` input.
-- PrimeNG exposes toast through `MessageService` (`add` / `clear`) plus `<p-toast>` in the root template. Use the app `ToastService` facade in features so `key`, `life`, and severity helpers stay consistent; do not inject `MessageService` in feature code.
-- Use `p-message` for inline field validation and screen-level load errors; use toasts for successful mutations and action failures that are not tied to a single form field.
-- Use `p-tag` for compact status labels such as issue status or priority.
-- Use `p-table` for tabular data, `p-paginator` for server-driven paging, and `p-progressSpinner` or table `[loading]` for in-flight data.
-- **Administrative list screens** (Issues, Users, Roles) use **QueryGrid** via `@query-grid/primeng` (`<qg-prime-data-grid>`, `QgColumnDirective`, `GridResourceFactory`). Column-header filters, multi-sort, search, and pagination are driven by a `GridResource` created in the component; the feature service passes `GridQuery` to the API as a `grid` query parameter and returns `GridResult<T>` from `@query-grid/core`. See `features/issues/components/issues-list/` as the reference implementation.
+- Import Laczynski components from `@laczynski/ui` in the standalone `imports` array of the component that uses them.
+- Prefer Laczynski field components (`ui-text`, `ui-textarea`, `ui-email`, `ui-password`, `ui-dropdown`, `ui-checkbox`, `ui-file`) with reactive forms and `[formControl]` binding.
+- Bind validation messages with `[errorText]` and `fieldError()` from `@shared/forms/field-error.ts` (presentational fields; no `autoValidation`).
+- Use semantic page layout classes (`app-page`, `app-page__header`, `app-page__title`, `app-page__body`) for full screens. Reserve `ui-card` for smaller, self-contained content blocks (for example product tiles or compact panels), not whole pages.
+- Use `ui-nav` for sidebar navigation (see `app-sidebar-nav` and the showcase layout examples). Do not build primary navigation from `ui-button` modifiers.
+- Use `ui-accordion` for grouped form sections. Accordions should be open by default — add the `appDefaultExpanded` attribute and import `DefaultExpandedAccordionDirective` from `@shared/directives/default-expanded-accordion.directive`.
+- Use `ui-message-bar` for screen-level request errors.
+- Use the app `ToastService` facade in features for mutation feedback; do not inject Laczynski `ToastService` directly in feature code.
+- Use `ui-tag` for compact status labels such as issue status or priority (`variant`: `primary` | `secondary` | `success` | `warning` | `danger` | `info`).
+- Use `ui-button` with `text`, `icon` (Fluent icon name), `variant`, `appearance`, and `(click)`.
+- Use `ui-spinner` or grid loading state for in-flight data.
+- Use `uiTooltip` for icon-only or compact action hints.
+- Use `ConfirmService` (`@core/confirm/services/confirm.service.ts`) for destructive confirmations; do not open ad hoc dialogs for the same pattern.
+- **Administrative list screens** (Issues, Users, Roles) use `<qg-ui-data-grid>` from `@query-grid/ui` with `createAppGridResource` from `@shared/data/utils/grid.utils.ts`. Wrap the page in `app-page app-page--grid` and put the grid in `app-page__body app-page__body--grid` so page chrome stays fixed and only table rows scroll inside the grid. Column templates use the `qgColumn` directive; feature services pass `GridQuery` to the API as a `grid` query parameter and return `GridResult<T>`. See `features/issues/components/issues-list/` as the reference implementation.
 - **Embedded lists** (issue tabs, sessions, notifications, role assigned users) call the same API shape with `GridQuery`/`GridResult`; use `shared/data/utils/grid.utils.ts` for `createGridQuery`, `hasMoreGridItems`, and `createIssueTabGridQuery`.
-- Keep business logic in feature services and component TypeScript. PrimeNG should handle presentation only.
+- Keep business logic in feature services and component TypeScript. Laczynski UI should handle presentation only.
 
 ### Theming and layout
 
-- Global styles live in `src/tailwind.css` (Tailwind, `tailwindcss-primeui`, and `primeicons`). Register that file in `angular.json` `styles`.
-- Prefer PrimeNG semantic Tailwind utilities from the plugin (`bg-surface-0`, `text-color`, `text-muted-color`, `bg-primary`, `border-surface-200`) instead of custom colors.
-- Use Tailwind utility classes in templates for layout and surface styling (`flex`, `grid`, `gap-*`, `p-*`, `max-w-*`, `rounded-*`, `border-surface-200`, `dark:` variants). Do not restyle PrimeNG components with custom CSS unless there is no built-in option.
-- Do **not** add feature-level `*.component.css` files that `@reference` `tailwind.css` and use `@apply` or custom class names for layout or surface styling. Put utilities in the template; use the component `host` metadata (for example `host: { class: 'flex flex-1 flex-col' }`) when the host element needs layout classes.
-- Put PrimeNG semantic color and surface utilities (`bg-surface-0`, `border-surface-200`, `text-color`, `dark:` variants) on elements you control directly in the template. Do not wrap them in custom CSS classes unless you must target PrimeNG internal markup.
-- Omit `styleUrl` on feature components unless a screen has a rare rule that cannot be expressed with template utilities or PrimeNG inputs (`styleClass`, `pt`, and so on).
-- The only current exception is `core/layout` shell styling for PrimeNG internal parts (for example `.p-drawer-header` under `app-shell-drawer`) that cannot be reached from the template with `styleClass` alone. Keep those CSS files minimal—no `@apply` blocks for app-owned wrappers such as headers, sidebars, or nav links.
-- Theme preset extensions belong in `src/app/theme/app-preset.ts`. To switch the base look, start from another preset (`Lara`, `Nora`, `Material`) in that file.
-- Application font is **Inter** (Google Fonts in `index.html`, mirrored in `AppPreset` and `@theme` in `tailwind.css`).
-- Dark mode follows PrimeNG styled mode: set `darkModeSelector: '.app-dark'` in `providePrimeNG()`, toggle that class on `<html>` in `LayoutService`, and mirror it for Tailwind with `@custom-variant dark` in `tailwind.css`. Page background and text color live in `tailwind.css` on `html` / `html.app-dark` (PrimeNG tokens); do not duplicate them on the app shell.
-- The small inline script in `index.html` only restores `app-dark` from `localStorage` before Angular boots to avoid a light flash on reload. It is optional if you accept that flash.
+- Global layout classes live in `src/styles.scss` (`app-shell`, `app-page`, `app-form-workspace`, `app-detail-grid`, `app-field-group`, `app-card-grid`, and related helpers). Prefer these shared classes over one-off inline styles. Do not use inline `style` attributes in templates.
+- Application theme overrides live in `src/changeme-theme.scss`, imported after Laczynski in `src/styles.scss`. Palette follows Material Design 3 baseline (primary `#6750A4`, surface containers, `#1C1B1F` dark base).
+- **Content width:** authenticated pages use the full workspace width. `app-page` caps readable content at `96rem` (~1536px); add `app-page--wide` on list, detail, and form screens that should use the full cap. Do not reintroduce a ~700px content column.
+- **Page chrome:** use `app-page__header` (title + subtitle), `app-page__toolbar` (back link and primary row actions), and `app-page__body` (main content). Keep back navigation in the toolbar, not mixed into the body stack.
+- **Create / edit forms:** use the sticky-footer workspace pattern so **Save** / **Create** stays visible while fields scroll:
+  - Page: `app-page app-page--form` (+ `app-page--wide` when the form has many columns or checklist grids).
+  - Body: `app-page__body app-page__body--form`.
+  - Form: `app-form-workspace` with `app-form-workspace__scroll` (scrollable fields) and `app-form-workspace__footer` (actions). Put `ui-message-bar` submit errors inside the scroll region; put Cancel / Save in the footer.
+  - Field layout: `app-form__grid` (2 columns from `sm`, 3 from `lg`); use `app-form__grid--two` when three columns are too wide (for example name pairs).
+  - Group fields with `ui-accordion` + `appDefaultExpanded`. Read-only metadata on edit screens uses `ui-card appearance="filled"` with `app-detail-grid` inside.
+- **Permission checklists:** use `ui-card` with `[checkbox]="true"`, `[selected]`, and `(selectedChange)` in an `app-card-grid` grouped by `app-field-group`. Read-only effective permissions use the same card grid without checkbox mode. See `permission-checklist` and `effective-permissions` components.
+- **Sections and dividers:** named blocks on detail screens use `ui-accordion`, `ui-card`, or `app-section`. Use `ui-divider` between unrelated stacks when an accordion is too heavy (for example before a paginated embedded table).
+- **Detail screens:** stack separate `ui-card` blocks inside `app-detail-layout` — overview metadata (`app-workspace-stat`), content sections in `app-detail-card-grid`, and a tabs card with `ui-tabs` `appearance="subtle"`. Tab content (for example comments) can use nested `ui-card` items. See `issue-details` and [Tabs workspace panel](https://ui.laczynski.dev/docs/components/tabs#workspace-panel-composition).
+- **Badge overlay:** compact counts on icon-only controls use the `badge` input on `ui-button` (see `app-notifications-bell`). Status labels in grids and detail panels use `ui-tag` with `appearance="tint"`.
+- Use Laczynski semantic CSS variables (`var(--color-neutral-background-1-rest)`, `var(--color-brand-primary)`, and so on) when a shared class does not exist yet.
+- Do **not** add feature-level `*.component.css` / `*.component.scss` files unless a screen has a rule that cannot be expressed with shared classes or Laczynski inputs.
+- Application font is **Inter** via `@fontsource-variable/inter` in `src/styles.scss`.
+- Dark mode: `LayoutService` sets `data-theme="dark"` and `.dark` on `<html>`. `public/theme-init.js` restores the saved theme before Angular boots to avoid a light flash.
 - Toggle light/dark through `LayoutService`; the shell header theme button calls `layoutService.toggleTheme()`.
 
 ### When adding a new screen
 
-- Look at `features/auth` for form patterns and `features/issues` for tables, filters, and detail layouts.
+- Look at `features/auth` for form patterns and `features/issues` for grids, filters, and detail layouts.
 - Issues routes are behind `authGuard`. Do not gate issues UI with `isAuthenticated`; keep auth checks in guards, `app.component` navigation, and `NotificationsRealtimeConnectionService` (push notifications only).
-- Match existing Tailwind layout patterns (`flex flex-col gap-1.5 mb-4` for labeled fields, `flex flex-wrap items-center gap-3 mt-4` for action rows, `grid gap-4 sm:grid-cols-2 xl:grid-cols-3` for filter grids) before introducing new one-off utilities.
+- Match existing layout classes (`app-page`, `app-page--grid`, `app-form-workspace`, `app-form__grid`, `app-page__toolbar`) before introducing new patterns.
 
 ## Existing repo patterns worth preserving
 
@@ -132,3 +143,4 @@ For dev server, lint, format, and test commands from `src/ChangeMe.Frontend` or 
 - Do not create a new top-level frontend folder unless the existing `core` / `features` / `shared` split cannot fit the change.
 - Do not hardcode backend URLs outside `environment.*` and the shared API layer.
 - Before adding a new pattern, look for the nearest example in `features/issues` or `features/auth`.
+- Follow Laczynski UI defaults: `variant="secondary"`, `appearance="filled"`, `size="medium"` unless the screen needs emphasis (`variant="primary"` for the main action only).

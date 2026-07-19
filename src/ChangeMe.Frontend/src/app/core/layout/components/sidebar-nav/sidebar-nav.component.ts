@@ -1,55 +1,86 @@
-import { Component, input, output } from '@angular/core';
-import { RouterLink, RouterLinkActive } from '@angular/router';
-import { LayoutNavItem } from '@core/layout/models/layout-nav-item.model';
-import { Tooltip } from 'primeng/tooltip';
+import { Component, computed, DestroyRef, inject, input, output, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { NavigationEnd, Router } from '@angular/router';
+import { NavComponent, type NavNode } from '@laczynski/ui';
+import {
+  LayoutNavItem,
+  LayoutNavSection
+} from '@core/layout/models/layout-nav-item.model';
+import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-sidebar-nav',
-  imports: [RouterLink, RouterLinkActive, Tooltip],
+  host: {
+    class: 'app-sidebar-nav-host'
+  },
+  imports: [NavComponent],
   template: `
-    <nav class="flex flex-col gap-1 p-2" aria-label="Main navigation">
-      @for (item of items(); track item.routerLink) {
-        <a
-          [routerLink]="item.routerLink"
-          routerLinkActive="bg-primary text-primary-contrast"
-          [routerLinkActiveOptions]="{ exact: item.exact ?? false }"
-          class="text-color hover:bg-emphasis flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors dark:hover:bg-surface-800"
-          [class.justify-center]="collapsed()"
-          [class.px-2]="collapsed()"
-          [pTooltip]="collapsed() ? item.label : undefined"
-          tooltipPosition="right"
-          [attr.aria-label]="item.label"
-          (click)="navigate.emit()"
-        >
-          <span class="relative inline-flex shrink-0">
-            <i [class]="item.icon + ' text-lg'" aria-hidden="true"></i>
-            @if (collapsed() && resolveBadge()?.(item); as count) {
-              <span
-                class="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-0.5 text-[10px] font-semibold text-white dark:bg-red-400"
-              >
-                {{ count > 9 ? '9+' : count }}
-              </span>
-            }
-          </span>
-          @if (!collapsed()) {
-            <span class="min-w-0 flex-1 truncate">{{ item.label }}</span>
-            @if (resolveBadge()?.(item); as count) {
-              <span
-                class="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-xs font-semibold text-white dark:bg-red-400"
-              >
-                {{ count > 99 ? '99+' : count }}
-              </span>
-            }
-          }
-        </a>
-      }
-    </nav>
+    <ui-nav
+      [items]="navItems()"
+      appearance="filled"
+      variant="primary"
+      size="medium"
+      [showSelectionIndicator]="false"
+    />
   `
 })
 export class SidebarNavComponent {
+  private readonly router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
+
   readonly items = input.required<LayoutNavItem[]>();
-  readonly collapsed = input(false);
-  readonly resolveBadge = input<(item: LayoutNavItem) => number | undefined>();
+  private readonly navigationTick = signal(0);
 
   readonly navigate = output<void>();
+
+  readonly navItems = computed<NavNode[]>(() => {
+    this.navigationTick();
+
+    return this.buildGroupedNavItems(this.items());
+  });
+
+  constructor() {
+    this.router.events
+      .pipe(
+        filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe(() => this.navigationTick.update((value) => value + 1));
+  }
+
+  private buildGroupedNavItems(items: LayoutNavItem[]): NavNode[] {
+    const nodes: NavNode[] = [];
+    let currentSection: LayoutNavSection | null = null;
+
+    for (const item of items) {
+      if (item.section !== currentSection) {
+        currentSection = item.section;
+        nodes.push({
+          id: `section-${currentSection}`,
+          label: currentSection,
+          isSectionHeader: true
+        });
+      }
+
+      nodes.push({
+        id: item.routerLink,
+        label: item.label,
+        icon: item.icon,
+        selected: this.isSelected(item),
+        onClick: () => this.navigateTo(item)
+      });
+    }
+
+    return nodes;
+  }
+
+  private navigateTo(item: LayoutNavItem): void {
+    void this.router.navigateByUrl(item.routerLink);
+    this.navigate.emit();
+  }
+
+  private isSelected(item: LayoutNavItem, url = this.router.url): boolean {
+    const path = url.split(/[?#]/)[0];
+    return item.exact ? path === item.routerLink : path.startsWith(item.routerLink);
+  }
 }

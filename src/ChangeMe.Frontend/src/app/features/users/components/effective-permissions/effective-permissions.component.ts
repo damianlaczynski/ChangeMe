@@ -1,10 +1,12 @@
 import { Component, computed, input } from '@angular/core';
+import { AccordionComponent, CardComponent } from '@laczynski/ui';
+import { DefaultExpandedAccordionDirective } from '@shared/directives/default-expanded-accordion.directive';
 import {
   UserMessages,
   formatFromRoles,
   groupEffectivePermissions
 } from '@features/users/utils/users.utils';
-import { Panel } from 'primeng/panel';
+
 export interface PermissionListItem {
   code: string;
   label: string;
@@ -15,7 +17,7 @@ export interface PermissionListItem {
 
 @Component({
   selector: 'app-effective-permissions',
-  imports: [Panel],
+  imports: [AccordionComponent, CardComponent, DefaultExpandedAccordionDirective],
   templateUrl: './effective-permissions.component.html',
   host: { class: 'block' }
 })

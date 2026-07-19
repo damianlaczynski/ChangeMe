@@ -15,18 +15,22 @@ import {
   ReactiveFormsModule,
   Validators
 } from '@angular/forms';
+import {
+  ButtonComponent,
+  CardComponent,
+  MessageBarComponent,
+  SpinnerComponent,
+  TextareaComponent
+} from '@laczynski/ui';
 import { ToastService } from '@core/toast/services/toast.service';
 import { IssueCommentDto } from '@features/issues/models/issue.model';
 import { IssuesService } from '@features/issues/services/issues.service';
-import { IssueCommentConstraints } from '@features/issues/utils/issue.utils';
+import { IssueCommentConstraints, IssueFieldErrors } from '@features/issues/utils/issue.utils';
 import {
   createIssueTabGridQuery,
   hasMoreGridItems
 } from '@shared/data/utils/grid.utils';
-import { Button } from 'primeng/button';
-import { Message } from 'primeng/message';
-import { ProgressSpinner } from 'primeng/progressspinner';
-import { Textarea } from 'primeng/textarea';
+import { fieldError } from '@shared/forms/field-error';
 
 type CommentForm = {
   content: FormControl<string>;
@@ -34,7 +38,15 @@ type CommentForm = {
 
 @Component({
   selector: 'app-issue-comments-tab',
-  imports: [DatePipe, ReactiveFormsModule, Button, Textarea, Message, ProgressSpinner],
+  imports: [
+    DatePipe,
+    ReactiveFormsModule,
+    ButtonComponent,
+    CardComponent,
+    TextareaComponent,
+    MessageBarComponent,
+    SpinnerComponent
+  ],
   templateUrl: './issue-comments-tab.component.html',
   host: { class: 'block' }
 })
@@ -45,17 +57,17 @@ export class IssueCommentsTabComponent {
   private readonly toastService = inject(ToastService);
   private readonly destroyRef = inject(DestroyRef);
 
-  readonly issueCommentConstraints = IssueCommentConstraints;
-
   readonly comments = signal<IssueCommentDto[]>([]);
   readonly commentsTotalCount = signal(0);
   readonly loadError = signal<string | null>(null);
   readonly commentError = signal<string | null>(null);
-  readonly isSubmitted = signal(false);
   readonly isSubmittingComment = signal(false);
   readonly isLoadingComments = signal(false);
   readonly isLoadingMoreComments = signal(false);
   readonly hasLoadedComments = signal(false);
+  readonly submitted = signal(false);
+  protected readonly fieldError = fieldError;
+  protected readonly IssueFieldErrors = IssueFieldErrors;
 
   readonly canShowMoreComments = computed(() =>
     hasMoreGridItems(this.comments().length, this.commentsTotalCount())
@@ -87,16 +99,9 @@ export class IssueCommentsTabComponent {
     });
   }
 
-  shouldShowCommentError(): boolean {
-    return (
-      !!this.commentForm.controls.content.errors &&
-      (this.commentForm.controls.content.touched || this.isSubmitted())
-    );
-  }
-
   addComment(): void {
-    this.isSubmitted.set(true);
     this.commentError.set(null);
+    this.submitted.set(true);
 
     if (this.commentForm.invalid) {
       this.commentForm.markAllAsTouched();
@@ -116,7 +121,7 @@ export class IssueCommentsTabComponent {
           this.commentForm.reset({ content: '' });
           this.commentForm.markAsPristine();
           this.commentForm.markAsUntouched();
-          this.isSubmitted.set(false);
+          this.submitted.set(false);
           this.isSubmittingComment.set(false);
           this.toastService.success('Comment added');
         },

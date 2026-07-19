@@ -28,9 +28,14 @@
               {
                 "glob": "**/*",
                 "input": "public"
+              },
+              {
+                "glob": "**/*",
+                "input": "node_modules/@laczynski/ui/assets/icons",
+                "output": "/assets/icons"
               }
             ],
-            "styles": ["src/tailwind.css"]
+            "styles": ["src/styles.scss"]
           },
           "configurations": {
             "production": {
@@ -77,6 +82,7 @@
         "test": {
           "builder": "@angular/build:unit-test",
           "options": {
+            "tsConfig": "tsconfig.spec.json",
             "coverageReporters": ["text", "json-summary", "json", "html", "lcov"]
           }
         }
