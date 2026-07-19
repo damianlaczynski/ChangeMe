@@ -19,8 +19,29 @@ public class GetAllIssuesHandler(
     if (userAccessor.UserId is not Guid currentUserId)
       return Result.Unauthorized();
 
-    var projectedIssues = context.Issues
-      .AsNoTracking()
+    var issuesQuery = context.Issues.AsNoTracking();
+    var gridQuery = query.Grid;
+
+    if (!string.IsNullOrWhiteSpace(gridQuery.Search))
+    {
+      var searchText = gridQuery.Search.Trim();
+      var loweredSearchText = searchText.ToLowerInvariant();
+      var parsedIssueId = Guid.TryParse(searchText, out var issueId) ? issueId : Guid.Empty;
+      issuesQuery = issuesQuery.Where(i =>
+        i.Title.ToLower().Contains(loweredSearchText)
+        || i.Description.ToLower().Contains(loweredSearchText)
+        || (parsedIssueId != Guid.Empty && i.Id == parsedIssueId));
+
+      gridQuery = new GridQuery
+      {
+        Skip = gridQuery.Skip,
+        Take = gridQuery.Take,
+        Sort = gridQuery.Sort,
+        Filter = gridQuery.Filter,
+      };
+    }
+
+    var projectedIssues = issuesQuery
       .Select(i => new IssueDto
       {
         Id = i.Id,
@@ -47,7 +68,7 @@ public class GetAllIssuesHandler(
         WatchersCount = i.Watchers.Count,
       });
 
-    var grid = await projectedIssues.ToGridResultAsync(query.Grid, cancellationToken: cancellationToken);
+    var grid = await projectedIssues.ToGridResultAsync(gridQuery, cancellationToken: cancellationToken);
     return Result.Success(grid);
   }
 }

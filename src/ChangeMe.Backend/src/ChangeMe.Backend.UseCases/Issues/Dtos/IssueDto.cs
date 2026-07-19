@@ -24,7 +24,6 @@ public class IssueAttachmentContentDto
 
 public class IssueDto
 {
-  [GridSearchable]
   public Guid Id { get; set; }
 
   [GridSearchable]
