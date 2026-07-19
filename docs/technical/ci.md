@@ -51,21 +51,14 @@ npm run requirements:validate
 
 ## What CI does not cover
 
-| Check                         | Local command / workflow                                             |
-| ----------------------------- | -------------------------------------------------------------------- |
-| Frontend ESLint               | `npm run lint:frontend`                                              |
-| Frontend / backend formatting | `npm run format:check:all`                                           |
-| Full stack in Docker          | `npm run docker:up`                                                  |
-| Backend tests only in Compose | `npm run docker:test:backend`                                        |
-| **Publishing**                | Push a `v*` tag → [publish.yml](../../.github/workflows/publish.yml) |
+| Check                         | Local command                 |
+| ----------------------------- | ----------------------------- |
+| Frontend ESLint               | `npm run lint:frontend`       |
+| Frontend / backend formatting | `npm run format:check:all`    |
+| Full stack in Docker          | `npm run docker:up`           |
+| Backend tests only in Compose | `npm run docker:test:backend` |
 
 For test scope and project layout, see `docs/guides/testing-guidelines.md`.
-
-## Publish workflow
-
-Separate from CI — runs on **tag push** `v*`. Tests, packs the `ChangeMe` template, publishes NuGet (nuget.org + GitHub Packages), and creates a GitHub Release.
-
-Details: [publishing.md](publishing.md).
 
 ## Reproduce CI locally
 

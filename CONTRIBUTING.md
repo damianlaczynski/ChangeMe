@@ -22,20 +22,14 @@ Avoid **`dotnet new -o`** under **`artifacts/`** (or other nested outputs inside
 
 ## Publish NuGet package
 
-Tag-based CI publish is documented in **`docs/technical/publishing.md`**. Summary:
-
-1. Bump **`Version`** in **`template-pack/ChangeMe.Templates.csproj`** and update **`CHANGELOG.md`**.
-2. Push a git tag (`v2.1.0`) — [publish.yml](.github/workflows/publish.yml) tests, packs, publishes to nuget.org + GitHub Packages, and creates a GitHub Release.
-
-Local pack only:
-
 ```powershell
-npm run pack:backend
+dotnet pack template-pack/ChangeMe.Templates.csproj -c Release
+dotnet nuget push template-pack/bin/Release/ChangeMe.<version>.nupkg --source https://api.nuget.org/v3/index.json --api-key <your-api-key>
 ```
 
-Optional local push with API key — see **`docs/technical/publishing.md`**.
+Package readme lives in **`template-pack/NuGetPackageREADME.md`**.
 
-Package readme: **`template-pack/NuGetPackageREADME.md`**.
+Release notes: bump **`Version`** in **`template-pack/ChangeMe.Templates.csproj`**, update **`CHANGELOG.md`**, then pack and push. Tag the release in git (`v2.0.0`) so changelog compare links resolve.
 
 ## Layout hints for editors
 

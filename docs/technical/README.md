@@ -15,7 +15,6 @@
 | [deployment.md](deployment.md)                                       | Runtime API URL, production checklist, TLS, CORS, split-host deployment          |
 | [data-generator.md](data-generator.md)                               | Fill the database with optional demo users and issues after migrations           |
 | [ci.md](ci.md)                                                       | Understand GitHub Actions, reproduce CI locally, or debug a failing pipeline job |
-| [publishing.md](publishing.md)                                       | Release the `ChangeMe` NuGet template on tag push                              |
 
 ## Start here by task
 
@@ -26,7 +25,6 @@
 | Populate UI with sample data                             | [data-generator.md](data-generator.md)                                                                                |
 | Deploy to production or split API / SPA hosts            | [deployment.md](deployment.md)                                                                                        |
 | PR failed on GitHub                                      | [ci.md](ci.md)                                                                                                        |
-| Publish a new template version                           | [publishing.md](publishing.md)                                                                                        |
 | Configure JWT, password policy, or initial administrator | [database-and-docker.md](database-and-docker.md) (`AuthOptions`, `InitialAdministratorOptions` in `appsettings.json`) |
 | Email delivery in local or deployed environments         | [database-and-docker.md](database-and-docker.md) (MailHog) + `EmailOptions` in `appsettings.json`                     |
 | Background jobs failing or not running                   | [database-and-docker.md](database-and-docker.md) (Hangfire dashboard, cron)                                           |
