@@ -91,6 +91,6 @@ dotnet new install ChangeMe --nuget-source github
 Trusted publishing works in CI only:
 
 ```powershell
-dotnet pack template-pack/ChangeMe.Templates.csproj -c Release -o artifacts/nuget
-dotnet nuget push artifacts/nuget/ChangeMe.*.nupkg --api-key <nuget.org-api-key> --source https://api.nuget.org/v3/index.json
+dotnet pack template-pack/ChangeMe.Templates.csproj -c Release
+dotnet nuget push template-pack/bin/Release/ChangeMe.*.nupkg --api-key <nuget.org-api-key> --source https://api.nuget.org/v3/index.json
 ```

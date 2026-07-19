@@ -60,7 +60,7 @@ jobs:
           dotnet test src/ChangeMe.Backend/ChangeMe.Backend.slnx -c Release
 
       - name: Pack
-        run: dotnet pack template-pack/ChangeMe.Templates.csproj -c Release -o artifacts/nuget
+        run: dotnet pack template-pack/ChangeMe.Templates.csproj -c Release
 
       - name: NuGet login (OIDC → nuget.org)
         uses: NuGet/login@v1
@@ -70,7 +70,7 @@ jobs:
 
       - name: Publish NuGet to nuget.org
         run: |
-          dotnet nuget push artifacts/nuget/*.nupkg \
+          dotnet nuget push template-pack/bin/Release/*.nupkg \
             --source https://api.nuget.org/v3/index.json \
             --api-key ${{ steps.nuget_login.outputs.NUGET_API_KEY }} \
             --skip-duplicate
@@ -83,7 +83,7 @@ jobs:
             --store-password-in-clear-text \
             --name github \
             "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"
-          dotnet nuget push artifacts/nuget/*.nupkg --source github --skip-duplicate
+          dotnet nuget push template-pack/bin/Release/*.nupkg --source github --skip-duplicate
 
       - name: Extract release notes
         run: node scripts/extract-changelog.mjs "${GITHUB_REF_NAME#v}" > release-notes.md
