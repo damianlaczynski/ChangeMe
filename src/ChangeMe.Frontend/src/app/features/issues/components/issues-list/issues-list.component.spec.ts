@@ -8,7 +8,6 @@ import { GridResourceFactory, type GridResource } from '@query-grid/primeng';
 import type { GridQuery } from '@query-grid/core';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { of } from 'rxjs';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { IssuesComponent } from './issues-list.component';
 
 function createMockGrid(
