@@ -1,0 +1,95 @@
+name: Publish
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+  packages: write
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Validate secrets
+        env:
+          NUGET_USER: ${{ secrets.NUGET_USER }}
+        run: |
+          if [ -z "$NUGET_USER" ]; then
+            echo "::error::Missing repository secret NUGET_USER (nuget.org profile name, not email)."
+            echo "Add it under Settings → Secrets and variables → Actions."
+            exit 1
+          fi
+
+      - name: Validate version
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          PKG_VERSION=$(grep -m1 '<Version>' template-pack/ChangeMe.Templates.csproj | sed 's/.*<Version>\(.*\)<\/Version>.*/\1/')
+          if [ "$PKG_VERSION" != "$VERSION" ]; then
+            echo "::error::template-pack Version ($PKG_VERSION) does not match tag ($VERSION)"
+            exit 1
+          fi
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            src/ChangeMe.Frontend/package-lock.json
+
+      - name: Test
+        run: |
+          npm ci
+          npm run requirements:validate
+          npm --prefix src/ChangeMe.Frontend ci
+          npm run test:frontend:ci
+          npm run build:frontend
+          dotnet test src/ChangeMe.Backend/ChangeMe.Backend.slnx -c Release
+
+      - name: Pack
+        run: dotnet pack template-pack/ChangeMe.Templates.csproj -c Release -o artifacts/nuget
+
+      - name: NuGet login (OIDC → nuget.org)
+        uses: NuGet/login@v1
+        id: nuget_login
+        with:
+          user: ${{ secrets.NUGET_USER }}
+
+      - name: Publish NuGet to nuget.org
+        run: |
+          dotnet nuget push artifacts/nuget/*.nupkg \
+            --source https://api.nuget.org/v3/index.json \
+            --api-key ${{ steps.nuget_login.outputs.NUGET_API_KEY }} \
+            --skip-duplicate
+
+      - name: Publish NuGet to GitHub Packages
+        run: |
+          dotnet nuget add source \
+            --username ${{ github.actor }} \
+            --password ${{ secrets.GITHUB_TOKEN }} \
+            --store-password-in-clear-text \
+            --name github \
+            "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"
+          dotnet nuget push artifacts/nuget/*.nupkg --source github --skip-duplicate
+
+      - name: Extract release notes
+        run: node scripts/extract-changelog.mjs "${GITHUB_REF_NAME#v}" > release-notes.md
+
+      - name: GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          prerelease: ${{ contains(github.ref_name, '-') }}
+          body_path: release-notes.md
