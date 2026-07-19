@@ -4,10 +4,11 @@
 
 ## Top level
 
-- `docker-compose.yml` starts the local stack: Angular frontend, ASP.NET backend, PostgreSQL, and MailHog. The same file defines `backend-tests` (Compose profile `test`): an SDK container that runs `dotnet test` on the backend solution with the repository mounted from the host.
+- `docker-compose.yml` starts the local stack: Angular frontend, ASP.NET backend, PostgreSQL, and MailHog. The same file defines `backend-tests` (Compose profile `test`): an SDK container that runs `dotnet test` on the backend solution with the repository mounted from the host. Optional scans live in `docker-compose.security.yml` — see [security-checks.md](../technical/security-checks.md).
 - Root `package.json` defines optional npm scripts (`start:*`, `build:*`, `test:*`, `install:frontend`, and frontend `lint`/`format`) so you can run common frontend and `dotnet` backend tasks from the repository root. Run `npm install` in the repository root to install root devDependencies such as `concurrently` (used by `start:all` and `test:all`). Frontend `node_modules` still live under `src/ChangeMe.Frontend` — refresh them with `npm run install:frontend` from the root (also installs Playwright Chromium for E2E) or `npm install` inside that folder (npm packages only).
 - `src/ChangeMe.Frontend` contains the Angular application.
 - `src/ChangeMe.Backend` contains the .NET solution and tests.
+- Optional scans: `docker-compose.security.yml` ([security-checks.md](../technical/security-checks.md)), `docker-compose.sonar.yml` ([sonar-analysis.md](../technical/sonar-analysis.md)).
 
 ## Frontend map
 

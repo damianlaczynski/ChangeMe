@@ -1,5 +1,5 @@
-# Zobacz https://aka.ms/customizecontainer — Visual Studio (tryb szybki) używa stage „base”.
-# Build z root repozytorium:
+# See https://aka.ms/customizecontainer — Visual Studio (quick mode) uses stage „base”.
+# Build from root repository:
 #   docker build -f src/ChangeMe.Backend/Dockerfile .
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
