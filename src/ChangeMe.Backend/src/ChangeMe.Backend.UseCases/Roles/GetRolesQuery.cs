@@ -16,26 +16,8 @@ public class GetRolesHandler(ApplicationDbContext context)
     GetRolesQuery query,
     CancellationToken cancellationToken)
   {
-    var rolesQuery = context.Roles.AsNoTracking();
-    var gridQuery = query.Grid;
-
-    if (!string.IsNullOrWhiteSpace(gridQuery.Search))
-    {
-      var searchText = gridQuery.Search.Trim().ToLowerInvariant();
-      rolesQuery = rolesQuery.Where(r =>
-        r.Name.ToLower().Contains(searchText)
-        || (r.Description != null && r.Description.ToLower().Contains(searchText)));
-
-      gridQuery = new GridQuery
-      {
-        Skip = gridQuery.Skip,
-        Take = gridQuery.Take,
-        Sort = gridQuery.Sort,
-        Filter = gridQuery.Filter,
-      };
-    }
-
-    var projected = rolesQuery
+    var projected = context.Roles
+      .AsNoTracking()
       .Select(r => new RoleListItemDto
       {
         Id = r.Id,
@@ -46,7 +28,7 @@ public class GetRolesHandler(ApplicationDbContext context)
         IsSystem = r.IsSystem
       });
 
-    var grid = await projected.ToGridResultAsync(gridQuery, cancellationToken: cancellationToken);
+    var grid = await projected.ToGridResultAsync(query.Grid, cancellationToken: cancellationToken);
     return Result.Success(grid);
   }
 }
