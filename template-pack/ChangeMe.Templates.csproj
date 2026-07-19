@@ -7,7 +7,7 @@
     <NoWarn>$(NoWarn);NU5128</NoWarn>
 
     <PackageId>ChangeMe</PackageId>
-    <Version>2.1.0</Version>
+    <Version>2.1.1</Version>
     <PackageReleaseNotes>See CHANGELOG.md — optimistic concurrency, API rate limiting, security headers (CSP nonce), Docker hardening.</PackageReleaseNotes>
     <Title>ChangeMe</Title>
     <Authors>Damian Łączyński</Authors>
