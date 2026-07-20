@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.DataGenerator;
+using ChangeMe.Backend.DataGenerator;
 using ChangeMe.Backend.DataGenerator.Services;
 using ChangeMe.Backend.Infrastructure.Configurations;
 using ChangeMe.Backend.Infrastructure.Persistence;
