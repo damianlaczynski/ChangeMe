@@ -4,6 +4,12 @@ All notable changes to the **ChangeMe** NuGet template package (`dotnet new chan
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.1] - 2026-07-19
+
+### Changed
+
+- CI: tag `v*` triggers NuGet publish to nuget.org and GitHub Packages via trusted publishing (OIDC)
+
 ## [2.1.0] - 2026-06-24
 
 ### Added

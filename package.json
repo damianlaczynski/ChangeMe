@@ -17,8 +17,8 @@
     "format:backend": "dotnet format src/ChangeMe.Backend/ChangeMe.Backend.slnx --exclude \"**/Persistence/Migrations/**\"",
     "format:all": "npm run format:frontend && npm run format:backend",
     "test:frontend": "npm --prefix src/ChangeMe.Frontend run test",
-    "test:frontend:ci": "npm --prefix src/ChangeMe.Frontend run test -- --watch=false",
-    "test:frontend:coverage": "npm --prefix src/ChangeMe.Frontend run test -- --watch=false --coverage",
+    "test:frontend:ci": "npm --prefix src/ChangeMe.Frontend run test:ci",
+    "test:frontend:coverage": "npm --prefix src/ChangeMe.Frontend run test:coverage",
     "test:backend": "dotnet test src/ChangeMe.Backend/ChangeMe.Backend.slnx",
     "test:backend:unit": "dotnet test src/ChangeMe.Backend/tests/ChangeMe.Backend.UnitTests",
     "test:backend:integration": "dotnet test src/ChangeMe.Backend/tests/ChangeMe.Backend.IntegrationTests",
@@ -36,7 +36,8 @@
     "docker:build": "docker compose build",
     "docker:logs": "docker compose logs -f",
     "docker:test:backend": "docker compose --profile test run --rm backend-tests",
-    "requirements:validate": "node scripts/requirements-validate.mjs"
+    "requirements:validate": "node scripts/requirements-validate.mjs",
+    "pack:backend": "dotnet pack template-pack/ChangeMe.Templates.csproj -c Release"
   },
   "devDependencies": {
     "concurrently": "^10.0.3"

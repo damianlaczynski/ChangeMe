@@ -7,7 +7,6 @@ import {
   UrlTree,
   provideRouter
 } from '@angular/router';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AuthService } from '../services/auth.service';
 import { authGuard } from './auth.guard';
 
