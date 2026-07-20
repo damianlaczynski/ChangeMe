@@ -32,7 +32,7 @@
     "@tailwindcss/postcss": "^4.3.1",
     "postcss": "^8.5.15",
     "primeicons": "^7.0.0",
-    "primeng": "^21.1.9",
+    "primeng": "^22.0.0",
     "qrcode": "^1.5.4",
     "rxjs": "~7.8.0",
     "tailwindcss": "^4.3.1",
