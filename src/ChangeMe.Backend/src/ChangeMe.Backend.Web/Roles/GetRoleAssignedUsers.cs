@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.UseCases.Roles;
+using ChangeMe.Backend.UseCases.Roles;
 using ChangeMe.Backend.UseCases.Roles.Dtos;
 using QueryGrid.Abstractions;
 

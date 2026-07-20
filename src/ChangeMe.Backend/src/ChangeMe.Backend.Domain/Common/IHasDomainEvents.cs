@@ -1,4 +1,4 @@
-﻿namespace ChangeMe.Backend.Domain.Common;
+namespace ChangeMe.Backend.Domain.Common;
 
 /// <summary>
 /// Interface for entities that support domain events.

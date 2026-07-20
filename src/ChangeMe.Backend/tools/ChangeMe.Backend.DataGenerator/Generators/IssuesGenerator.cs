@@ -1,4 +1,4 @@
-﻿using Ardalis.Result;
+using Ardalis.Result;
 using Bogus;
 using ChangeMe.Backend.DataGenerator.Options;
 using ChangeMe.Backend.DataGenerator.Persistence;

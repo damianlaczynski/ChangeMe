@@ -1,4 +1,4 @@
-﻿using Bogus;
+using Bogus;
 using ChangeMe.Backend.DataGenerator.Options;
 using ChangeMe.Backend.DataGenerator.Persistence;
 using ChangeMe.Backend.Domain.Aggregates.Notifications;

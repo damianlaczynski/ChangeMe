@@ -1,4 +1,4 @@
-﻿namespace ChangeMe.Backend.Domain.Aggregates.Users.Interfaces;
+namespace ChangeMe.Backend.Domain.Aggregates.Users.Interfaces;
 
 public interface IRecoveryCodeHasher
 {

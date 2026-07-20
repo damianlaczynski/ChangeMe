@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.DataGenerator.Options;
+using ChangeMe.Backend.DataGenerator.Options;
 using ChangeMe.Backend.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;

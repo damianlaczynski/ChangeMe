@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.Domain.Aggregates.Roles;
+using ChangeMe.Backend.Domain.Aggregates.Roles;
 using ChangeMe.Backend.UseCases.Roles;
 using ChangeMe.Backend.UseCases.Roles.Dtos;
 

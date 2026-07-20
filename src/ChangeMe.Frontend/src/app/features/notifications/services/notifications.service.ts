@@ -3,10 +3,7 @@ import { GridQuery } from '@query-grid/core';
 import { ToastService } from '@core/toast/services/toast.service';
 import { AuthService } from '@features/auth/services/auth.service';
 import { ApiService } from '@shared/api/services/api.service';
-import {
-  createGridQuery,
-  hasMoreGridItems
-} from '@shared/data/utils/grid.utils';
+import { createGridQuery, hasMoreGridItems } from '@shared/data/utils/grid.utils';
 import {
   NotificationDto,
   NotificationListDto,
@@ -153,9 +150,7 @@ export class NotificationsService {
     });
   }
 
-  loadUnreadNotifications(
-    options: { append?: boolean; skip?: number } = {}
-  ): void {
+  loadUnreadNotifications(options: { append?: boolean; skip?: number } = {}): void {
     const append = options.append ?? false;
     const skip = options.skip ?? 0;
     const requestId = ++this.unreadRequestId;
@@ -175,7 +170,10 @@ export class NotificationsService {
           const merged = this.appendUniqueNotifications(current, result.page.items);
           const addedCount = merged.length - current.length;
           this.unreadNotifications.set(merged);
-          if (addedCount === 0 && hasMoreGridItems(merged.length, result.page.totalCount)) {
+          if (
+            addedCount === 0 &&
+            hasMoreGridItems(merged.length, result.page.totalCount)
+          ) {
             this.unreadTotalCount.set(merged.length);
           } else {
             this.unreadTotalCount.set(result.page.totalCount);
@@ -212,7 +210,10 @@ export class NotificationsService {
           const merged = this.appendUniqueNotifications(current, result.page.items);
           const addedCount = merged.length - current.length;
           this.readNotifications.set(merged);
-          if (addedCount === 0 && hasMoreGridItems(merged.length, result.page.totalCount)) {
+          if (
+            addedCount === 0 &&
+            hasMoreGridItems(merged.length, result.page.totalCount)
+          ) {
             this.readTotalCount.set(merged.length);
           } else {
             this.readTotalCount.set(result.page.totalCount);

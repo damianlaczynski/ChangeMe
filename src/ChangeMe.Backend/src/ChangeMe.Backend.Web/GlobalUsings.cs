@@ -1,4 +1,4 @@
-﻿global using Ardalis.Result;
+global using Ardalis.Result;
 global using ChangeMe.Backend.Domain.Aggregates.Notifications.Interfaces;
 global using ChangeMe.Backend.Domain.Aggregates.Users;
 global using ChangeMe.Backend.Domain.Aggregates.Users.Interfaces;

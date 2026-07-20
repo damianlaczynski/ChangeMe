@@ -16,10 +16,7 @@ import {
   formatUserReference
 } from '@core/user/utils/user-display.utils';
 import { AuthService } from '@features/auth/services/auth.service';
-import {
-  RoleAssignedUserDto,
-  RoleDetailsDto
-} from '@features/roles/models/role.model';
+import { RoleAssignedUserDto, RoleDetailsDto } from '@features/roles/models/role.model';
 import { RolesService } from '@features/roles/services/roles.service';
 import {
   formatDescription,
@@ -35,10 +32,7 @@ import {
 } from '@features/users/utils/users.utils';
 import { PermissionCodes } from '@shared/authorization/permission-codes';
 import { BackButtonComponent } from '@shared/components/back-button/back-button.component';
-import {
-  createGridQuery,
-  DEFAULT_GRID_PAGE_SIZE
-} from '@shared/data/utils/grid.utils';
+import { createGridQuery, DEFAULT_GRID_PAGE_SIZE } from '@shared/data/utils/grid.utils';
 import { ConfirmationService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';

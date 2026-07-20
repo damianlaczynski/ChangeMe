@@ -1,5 +1,4 @@
 using Ardalis.Result;
-using ChangeMe.Backend.Domain.Common;
 
 namespace ChangeMe.Backend.UnitTests.Domain.Common;
 

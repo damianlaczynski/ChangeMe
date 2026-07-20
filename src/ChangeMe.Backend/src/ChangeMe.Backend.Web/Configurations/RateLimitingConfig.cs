@@ -1,6 +1,5 @@
 using System.Threading.RateLimiting;
 using ChangeMe.Backend.UseCases.Auth.Utils;
-using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Options;
 
 namespace ChangeMe.Backend.Web.Configurations;

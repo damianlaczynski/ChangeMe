@@ -1,4 +1,4 @@
-﻿namespace ChangeMe.Backend.Infrastructure.Common;
+namespace ChangeMe.Backend.Infrastructure.Common;
 
 public abstract class BaseEntityTypeConfiguration<TEntity> : IEntityTypeConfiguration<TEntity>
     where TEntity : Entity

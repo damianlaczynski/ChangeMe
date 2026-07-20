@@ -1,6 +1,4 @@
 using ChangeMe.Backend.UseCases.Roles.Dtos;
-
-using ChangeMe.Backend.Domain.Common;
 using ChangeMe.Backend.UseCases.Roles.Utils;
 
 namespace ChangeMe.Backend.UseCases.Roles;
