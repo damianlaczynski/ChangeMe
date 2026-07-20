@@ -87,10 +87,17 @@ Same-origin Docker Compose (default) does not need CORS changes for browser API 
 
 ### Hangfire
 
-- Restrict **`/hangfire`** in production (reverse proxy auth, network policy, or Hangfire authorization filters). The template ships without dashboard authentication.
-- Run at least one API instance with the Hangfire server enabled so recurring jobs execute.
+- Keep **`HangfireOptions:DashboardEnabled`** `false` in production (`appsettings.json` default). Enable only in Development or staging when you need the dashboard.
+- On multi-instance deployments, keep **`HangfireOptions:ServerEnabled`** `true` on at least one instance (job worker) and `false` on stateless HTTP replicas.
+- Restrict **`/hangfire`** when enabled (reverse proxy auth, network policy, or Hangfire authorization filters). The template ships without dashboard authentication.
+- Recurring jobs still register on every instance (`RecurringJob.AddOrUpdate` at startup); only hosts with `ServerEnabled: true` execute them.
 
 Details: [database-and-docker.md — Hangfire](database-and-docker.md#hangfire-and-background-jobs).
+
+### Swagger / OpenAPI
+
+- Keep **`SwaggerOptions:Enabled`** `false` in production (`appsettings.json` default). Enable in Development (`appsettings.Development.json`) or via environment override for staging.
+- When enabled locally, Swagger UI is available at `/swagger` on the API host.
 
 ### Rate limiting
 

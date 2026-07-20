@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.Infrastructure.Configurations;
+using ChangeMe.Backend.Infrastructure.Configurations;
 using ChangeMe.Backend.Web.Configurations;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -23,7 +23,7 @@ builder.Services.AddFileStorage(builder, logger);
 
 logger.LogInformation("Starting web host");
 
-builder.Services.AddFastEndpointsWithSwagger();
+builder.Services.AddFastEndpointsWithSwagger(builder.Configuration);
 
 var app = builder.Build();
 
