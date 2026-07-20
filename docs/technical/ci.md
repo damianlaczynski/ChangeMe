@@ -33,13 +33,13 @@ npm run requirements:validate
 ### Frontend
 
 - Node.js **24**
-- Tests run once (no watch), then production **build**
-- Does **not** run `npm run lint` or Prettier checks — run those locally when you touch frontend code (`npm run lint:frontend`, `npm run format:check:frontend`)
+- ESLint and Prettier checks, then tests run once (no watch), then production **build**
+- Local equivalents: `npm run lint:frontend`, `npm run format:check:frontend`
 
 ### Backend
 
 - .NET **10**
-- `dotnet test` and `dotnet build` on `ChangeMe.Backend.slnx` in **Release**
+- `dotnet format --verify-no-changes` (migrations excluded), then `dotnet test` and `dotnet build` on `ChangeMe.Backend.slnx` in **Release**
 - **Integration tests** use Testcontainers (Docker). GitHub-hosted `ubuntu-latest` runners provide Docker; local runs need a running Docker engine too.
 
 ### E2E
@@ -51,13 +51,12 @@ npm run requirements:validate
 
 ## What CI does not cover
 
-| Check                         | Local command / workflow                                             |
-| ----------------------------- | -------------------------------------------------------------------- |
-| Frontend ESLint               | `npm run lint:frontend`                                              |
-| Frontend / backend formatting | `npm run format:check:all`                                           |
-| Full stack in Docker          | `npm run docker:up`                                                  |
-| Backend tests only in Compose | `npm run docker:test:backend`                                        |
-| **Publishing**                | Push a `v*` tag → [publish.yml](../../.github/workflows/publish.yml) |
+| Check                         | Local command / workflow                                                     |
+| ----------------------------- | ---------------------------------------------------------------------------- |
+| Full stack in Docker          | `npm run docker:up`                                                          |
+| Backend tests only in Compose | `npm run docker:test:backend`                                                |
+| **Publishing**                | Push a `v*` tag → [publish.yml](../../.github/workflows/publish.yml)         |
+| **Dependency updates**        | Dependabot opens weekly PRs — [dependabot.yml](../../.github/dependabot.yml) |
 
 For test scope and project layout, see `docs/guides/testing-guidelines.md`.
 
@@ -74,6 +73,8 @@ From the repository root after `npm install`:
 ```powershell
 npm run install:frontend
 npm run requirements:validate
+npm run lint:frontend
+npm run format:check:all
 npm run test:frontend:ci
 npm run build:frontend
 npm run test:backend

@@ -58,6 +58,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Lint
+        run: npm run lint
+
+      - name: Format check
+        run: npm run format:check
+
       - name: Test
         run: npm test -- --watch=false
 
@@ -78,6 +84,9 @@ jobs:
 
       - name: Restore
         run: dotnet restore src/ChangeMe.Backend/ChangeMe.Backend.slnx
+
+      - name: Format check
+        run: dotnet format src/ChangeMe.Backend/ChangeMe.Backend.slnx --severity warn --verify-no-changes --exclude "**/Persistence/Migrations/**"
 
       - name: Test
         run: dotnet test src/ChangeMe.Backend/ChangeMe.Backend.slnx -c Release --no-restore
