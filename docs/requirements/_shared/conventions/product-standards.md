@@ -57,9 +57,9 @@ Use the correct channel so behavior stays consistent across modules.
 
 ---
 
-## STD-LST-001 — Administrative lists
+## STD-LST-001 — List screens
 
-Examples: **Issues list**, **Users list**, **Roles list**.
+Full-page server-paginated tables and grids. Examples: **Issues list**, **Users list**, **Roles list** — not limited to administration areas.
 
 Unless a functional specification specifies otherwise:
 
@@ -206,7 +206,7 @@ Use after implementing or reviewing a feature. Check only the `STD-*` sections l
 | Guest / sign-in          | STD-ACC-001 | Protected actions redirect unauthenticated users to sign-in                                                            |
 | Field validation UX      | STD-VAL-001 | Errors inline at the field; form stays open; values preserved; server errors map to the same positions                 |
 | Success / error feedback | STD-MSG-001 | Mutations use toast; field errors do not use toast; destructive actions use confirmation dialog first                  |
-| Administrative list      | STD-LST-001 | Server pagination (default 10); AND filters; clear resets; sort only on FR-defined columns; loading in table area      |
+| List screen              | STD-LST-001 | Server pagination (default 10); AND filters; clear resets; sort only on FR-defined columns; loading in table area      |
 | Embedded list / tabs     | STD-LST-002 | Show more or paginator per FR; upload/add controls stay visible while list loads                                       |
 | Create / edit form       | STD-FRM-001 | Back/cancel leave without save; submit shows toast on success; form stays open on failure                              |
 | Detail view              | STD-DTL-001 | Sections grouped; header actions permission-gated                                                                      |

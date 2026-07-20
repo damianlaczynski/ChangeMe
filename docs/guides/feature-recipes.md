@@ -32,9 +32,9 @@
 4. Register the route in `src/app/app.routes.ts` if it is navigable directly.
 5. Run lint and add frontend unit tests when client logic changes ([testing-guidelines.md](testing-guidelines.md)); colocate `*.spec.ts` next to the component or service (see `features/issues/components/`).
 
-## Add or migrate an administrative list screen (QueryGrid)
+## Add or migrate a list screen (QueryGrid)
 
-Use **Issues**, **Users**, or **Roles** list as the template.
+Use any existing **list screen** as the template (for example **Issues**, **Users**, or **Roles**).
 
 ### Backend
 
