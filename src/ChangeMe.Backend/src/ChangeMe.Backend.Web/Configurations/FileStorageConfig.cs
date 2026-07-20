@@ -28,7 +28,8 @@ public static class FileStorageConfig
     GlobalJobFilters.Filters.Add(
       new AttachmentStorageCleanupConcurrentExecutionFilterAttribute(cleanupConcurrentExecutionTimeoutSeconds));
 
-    RecurringJob.AddOrUpdate<AttachmentStorageCleanupJob>(
+    var recurringJobs = app.Services.GetRequiredService<IRecurringJobManager>();
+    recurringJobs.AddOrUpdate<AttachmentStorageCleanupJob>(
       "attachment-storage-cleanup",
       job => job.ExecuteAsync(JobCancellationToken.Null),
       cleanupCronExpression);

@@ -31,7 +31,8 @@ public static class NotificationsConfig
       ? "0 3 * * *"
       : retentionOptions.CleanupCronExpression;
 
-    RecurringJob.AddOrUpdate<NotificationRetentionCleanupJob>(
+    var recurringJobs = app.Services.GetRequiredService<IRecurringJobManager>();
+    recurringJobs.AddOrUpdate<NotificationRetentionCleanupJob>(
       "notifications-retention-cleanup",
       job => job.ExecuteAsync(JobCancellationToken.Null),
       cleanupCronExpression);
