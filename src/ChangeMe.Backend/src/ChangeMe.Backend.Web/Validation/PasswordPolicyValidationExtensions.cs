@@ -1,4 +1,4 @@
-﻿namespace ChangeMe.Backend.Web.Validation;
+namespace ChangeMe.Backend.Web.Validation;
 
 public static class PasswordPolicyValidationExtensions
 {

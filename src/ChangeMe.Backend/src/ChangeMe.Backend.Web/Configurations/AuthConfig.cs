@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.Web.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;

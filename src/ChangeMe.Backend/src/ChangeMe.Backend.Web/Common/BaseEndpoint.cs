@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.Web.Configurations;
+using ChangeMe.Backend.Web.Configurations;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace ChangeMe.Backend.Web.Common;

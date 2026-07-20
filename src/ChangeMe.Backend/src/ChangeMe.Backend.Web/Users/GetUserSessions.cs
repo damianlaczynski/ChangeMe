@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.UseCases.Users;
+using ChangeMe.Backend.UseCases.Users;
 using ChangeMe.Backend.UseCases.Users.Dtos;
 using QueryGrid.Abstractions;
 

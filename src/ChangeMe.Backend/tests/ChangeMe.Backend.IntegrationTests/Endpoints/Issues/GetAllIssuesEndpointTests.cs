@@ -1,5 +1,4 @@
 using System.Net;
-using System.Text.Json;
 using ChangeMe.Backend.Domain.Aggregates.Issue.Enums;
 using ChangeMe.Backend.IntegrationTests.Fixtures;
 using ChangeMe.Backend.IntegrationTests.Support;

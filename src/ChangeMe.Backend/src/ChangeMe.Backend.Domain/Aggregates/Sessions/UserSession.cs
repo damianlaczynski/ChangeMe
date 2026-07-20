@@ -1,4 +1,4 @@
-﻿namespace ChangeMe.Backend.Domain.Aggregates.Sessions;
+namespace ChangeMe.Backend.Domain.Aggregates.Sessions;
 
 public class UserSession : Entity, IAggregateRoot
 {

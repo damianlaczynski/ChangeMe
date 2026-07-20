@@ -1,4 +1,4 @@
-﻿using System.Net.Mail;
+using System.Net.Mail;
 using ChangeMe.Backend.Domain.Aggregates.Users.Entities;
 
 namespace ChangeMe.Backend.Domain.Aggregates.Users;

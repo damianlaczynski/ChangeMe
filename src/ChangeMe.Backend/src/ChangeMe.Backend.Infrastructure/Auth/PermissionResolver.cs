@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.Infrastructure.Persistence;
+using ChangeMe.Backend.Infrastructure.Persistence;
 
 namespace ChangeMe.Backend.Infrastructure.Auth;
 

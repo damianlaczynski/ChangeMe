@@ -3,7 +3,6 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using ChangeMe.Backend.Domain.Aggregates.Issue.Enums;
 using ChangeMe.Backend.Domain.Aggregates.Users;
-using ChangeMe.Backend.Domain.Common;
 using ChangeMe.Backend.Infrastructure.Persistence;
 using ChangeMe.Backend.IntegrationTests.Fixtures;
 using ChangeMe.Backend.IntegrationTests.Support;

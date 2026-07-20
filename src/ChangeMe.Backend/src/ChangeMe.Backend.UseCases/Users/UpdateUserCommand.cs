@@ -1,7 +1,6 @@
 using ChangeMe.Backend.Domain.Aggregates.Roles;
 using ChangeMe.Backend.Domain.Aggregates.Users;
 using ChangeMe.Backend.Domain.Authorization;
-using ChangeMe.Backend.Domain.Common;
 using ChangeMe.Backend.UseCases.Users.Dtos;
 using ChangeMe.Backend.UseCases.Users.Utils;
 

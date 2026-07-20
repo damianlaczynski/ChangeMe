@@ -1,4 +1,3 @@
-using ChangeMe.Backend.Domain.Aggregates.Users;
 using ChangeMe.Backend.UseCases.Users.Dtos;
 using QueryGrid.Abstractions;
 using QueryGrid.EntityFrameworkCore;

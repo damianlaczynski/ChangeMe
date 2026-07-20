@@ -1,4 +1,4 @@
-﻿namespace ChangeMe.Backend.Web.Configurations;
+namespace ChangeMe.Backend.Web.Configurations;
 
 public sealed class CorsOptions
 {

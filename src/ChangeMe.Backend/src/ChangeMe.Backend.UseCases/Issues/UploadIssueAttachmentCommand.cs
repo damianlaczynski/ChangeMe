@@ -1,5 +1,4 @@
 using ChangeMe.Backend.Domain.Aggregates.Issue;
-using ChangeMe.Backend.Domain.Aggregates.Issue.Entities;
 using ChangeMe.Backend.Infrastructure.FileStorage;
 using ChangeMe.Backend.UseCases.Issues.Dtos;
 using ChangeMe.Backend.UseCases.Issues.Services;

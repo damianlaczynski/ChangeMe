@@ -6,7 +6,7 @@ root = false
 # Code files
 [*.{cs,csx,vb,vbx}]
 indent_size = 2
-charset = utf-8-bom
+charset = utf-8
 ###############################
 # .NET Coding Conventions     #
 ###############################
@@ -46,7 +46,7 @@ dotnet_style_prefer_conditional_expression_over_return = true:silent
 ###############################
 # Style Definitions
 dotnet_naming_style.pascal_case_style.capitalization             = pascal_case
-# Use PascalCase for constant fields  
+# Use PascalCase for constant fields
 dotnet_naming_rule.constant_fields_should_be_pascal_case.severity = suggestion
 dotnet_naming_rule.constant_fields_should_be_pascal_case.symbols  = constant_fields
 dotnet_naming_rule.constant_fields_should_be_pascal_case.style = pascal_case_style
@@ -66,6 +66,8 @@ dotnet_style_operator_placement_when_wrapping = beginning_of_line
 # C# Coding Conventions       #
 ###############################
 [*.cs]
+# Remove unused usings (dotnet format style + IDE cleanup)
+dotnet_diagnostic.IDE0005.severity = warning
 # var preferences
 csharp_style_var_for_built_in_types = true:silent
 csharp_style_var_when_type_is_apparent = true:silent
@@ -130,6 +132,12 @@ csharp_style_prefer_top_level_statements = true:silent
 csharp_style_prefer_primary_constructors = true:suggestion
 csharp_style_expression_bodied_lambdas = true:silent
 csharp_style_expression_bodied_local_functions = false:silent
+###############################
+# Generated / EF migrations   #
+###############################
+[**/Persistence/Migrations/**.cs]
+generated_code = true
+dotnet_diagnostic.IDE0161.severity = none
 ###############################
 # VB Coding Conventions       #
 ###############################

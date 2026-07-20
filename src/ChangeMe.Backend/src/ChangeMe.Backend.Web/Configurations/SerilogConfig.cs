@@ -1,4 +1,4 @@
-﻿using Serilog.Settings.Configuration;
+using Serilog.Settings.Configuration;
 
 namespace ChangeMe.Backend.Web.Configurations;
 

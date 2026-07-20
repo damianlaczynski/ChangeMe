@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.Domain.Aggregates.Roles.Entities;
+using ChangeMe.Backend.Domain.Aggregates.Roles.Entities;
 
 namespace ChangeMe.Backend.Infrastructure.Persistence.Config.Roles;
 

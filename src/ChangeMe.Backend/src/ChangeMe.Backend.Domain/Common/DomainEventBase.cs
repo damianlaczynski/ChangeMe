@@ -1,4 +1,4 @@
-﻿using Mediator;
+using Mediator;
 
 namespace ChangeMe.Backend.Domain.Common;
 

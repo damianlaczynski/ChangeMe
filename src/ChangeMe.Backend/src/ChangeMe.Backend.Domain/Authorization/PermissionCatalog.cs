@@ -1,4 +1,4 @@
-﻿namespace ChangeMe.Backend.Domain.Authorization;
+namespace ChangeMe.Backend.Domain.Authorization;
 
 public sealed record PermissionDefinition(
   string Code,

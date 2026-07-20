@@ -1,6 +1,5 @@
 using ChangeMe.Backend.Domain.Aggregates.Issue;
 using ChangeMe.Backend.Domain.Aggregates.Issue.Entities;
-using ChangeMe.Backend.Domain.Common.Attachments;
 using ChangeMe.Backend.Infrastructure.FileStorage;
 using ChangeMe.Backend.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;

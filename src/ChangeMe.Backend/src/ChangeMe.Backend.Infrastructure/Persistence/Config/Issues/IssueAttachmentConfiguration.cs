@@ -1,7 +1,5 @@
 using ChangeMe.Backend.Domain.Aggregates.Issue;
 using ChangeMe.Backend.Domain.Aggregates.Issue.Entities;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace ChangeMe.Backend.Infrastructure.Persistence.Config.Issues;
 

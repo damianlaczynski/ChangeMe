@@ -1,5 +1,4 @@
 using ChangeMe.Backend.UseCases.Auth.Dtos;
-using ChangeMe.Backend.Domain.Common;
 
 namespace ChangeMe.Backend.UseCases.Auth;
 
