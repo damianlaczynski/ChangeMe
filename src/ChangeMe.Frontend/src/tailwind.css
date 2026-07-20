@@ -39,4 +39,17 @@
   .issue-history-timeline .p-timeline-event-opposite {
     display: none;
   }
+
+  html.app-reduced-motion *,
+  html.app-reduced-motion *::before,
+  html.app-reduced-motion *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  html.app-reduced-motion .p-ripple {
+    display: none;
+  }
 }
