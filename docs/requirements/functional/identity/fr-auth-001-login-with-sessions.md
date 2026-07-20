@@ -5,12 +5,12 @@ domain: identity
 type: functional
 status: active
 depends_on: []
-inherits_nfr:
+inherits_conventions: [STD-ACC-001, STD-MSG-001, STD-VAL-001]
+inherits_quality:
   [NFR-QUAL-001, NFR-A11Y-001, NFR-I18N-001, NFR-PERF-001, NFR-RSP-001]
-inherits_fr: [FR-UI-001]
 ---
 
-> Account terms: `docs/requirements/_shared/reference/glossary.md`.
+> Account terms: `docs/requirements/_shared/domain/glossary.md`.
 
 ## Goal
 
@@ -18,44 +18,34 @@ The user must be able to sign in with email and password and begin an authentica
 
 ## Functional requirements
 
-### Login screen
+### Data
 
-| Field        | Behavior                                                                           |
-| ------------ | ---------------------------------------------------------------------------------- |
-| **Email**    | Text field, **required**; valid email format; max **320** characters.              |
-| **Password** | Password field, **required**; **8–128** characters (same bounds as user creation). |
+| Field        | Constraints                                                        |
+| ------------ | ------------------------------------------------------------------ |
+| **Email**    | **Required**; valid email format; max **320** characters.          |
+| **Password** | **Required**; **8–128** characters (same bounds as user creation). |
 
-- Successful sign-in opens the **Issues list** screen with the user authenticated.
-- The system creates a **session** after password validation succeeds.
+### Operations
+
+- Sign in with email and password.
+- On success, the system creates a **session** and provides the user's effective permissions (FR-ROL-001).
 - Each created session records **signed in at**, **device / browser label**, and **IP address**.
-- The system provides the user's effective permissions defined in FR-ROL-001.
-- Failed sign-in (unknown email or wrong password) shows form-level error: **`Invalid email or password.`** The message does not reveal whether the email exists.
-- Sign-in attempt when the account is **deactivated** shows form-level error: **`This account has been deactivated. Contact an administrator.`**
-- There is no public registration or self-service account creation on **Login**; new accounts are created by administrators (FR-USR-003).
+- A guest who attempts a protected action is redirected to sign-in.
+- There is no public registration or self-service account creation; new accounts are created by administrators (FR-USR-003).
 
-### Validation and form behavior
+### Validation
 
-- Inherits `FR-UI-001` (**Create and edit form screens**) for inline validation presentation unless stated below.
+- Unknown email or wrong password: rejection message **`Invalid email or password.`** The message does not reveal whether the email exists.
+- Account **deactivated** (FR-USR-005): rejection message **`This account has been deactivated. Contact an administrator.`**
 
-**Login**
-
-- **Email**: required; valid email format; max **320** characters.
-- **Password**: required; **8–128** characters. Rejects out-of-range input before authentication (limits oversized requests; minimum matches passwords set at user creation).
-
-### Form actions
-
-- **Sign in** button: on success navigate to **Issues list**; on failure remain on **Login**.
-- While submit is in progress, the submit button shows a loading state; the form remains visible.
-
-### States and business rules
+### Business rules
 
 - Each sign-in creates a **new session**; signing in from multiple devices creates multiple independent sessions.
-- A guest who opens a protected screen is redirected to **Login**.
-- After successful sign-in, the user receives a full application session immediately and may access screens permitted by effective permissions (FR-ROL-001). There are no intermediate gates before the application (for example required password change, two-factor verification, or email verification).
-- Sign-in is evaluated in this order: (1) unknown credentials → **`Invalid email or password.`**; (2) account **deactivated** (FR-USR-005) → **`This account has been deactivated. Contact an administrator.`**; (3) success → create session and navigate to **Issues list**.
+- After successful sign-in, the user receives a full application session immediately. There are no intermediate gates (for example required password change, two-factor verification, or email verification).
+- Sign-in is evaluated in this order: (1) unknown credentials → **`Invalid email or password.`**; (2) account **deactivated** → **`This account has been deactivated. Contact an administrator.`**; (3) success → create session.
 
-## Non-functional requirements
+## Quality requirements
 
-- Inherits `docs/requirements/_shared/non-functional/product-quality.md` (`NFR-QUAL-001`) and linked NFR documents.
-- Inherits `docs/requirements/_shared/functional/ui-patterns.md` (`FR-UI-001`) for shared list, form, and feedback behavior unless stated above.
-- Document only overrides in this section when this specification differs from inherited NFR or UI patterns.
+- Inherits `docs/requirements/_shared/quality/product-quality.md` (`NFR-QUAL-001`) and linked quality documents.
+- Inherits `docs/requirements/_shared/conventions/product-standards.md` (`CONV-001`) unless stated above.
+- Document only overrides in this section when this specification differs from inherited quality or convention standards.

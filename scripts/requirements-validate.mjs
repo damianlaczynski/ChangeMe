@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Validate docs/requirements structure: FR specs, NFR docs, cross-references.
+ * Validate docs/requirements structure: FR specs, quality docs, conventions, cross-references.
  * Run: npm run requirements:validate
  */
 
@@ -9,10 +9,11 @@ import fs from "node:fs";
 import path from "node:path";
 import {
   ROOT,
+  collectConventionDocs,
+  collectDomainDocs,
   collectFunctionalFiles,
-  collectNfrDocs,
-  collectReferenceDocs,
-  collectSharedFunctionalDocs,
+  collectQualityDocs,
+  collectStdIdsFromConventions,
   parseFrontmatter,
 } from "./requirements-lib.mjs";
 
@@ -37,7 +38,7 @@ function validateSharedDoc(doc, idPattern) {
     error(`Invalid id "${doc.id}" in frontmatter: ${rel}`);
     return false;
   }
-  if (doc.type && doc.type !== doc.expectedType) {
+  if (doc.type && doc.expectedType && doc.type !== doc.expectedType) {
     warn(`Expected type: ${doc.expectedType} in ${rel}`);
   }
   if (!doc.title) {
@@ -53,40 +54,45 @@ function main() {
     return;
   }
 
-  const referenceDocs = collectReferenceDocs();
-  if (referenceDocs.length === 0) {
-    warn("No reference docs found under docs/requirements/_shared/reference/");
+  const domainDocs = collectDomainDocs();
+  if (domainDocs.length === 0) {
+    warn("No domain docs found under docs/requirements/_shared/domain/");
   }
 
-  const nfrDocs = collectNfrDocs();
-  if (nfrDocs.length === 0) {
-    warn("No NFR docs found under docs/requirements/_shared/non-functional/");
+  const qualityDocs = collectQualityDocs();
+  if (qualityDocs.length === 0) {
+    warn("No quality docs found under docs/requirements/_shared/quality/");
   }
 
-  const sharedFunctionalDocs = collectSharedFunctionalDocs();
-  if (sharedFunctionalDocs.length === 0) {
+  const conventionDocs = collectConventionDocs();
+  if (conventionDocs.length === 0) {
     warn(
-      "No shared functional docs found under docs/requirements/_shared/functional/",
+      "No convention docs found under docs/requirements/_shared/conventions/",
     );
   }
 
-  const nfrIds = new Set();
-  for (const doc of nfrDocs) {
+  const stdIds = collectStdIdsFromConventions();
+  if (stdIds.size === 0) {
+    warn("No STD-* section ids found in conventions docs");
+  }
+
+  const qualityIds = new Set();
+  for (const doc of qualityDocs) {
     if (!validateSharedDoc(doc, /^NFR-[A-Z0-9]+-\d{3}$/)) continue;
-    if (nfrIds.has(doc.id)) {
-      error(`Duplicate NFR id ${doc.id}`);
+    if (qualityIds.has(doc.id)) {
+      error(`Duplicate quality id ${doc.id}`);
     } else {
-      nfrIds.add(doc.id);
+      qualityIds.add(doc.id);
     }
   }
 
-  const sharedFrIds = new Map();
-  for (const doc of sharedFunctionalDocs) {
-    if (!validateSharedDoc(doc, /^FR-[A-Z0-9]+-\d{3}$/)) continue;
-    if (sharedFrIds.has(doc.id)) {
-      error(`Duplicate shared functional id ${doc.id}`);
+  const conventionIds = new Map();
+  for (const doc of conventionDocs) {
+    if (!validateSharedDoc(doc, /^CONV-\d{3}$/)) continue;
+    if (conventionIds.has(doc.id)) {
+      error(`Duplicate conventions id ${doc.id}`);
     } else {
-      sharedFrIds.set(doc.id, doc.relPath);
+      conventionIds.set(doc.id, doc.relPath);
     }
   }
 
@@ -102,7 +108,7 @@ function main() {
   }
 
   const frIds = new Map();
-  const allFrIds = new Set([...sharedFrIds.keys()]);
+  const allFrIds = new Set();
 
   const frFilenamePattern = /^fr-[a-z]+-\d{3}-.+\.md$/;
 
@@ -137,6 +143,17 @@ function main() {
       error(`Missing title in frontmatter: functional/${domain}/${name}`);
     }
 
+    if (meta.inherits_fr) {
+      warn(
+        `Deprecated inherits_fr in functional/${domain}/${name}; use inherits_conventions with STD-* ids`,
+      );
+    }
+    if (meta.inherits_nfr) {
+      warn(
+        `Deprecated inherits_nfr in functional/${domain}/${name}; use inherits_quality`,
+      );
+    }
+
     if (frIds.has(meta.id)) {
       error(
         `Duplicate FR id ${meta.id}: ${frIds.get(meta.id)} and functional/${domain}/${name}`,
@@ -157,22 +174,18 @@ function main() {
     if (!body.includes("## Functional requirements")) {
       error(`Missing ## Functional requirements: functional/${domain}/${name}`);
     }
-    if (!body.includes("## Non-functional requirements")) {
-      error(
-        `Missing ## Non-functional requirements: functional/${domain}/${name}`,
-      );
+    if (
+      !body.includes("## Quality requirements") &&
+      !body.includes("## Non-functional requirements")
+    ) {
+      error(`Missing ## Quality requirements: functional/${domain}/${name}`);
     }
   }
-
-  allFrIds.clear();
-  for (const id of frIds.keys()) allFrIds.add(id);
-  for (const id of sharedFrIds.keys()) allFrIds.add(id);
-
-  const frRefRe = /(?<![A-Z/])FR-[A-Z0-9]+-\d{3}/g;
 
   for (const { domain, name, path: filePath } of frFiles) {
     const content = fs.readFileSync(filePath, "utf8");
     const body = content.replace(/^---[\s\S]*?---\n/, "");
+    const frRefRe = /(?<![A-Z/])FR-[A-Z0-9]+-\d{3}/g;
     const refs = [...new Set(body.match(frRefRe) ?? [])];
     const meta = parseFrontmatter(content);
     for (const ref of refs) {
@@ -187,20 +200,19 @@ function main() {
         }
       }
     }
-    if (meta?.inherits_fr) {
-      for (const dep of meta.inherits_fr) {
-        if (!allFrIds.has(dep)) {
-          error(
-            `inherits_fr references missing FR ${dep} in ${domain}/${name}`,
-          );
-        }
+    const qualityInherits = meta?.inherits_quality ?? meta?.inherits_nfr ?? [];
+    for (const dep of qualityInherits) {
+      if (!qualityIds.has(dep)) {
+        error(
+          `inherits_quality references missing NFR ${dep} in ${domain}/${name}`,
+        );
       }
     }
-    if (meta?.inherits_nfr) {
-      for (const dep of meta.inherits_nfr) {
-        if (!nfrIds.has(dep)) {
+    if (meta?.inherits_conventions) {
+      for (const dep of meta.inherits_conventions) {
+        if (!stdIds.has(dep)) {
           error(
-            `inherits_nfr references missing NFR ${dep} in ${domain}/${name}`,
+            `inherits_conventions references missing STD ${dep} in ${domain}/${name}`,
           );
         }
       }
@@ -253,31 +265,31 @@ function main() {
           status: meta?.status ?? "active",
           file,
           depends_on: meta?.depends_on ?? [],
-          inherits_nfr: meta?.inherits_nfr ?? [],
-          inherits_fr: meta?.inherits_fr ?? [],
+          inherits_quality: meta?.inherits_quality ?? meta?.inherits_nfr ?? [],
+          inherits_conventions: meta?.inherits_conventions ?? [],
         };
       }),
-    non_functional: nfrDocs
+    quality: qualityDocs
       .filter((doc) => doc.id)
       .sort((a, b) => a.id.localeCompare(b.id))
       .map((doc) => ({
         id: doc.id,
         title: doc.title,
         file: doc.relPath,
-        type: "non-functional",
+        type: "quality",
         status: doc.status,
       })),
-    shared_functional: sharedFunctionalDocs
+    conventions: conventionDocs
       .filter((doc) => doc.id)
       .sort((a, b) => a.id.localeCompare(b.id))
       .map((doc) => ({
         id: doc.id,
         title: doc.title,
         file: doc.relPath,
-        type: "functional",
+        type: "conventions",
         status: doc.status,
       })),
-    reference: referenceDocs.map((doc) => ({
+    domain: domainDocs.map((doc) => ({
       file: doc.relPath,
     })),
   };
@@ -293,10 +305,20 @@ function main() {
     error("Failed to generate docs/requirements/README.md");
   }
 
-  report(frIds.size, nfrDocs.length, referenceDocs.length);
+  report(
+    frIds.size,
+    qualityDocs.length,
+    domainDocs.length,
+    conventionDocs.length,
+  );
 }
 
-function report(frCount = 0, nfrCount = 0, referenceCount = 0) {
+function report(
+  frCount = 0,
+  qualityCount = 0,
+  domainCount = 0,
+  conventionCount = 0,
+) {
   if (warnings.length) {
     console.warn(`\n${warnings.length} warning(s):`);
     for (const w of warnings) console.warn(`  ⚠ ${w}`);
@@ -307,7 +329,7 @@ function report(frCount = 0, nfrCount = 0, referenceCount = 0) {
     process.exit(1);
   }
   console.log(
-    `✓ Requirements valid: ${frCount} functional specifications, ${nfrCount} NFR documents, ${referenceCount} reference docs`,
+    `✓ Requirements valid: ${frCount} functional specifications, ${qualityCount} quality documents, ${conventionCount} convention documents, ${domainCount} domain documents`,
   );
 }
 

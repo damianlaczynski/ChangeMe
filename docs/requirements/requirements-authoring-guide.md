@@ -1,68 +1,96 @@
 # Requirements authoring guide
 
 > **Audience:** analysts and authors of functional specifications (`FR-*`).
-> **Workflow** (change records, validation, developer handoff): `docs/requirements/requirements-change-process.md`.
-> **Skeleton** to copy for a new file: `docs/requirements/_functional-specification-template.md`.
+> **Layers:** `docs/requirements/_shared/README.md` (L1 Domain · L2 Conventions · L3 Quality · L4 Capabilities · L5 Implementation).
+> **Workflow:** `docs/requirements/requirements-change-process.md`.
+> **Skeleton:** `docs/requirements/_functional-specification-template.md`.
 
 ## New vs updated specification
 
-| Situation          | What to do                                                                                                                                                                                                                                                                   |
-| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **New `FR-*`**     | Copy `_functional-specification-template.md` to `docs/requirements/functional/<domain>/fr-<area>-<nnn>-<slug>.md`. Assign the next free `FR-<AREA>-NNN` in that domain (see existing files and `docs/requirements/README.md`). Fill frontmatter and sections per this guide. |
-| **Updated `FR-*`** | Edit the existing file only. Do not split one specification across multiple files. Describe what changed in the pending change record (**Behavior delta**), not only in the specification body.                                                                              |
+| Situation          | What to do                                                                                                                                                                                                            |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **New `FR-*`**     | Copy `_functional-specification-template.md` to `docs/requirements/functional/<domain>/fr-<area>-<nnn>-<slug>.md`. Assign the next free `FR-<AREA>-NNN` in that domain. Fill frontmatter and sections per this guide. |
+| **Updated `FR-*`** | Edit the existing file only. Describe what changed in the pending change record (**Behavior delta**), not only in the specification body.                                                                             |
 
-After either path, add or update a pending record in `docs/requirements/changes/` from `_changes-template.md` and run `npm run requirements:validate`.
+After either path, add or update a pending record in `docs/requirements/changes/` and run `npm run requirements:validate`.
 
 ## Before you write
 
-1. Read relevant `_shared/reference/` docs (glossary, account model, permissions) when the feature touches those concepts.
-2. Check whether behavior belongs in `_shared/functional/ui-patterns.md` (`FR-UI-001`) or another shared doc — link once, do not duplicate across specifications.
-3. Search `docs/requirements/README.md` for related `FR-*` files; set `depends_on` and cite identifiers when behavior builds on another specification.
+1. Read relevant `docs/requirements/_shared/domain/` docs when the feature touches glossary terms, account model, or permissions.
+2. Check whether behavior belongs in `docs/requirements/_shared/conventions/product-standards.md` (L2) — link `STD-*` sections, do not duplicate.
+3. Search `docs/requirements/README.md` for related `FR-*`; set `depends_on` and cite identifiers when behavior builds on another specification.
 
-## Scope
+## Scope (L4 — Capabilities)
 
-- Describe **what the user and the system must do** from a business and interaction perspective.
-- One file = one coherent functional specification. Cross-cutting terms live in `_shared/` — link, do not duplicate.
-- When referring to behavior in another specification, cite its identifier (for example `FR-AUTH-001`).
+- Describe **what the system must do** to deliver business value: capabilities, data rules, validations, permissions, and observable outcomes.
+- One file = one coherent **business capability**. Do not organize specifications around screens, tabs, or layout sections.
+- Cross-cutting defaults live in L2 Conventions and L3 Quality — link, do not duplicate.
+- Document **main** behavior only. Omit detail already covered by inherited `STD-*` sections.
 
 ## Structure
 
 - Keep identifiers in the `FR-<AREA>-NNN` format.
-- **Goal** states the business outcome.
-- **Functional requirements** states user-visible behavior, flows, validations, messages, and business rules.
-- **Non-functional requirements** inherits global `NFR-*` docs; override only when this specification differs.
-- Deliberate exclusions use **Out of scope**.
+- **Goal** — business outcome in one or two sentences.
+- **Functional requirements** — grouped by concern:
+  - **Authorization** — permissions required for each capability.
+  - **Data** — entities, fields, constraints, and defaults.
+  - **Operations** — what the user or system can do, triggers, and results.
+  - **Validation** — field rules and rejection messages.
+  - **Business rules** — state transitions, side effects, consistency, and evaluation order.
+- **Quality requirements** — inherits L3 documents via `inherits_quality`; override only when this specification differs.
+- **Out of scope** — deliberate exclusions.
 
-Do **not** add a separate acceptance-scenarios or Given/When/Then table. If a bullet would only restate inherited `FR-UI-001` behavior, omit it and keep the `inherits_fr` link.
+Frontmatter:
+
+```yaml
+depends_on: [FR-YYY-MMM]
+inherits_conventions: [STD-LST-001, STD-VAL-001]
+inherits_quality:
+  [NFR-QUAL-001, NFR-A11Y-001, NFR-I18N-001, NFR-PERF-001, NFR-RSP-001]
+```
+
+## What to include in L4
+
+- Permissions and who can perform each action.
+- Field constraints, allowed values, uniqueness.
+- Business logic: state changes, side effects.
+- Rejection messages that encode business rules or validation failures.
+- Default values and evaluation order when behavior depends on them.
+- Explicit overrides of L2 standards (for example `Inherits STD-LST-001 except: default sort …`).
+
+## What to omit (defer to L2 Conventions)
+
+- Column tables, badge styles, icons, tooltips.
+- Button placement, sidebar entries, back-link labels.
+- Generic pagination, loading, and empty-state mechanics.
+- Form control types unless they imply distinct behavior.
 
 ## Clarity and precision (mandatory)
 
-Specifications must be **unambiguous**. A developer or tester must not need to guess what to build or verify.
-
-- **Do not use** vague qualifiers: _optional_, _recommended_, _may_, _might_, _where applicable_, _when possible_, _or similar_, _TBD_, _etc._
-- **State exact UI copy** for errors, confirmations, empty states, button labels, and success messages when wording matters.
-- **State exact defaults**, visibility rules, and navigation after success and failure.
+- **Do not use** vague qualifiers: _optional_, _may_, _might_, _TBD_, _etc._
+- **State exact rejection messages** when wording matters.
 - **Use "not required"** for empty-allowed fields; **use "must not" / "cannot"** for prohibitions.
-- **One behavior, one bullet** in functional requirements.
+- **One behavior, one bullet.**
 
 ## No implementation details (mandatory)
 
-**Do not include:** source code, API endpoints, HTTP details, database tables, migrations, or infrastructure keys.
+Do not include source code, API endpoints, HTTP details, database tables, or migrations. Describe business entities, permission names, field constraints, operations, and observable outcomes.
 
-**Instead describe:** user actions, screen flows, business entities, permission names from `_shared/reference/permissions.md`, and observable outcomes.
+## Layer reference
 
-## Shared docs
+| Layer             | Location               | Question                             |
+| ----------------- | ---------------------- | ------------------------------------ |
+| L1 Domain         | `_shared/domain/`      | What exists?                         |
+| L2 Conventions    | `_shared/conventions/` | How does the product usually behave? |
+| L3 Quality        | `_shared/quality/`     | How good must it be?                 |
+| L4 Capabilities   | `functional/FR-*`      | What must this feature do?           |
+| L5 Implementation | `docs/guides/`         | How do we build it in this repo?     |
 
-| Concept                     | Document                                                                       |
-| --------------------------- | ------------------------------------------------------------------------------ |
-| Business terms              | `docs/requirements/_shared/reference/glossary.md`                              |
-| Account attributes          | `docs/requirements/_shared/reference/account-model.md`                         |
-| Permission names            | `docs/requirements/_shared/reference/permissions.md`                           |
-| UI/UX patterns              | `docs/requirements/_shared/functional/ui-patterns.md` (`FR-UI-001`)            |
-| Product quality (NFR index) | `docs/requirements/_shared/non-functional/product-quality.md` (`NFR-QUAL-001`) |
+**Override rule:** L4 overrides L2; L2 overrides implicit habit; L3 applies unless L4 scopes it out; L5 never defines product behavior.
 
 ## Checklist before opening a PR
 
-1. Every testable outcome is in **Functional requirements** or in `_shared/` when it is a cross-screen pattern.
-2. Pending change record lists every touched `FR-*`, `NFR-*`, and shared doc with a clear **Behavior delta**.
-3. `npm run requirements:validate` passes.
+1. Testable outcomes are in **Functional requirements** or in the correct shared layer.
+2. `inherits_conventions` lists only valid `STD-*` ids from `product-standards.md`.
+3. Pending change record lists every touched document with a clear **Behavior delta**.
+4. `npm run requirements:validate` passes.

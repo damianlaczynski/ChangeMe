@@ -5,86 +5,52 @@ domain: access
 type: functional
 status: active
 depends_on: [FR-ROL-001, FR-ROL-003, FR-USR-004]
-inherits_nfr:
+inherits_conventions:
+  [STD-ACC-001, STD-DTL-001, STD-LST-002, STD-MSG-001, STD-OP-001]
+inherits_quality:
   [NFR-QUAL-001, NFR-A11Y-001, NFR-I18N-001, NFR-PERF-001, NFR-RSP-001]
-inherits_fr: [FR-UI-001]
 ---
 
 ## Goal
 
-An authorized administrator must be able to review a role's metadata, permissions, and assigned users, and navigate to related administration flows.
+An authorized administrator must be able to review a role's metadata, permissions, and assigned users, and manage assignments.
 
 ## Functional requirements
 
-### Role details screen
+### Authorization
 
-- Screen: **Role details**
-- Requires permission **Roles.View**.
-- Opened from **Roles list** (**Name** link or **Open details**).
+- **Roles.View**: required to view role metadata, permissions, and assigned users.
+- **Roles.Manage**: required to edit, delete, and remove users from the role.
 
-### Role summary
+### Data
 
-| Field              | Behavior                                                                   |
-| ------------------ | -------------------------------------------------------------------------- |
-| **Name**           | Read-only role name.                                                       |
-| **Description**    | Read-only description, or em dash (**`—`**) when empty.                    |
-| **System**         | Read-only badge **`System`** for seeded roles; not shown for custom roles. |
-| **Permissions**    | Read-only count in format **`{n} permissions`**.                           |
-| **Assigned users** | Read-only count in format **`{n} users`**.                                 |
+- Role summary: **name**, **description**, **system** flag, permission count, assigned user count.
+- **Permissions**: full list of assigned permissions with label and description from FR-ROL-001.
+- **Assigned users**: users currently assigned to the role; each entry shows name, email, and account status (**Active** / **Deactivated**).
+- Inherits STD-LST-002 unless stated below.
+- Assigned-users search matches **name** and **email**; default sort: **name**, ascending.
 
-### Permissions section
+### Operations
 
-- Section title: **`Permissions`**
-- Lists every permission assigned to the role.
-- Each row shows permission **label** and **description** from FR-ROL-001, grouped by **Users**, **Roles**, **Sessions**.
-- Permissions are read-only on this screen; editing happens on **Edit role** (FR-ROL-003).
+- View role metadata and assigned permissions (read-only).
+- Edit or delete a custom role (FR-ROL-003).
+- Remove a user from the role after confirmation.
+- Open user details for an assigned user (FR-USR-004).
+- **System** roles cannot be edited or deleted.
 
-### Assigned users section
+### Validation
 
-- Inherits `FR-UI-001` (**Detail and section screens** → **Embedded lists**) unless stated below.
-- Section title: **`Assigned users`**
-- Visible with permission **Roles.View**.
-- Table columns:
+- **Remove from role**: must not leave the user with zero roles; rejection message: **`Each user must have at least one role. Assign another role before removing this one.`**
+- **Remove from role**: confirmation message **`Remove {full name} from role {role name}? The user will lose permissions granted only through this role.`**
 
-| Column      | Description                                                                                                |
-| ----------- | ---------------------------------------------------------------------------------------------------------- |
-| **Name**    | **First name** and **Last name** when set; **`—`** when both empty; link to **User details** (FR-USR-004). |
-| **Email**   | User email address.                                                                                        |
-| **Account** | Badge **`Active`** or **`Deactivated`** (from **Deactivated**).                                            |
-| **Actions** | **Remove from role** when the user has **Roles.Manage**.                                                   |
+### Business rules
 
-- Default sort within section: **Name**, ascending.
-- Search field placeholder within section: **`Search assigned users...`**; matches **name** and **email**.
-- Empty state: **`No users are assigned to this role.`**
+- Permissions are read-only on role details; editing happens through edit role (FR-ROL-003).
+- Adding a user to a role is done by editing the user's role assignments (FR-ROL-005), not from role details.
+- Successful removal shows message **`User removed from role.`**
 
-### Header actions
+## Quality requirements
 
-| Action          | Permission required | Behavior                                    |
-| --------------- | ------------------- | ------------------------------------------- |
-| **Edit role**   | **Roles.Manage**    | Opens **Edit role** (custom roles only).    |
-| **Delete role** | **Roles.Manage**    | Custom roles only; behavior per FR-ROL-003. |
-
-- Actions the current user lacks permission for are **not shown**.
-- **Edit role** and **Delete role** are **not shown** for system roles.
-
-### Row action — Remove from role
-
-- **Remove from role** opens confirmation: **`Remove "{full name}" from role "{role name}"? The user will lose permissions granted only through this role.`**
-- On confirm: remove the role from that user; show message **`User removed from role.`**; refresh the assigned users list in place.
-- Removal is rejected when the user would have zero roles; show message **`Each user must have at least one role. Assign another role before removing this one.`**
-
-### Actions and navigation
-
-- **Back** returns to **Roles list**.
-- Clicking a user **Name** in **Assigned users** opens **User details** for that user.
-
-### Permissions and visibility
-
-- **Roles.View**: required for **Role details**, **Permissions** section, and read-only **Assigned users** list.
-- **Roles.Manage**: required for **Edit role**, **Delete role**, and **Remove from role**.
-
-## Non-functional requirements
-
-- Inherits `docs/requirements/_shared/non-functional/product-quality.md` (`NFR-QUAL-001`) and linked NFR documents.
-- Inherits `docs/requirements/_shared/functional/ui-patterns.md` (`FR-UI-001`) for shared list, form, and feedback behavior unless stated above.
-- Document only overrides in this section when this specification differs from inherited NFR or UI patterns.
+- Inherits `docs/requirements/_shared/quality/product-quality.md` (`NFR-QUAL-001`) and linked quality documents.
+- Inherits `docs/requirements/_shared/conventions/product-standards.md` (`CONV-001`) unless stated above.
+- Document only overrides in this section when this specification differs from inherited quality or convention standards.

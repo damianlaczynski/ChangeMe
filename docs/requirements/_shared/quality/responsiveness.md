@@ -1,7 +1,7 @@
 ---
 id: NFR-RSP-001
 title: Responsiveness and Layout
-type: non-functional
+type: quality
 status: active
 ---
 

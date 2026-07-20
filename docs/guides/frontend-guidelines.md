@@ -1,6 +1,8 @@
 # Frontend Guidelines
 
-> Scope: current conventions for writing Angular code in this frontend. This file is intentionally short and only documents patterns already present in the repository or immediately adjacent to them.
+> **L5 — Implementation.** Scope: current conventions for writing Angular code in this frontend.
+>
+> **Product behaviour** (lists, forms, validation UX, toasts): [`product-standards.md`](../requirements/_shared/conventions/product-standards.md) (L2). **Feature rules**: target `FR-*` (L4). This file covers _how_ to implement in Angular/PrimeNG.
 
 ## Stack summary
 
@@ -86,7 +88,7 @@ For dev server, lint, format, and test commands from `src/ChangeMe.Frontend` or 
 - Use `p-message` for inline field validation and screen-level load errors; use toasts for successful mutations and action failures that are not tied to a single form field.
 - Use `p-tag` for compact status labels such as issue status or priority.
 - Use `p-table` for tabular data, `p-paginator` for server-driven paging, and `p-progressSpinner` or table `[loading]` for in-flight data.
-- **Administrative list screens** (Issues, Users, Roles) use **QueryGrid** via `@query-grid/primeng` (`<qg-prime-data-grid>`, `QgColumnDirective`, `GridResourceFactory`). Column-header filters, multi-sort, search, and pagination are driven by a `GridResource` created in the component; the feature service passes `GridQuery` to the API as a `grid` query parameter and returns `GridResult<T>` from `@query-grid/core`. See `features/issues/components/issues-list/` as the reference implementation.
+- **List screens** (full-page tables and grids — for example Issues, Users, Roles) use **QueryGrid** via `@query-grid/primeng` (`<qg-prime-data-grid>`, `QgColumnDirective`, `GridResourceFactory`). Column-header filters, multi-sort, search, and pagination are driven by a `GridResource` created in the component; the feature service passes `GridQuery` to the API as a `grid` query parameter and returns `GridResult<T>` from `@query-grid/core`. See `features/issues/components/issues-list/` as the reference implementation.
 - **Embedded lists** (issue tabs, sessions, notifications, role assigned users) call the same API shape with `GridQuery`/`GridResult`; use `shared/data/utils/grid.utils.ts` for `createGridQuery`, `hasMoreGridItems`, and `createIssueTabGridQuery`.
 - Keep business logic in feature services and component TypeScript. PrimeNG should handle presentation only.
 

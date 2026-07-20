@@ -31,17 +31,20 @@ Run, configure, and troubleshoot the stack. Start with [technical/README.md](tec
 
 ## Requirements (`requirements/`)
 
-Product behaviour and the change workflow. Start with [requirements-change-process.md](requirements/requirements-change-process.md).
+Product behaviour and the change workflow. Five layers: see [`_shared/README.md`](requirements/_shared/README.md).
 
-| Document                                                                                     | Description                                    |
-| -------------------------------------------------------------------------------------------- | ---------------------------------------------- |
-| [requirements-change-process.md](requirements/requirements-change-process.md)                | Workflow for analysts and developers           |
-| [requirements-authoring-guide.md](requirements/requirements-authoring-guide.md)              | How to write and update `FR-*` specifications  |
-| [README.md](requirements/README.md)                                                          | Auto-generated index of `FR-*`, NFR, reference |
-| [\_functional-specification-template.md](requirements/_functional-specification-template.md) | Skeleton template for new `FR-*` files         |
-| [\_changes-template.md](requirements/_changes-template.md)                                   | Template for pending requirement deltas        |
-| [changes/](requirements/changes/)                                                            | Pending requirement deltas                     |
-| [functional/](requirements/functional/)                                                      | Functional specifications by domain            |
-| [\_shared/](requirements/_shared/)                                                           | Shared reference, UI patterns, and NFR docs    |
+| Document                                                                                     | Description                                                    |
+| -------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| [requirements-change-process.md](requirements/requirements-change-process.md)                | Workflow for analysts and developers                           |
+| [requirements-authoring-guide.md](requirements/requirements-authoring-guide.md)              | How to write and update `FR-*` specifications                  |
+| [\_shared/README.md](requirements/_shared/README.md)                                         | **Five layers** — Domain · Conventions · Quality · FR · Guides |
+| [README.md](requirements/README.md)                                                          | Auto-generated index                                           |
+| [\_functional-specification-template.md](requirements/_functional-specification-template.md) | Skeleton template for new `FR-*` files                         |
+| [\_changes-template.md](requirements/_changes-template.md)                                   | Template for pending requirement deltas                        |
+| [changes/](requirements/changes/)                                                            | Pending requirement deltas                                     |
+| [functional/](requirements/functional/)                                                      | L4 — functional specifications by domain                       |
+| [\_shared/domain/](requirements/_shared/domain/)                                             | L1 — glossary, account model, permissions                      |
+| [\_shared/conventions/](requirements/_shared/conventions/)                                   | L2 — product standards (`STD-*`)                               |
+| [\_shared/quality/](requirements/_shared/quality/)                                           | L3 — NFR documents                                             |
 
 Validate requirements structure: `npm run requirements:validate` from the repository root.

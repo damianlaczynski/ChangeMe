@@ -12,11 +12,11 @@ Optional. Why this change was made.
 | ------------ | --------------------------------- | ---------------------------------------- |
 | `FR-XXX-NNN` | **New** or **Updated** — one line | `functional/<domain>/fr-xxx-nnn-slug.md` |
 
-## Non-functional and shared docs touched
+## Shared documents touched
 
-| ID / path                                         | Action                              |
-| ------------------------------------------------- | ----------------------------------- |
-| `NFR-QUAL-001` or `_shared/reference/glossary.md` | **Updated** — what changed (if any) |
+| ID / path                                                                                    | Action                              |
+| -------------------------------------------------------------------------------------------- | ----------------------------------- |
+| `NFR-QUAL-001` or `_shared/domain/glossary.md` or `_shared/conventions/product-standards.md` | **Updated** — what changed (if any) |
 
 Leave empty when no NFR or shared doc changes.
 

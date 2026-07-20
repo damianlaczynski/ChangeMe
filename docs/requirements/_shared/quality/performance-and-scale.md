@@ -1,15 +1,16 @@
 ---
 id: NFR-PERF-001
 title: Performance and Scale
-type: non-functional
+type: quality
 status: active
 ---
+
 ## Performance and scale
 
 ### List and search data
 
-- All primary entity lists are **server-paginated** with default **10** items per page (`docs/requirements/_shared/functional/ui-patterns.md`).
-- Client-side loading of unbounded full tables is **not allowed** for administrative lists.
+- All primary entity lists are **server-paginated** with default **10** items per page (`docs/requirements/_shared/conventions/product-standards.md`, STD-LST-001).
+- Client-side loading of unbounded full tables is **not allowed** for list screens (STD-LST-001).
 - Search and filter queries run on the server; the functional specification defines match rules, not client-side filter algorithms.
 
 ### Detail screen sections
@@ -34,16 +35,15 @@ status: active
 - Push updates (notifications, bell badge) refresh affected UI regions without full page reload when the functional specification defines realtime behavior.
 - Realtime is **best-effort**; a manual **Refresh** control must remain available where the functional specification defines a list or panel (for example notification dropdown).
 
-
 ---
 
 ## Reliability and error handling
 
 Unless a REQ specifies otherwise:
 
-| Situation                       | User-visible behavior                                                                                   |
-| ------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| Network or server error on load | Inline screen message: **`Could not load data. Try again.`** with **Retry** when the screen supports it |
-| Network or server error on save | Toast: **`Could not save changes. Try again.`**; form stays open with values preserved                  |
-| Session expired during action   | Redirect to **Login**; unsaved form data is lost                                                        |
-| Concurrent edit conflict        | Message from the functional specification, or default **`This record was updated by someone else. Refresh and try again.`**  |
+| Situation                       | User-visible behavior                                                                                                       |
+| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| Network or server error on load | Inline screen message: **`Could not load data. Try again.`** with **Retry** when the screen supports it                     |
+| Network or server error on save | Toast: **`Could not save changes. Try again.`**; form stays open with values preserved                                      |
+| Session expired during action   | Redirect to **Login**; unsaved form data is lost                                                                            |
+| Concurrent edit conflict        | Message from the functional specification, or default **`This record was updated by someone else. Refresh and try again.`** |

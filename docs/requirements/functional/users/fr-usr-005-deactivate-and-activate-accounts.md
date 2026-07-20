@@ -5,9 +5,9 @@ domain: users
 type: functional
 status: active
 depends_on: [FR-ISS-002, FR-ROL-006]
-inherits_nfr:
+inherits_conventions: [STD-ACC-001, STD-MSG-001, STD-OP-001]
+inherits_quality:
   [NFR-QUAL-001, NFR-A11Y-001, NFR-I18N-001, NFR-PERF-001, NFR-RSP-001]
-inherits_fr: [FR-UI-001]
 ---
 
 ## Goal
@@ -16,46 +16,46 @@ An authorized administrator must be able to set **Deactivated** to **true** or *
 
 ## Functional requirements
 
-### Deactivate
+### Authorization
 
-- Available from **Users list** overflow **Deactivate**, **User details** **Deactivate**, and **Edit user** when **Deactivated** is set to **true** (requires **Users.Deactivate**).
-- Confirmation dialog: **`Deactivate "{full name}"? The user will be signed out and cannot sign in until reactivated.`**
-- On confirm:
-  - **Deactivated** becomes **true**;
-  - **Deactivated at** is set to the current date and time;
-  - all active sessions for that user are revoked;
-  - show message **`User deactivated.`**;
-  - refresh the current screen in place.
+- **Users.Deactivate**: required to deactivate and activate accounts.
 
-### Activate
+### Operations
 
-- Available from **Users list** overflow **Activate**, **User details** **Activate**, and **Edit user** when **Deactivated** is set to **false** (requires **Users.Deactivate**).
-- Confirmation dialog: **`Activate "{full name}"? The user will be able to sign in again.`**
-- On confirm:
-  - **Deactivated** becomes **false**;
-  - **Deactivated at** is cleared;
-  - show message **`User activated.`**;
-  - refresh the current screen in place.
+**Deactivate** (requires confirmation):
+
+- **Deactivated** becomes **true**.
+- **Deactivated at** is set to the current date and time.
+- All active sessions for that user are revoked immediately.
+- Success message: **`User deactivated.`**
+
+**Activate** (requires confirmation):
+
+- **Deactivated** becomes **false**.
+- **Deactivated at** is cleared.
 - Activation does **not** restore previously revoked sessions.
+- Success message: **`User activated.`**
+
+### Data
+
+- **Assignable users** (FR-ISS-002): only users with **Deactivated** false.
+- Each assignable user option uses **Display label** (`displayLabel`): **`{first name} {last name} ({email})`** or **Email** only when both names are empty.
+
+### Validation
+
+- An administrator **cannot** set their own **Deactivated** to **true**; rejection message: **`You cannot deactivate your own account.`**
+- **Deactivate**: confirmation message **`Deactivate {full name}? The user will be signed out and cannot sign in until reactivated.`**
+- **Activate**: confirmation message **`Activate {full name}? The user will be able to sign in again.`**
 
 ### Business rules
 
-- An administrator **cannot** set their own **Deactivated** to **true**; the action is rejected with message **`You cannot deactivate your own account.`**
 - Deactivating the first seeded administrator requires another user with **Deactivated** false, **Users.Deactivate**, and the **Administrator** role (FR-ROL-006).
+- Deactivating the last active administrator is rejected; rejection message: **`You cannot deactivate the last active administrator.`**
 - Deactivation does **not** delete the user record, issue authorship, or comments.
-- Users with **Deactivated** true are excluded from assignable-user selectors (FR-ISS-002).
+- Users with **Deactivated** true cannot sign in (FR-AUTH-001) and are excluded from assignable-user lists (FR-ISS-002).
 
-### Assignable users
+## Quality requirements
 
-- Assignable-user lists include only users with **Deactivated** false.
-- Each option shows **Display label** (`displayLabel`): **`{first name} {last name} ({email})`** or **Email** only when both names are empty.
-
-### Permissions and visibility
-
-- **Users.Deactivate** is required for **Deactivate** and **Activate** actions.
-
-## Non-functional requirements
-
-- Inherits `docs/requirements/_shared/non-functional/product-quality.md` (`NFR-QUAL-001`) and linked NFR documents.
-- Inherits `docs/requirements/_shared/functional/ui-patterns.md` (`FR-UI-001`) for shared list, form, and feedback behavior unless stated above.
-- Document only overrides in this section when this specification differs from inherited NFR or UI patterns.
+- Inherits `docs/requirements/_shared/quality/product-quality.md` (`NFR-QUAL-001`) and linked quality documents.
+- Inherits `docs/requirements/_shared/conventions/product-standards.md` (`CONV-001`) unless stated above.
+- Document only overrides in this section when this specification differs from inherited quality or convention standards.

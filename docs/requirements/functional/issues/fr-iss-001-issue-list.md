@@ -4,60 +4,46 @@ title: Issue List
 domain: issues
 type: functional
 status: active
-depends_on: [FR-AUTH-001, FR-ISS-002, FR-USR-005]
-inherits_nfr:
+depends_on: [FR-AUTH-001, FR-USR-005]
+inherits_conventions: [STD-ACC-001, STD-LST-001, STD-MSG-001, STD-OP-001]
+inherits_quality:
   [NFR-QUAL-001, NFR-A11Y-001, NFR-I18N-001, NFR-PERF-001, NFR-RSP-001]
-inherits_fr: [FR-UI-001]
 ---
 
 ## Goal
 
-The user must be able to browse all issues, search, filter, sort, navigate to details, manage watches, and quickly start creating a new issue.
+The user must be able to browse all issues, search, filter, sort, open details, manage watches, and create new issues.
 
 ## Functional requirements
 
-### Access
+### Authorization
 
-- Screen: **Issues list**
-- Available only to authenticated users. Guests are redirected to **Login** (FR-AUTH-001).
+- Available only to authenticated users (FR-AUTH-001).
 
-### Search and actions bar
+### Data
 
-- **Add issue** button opens **Create issue** (FR-ISS-002).
+- Each issue exposes **title**, **status**, **priority**, **assigned to**, **created at**, and **last activity**.
+- **Assigned to** displays assignee name and email, or **Unassigned** when none.
+- Inherits STD-LST-001 unless stated below.
+- **Filterable** attributes: title, status, priority, assigned to (assignable users per FR-USR-005), created at, last activity.
+- Global search matches issue identifier, **title**, and **description**.
+- Default sort: **last activity**, descending.
 
-### Issues table — columns
+### Operations
 
-| Column            | Description                                                                                       |
-| ----------------- | ------------------------------------------------------------------------------------------------- |
-| **Title**         | Short issue title; clickable link to **Issue details**.                                           |
-| **Status**        | Issue status badge (**New**, **In Progress**, **Resolved**, **Closed**).                          |
-| **Priority**      | Priority badge (**Low**, **Medium**, **High**, **Critical**).                                     |
-| **Assigned to**   | Assignee as **`{name} ({email})`** or **email** when name is missing; **`Unassigned`** when none. |
-| **Created at**    | Issue creation date and time.                                                                     |
-| **Last activity** | Date and time of the most recent change, comment, or other activity on the issue.                 |
-| **Actions**       | Watch control and overflow menu for row actions (see below).                                      |
+- Browse all issues.
+- Create a new issue (FR-ISS-002).
+- Open issue details (FR-ISS-003).
+- Edit an issue (FR-ISS-002).
+- Delete an issue after confirmation; deletion cannot be undone.
+- Watch or unwatch an issue (FR-ISS-004).
 
-### Sorting
+### Validation
 
-- **Title**: sortable alphabetically ascending and descending.
-- **Created at**: sortable chronologically ascending and descending.
-- **Last activity**: sortable chronologically ascending and descending.
-- Default sort: **Last activity**, descending (most recent first).
+- **Delete issue**: confirmation message **`Delete "{issue title}"? This cannot be undone.`**
 
-### Row actions and watch control
+## Quality requirements
 
-- **Watch / Unwatch**: compact button shows **watcher count** as label and bell / bell-slash icon for current watch state. Tooltip format: `**Watch this issue ({n} watchers)`** or `**Unwatch this issue ({n} watchers)\*\*`where`{n}` is the count.
-- Overflow menu: **Open details**, **Edit issue**, **Delete issue**.
-- **Delete issue** confirmation: `**Delete "{issue title}"? This action cannot be undone.`\*\*
-
-### Search and filters
-
-- Inherits `FR-UI-001` (**Administrative list screens**) unless stated below.
-- **Filterable columns**: **Title**, **Status**, **Priority**, **Assigned to** (assignable users per FR-USR-005), **Created at**, **Last activity**.
-- Global search placeholder: **`Search issues…`**; matches issue identifier, **Title**, and **Description**.
-
-## Non-functional requirements
-
-- Inherits `docs/requirements/_shared/non-functional/product-quality.md` (`NFR-QUAL-001`) and linked NFR documents.
-- Inherits `docs/requirements/_shared/functional/ui-patterns.md` (`FR-UI-001`) for shared list, form, and feedback behavior unless stated above.
-- Document only overrides in this section when this specification differs from inherited NFR or UI patterns.
+- Inherits `docs/requirements/_shared/quality/product-quality.md` (`NFR-QUAL-001`) and linked quality documents.
+- Inherits `docs/requirements/_shared/conventions/product-standards.md` (`CONV-001`) unless stated above.
+- Document only overrides in this section when this specification differs from inherited quality or convention standards.

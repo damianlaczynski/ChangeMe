@@ -4,17 +4,10 @@ title: Initial Administrator and System Roles
 domain: access
 type: functional
 status: active
-depends_on:
-  [
-    FR-AUTH-001,
-    FR-ROL-001,
-    FR-ROL-003,
-    FR-ROL-004,
-    FR-ROL-005,
-  ]
-inherits_nfr:
+depends_on: [FR-AUTH-001, FR-ROL-001, FR-ROL-003, FR-ROL-004, FR-ROL-005]
+inherits_conventions: [STD-ACC-001, STD-MSG-001]
+inherits_quality:
   [NFR-QUAL-001, NFR-A11Y-001, NFR-I18N-001, NFR-PERF-001, NFR-RSP-001]
-inherits_fr: [FR-UI-001]
 ---
 
 ## Goal
@@ -23,7 +16,7 @@ When the application is first deployed, the system must provide seeded system ro
 
 ## Functional requirements
 
-### Initial administrator
+### Data
 
 The deployment supplies these values for the first administrator:
 
@@ -34,39 +27,33 @@ The deployment supplies these values for the first administrator:
 | **First name** | Yes      |
 | **Last name**  | Yes      |
 
-- On first startup, if no administrator account exists for the configured **Email**, the system creates an administrator user with **Deactivated** false, the supplied profile, and password.
-- If an administrator with that **Email** already exists, the system does **not** recreate the account or reset the password.
-- The first administrator is assigned the **Administrator** role.
-- The first administrator signs in through **Login** (FR-AUTH-001) and can access **Users list**, **Roles list**, and session administration per their permissions.
-
-### Seeded system roles
-
 On first startup, the system ensures these roles exist:
 
-| Role              | **System** badge | Permissions                                        |
-| ----------------- | ---------------- | -------------------------------------------------- |
-| **Administrator** | Yes              | All permissions from FR-ROL-001.                   |
-| **User**          | Yes              | **Sessions.ViewOwn**, **Sessions.ManageOwn** only. |
+| Role              | Permissions                                        |
+| ----------------- | -------------------------------------------------- |
+| **Administrator** | All permissions from FR-ROL-001.                   |
+| **User**          | **Sessions.ViewOwn**, **Sessions.ManageOwn** only. |
 
+### Operations
+
+- On first startup, if no administrator account exists for the configured **Email**, the system creates an administrator user with **Deactivated** false, the supplied profile, and password, assigned the **Administrator** role.
+- If an administrator with that **Email** already exists, the system does **not** recreate the account or reset the password.
 - If the **Administrator** role already exists, the system adds any newly defined catalog permissions that role does not yet have.
 - System roles follow edit, delete, and assignment rules from FR-ROL-003, FR-ROL-004, and FR-ROL-005.
 
-### States and business rules
+### Business rules
 
 - Initial administrator **Password** values must not appear in user-visible logs or messages.
 - Production deployments must use a strong, unique password for the initial administrator.
 - New users created by administrators receive role assignments per FR-ROL-005; they do **not** receive **Administrator** unless explicitly selected.
+- The seeded **Administrator** role grants all permissions from FR-ROL-001.
 
-### Out of scope
+## Out of scope
 
-- **Out of scope:** forced password change on first sign-in (including the seeded administrator).
+- Forced password change on first sign-in (including the seeded administrator).
 
-### Permissions and visibility
+## Quality requirements
 
-- The seeded **Administrator** role grants all permissions from FR-ROL-001, including **Roles.Manage** and **Users.Manage**.
-
-## Non-functional requirements
-
-- Inherits `docs/requirements/_shared/non-functional/product-quality.md` (`NFR-QUAL-001`) and linked NFR documents.
-- Inherits `docs/requirements/_shared/functional/ui-patterns.md` (`FR-UI-001`) for shared list, form, and feedback behavior unless stated above.
-- Document only overrides in this section when this specification differs from inherited NFR or UI patterns.
+- Inherits `docs/requirements/_shared/quality/product-quality.md` (`NFR-QUAL-001`) and linked quality documents.
+- Inherits `docs/requirements/_shared/conventions/product-standards.md` (`CONV-001`) unless stated above.
+- Document only overrides in this section when this specification differs from inherited quality or convention standards.

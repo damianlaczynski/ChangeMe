@@ -1,6 +1,8 @@
 # Backend Guidelines
 
-> Scope: current conventions for implementing backend work in this repository.
+> **L5 — Implementation.** Scope: current conventions for implementing backend work in this repository.
+>
+> **Product behaviour** and business rules: target `FR-*` (L4) and [`product-standards.md`](../requirements/_shared/conventions/product-standards.md) (L2) when API responses affect UX. This file covers _how_ to implement in .NET/FastEndpoints.
 
 ## Stack summary
 
