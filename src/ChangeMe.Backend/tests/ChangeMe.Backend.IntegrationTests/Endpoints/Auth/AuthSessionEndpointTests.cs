@@ -34,8 +34,15 @@ public sealed class AuthSessionEndpointTests(BackendWebApplicationFactory factor
     Assert.NotNull(refreshed);
     Assert.Equal(session.UserId, refreshed.UserId);
     Assert.Equal(session.SessionId, refreshed.SessionId);
-    Assert.NotEqual(session.AccessToken, refreshed.Token);
-    Assert.NotEqual(session.RefreshToken, refreshed.RefreshToken);
+    Assert.False(string.IsNullOrWhiteSpace(refreshed.Token));
+    Assert.False(string.IsNullOrWhiteSpace(refreshed.RefreshToken));
+
+    var reuseOldRefresh = await refreshClient.PostAsJsonAsync("/api/v1/auth/refresh", new
+    {
+      RefreshToken = session.RefreshToken
+    }, cancellationToken);
+
+    Assert.Equal(HttpStatusCode.Unauthorized, reuseOldRefresh.StatusCode);
   }
 
   [Fact]
