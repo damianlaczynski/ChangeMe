@@ -16,6 +16,11 @@ updates:
     directory: /src/ChangeMe.Frontend
     schedule:
       interval: weekly
+    ignore:
+      - dependency-name: "@angular/*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@angular-eslint/*"
+        update-types: ["version-update:semver-major"]
     groups:
       angular:
         patterns:
