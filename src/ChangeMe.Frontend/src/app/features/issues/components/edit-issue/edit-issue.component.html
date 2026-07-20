@@ -11,7 +11,7 @@
 
   @if (isLoadingIssue()) {
     <div class="flex flex-col items-center gap-2 py-8">
-      <p-progressSpinner ariaLabel="Loading issue form" />
+      <p-progress-spinner ariaLabel="Loading issue form" />
       <p class="text-muted-color m-0 text-sm">Loading issue data...</p>
     </div>
   } @else if (loadError()) {

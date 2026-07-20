@@ -2,7 +2,7 @@
   @if (loadError()) {
     <p-message severity="error">{{ loadError() }}</p-message>
   } @else if (isLoadingHistory()) {
-    <p-progressSpinner ariaLabel="Loading history" styleClass="h-8 w-8" />
+    <p-progress-spinner ariaLabel="Loading history" styleClass="h-8 w-8" />
   } @else if (historyEntries().length > 0) {
     <p-timeline [value]="historyEntries()" align="left" class="issue-history-timeline">
       <ng-template pTemplate="marker" let-event>

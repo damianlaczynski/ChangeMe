@@ -35,7 +35,7 @@ export class NotificationsBellComponent {
   togglePanel(event: Event): void {
     const popover = this.popover();
 
-    if (popover.overlayVisible) {
+    if (popover.overlayVisible()) {
       popover.hide();
       return;
     }

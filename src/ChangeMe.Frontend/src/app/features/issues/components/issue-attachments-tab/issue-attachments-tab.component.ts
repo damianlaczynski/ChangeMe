@@ -16,14 +16,14 @@ import {
   getDeleteAttachmentConfirmMessage,
   issueAttachmentAccept
 } from '@features/issues/utils/issue.utils';
+import { formatFileSize } from '@shared/data/utils/file-size.utils';
 import {
   createIssueTabGridQuery,
   hasMoreGridItems
 } from '@shared/data/utils/grid.utils';
-import { formatFileSize } from '@shared/data/utils/file-size.utils';
 import { ConfirmationService } from 'primeng/api';
 import { Button } from 'primeng/button';
-import { FileUpload } from 'primeng/fileupload';
+import { FileSelectEvent, FileUpload } from 'primeng/fileupload';
 import { Message } from 'primeng/message';
 import { ProgressSpinner } from 'primeng/progressspinner';
 import { IssueConstraints } from '../../utils/issue.utils';
@@ -79,9 +79,9 @@ export class IssueAttachmentsTabComponent {
     });
   }
 
-  onFileSelected(event: { files?: File[]; currentFiles?: File[] }): void {
+  onFileSelected(event: FileSelectEvent): void {
     this.uploadError.set(null);
-    const files = event.currentFiles ?? event.files ?? [];
+    const files = event.currentFiles ?? Array.from(event.files ?? []);
     this.selectedFile.set(files[0] ?? null);
   }
 
