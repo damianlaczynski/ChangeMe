@@ -1,7 +1,7 @@
 using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.Infrastructure.Configurations;
-using ChangeMe.Backend.Infrastructure.FileStorage;
 using ChangeMe.Backend.Infrastructure.Email;
+using ChangeMe.Backend.Infrastructure.FileStorage;
 using ChangeMe.Backend.Infrastructure.Persistence;
 using ChangeMe.Backend.IntegrationTests.Support;
 using ChangeMe.Backend.IntegrationTests.Support.Fakes;

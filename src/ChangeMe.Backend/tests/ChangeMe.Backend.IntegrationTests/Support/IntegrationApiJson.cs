@@ -5,7 +5,7 @@ namespace ChangeMe.Backend.IntegrationTests.Support;
 
 internal static class IntegrationApiJson
 {
-  private static readonly JsonSerializerOptions SerializerOptions = new()
+  internal static readonly JsonSerializerOptions SerializerOptions = new()
   {
     PropertyNameCaseInsensitive = true,
     Converters = { new JsonStringEnumConverter() }
