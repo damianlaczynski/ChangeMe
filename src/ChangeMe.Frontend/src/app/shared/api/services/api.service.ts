@@ -1,7 +1,5 @@
 import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { PaginationParameters } from '@shared/data/models/pagination-parameters.model';
-import { PaginationResult } from '@shared/data/models/pagination-result.model';
 import { Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { getApiUrl } from '../../../../environments/runtime-config';
@@ -33,13 +31,6 @@ export class ApiService {
     return this.pipeResult(
       this.http.get<Result<T>>(`${this.baseUrl}${endpoint}`, { params: httpParams })
     );
-  }
-
-  public getPaginated<T, P extends PaginationParameters = PaginationParameters>(
-    endpoint: string,
-    params: P
-  ): Observable<PaginationResult<T>> {
-    return this.get<PaginationResult<T>>(endpoint, params);
   }
 
   public post<T>(endpoint: string, body: unknown): Observable<T> {

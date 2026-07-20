@@ -18,7 +18,6 @@ import {
 import { AuthService } from '@features/auth/services/auth.service';
 import {
   RoleAssignedUserDto,
-  RoleAssignedUsersSearchParameters,
   RoleDetailsDto
 } from '@features/roles/models/role.model';
 import { RolesService } from '@features/roles/services/roles.service';
@@ -36,7 +35,10 @@ import {
 } from '@features/users/utils/users.utils';
 import { PermissionCodes } from '@shared/authorization/permission-codes';
 import { BackButtonComponent } from '@shared/components/back-button/back-button.component';
-import { PaginationResult } from '@shared/data/models/pagination-result.model';
+import {
+  createGridQuery,
+  DEFAULT_GRID_PAGE_SIZE
+} from '@shared/data/utils/grid.utils';
 import { ConfirmationService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
@@ -86,18 +88,15 @@ export class RoleDetailsComponent {
   readonly getUserStatusLabel = getUserStatusLabel;
   readonly getUserStatusSeverity = getUserStatusSeverity;
   readonly toUserMembershipStatus = toUserMembershipStatus;
+  readonly DEFAULT_GRID_PAGE_SIZE = DEFAULT_GRID_PAGE_SIZE;
 
   readonly role = signal<RoleDetailsDto | null>(null);
   readonly pageTitle = computed(() => this.role()?.name ?? 'Role details');
   readonly assignedUsers = signal<RoleAssignedUserDto[]>([]);
-  readonly assignedUsersPagination =
-    signal<PaginationResult<RoleAssignedUserDto> | null>(null);
-  readonly assignedUsersQuery = signal<RoleAssignedUsersSearchParameters>({
-    pageNumber: 1,
-    pageSize: 10,
-    sortField: 'Name',
-    ascending: true
-  });
+  readonly assignedUsersGrid = signal(
+    createGridQuery({ sort: [{ field: 'LastName', desc: false }] })
+  );
+  readonly assignedUsersTotalCount = signal(0);
   readonly isLoading = signal(true);
   readonly isLoadingUsers = signal(true);
   readonly hasLoadedUsers = signal(false);
@@ -138,11 +137,14 @@ export class RoleDetailsComponent {
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe(() => {
-        this.assignedUsersQuery.update((current) => ({
-          ...current,
-          pageNumber: 1,
-          searchText: this.usersSearchControl.value.trim() || undefined
-        }));
+        const search = this.usersSearchControl.value.trim() || undefined;
+        this.assignedUsersGrid.set(
+          createGridQuery({
+            skip: 0,
+            sort: [{ field: 'LastName', desc: false }],
+            search
+          })
+        );
         this.loadAssignedUsers();
       });
   }
@@ -152,11 +154,16 @@ export class RoleDetailsComponent {
   }
 
   onAssignedUsersPageChange(event: PaginatorState): void {
-    this.assignedUsersQuery.update((current) => ({
-      ...current,
-      pageNumber: (event.page ?? 0) + 1,
-      pageSize: event.rows ?? current.pageSize
-    }));
+    const take = event.rows ?? DEFAULT_GRID_PAGE_SIZE;
+    const skip = event.first ?? 0;
+    this.assignedUsersGrid.update((current) =>
+      createGridQuery({
+        skip,
+        take,
+        sort: current.sort ?? [{ field: 'LastName', desc: false }],
+        search: current.search ?? undefined
+      })
+    );
     this.loadAssignedUsers();
   }
 
@@ -180,11 +187,11 @@ export class RoleDetailsComponent {
     this.isLoadingUsers.set(true);
 
     this.rolesService
-      .getRoleAssignedUsers(this.id(), this.assignedUsersQuery())
+      .getRoleAssignedUsers(this.id(), this.assignedUsersGrid())
       .subscribe({
         next: (result) => {
           this.assignedUsers.set(result.items);
-          this.assignedUsersPagination.set(result);
+          this.assignedUsersTotalCount.set(result.totalCount);
           this.isLoadingUsers.set(false);
           this.hasLoadedUsers.set(true);
         },

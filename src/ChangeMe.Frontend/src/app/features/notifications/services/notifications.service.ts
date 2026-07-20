@@ -1,15 +1,20 @@
 import { computed, effect, inject, Injectable, signal, untracked } from '@angular/core';
+import { GridQuery } from '@query-grid/core';
 import { ToastService } from '@core/toast/services/toast.service';
 import { AuthService } from '@features/auth/services/auth.service';
 import { ApiService } from '@shared/api/services/api.service';
-import { PaginationResult } from '@shared/data/models/pagination-result.model';
+import {
+  createGridQuery,
+  hasMoreGridItems
+} from '@shared/data/utils/grid.utils';
 import {
   NotificationDto,
   NotificationListDto,
-  NotificationRealtimeMessage,
-  NotificationSearchParameters
+  NotificationRealtimeMessage
 } from '../models/notification.model';
 import { NotificationsRealtimeConnectionService } from './notifications-realtime-connection.service';
+
+const NOTIFICATION_GRID_SORT = [{ field: 'CreatedAt', desc: true }];
 
 @Injectable({
   providedIn: 'root'
@@ -24,22 +29,8 @@ export class NotificationsService {
 
   readonly unreadNotifications = signal<NotificationDto[]>([]);
   readonly readNotifications = signal<NotificationDto[]>([]);
-  readonly unreadPagination = signal<PaginationResult<NotificationDto> | null>(null);
-  readonly readPagination = signal<PaginationResult<NotificationDto> | null>(null);
-  readonly unreadQuery = signal<NotificationSearchParameters>({
-    pageNumber: 1,
-    pageSize: 10,
-    sortField: 'CreatedAt',
-    ascending: false,
-    isRead: false
-  });
-  readonly readQuery = signal<NotificationSearchParameters>({
-    pageNumber: 1,
-    pageSize: 10,
-    sortField: 'CreatedAt',
-    ascending: false,
-    isRead: true
-  });
+  readonly unreadTotalCount = signal(0);
+  readonly readTotalCount = signal(0);
   readonly unreadCount = signal(0);
   readonly isLoading = signal(false);
   readonly isLoadingMoreUnread = signal(false);
@@ -47,10 +38,12 @@ export class NotificationsService {
   readonly hasLoaded = signal(false);
   readonly errorMessage = signal<string | null>(null);
 
-  readonly canShowMoreUnread = computed(
-    () => this.unreadPagination()?.hasNext ?? false
+  readonly canShowMoreUnread = computed(() =>
+    hasMoreGridItems(this.unreadNotifications().length, this.unreadTotalCount())
   );
-  readonly canShowMoreRead = computed(() => this.readPagination()?.hasNext ?? false);
+  readonly canShowMoreRead = computed(() =>
+    hasMoreGridItems(this.readNotifications().length, this.readTotalCount())
+  );
 
   readonly notifications = computed(() => [
     ...this.unreadNotifications(),
@@ -119,6 +112,8 @@ export class NotificationsService {
     this.lastProcessedNotificationVersion = 0;
     this.unreadNotifications.set([]);
     this.readNotifications.set([]);
+    this.unreadTotalCount.set(0);
+    this.readTotalCount.set(0);
     this.unreadCount.set(0);
     this.hasLoaded.set(false);
     this.errorMessage.set(null);
@@ -129,61 +124,45 @@ export class NotificationsService {
   }
 
   reloadUnreadFromStart(): void {
-    this.unreadQuery.set({
-      pageNumber: 1,
-      pageSize: 10,
-      sortField: 'CreatedAt',
-      ascending: false,
-      isRead: false
-    });
     this.loadUnreadNotifications();
   }
 
   reloadReadFromStart(): void {
-    this.readQuery.set({
-      pageNumber: 1,
-      pageSize: 10,
-      sortField: 'CreatedAt',
-      ascending: false,
-      isRead: true
-    });
     this.loadReadNotifications();
   }
 
   showMoreUnread(): void {
-    const pagination = this.unreadPagination();
-    if (!pagination?.hasNext || this.isLoadingMoreUnread()) {
+    if (!this.canShowMoreUnread() || this.isLoadingMoreUnread()) {
       return;
     }
 
     this.loadUnreadNotifications({
       append: true,
-      pageNumber: pagination.currentPage + 1
+      skip: this.unreadNotifications().length
     });
   }
 
   showMoreRead(): void {
-    const pagination = this.readPagination();
-    if (!pagination?.hasNext || this.isLoadingMoreRead()) {
+    if (!this.canShowMoreRead() || this.isLoadingMoreRead()) {
       return;
     }
 
     this.loadReadNotifications({
       append: true,
-      pageNumber: pagination.currentPage + 1
+      skip: this.readNotifications().length
     });
   }
 
   loadUnreadNotifications(
-    options: { append?: boolean; pageNumber?: number } = {}
+    options: { append?: boolean; skip?: number } = {}
   ): void {
     const append = options.append ?? false;
-    const pageNumber = options.pageNumber ?? this.unreadQuery().pageNumber;
-    const query = { ...this.unreadQuery(), pageNumber };
+    const skip = options.skip ?? 0;
     const requestId = ++this.unreadRequestId;
 
     this.loadNotificationsPage(
-      query,
+      false,
+      createGridQuery({ skip, sort: NOTIFICATION_GRID_SORT }),
       requestId,
       append,
       (result) => {
@@ -196,23 +175,16 @@ export class NotificationsService {
           const merged = this.appendUniqueNotifications(current, result.page.items);
           const addedCount = merged.length - current.length;
           this.unreadNotifications.set(merged);
-          this.unreadPagination.set(
-            addedCount === 0 && result.page.hasNext
-              ? { ...result.page, hasNext: false }
-              : result.page
-          );
+          if (addedCount === 0 && hasMoreGridItems(merged.length, result.page.totalCount)) {
+            this.unreadTotalCount.set(merged.length);
+          } else {
+            this.unreadTotalCount.set(result.page.totalCount);
+          }
         } else {
           this.unreadNotifications.set(result.page.items);
-          this.unreadPagination.set(result.page);
+          this.unreadTotalCount.set(result.page.totalCount);
         }
 
-        this.unreadQuery.set({
-          pageNumber: result.page.currentPage,
-          pageSize: result.page.pageSize,
-          sortField: 'CreatedAt',
-          ascending: false,
-          isRead: false
-        });
         this.unreadCount.set(result.unreadCount);
         this.isLoadingMoreUnread.set(false);
       },
@@ -220,14 +192,14 @@ export class NotificationsService {
     );
   }
 
-  loadReadNotifications(options: { append?: boolean; pageNumber?: number } = {}): void {
+  loadReadNotifications(options: { append?: boolean; skip?: number } = {}): void {
     const append = options.append ?? false;
-    const pageNumber = options.pageNumber ?? this.readQuery().pageNumber;
-    const query = { ...this.readQuery(), pageNumber };
+    const skip = options.skip ?? 0;
     const requestId = ++this.readRequestId;
 
     this.loadNotificationsPage(
-      query,
+      true,
+      createGridQuery({ skip, sort: NOTIFICATION_GRID_SORT }),
       requestId,
       append,
       (result) => {
@@ -240,23 +212,16 @@ export class NotificationsService {
           const merged = this.appendUniqueNotifications(current, result.page.items);
           const addedCount = merged.length - current.length;
           this.readNotifications.set(merged);
-          this.readPagination.set(
-            addedCount === 0 && result.page.hasNext
-              ? { ...result.page, hasNext: false }
-              : result.page
-          );
+          if (addedCount === 0 && hasMoreGridItems(merged.length, result.page.totalCount)) {
+            this.readTotalCount.set(merged.length);
+          } else {
+            this.readTotalCount.set(result.page.totalCount);
+          }
         } else {
           this.readNotifications.set(result.page.items);
-          this.readPagination.set(result.page);
+          this.readTotalCount.set(result.page.totalCount);
         }
 
-        this.readQuery.set({
-          pageNumber: result.page.currentPage,
-          pageSize: result.page.pageSize,
-          sortField: 'CreatedAt',
-          ascending: false,
-          isRead: true
-        });
         this.unreadCount.set(result.unreadCount);
         this.isLoadingMoreRead.set(false);
       },
@@ -286,6 +251,7 @@ export class NotificationsService {
           });
           if (wasUnread) {
             this.unreadCount.update((count) => Math.max(0, count - 1));
+            this.unreadTotalCount.update((count) => Math.max(0, count - 1));
           }
         }
       });
@@ -295,15 +261,8 @@ export class NotificationsService {
     this.apiService.put<boolean>('notifications/read-all', {}).subscribe({
       next: () => {
         this.unreadNotifications.set([]);
-        this.unreadPagination.set(null);
+        this.unreadTotalCount.set(0);
         this.unreadCount.set(0);
-        this.unreadQuery.set({
-          pageNumber: 1,
-          pageSize: 10,
-          sortField: 'CreatedAt',
-          ascending: false,
-          isRead: false
-        });
         this.reloadReadFromStart();
       }
     });
@@ -340,6 +299,7 @@ export class NotificationsService {
     });
 
     this.unreadCount.update((count) => count + 1);
+    this.unreadTotalCount.update((count) => count + 1);
     this.toastService.showIssueNotification(
       notification.issueTitle,
       notification.message
@@ -347,7 +307,8 @@ export class NotificationsService {
   }
 
   private loadNotificationsPage(
-    query: NotificationSearchParameters,
+    isRead: boolean,
+    grid: GridQuery,
     requestId: number,
     append: boolean,
     onSuccess: (result: NotificationListDto) => void,
@@ -373,35 +334,37 @@ export class NotificationsService {
 
     this.errorMessage.set(null);
 
-    this.apiService.get<NotificationListDto>('notifications', query).subscribe({
-      next: (result) => {
-        const isStale =
-          (isUnreadList && requestId !== this.unreadRequestId) ||
-          (!isUnreadList && requestId !== this.readRequestId);
-        if (isStale) {
-          this.clearLoadingFlags(append, isUnreadList);
-          return;
-        }
+    this.apiService
+      .get<NotificationListDto>('notifications', { isRead, grid })
+      .subscribe({
+        next: (result) => {
+          const isStale =
+            (isUnreadList && requestId !== this.unreadRequestId) ||
+            (!isUnreadList && requestId !== this.readRequestId);
+          if (isStale) {
+            this.clearLoadingFlags(append, isUnreadList);
+            return;
+          }
 
-        onSuccess(result);
-        this.hasLoaded.set(true);
-        this.isLoading.set(false);
-      },
-      error: (error: Error) => {
-        const isStale =
-          (isUnreadList && requestId !== this.unreadRequestId) ||
-          (!isUnreadList && requestId !== this.readRequestId);
-        if (isStale) {
-          this.clearLoadingFlags(append, isUnreadList);
-          return;
-        }
+          onSuccess(result);
+          this.hasLoaded.set(true);
+          this.isLoading.set(false);
+        },
+        error: (error: Error) => {
+          const isStale =
+            (isUnreadList && requestId !== this.unreadRequestId) ||
+            (!isUnreadList && requestId !== this.readRequestId);
+          if (isStale) {
+            this.clearLoadingFlags(append, isUnreadList);
+            return;
+          }
 
-        this.errorMessage.set(error.message);
-        this.isLoading.set(false);
-        this.isLoadingMoreUnread.set(false);
-        this.isLoadingMoreRead.set(false);
-      }
-    });
+          this.errorMessage.set(error.message);
+          this.isLoading.set(false);
+          this.isLoadingMoreUnread.set(false);
+          this.isLoadingMoreRead.set(false);
+        }
+      });
   }
 
   private clearLoadingFlags(append: boolean, isUnreadList: boolean): void {

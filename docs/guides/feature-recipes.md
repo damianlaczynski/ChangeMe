@@ -30,6 +30,24 @@
 4. Register the route in `src/app/app.routes.ts` if it is navigable directly.
 5. Run lint and add frontend unit tests when client logic changes ([testing-guidelines.md](testing-guidelines.md)); colocate `*.spec.ts` next to the component or service (see `features/issues/components/`).
 
+## Add or migrate an administrative list screen (QueryGrid)
+
+Use **Issues**, **Users**, or **Roles** list as the template.
+
+### Backend
+
+1. List DTO in `UseCases/<Feature>/Dtos/` — `[GridSearchable]` on searchable text fields; `[GridIgnore]` on computed or collection fields not meant for server sort/filter.
+2. Query: `public GridQuery Grid { get; set; } = new();` returning `GridResult<TDto>`.
+3. Handler: project to `IQueryable<TDto>`, then `await projected.ToGridResultAsync(query.Grid, cancellationToken)`.
+4. Endpoint: `BaseEndpoint<GetAllXQuery, GridResult<TDto>>` with `GET` route; FastEndpoints binds `?grid=` automatically.
+
+### Frontend
+
+1. Service method: `getAllX(grid: GridQuery): Observable<GridResult<TDto>>` via `apiService.get(..., { grid })`.
+2. Component: inject `GridResourceFactory`, create `grid` in constructor with `load`, `defaultSort`, `defaultTake`, optional `persistState`.
+3. Template: `<qg-prime-data-grid [grid]="grid">` with `qgColumn` templates per column; `qgEmpty` for empty state.
+4. Add component unit tests with a mocked `GridResourceFactory` (see `issues-list.component.spec.ts`).
+
 ## Change auth-sensitive behavior
 
 1. Check backend endpoint auth defaults in `BaseEndpoint` / `BaseEndpointWithoutRequest`.

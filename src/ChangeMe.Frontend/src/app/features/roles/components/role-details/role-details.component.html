@@ -110,7 +110,7 @@
           <tr>
             <th scope="col">Name</th>
             <th scope="col">Email</th>
-            <th scope="col">Status</th>
+            <th scope="col">Account</th>
             @if (canManageRoles()) {
               <th scope="col">Actions</th>
             }
@@ -137,7 +137,7 @@
             @if (canManageRoles()) {
               <td>
                 <p-button
-                  label="Remove"
+                  label="Remove from role"
                   icon="pi pi-user-minus"
                   severity="danger"
                   [text]="true"
@@ -161,12 +161,9 @@
 
       @if (hasLoadedUsers()) {
         <p-paginator
-          [rows]="assignedUsersPagination()?.pageSize ?? 10"
-          [totalRecords]="assignedUsersPagination()?.totalCount ?? 0"
-          [first]="
-            ((assignedUsersPagination()?.currentPage ?? 1) - 1) *
-            (assignedUsersPagination()?.pageSize ?? 10)
-          "
+          [rows]="assignedUsersGrid().take ?? DEFAULT_GRID_PAGE_SIZE"
+          [totalRecords]="assignedUsersTotalCount()"
+          [first]="assignedUsersGrid().skip ?? 0"
           (onPageChange)="onAssignedUsersPageChange($event)"
         />
       }

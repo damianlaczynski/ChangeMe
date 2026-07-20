@@ -4,14 +4,7 @@ title: User Details and Session Administration
 domain: users
 type: functional
 status: active
-depends_on:
-  [
-    FR-AUTH-004,
-    FR-ROL-001,
-    FR-ROL-004,
-    FR-USR-003,
-    FR-USR-005,
-  ]
+depends_on: [FR-AUTH-004, FR-ROL-001, FR-ROL-004, FR-USR-003, FR-USR-005]
 inherits_nfr:
   [NFR-QUAL-001, NFR-A11Y-001, NFR-I18N-001, NFR-PERF-001, NFR-RSP-001]
 inherits_fr: [FR-UI-001]
@@ -32,15 +25,15 @@ An authorized administrator must be able to inspect a user's account, roles, eff
 
 Displays read-only:
 
-| Field                        | Behavior                                                                                  |
-| ---------------------------- | ----------------------------------------------------------------------------------------- |
-| **First name**               | Read-only; **`—`** when empty.                                                            |
-| **Last name**                | Read-only; **`—`** when empty.                                                            |
-| **Email**                    | Account email address.                                                                    |
-| **Status**                   | **`Active`** or **`Deactivated`**.                                                        |
-| **Member since**             | Account creation date and time.                                                           |
-| **Last sign-in**             | Most recent session **signed in at**; **`Never`** when the user has no sessions.          |
-| **Password last changed at** | Date and time; **`—`** when not yet recorded.                                             |
+| Field                        | Behavior                                                                                   |
+| ---------------------------- | ------------------------------------------------------------------------------------------ |
+| **First name**               | Read-only; **`—`** when empty.                                                             |
+| **Last name**                | Read-only; **`—`** when empty.                                                             |
+| **Email**                    | Account email address.                                                                     |
+| **Status**                   | **`Active`** or **`Deactivated`**.                                                         |
+| **Member since**             | Account creation date and time.                                                            |
+| **Last sign-in**             | Most recent session **signed in at**; **`Never`** when the user has no sessions.           |
+| **Password last changed at** | Date and time; **`—`** when not yet recorded.                                              |
 | **Deactivated at**           | Date and time when **Deactivated** is **true**; omitted when **Deactivated** is **false**. |
 
 ### Roles section
@@ -64,12 +57,12 @@ Displays read-only:
 
 ### Header actions
 
-| Action                  | Permission required    | Behavior                                                                                                                    |
-| ----------------------- | ---------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| **Edit**                | **Users.Manage**       | Opens **Edit user** (profile, deactivation, and role assignments when permitted).                                           |
-| **Deactivate**          | **Users.Deactivate**   | Shown when **Deactivated** is **false**; confirmation and behavior per FR-USR-005.                                          |
-| **Activate**            | **Users.Deactivate**   | Shown when **Deactivated** is **true**; confirmation and behavior per FR-USR-005.                                           |
-| **Revoke all sessions** | **Sessions.ManageAny** | Opens confirmation: **`Revoke all active sessions for this user? They will be signed out on every device.`**                  |
+| Action                  | Permission required    | Behavior                                                                                                     |
+| ----------------------- | ---------------------- | ------------------------------------------------------------------------------------------------------------ |
+| **Edit**                | **Users.Manage**       | Opens **Edit user** (profile, deactivation, and role assignments when permitted).                            |
+| **Deactivate**          | **Users.Deactivate**   | Shown when **Deactivated** is **false**; confirmation and behavior per FR-USR-005.                           |
+| **Activate**            | **Users.Deactivate**   | Shown when **Deactivated** is **true**; confirmation and behavior per FR-USR-005.                            |
+| **Revoke all sessions** | **Sessions.ManageAny** | Opens confirmation: **`Revoke all active sessions for this user? They will be signed out on every device.`** |
 
 ### Actions and navigation
 
@@ -78,7 +71,7 @@ Displays read-only:
 
 ### Active sessions section
 
-- Inherits `FR-UI-001` (**Detail and section screens** → **Embedded lists**) for pagination and section loading unless stated below.
+- Inherits `FR-UI-001` (**Detail and section screens** → **Embedded lists**) unless stated below.
 - Visible only with permission **Sessions.ViewAny**.
 - Section title: **`Active sessions`**
 - Table columns match **Active sessions** on **My account** (FR-AUTH-004): **Device / browser**, **IP address**, **Session type**, **Signed in at**, **Last activity**, **Actions**.

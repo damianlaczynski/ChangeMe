@@ -15,7 +15,6 @@ For dev server, lint, format, and test commands from `src/ChangeMe.Frontend` or 
 - Put feature-specific models in `features/<feature>/models`.
 - Put validation limits, select options, labels, and other UI-oriented constants in a single `features/<feature>/utils/<feature>.utils.ts` file (for example `issue.utils.ts`, `auth.utils.ts`). Keep DTOs, enums, and request/response shapes in `models/`.
 - Put shared transport or utility contracts in `shared/`.
-- Shared list filter chips: `shared/components/applied-filters-chips/` with `AppliedFilterChip` in `shared/models/applied-filter-chip.model.ts`.
 - Put cross-cutting app services in `core/` or `features/auth/` depending on ownership.
 - Use `app-back-button` with a fixed **label** and **route** for in-app back navigation (for example **`Back to issues list`** → **`/issues`**, **`Back to issue details`** → **`/issues/:id`**). Do not use browser history stacks or `sessionStorage` navigation stacks.
 
@@ -87,6 +86,8 @@ For dev server, lint, format, and test commands from `src/ChangeMe.Frontend` or 
 - Use `p-message` for inline field validation and screen-level load errors; use toasts for successful mutations and action failures that are not tied to a single form field.
 - Use `p-tag` for compact status labels such as issue status or priority.
 - Use `p-table` for tabular data, `p-paginator` for server-driven paging, and `p-progressSpinner` or table `[loading]` for in-flight data.
+- **Administrative list screens** (Issues, Users, Roles) use **QueryGrid** via `@query-grid/primeng` (`<qg-prime-data-grid>`, `QgColumnDirective`, `GridResourceFactory`). Column-header filters, multi-sort, search, and pagination are driven by a `GridResource` created in the component; the feature service passes `GridQuery` to the API as a `grid` query parameter and returns `GridResult<T>` from `@query-grid/core`. See `features/issues/components/issues-list/` as the reference implementation.
+- **Embedded lists** (issue tabs, sessions, notifications, role assigned users) call the same API shape with `GridQuery`/`GridResult`; use `shared/data/utils/grid.utils.ts` for `createGridQuery`, `hasMoreGridItems`, and `createIssueTabGridQuery`.
 - Keep business logic in feature services and component TypeScript. PrimeNG should handle presentation only.
 
 ### Theming and layout

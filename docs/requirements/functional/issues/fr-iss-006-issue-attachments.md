@@ -35,7 +35,7 @@ Authenticated users must be able to attach files to an issue, review them on **I
 
 ### Attachments list
 
-- Inherits `FR-UI-001` (**Detail and section screens** → **Embedded lists**) for default page size (**10**) and section loading; overrides pagination with **Show more** append loading (below).
+- Inherits `FR-UI-001` (**Detail and section screens** → **Embedded lists**); overrides list control with **Show more** append loading (below).
 - Each row shows: **file name**, **file size** (human-readable), **uploaded by**, **upload date and time**, and actions.
 - Sorted by **upload date and time** descending (**newest first**).
 - When older attachments exist beyond the loaded pages, a **Show more** control appears below the list; each activation loads the next page of **older** attachments and **appends** them.

@@ -1,4 +1,5 @@
 using ChangeMe.Backend.Domain.Aggregates.Notifications.Enums;
+using QueryGrid.Abstractions;
 
 namespace ChangeMe.Backend.UseCases.Notifications.Dtos;
 
@@ -18,5 +19,5 @@ public class NotificationDto
 public class NotificationListDto
 {
   public int UnreadCount { get; set; }
-  public PaginationResult<NotificationDto> Page { get; set; } = PaginationResult<NotificationDto>.Empty();
+  public GridResult<NotificationDto> Page { get; set; } = new();
 }

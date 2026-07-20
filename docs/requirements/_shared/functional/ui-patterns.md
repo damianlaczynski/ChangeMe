@@ -35,29 +35,29 @@ Unless a functional specification specifies otherwise:
 ### Page structure
 
 - **Page title** matches the screen name stated in the functional specification (for example **`Users list`**).
-- Primary **create** or **add** action appears in the search and actions bar when the user has the required permission.
+- Primary **create** or **add** action appears above the table when the user has the required permission.
 - Sidebar entry visibility follows the permission named in the functional specification.
 
-### Search and actions bar
+### Search and filters
 
-- **Search** field and **Search** button when the functional specification defines text search.
-- Search placeholder and match rules are defined in the functional specification when they matter.
-- **Apply filters** and **Clear filters** when a filter panel exists (see below).
+- **Global search** field above the table when the functional specification defines it; placeholder and matched fields come from the functional specification. Search is **case-insensitive**.
+- **Column-header filters** on columns named in the functional specification. Default control by column type unless the functional specification overrides:
+  - **Text**: contains.
+  - **Status / enum**: multi-select; empty selection means no restriction.
+  - **Date / time**: range per column.
+  - **Number**: comparison.
+- Active search and column filters combine with **AND** logic.
+- **Clear** control resets search, column filters, and sort to defaults and reloads from the first page.
 
-### Filters panel
+### Sorting
 
-- Toggleable **Filters** panel, **collapsed by default**, unless the functional specification states otherwise.
-- Multi-select filters: **empty selection means no restriction** (show all values).
-- Filters combine with search text using **AND** logic.
-- **Apply filters** submits the filter panel together with the current search text.
-- **Clear filters** resets the filter form and removes **all** filter constraints from the active query (search text included when the functional specification ties search to the filter form).
-- **Applied filters list**: after apply, the screen shows removable chips for each active filter and the active search text. Removing a chip updates the query immediately and reloads the list from **page 1**.
+- **Multi-sort**: click column headers to add or toggle sort levels (no Shift key).
+- **Sortable** columns behave as stated in the functional specification; unspecified columns are not sortable.
+- **Default sort** is defined in the functional specification.
 
 ### Data table
 
 - Tabular layout with columns defined in the functional specification.
-- **Sortable** columns behave as stated in the functional specification; unspecified columns are not sortable.
-- **Default sort** is defined in the functional specification.
 - Primary identifier column (name, title, email) links to the **details** screen when the functional specification defines one.
 - Missing optional text values display **`—`** (em dash), unless the functional specification defines a different placeholder (for example **`Unassigned`**, **`Never`**).
 - **Status** and categorical values use compact badges (**`p-tag`** style) with exact labels from the functional specification.
@@ -69,18 +69,16 @@ Unless a functional specification specifies otherwise:
 - Destructive actions use the confirmation pattern in **Destructive and irreversible actions** below.
 - Success after a row action shows a **toast** (see **Feedback channels**) and refreshes the current list in place unless the functional specification defines navigation away.
 
-### Pagination
+### Pagination, loading, and empty states
 
 - Lists are **server-paginated** unless the functional specification defines a different control (for example **Show more** in a dropdown).
 - Default page size: **10** rows per page.
 - Paginator below the table shows current page and total count; changing page or page size reloads the list.
-- Search, filters, and sort changes reset to **page 1**.
-
-### Loading and empty states
-
-- While loading, a loading indicator appears **in the table area**; page chrome (title, actions bar, filter toggle) stays visible.
+- Search, filter, and sort changes reset to **page 1**.
+- While loading, a loading indicator appears **in the table area**; page chrome (title, actions bar) stays visible.
 - Empty state copy is **exact** and defined in the functional specification (for example **`No leave requests match the filters.`**).
 - When the functional specification does not define empty-state copy, use **`No items match the filters.`** for filtered lists and **`No items yet.`** for unfiltered lists.
+- **Refresh** action when provided in the functional specification.
 
 ---
 
@@ -134,7 +132,9 @@ Unless a functional specification specifies otherwise:
 
 ### Embedded lists
 
-- Tables inside a detail screen follow **Administrative list screens** pagination and loading rules unless the functional specification limits scope (for example comments with **newest first** only).
+- Lists inside detail screens (comments, history, attachments, sessions, assigned users, notifications) are **server-paginated** with default page size **10** unless the functional specification defines **Show more** append loading.
+- **Show more** loads the next page of **older** items and **appends** them without leaving the screen; the control is hidden when all items are loaded.
+- Paginated embedded tables (for example **Active sessions** on **User details**) use a paginator below the table instead of **Show more**.
 - Section empty states use exact copy from the functional specification.
 
 ### Header actions
@@ -162,13 +162,13 @@ Unless a functional specification specifies otherwise:
 
 Use the correct channel so behavior stays consistent across modules.
 
-| Channel                                 | When to use                                                                                                                                     | Persistence                              |
-| --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------- |
-| **Inline field validation**             | Field-level rule failures on forms                                                                                                              | Until the field becomes valid            |
-| **Inline screen message** (`p-message`) | Load failures, form-level errors not tied to one field                                                                                          | Until the user retries or navigates away |
-| **Toast**                               | Successful mutations; action failures not tied to a single field; background policy warnings                                                    | Auto-dismiss; see below                  |
-| **Confirmation dialog**                 | Destructive or irreversible actions before execution                                                                                            | Until confirm or cancel                  |
-| **Modal dialog**                        | Short secondary flows that need input (for example reject reason)                                                                              | Until submit, cancel, or close           |
+| Channel                                 | When to use                                                                                  | Persistence                              |
+| --------------------------------------- | -------------------------------------------------------------------------------------------- | ---------------------------------------- |
+| **Inline field validation**             | Field-level rule failures on forms                                                           | Until the field becomes valid            |
+| **Inline screen message** (`p-message`) | Load failures, form-level errors not tied to one field                                       | Until the user retries or navigates away |
+| **Toast**                               | Successful mutations; action failures not tied to a single field; background policy warnings | Auto-dismiss; see below                  |
+| **Confirmation dialog**                 | Destructive or irreversible actions before execution                                         | Until confirm or cancel                  |
+| **Modal dialog**                        | Short secondary flows that need input (for example reject reason)                            | Until submit, cancel, or close           |
 
 ### Toast conventions
 
@@ -211,7 +211,7 @@ Unless a functional specification specifies otherwise:
 
 Unless a functional specification specifies otherwise:
 
-- Filter panels follow the same **Filters panel** rules as lists.
+- Filters follow the same **Search and filters** rules as **Administrative list screens**.
 - Result tables are **server-paginated** with default **10** rows per page when showing row-level detail.
 - **Export** actions show progress or loading on the control; success toast: **`Export started.`** or exact copy from the functional specification.
 - Large exports run asynchronously when the functional specification defines background export; the functional specification states the completion feedback channel.
@@ -225,9 +225,10 @@ Use a short inheritance line in **Functional requirements** or **Out of scope**:
 ```markdown
 ### List behavior
 
-- Inherits `docs/requirements/_shared/functional/ui-patterns.md` (**Administrative list screens**) except:
+- Inherits `FR-UI-001` (**Administrative list screens**) except:
   - Default sort: **Submitted at** descending.
   - Empty state: **`No leave requests match the filters.`**
+  - Global search matches **reference number** and **employee name**.
 ```
 
-Do **not** copy the full pagination, loading, or filter-chip rules when inheritance suffices.
+Do **not** copy pagination, loading, or filter control types when inheritance suffices.

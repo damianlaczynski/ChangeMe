@@ -20,9 +20,6 @@ An authorized administrator must be able to browse roles, search and sort them, 
 
 - Screen: **Roles list**
 - Sidebar entry **Roles** is visible only with permission **Roles.View**.
-- Search field placeholder: **`Search roles...`**
-- Search matches **name** or **description** fragment (case-insensitive).
-- **Search** button and form submit apply the current search text.
 - **Add role** button opens **Create role** (FR-ROL-003); visible only with permission **Roles.Manage**.
 
 ### Roles table
@@ -41,9 +38,11 @@ An authorized administrator must be able to browse roles, search and sort them, 
 - Sortable columns: **Name**, **Users**, **Permissions**.
 - Default sort: **Name**, ascending.
 
-### List behavior
+### Search and filters
 
-- Inherits `FR-UI-001` (**Administrative list screens**) for pagination, loading, and overflow menu visibility unless stated below.
+- Inherits `FR-UI-001` (**Administrative list screens**) unless stated below.
+- **Filterable columns**: **Name**, **Description**, **Permissions**, **Users**.
+- Global search matches **name** and **description**.
 
 ### Row overflow menu
 

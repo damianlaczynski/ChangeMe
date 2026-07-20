@@ -1,9 +1,10 @@
-﻿using ChangeMe.Backend.UseCases.Issues;
+using ChangeMe.Backend.UseCases.Issues;
 using ChangeMe.Backend.UseCases.Issues.Dtos;
+using QueryGrid.Abstractions;
 
 namespace ChangeMe.Backend.Web.Issues;
 
-public class GetAllIssues(IMediator mediator) : BaseEndpoint<GetAllIssuesQuery, PaginationResult<IssueDto>>(mediator)
+public class GetAllIssues(IMediator mediator) : BaseEndpoint<GetAllIssuesQuery, GridResult<IssueDto>>(mediator)
 {
   protected override void ConfigureEndpoint()
   {
@@ -11,7 +12,7 @@ public class GetAllIssues(IMediator mediator) : BaseEndpoint<GetAllIssuesQuery, 
     Summary(s =>
     {
       s.Summary = "Get all issues";
-      s.Description = "Gets a paged issues list with search, filters and sorting";
+      s.Description = "Gets a paged issues list with grid query transport and sorting";
     });
   }
 }

@@ -1,9 +1,10 @@
 ﻿using ChangeMe.Backend.UseCases.Auth;
 using ChangeMe.Backend.UseCases.Auth.Dtos;
+using QueryGrid.Abstractions;
 
 namespace ChangeMe.Backend.Web.Auth;
 
-public class GetMySessions(IMediator mediator) : BaseEndpoint<GetMySessionsQuery, PaginationResult<UserSessionDto>>(mediator)
+public class GetMySessions(IMediator mediator) : BaseEndpoint<GetMySessionsQuery, GridResult<UserSessionDto>>(mediator)
 {
   protected override void ConfigureEndpoint()
   {

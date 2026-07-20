@@ -24,26 +24,26 @@ An authorized administrator must be able to browse users, search and filter them
 
 ### Users table
 
-| Column           | Description                                                                                   |
-| ---------------- | --------------------------------------------------------------------------------------------- |
-| **Name**         | **First name** and **Last name** when set; **`—`** when both empty; link to **User details**. |
-| **Email**        | User email address.                                                                           |
-| **Status**       | **`Active`** or **`Deactivated`**.                                                            |
-| **Roles**        | One status badge per assigned role showing the role name.                                     |
+| Column           | Description                                                                                          |
+| ---------------- | ---------------------------------------------------------------------------------------------------- |
+| **Name**         | **First name** and **Last name** when set; **`—`** when both empty; link to **User details**.        |
+| **Email**        | User email address.                                                                                  |
+| **Status**       | **`Active`** or **`Deactivated`**.                                                                   |
+| **Roles**        | One status badge per assigned role showing the role name.                                            |
 | **Last sign-in** | Most recent session **signed in at** across all sessions; **`Never`** when the user has no sessions. |
-| **Created at**   | Account creation date and time.                                                               |
-| **Actions**      | Overflow menu (see below).                                                                    |
-
-### Sorting
-
-- Sortable columns: **Name**, **Created at**, **Last sign-in**.
-- Default sort: **Name**, ascending.
+| **Created at**   | Account creation date and time.                                                                      |
+| **Actions**      | Overflow menu (see below).                                                                           |
 
 ### Search and filters
 
-- Inherits `FR-UI-001` (**Administrative list screens**) for filters panel, applied filter chips, pagination, loading, and overflow menu visibility unless stated below.
-- **Status** multi-select: **`Active`**, **`Deactivated`**. Empty selection means no restriction.
-- Default filter state: **no status restriction**.
+- Inherits `FR-UI-001` (**Administrative list screens**) unless stated below.
+- **Filterable columns**: **Name**, **Email**, **Status** (**`Active`**, **`Deactivated`**), **Last sign-in**, **Created at**.
+- Global search matches **first name**, **last name**, and **email**.
+
+### Sorting
+
+- Sortable columns: **Name** (last name), **Created at**, **Last sign-in**.
+- Default sort: **Name** (last name), ascending.
 
 ### Row overflow menu
 

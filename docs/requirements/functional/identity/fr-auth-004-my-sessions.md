@@ -18,7 +18,7 @@ The user must be able to review active sign-in sessions and revoke sessions they
 
 ### Active sessions on My account
 
-- Inherits `FR-UI-001` (**Detail and section screens** → **Embedded lists**) for pagination and section loading unless stated below.
+- Inherits `FR-UI-001` (**Detail and section screens** → **Embedded lists**) unless stated below.
 - Section on **My account** (FR-USR-001), not a separate screen.
 - Section title: **Active sessions**; collapsible panel; default **collapsed**.
 - Requires permission **Sessions.ViewOwn**.

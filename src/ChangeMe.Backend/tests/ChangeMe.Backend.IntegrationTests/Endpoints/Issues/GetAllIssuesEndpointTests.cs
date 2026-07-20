@@ -1,7 +1,10 @@
 using System.Net;
+using System.Text.Json;
 using ChangeMe.Backend.Domain.Aggregates.Issue.Enums;
 using ChangeMe.Backend.IntegrationTests.Fixtures;
 using ChangeMe.Backend.IntegrationTests.Support;
+using QueryGrid.Abstractions;
+using QueryGrid.Abstractions.Serialization;
 
 namespace ChangeMe.Backend.IntegrationTests;
 
@@ -19,8 +22,10 @@ public sealed class GetAllIssuesEndpointTests(BackendWebApplicationFactory facto
 
     using var client = await TestAuthHelper.CreateAuthenticatedClientAsync(factory, cancellationToken);
 
+    var grid = GridQueryJson.Serialize(new GridQuery { Take = 10, Search = marker });
+
     var response = await client.GetAsync(
-      $"/api/v1/issues?pageNumber=1&pageSize=10&searchText={Uri.EscapeDataString(marker)}",
+      $"/api/v1/issues?grid={Uri.EscapeDataString(grid)}",
       cancellationToken);
     var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
 

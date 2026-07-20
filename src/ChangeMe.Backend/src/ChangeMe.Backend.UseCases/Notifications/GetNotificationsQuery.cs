@@ -1,16 +1,14 @@
 using ChangeMe.Backend.UseCases.Notifications.Dtos;
 using ChangeMe.Backend.UseCases.Notifications.Services;
-using FastEndpoints;
+using QueryGrid.Abstractions;
+using QueryGrid.EntityFrameworkCore;
 
 namespace ChangeMe.Backend.UseCases.Notifications;
 
 public sealed class GetNotificationsQuery : IQuery<NotificationListDto>
 {
   public bool? IsRead { get; set; }
-
-  [FromQuery]
-  public PaginationParameters<NotificationDto> PaginationParameters { get; set; } =
-    new PaginationParameters<NotificationDto>();
+  public GridQuery Grid { get; set; } = new();
 }
 
 public class GetNotificationsHandler(
@@ -46,12 +44,7 @@ public class GetNotificationsHandler(
       ReadAt = n.ReadAt,
     });
 
-    query.PaginationParameters.SortField = MapSortField(query.PaginationParameters.SortField);
-
-    var pagedNotifications = await projected.ToPaginationResultAsync(
-      x => x,
-      query.PaginationParameters,
-      cancellationToken);
+    var grid = await projected.ToGridResultAsync(query.Grid, cancellationToken: cancellationToken);
 
     var unreadNotificationsQuery = context.Notifications
       .AsNoTracking()
@@ -63,13 +56,7 @@ public class GetNotificationsHandler(
     return Result.Success(new NotificationListDto
     {
       UnreadCount = unreadCount,
-      Page = pagedNotifications
+      Page = grid
     });
   }
-
-  private static string MapSortField(string sortField) =>
-    sortField switch
-    {
-      "CreatedAt" or _ => nameof(NotificationDto.CreatedAt)
-    };
 }

@@ -1,9 +1,10 @@
 ﻿using ChangeMe.Backend.UseCases.Roles;
 using ChangeMe.Backend.UseCases.Roles.Dtos;
+using QueryGrid.Abstractions;
 
 namespace ChangeMe.Backend.Web.Roles;
 
-public class GetRoles(IMediator mediator) : BaseEndpoint<GetRolesQuery, PaginationResult<RoleListItemDto>>(mediator)
+public class GetRoles(IMediator mediator) : BaseEndpoint<GetRolesQuery, GridResult<RoleListItemDto>>(mediator)
 {
   protected override void ConfigureEndpoint()
   {

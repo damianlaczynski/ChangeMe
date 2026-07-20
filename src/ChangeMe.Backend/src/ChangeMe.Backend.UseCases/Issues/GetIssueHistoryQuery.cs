@@ -1,23 +1,26 @@
 using ChangeMe.Backend.UseCases.Issues.Dtos;
 using ChangeMe.Backend.UseCases.Issues.Utils;
+using QueryGrid.Abstractions;
+using QueryGrid.EntityFrameworkCore;
 
 namespace ChangeMe.Backend.UseCases.Issues;
 
-public sealed class GetIssueHistoryQuery : PaginationQuery<IssueHistoryEntryDto>
+public sealed class GetIssueHistoryQuery : IQuery<GridResult<IssueHistoryEntryDto>>
 {
   public Guid IssueId { get; set; }
+  public GridQuery Grid { get; set; } = new();
 }
 
 public class GetIssueHistoryHandler(ApplicationDbContext context)
-  : IQueryHandler<GetIssueHistoryQuery, PaginationResult<IssueHistoryEntryDto>>
+  : IQueryHandler<GetIssueHistoryQuery, GridResult<IssueHistoryEntryDto>>
 {
-  public async ValueTask<Result<PaginationResult<IssueHistoryEntryDto>>> Handle(
+  public async ValueTask<Result<GridResult<IssueHistoryEntryDto>>> Handle(
     GetIssueHistoryQuery query,
     CancellationToken cancellationToken)
   {
     var issueExists = await context.Issues.AsNoTracking().AnyAsync(i => i.Id == query.IssueId, cancellationToken);
     if (!issueExists)
-      return Result<PaginationResult<IssueHistoryEntryDto>>.NotFound();
+      return Result<GridResult<IssueHistoryEntryDto>>.NotFound();
 
     var projected = context.IssueHistoryEntries
       .AsNoTracking()
@@ -33,23 +36,24 @@ public class GetIssueHistoryHandler(ApplicationDbContext context)
         CreatedAt = h.CreatedAt
       });
 
-    var paged = await projected.ToPaginationResultAsync(x => x, query.PaginationParameters, cancellationToken);
+    var grid = await projected.ToGridResultAsync(query.Grid, cancellationToken: cancellationToken);
 
     var userLookup = await IssuesUtils.GetUserDisplayNameLookupAsync(
       context,
-      IssueMappingExtensions.CollectHistoryRelatedUserIds(paged.Items),
+      IssueMappingExtensions.CollectHistoryRelatedUserIds(grid.Items),
       cancellationToken);
 
-    var items = paged.Items
+    var items = grid.Items
       .Select(entry => entry.ToHistoryEntryDto(userLookup))
       .ToList();
 
-    return Result.Success(PaginationResult<IssueHistoryEntryDto>.Create(
-      items,
-      paged.TotalCount,
-      paged.CurrentPage,
-      paged.PageSize,
-      paged.SortField,
-      paged.Ascending));
+    return Result.Success(new GridResult<IssueHistoryEntryDto>
+    {
+      Items = items,
+      TotalCount = grid.TotalCount,
+      Skip = grid.Skip,
+      Take = grid.Take,
+      Sort = grid.Sort
+    });
   }
 }

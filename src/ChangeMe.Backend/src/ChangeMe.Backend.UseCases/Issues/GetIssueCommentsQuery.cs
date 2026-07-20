@@ -1,23 +1,26 @@
 using ChangeMe.Backend.UseCases.Issues.Dtos;
 using ChangeMe.Backend.UseCases.Issues.Utils;
+using QueryGrid.Abstractions;
+using QueryGrid.EntityFrameworkCore;
 
 namespace ChangeMe.Backend.UseCases.Issues;
 
-public sealed class GetIssueCommentsQuery : PaginationQuery<IssueCommentDto>
+public sealed class GetIssueCommentsQuery : IQuery<GridResult<IssueCommentDto>>
 {
   public Guid IssueId { get; set; }
+  public GridQuery Grid { get; set; } = new();
 }
 
 public class GetIssueCommentsHandler(ApplicationDbContext context)
-  : IQueryHandler<GetIssueCommentsQuery, PaginationResult<IssueCommentDto>>
+  : IQueryHandler<GetIssueCommentsQuery, GridResult<IssueCommentDto>>
 {
-  public async ValueTask<Result<PaginationResult<IssueCommentDto>>> Handle(
+  public async ValueTask<Result<GridResult<IssueCommentDto>>> Handle(
     GetIssueCommentsQuery query,
     CancellationToken cancellationToken)
   {
     var issueExists = await context.Issues.AsNoTracking().AnyAsync(i => i.Id == query.IssueId, cancellationToken);
     if (!issueExists)
-      return Result<PaginationResult<IssueCommentDto>>.NotFound();
+      return Result<GridResult<IssueCommentDto>>.NotFound();
 
     var projected = context.IssueComments
       .AsNoTracking()
@@ -30,16 +33,16 @@ public class GetIssueCommentsHandler(ApplicationDbContext context)
         CreatedAt = c.CreatedAt
       });
 
-    var paged = await projected.ToPaginationResultAsync(x => x, query.PaginationParameters, cancellationToken);
+    var grid = await projected.ToGridResultAsync(query.Grid, cancellationToken: cancellationToken);
 
     var userLookup = await IssuesUtils.GetUserDisplayNameLookupAsync(
       context,
-      paged.Items.Select(c => c.AuthorUserId),
+      grid.Items.Select(c => c.AuthorUserId),
       cancellationToken);
 
-    foreach (var item in paged.Items)
+    foreach (var item in grid.Items)
       item.AuthorName = userLookup.GetValueOrDefault(item.AuthorUserId);
 
-    return Result.Success(paged);
+    return Result.Success(grid);
   }
 }

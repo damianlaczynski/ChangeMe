@@ -4,6 +4,8 @@ using ChangeMe.Backend.IntegrationTests.Fixtures;
 using ChangeMe.Backend.IntegrationTests.Support;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using QueryGrid.Abstractions;
+using QueryGrid.Abstractions.Serialization;
 
 namespace ChangeMe.Backend.IntegrationTests.Endpoints.Users;
 
@@ -16,7 +18,7 @@ public sealed class UsersEndpointTests(BackendWebApplicationFactory factory)
     var cancellationToken = TestContext.Current.CancellationToken;
     var user = await TestAuthHelper.CreateAuthenticatedUserAsync(factory, cancellationToken);
 
-    var response = await user.Client.GetAsync("/api/v1/users?pageNumber=1&pageSize=10", cancellationToken);
+    var response = await user.Client.GetAsync("/api/v1/users?grid=%7B%22take%22%3A10%7D", cancellationToken);
 
     Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
   }
@@ -27,7 +29,11 @@ public sealed class UsersEndpointTests(BackendWebApplicationFactory factory)
     var cancellationToken = TestContext.Current.CancellationToken;
     var admin = await TestAuthHelper.CreateAdministratorUserAsync(factory, cancellationToken);
 
-    var response = await admin.Client.GetAsync("/api/v1/users?pageNumber=1&pageSize=10", cancellationToken);
+    var grid = GridQueryJson.Serialize(new GridQuery { Take = 10 });
+
+    var response = await admin.Client.GetAsync(
+      $"/api/v1/users?grid={Uri.EscapeDataString(grid)}",
+      cancellationToken);
 
     Assert.Equal(HttpStatusCode.OK, response.StatusCode);
   }

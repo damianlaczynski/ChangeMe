@@ -1,13 +1,23 @@
+using QueryGrid.Abstractions;
+
 namespace ChangeMe.Backend.UseCases.Users.Dtos;
 
 public sealed record UserListItemDto
 {
   public Guid Id { get; init; }
+
+  [GridSearchable]
   public string FirstName { get; init; } = string.Empty;
+
+  [GridSearchable]
   public string LastName { get; init; } = string.Empty;
+
+  [GridSearchable]
   public string Email { get; init; } = string.Empty;
   public bool Deactivated { get; init; }
   public UserMembershipStatus Status { get; init; }
+
+  [GridIgnore]
   public IReadOnlyList<string> RoleNames { get; init; } = [];
   public DateTime? LastSignInAt { get; init; }
   public DateTime CreatedAt { get; init; }

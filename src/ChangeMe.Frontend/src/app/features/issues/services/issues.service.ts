@@ -1,20 +1,16 @@
 import { Injectable, inject } from '@angular/core';
+import { GridQuery, GridResult } from '@query-grid/core';
 import { ApiService } from '@shared/api/services/api.service';
-import { PaginationResult } from '@shared/data/models/pagination-result.model';
 import { Observable } from 'rxjs';
 import {
   AddIssueCommentRequest,
   CreateIssueRequest,
   IssueAssignableUserDto,
   IssueAttachmentDto,
-  IssueAttachmentsSearchParameters,
   IssueCommentDto,
-  IssueCommentsSearchParameters,
   IssueDetailsDto,
   IssueDto,
   IssueHistoryEntryDto,
-  IssueHistorySearchParameters,
-  IssueSearchParameters,
   IssueWatchStateDto,
   UpdateIssueRequest
 } from '../models/issue.model';
@@ -24,14 +20,10 @@ import {
 })
 export class IssuesService {
   private readonly apiService = inject(ApiService);
-
   private readonly baseEndpoint = 'issues';
 
-  getAllIssues(params: IssueSearchParameters): Observable<PaginationResult<IssueDto>> {
-    return this.apiService.getPaginated<IssueDto, IssueSearchParameters>(
-      this.baseEndpoint,
-      params
-    );
+  getAllIssues(grid: GridQuery): Observable<GridResult<IssueDto>> {
+    return this.apiService.get<GridResult<IssueDto>>(this.baseEndpoint, { grid });
   }
 
   getIssue(id: string): Observable<IssueDetailsDto> {
@@ -40,32 +32,32 @@ export class IssuesService {
 
   getIssueComments(
     issueId: string,
-    params: IssueCommentsSearchParameters
-  ): Observable<PaginationResult<IssueCommentDto>> {
-    return this.apiService.getPaginated<IssueCommentDto, IssueCommentsSearchParameters>(
+    grid: GridQuery
+  ): Observable<GridResult<IssueCommentDto>> {
+    return this.apiService.get<GridResult<IssueCommentDto>>(
       `${this.baseEndpoint}/${issueId}/comments`,
-      params
+      { grid }
     );
   }
 
   getIssueHistory(
     issueId: string,
-    params: IssueHistorySearchParameters
-  ): Observable<PaginationResult<IssueHistoryEntryDto>> {
-    return this.apiService.getPaginated<
-      IssueHistoryEntryDto,
-      IssueHistorySearchParameters
-    >(`${this.baseEndpoint}/${issueId}/history`, params);
+    grid: GridQuery
+  ): Observable<GridResult<IssueHistoryEntryDto>> {
+    return this.apiService.get<GridResult<IssueHistoryEntryDto>>(
+      `${this.baseEndpoint}/${issueId}/history`,
+      { grid }
+    );
   }
 
   getIssueAttachments(
     issueId: string,
-    params: IssueAttachmentsSearchParameters
-  ): Observable<PaginationResult<IssueAttachmentDto>> {
-    return this.apiService.getPaginated<
-      IssueAttachmentDto,
-      IssueAttachmentsSearchParameters
-    >(`${this.baseEndpoint}/${issueId}/attachments`, params);
+    grid: GridQuery
+  ): Observable<GridResult<IssueAttachmentDto>> {
+    return this.apiService.get<GridResult<IssueAttachmentDto>>(
+      `${this.baseEndpoint}/${issueId}/attachments`,
+      { grid }
+    );
   }
 
   uploadIssueAttachment(issueId: string, file: File): Observable<IssueAttachmentDto> {

@@ -1,4 +1,3 @@
-import { PaginationParameters } from '@shared/data/models/pagination-parameters.model';
 import { UserMembershipStatus } from '../utils/users.utils';
 
 export interface UserListItemDto {
@@ -73,12 +72,6 @@ export interface UpdateUserRequest {
   email: string;
   roleIds?: string[];
   deactivated?: boolean;
-}
-
-export interface UserSearchParameters extends PaginationParameters {
-  searchText?: string;
-  deactivated?: boolean[];
-  status?: UserMembershipStatus[];
 }
 
 export interface PreviewEffectivePermissionsRequest {

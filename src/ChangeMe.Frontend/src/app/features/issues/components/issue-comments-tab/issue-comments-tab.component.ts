@@ -19,7 +19,10 @@ import { ToastService } from '@core/toast/services/toast.service';
 import { IssueCommentDto } from '@features/issues/models/issue.model';
 import { IssuesService } from '@features/issues/services/issues.service';
 import { IssueCommentConstraints } from '@features/issues/utils/issue.utils';
-import { PaginationResult } from '@shared/data/models/pagination-result.model';
+import {
+  createIssueTabGridQuery,
+  hasMoreGridItems
+} from '@shared/data/utils/grid.utils';
 import { Button } from 'primeng/button';
 import { Message } from 'primeng/message';
 import { ProgressSpinner } from 'primeng/progressspinner';
@@ -45,13 +48,7 @@ export class IssueCommentsTabComponent {
   readonly issueCommentConstraints = IssueCommentConstraints;
 
   readonly comments = signal<IssueCommentDto[]>([]);
-  readonly commentsPagination = signal<PaginationResult<IssueCommentDto> | null>(null);
-  readonly commentsQuery = signal({
-    pageNumber: 1,
-    pageSize: 10,
-    sortField: 'CreatedAt',
-    ascending: false
-  });
+  readonly commentsTotalCount = signal(0);
   readonly loadError = signal<string | null>(null);
   readonly commentError = signal<string | null>(null);
   readonly isSubmitted = signal(false);
@@ -60,8 +57,8 @@ export class IssueCommentsTabComponent {
   readonly isLoadingMoreComments = signal(false);
   readonly hasLoadedComments = signal(false);
 
-  readonly canShowMoreComments = computed(
-    () => this.commentsPagination()?.hasNext ?? false
+  readonly canShowMoreComments = computed(() =>
+    hasMoreGridItems(this.comments().length, this.commentsTotalCount())
   );
 
   readonly commentForm = new FormGroup<CommentForm>({
@@ -131,34 +128,26 @@ export class IssueCommentsTabComponent {
   }
 
   showMoreComments(): void {
-    const pagination = this.commentsPagination();
-    if (!pagination?.hasNext || this.isLoadingMoreComments()) {
+    if (!this.canShowMoreComments() || this.isLoadingMoreComments()) {
       return;
     }
 
     this.loadComments(this.issueId(), {
       append: true,
-      pageNumber: pagination.currentPage + 1
+      skip: this.comments().length
     });
   }
 
   private reloadCommentsFromStart(issueId: string): void {
-    this.commentsQuery.set({
-      pageNumber: 1,
-      pageSize: 10,
-      sortField: 'CreatedAt',
-      ascending: false
-    });
     this.loadComments(issueId);
   }
 
   private loadComments(
     issueId: string,
-    options: { append?: boolean; pageNumber?: number } = {}
+    options: { append?: boolean; skip?: number } = {}
   ): void {
     const append = options.append ?? false;
-    const pageNumber = options.pageNumber ?? this.commentsQuery().pageNumber;
-    const query = { ...this.commentsQuery(), pageNumber };
+    const skip = options.skip ?? 0;
     const requestId = ++this.commentsRequestId;
 
     if (append) {
@@ -170,7 +159,7 @@ export class IssueCommentsTabComponent {
     this.loadError.set(null);
 
     this.issuesService
-      .getIssueComments(issueId, query)
+      .getIssueComments(issueId, createIssueTabGridQuery(skip))
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (result) => {
@@ -184,13 +173,7 @@ export class IssueCommentsTabComponent {
             this.comments.set(result.items);
           }
 
-          this.commentsQuery.set({
-            pageNumber: result.currentPage,
-            pageSize: result.pageSize,
-            sortField: 'CreatedAt',
-            ascending: false
-          });
-          this.commentsPagination.set(result);
+          this.commentsTotalCount.set(result.totalCount);
           this.isLoadingComments.set(false);
           this.isLoadingMoreComments.set(false);
           this.hasLoadedComments.set(true);

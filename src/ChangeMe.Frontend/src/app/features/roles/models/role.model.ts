@@ -1,5 +1,3 @@
-import { PaginationParameters } from '@shared/data/models/pagination-parameters.model';
-
 export interface RoleListItemDto {
   id: string;
   name: string;
@@ -40,14 +38,6 @@ export interface RoleAssignedUserDto {
   lastName: string;
   email: string;
   deactivated: boolean;
-}
-
-export interface RoleSearchParameters extends PaginationParameters {
-  searchText?: string;
-}
-
-export interface RoleAssignedUsersSearchParameters extends PaginationParameters {
-  searchText?: string;
 }
 
 export interface CreateRoleRequest {

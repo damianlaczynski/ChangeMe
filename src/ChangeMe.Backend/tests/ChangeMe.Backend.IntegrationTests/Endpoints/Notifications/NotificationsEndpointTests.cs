@@ -11,6 +11,8 @@ using ChangeMe.Backend.IntegrationTests.Support.Fakes;
 using ChangeMe.Backend.UseCases.Notifications.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using QueryGrid.Abstractions;
+using QueryGrid.Abstractions.Serialization;
 
 namespace ChangeMe.Backend.IntegrationTests;
 
@@ -216,8 +218,14 @@ public sealed class NotificationsEndpointTests(BackendWebApplicationFactory fact
       seededIds.Add(notificationId);
     }
 
+    var pageOneGrid = GridQueryJson.Serialize(new GridQuery
+    {
+      Take = 10,
+      Sort = [new SortDescriptor { Field = "CreatedAt", Desc = true }]
+    });
+
     var pageOneResponse = await client.GetAsync(
-      "/api/v1/notifications?isRead=false&pageNumber=1&pageSize=10&sortField=CreatedAt&ascending=false",
+      $"/api/v1/notifications?isRead=false&grid={Uri.EscapeDataString(pageOneGrid)}",
       cancellationToken);
     var pageOneBody = await pageOneResponse.Content.ReadAsStringAsync(cancellationToken);
 
@@ -228,7 +236,7 @@ public sealed class NotificationsEndpointTests(BackendWebApplicationFactory fact
     var pageOneItems = pageOneValue.GetProperty("page").GetProperty("items").EnumerateArray().ToList();
 
     Assert.Equal(10, pageOneItems.Count);
-    Assert.True(pageOneValue.GetProperty("page").GetProperty("hasNext").GetBoolean());
+    Assert.Equal(12, pageOneValue.GetProperty("page").GetProperty("totalCount").GetInt32());
 
     var pageOneIds = pageOneItems.Select(item => item.GetProperty("id").GetGuid()).ToList();
     Assert.Equal(seededIds.Take(10), pageOneIds);
@@ -239,8 +247,15 @@ public sealed class NotificationsEndpointTests(BackendWebApplicationFactory fact
     Assert.True(
       pageOneCreatedAt.SequenceEqual(pageOneCreatedAt.OrderByDescending(timestamp => timestamp)));
 
+    var pageTwoGrid = GridQueryJson.Serialize(new GridQuery
+    {
+      Skip = 10,
+      Take = 10,
+      Sort = [new SortDescriptor { Field = "CreatedAt", Desc = true }]
+    });
+
     var pageTwoResponse = await client.GetAsync(
-      "/api/v1/notifications?isRead=false&pageNumber=2&pageSize=10&sortField=CreatedAt&ascending=false",
+      $"/api/v1/notifications?isRead=false&grid={Uri.EscapeDataString(pageTwoGrid)}",
       cancellationToken);
     var pageTwoBody = await pageTwoResponse.Content.ReadAsStringAsync(cancellationToken);
 

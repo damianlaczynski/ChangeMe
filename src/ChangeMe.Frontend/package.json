@@ -27,6 +27,8 @@
     "@fontsource-variable/inter": "^5.2.8",
     "@microsoft/signalr": "^10.0.0",
     "@primeuix/themes": "^2.0.3",
+    "@query-grid/core": "0.1.0-preview.7",
+    "@query-grid/primeng": "0.1.0-preview.7",
     "@tailwindcss/postcss": "^4.3.1",
     "postcss": "^8.5.15",
     "primeicons": "^7.0.0",

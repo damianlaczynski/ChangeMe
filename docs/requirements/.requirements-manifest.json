@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-20T10:42:42.895Z",
+  "generatedAt": "2026-07-05T09:48:36.548Z",
   "functional": [
     {
       "id": "FR-AUTH-001",
@@ -346,7 +346,13 @@
       "type": "functional",
       "status": "active",
       "file": "functional/users/fr-usr-004-user-details-and-session-administration.md",
-      "depends_on": [],
+      "depends_on": [
+        "FR-AUTH-004",
+        "FR-ROL-001",
+        "FR-ROL-004",
+        "FR-USR-003",
+        "FR-USR-005"
+      ],
       "inherits_nfr": [],
       "inherits_fr": [
         "FR-UI-001"

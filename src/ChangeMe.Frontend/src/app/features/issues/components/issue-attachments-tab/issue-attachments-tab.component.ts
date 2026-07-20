@@ -16,7 +16,10 @@ import {
   getDeleteAttachmentConfirmMessage,
   issueAttachmentAccept
 } from '@features/issues/utils/issue.utils';
-import { PaginationResult } from '@shared/data/models/pagination-result.model';
+import {
+  createIssueTabGridQuery,
+  hasMoreGridItems
+} from '@shared/data/utils/grid.utils';
 import { formatFileSize } from '@shared/data/utils/file-size.utils';
 import { ConfirmationService } from 'primeng/api';
 import { Button } from 'primeng/button';
@@ -44,15 +47,7 @@ export class IssueAttachmentsTabComponent {
   readonly formatFileSize = formatFileSize;
 
   readonly attachments = signal<IssueAttachmentDto[]>([]);
-  readonly attachmentsPagination = signal<PaginationResult<IssueAttachmentDto> | null>(
-    null
-  );
-  readonly attachmentsQuery = signal({
-    pageNumber: 1,
-    pageSize: 10,
-    sortField: 'CreatedAt',
-    ascending: false
-  });
+  readonly attachmentsTotalCount = signal(0);
   readonly loadError = signal<string | null>(null);
   readonly uploadError = signal<string | null>(null);
   readonly selectedFile = signal<File | null>(null);
@@ -63,8 +58,8 @@ export class IssueAttachmentsTabComponent {
   readonly downloadingAttachmentId = signal<string | null>(null);
   readonly deletingAttachmentId = signal<string | null>(null);
 
-  readonly canShowMoreAttachments = computed(
-    () => this.attachmentsPagination()?.hasNext ?? false
+  readonly canShowMoreAttachments = computed(() =>
+    hasMoreGridItems(this.attachments().length, this.attachmentsTotalCount())
   );
 
   private lastLoadedIssueId: string | null = null;
@@ -168,14 +163,13 @@ export class IssueAttachmentsTabComponent {
   }
 
   showMoreAttachments(): void {
-    const pagination = this.attachmentsPagination();
-    if (!pagination?.hasNext || this.isLoadingMoreAttachments()) {
+    if (!this.canShowMoreAttachments() || this.isLoadingMoreAttachments()) {
       return;
     }
 
     this.loadAttachments(this.issueId(), {
       append: true,
-      pageNumber: pagination.currentPage + 1
+      skip: this.attachments().length
     });
   }
 
@@ -199,22 +193,15 @@ export class IssueAttachmentsTabComponent {
   }
 
   private reloadAttachmentsFromStart(issueId: string): void {
-    this.attachmentsQuery.set({
-      pageNumber: 1,
-      pageSize: 10,
-      sortField: 'CreatedAt',
-      ascending: false
-    });
     this.loadAttachments(issueId);
   }
 
   private loadAttachments(
     issueId: string,
-    options: { append?: boolean; pageNumber?: number } = {}
+    options: { append?: boolean; skip?: number } = {}
   ): void {
     const append = options.append ?? false;
-    const pageNumber = options.pageNumber ?? this.attachmentsQuery().pageNumber;
-    const query = { ...this.attachmentsQuery(), pageNumber };
+    const skip = options.skip ?? 0;
     const requestId = ++this.attachmentsRequestId;
 
     if (append) {
@@ -226,7 +213,7 @@ export class IssueAttachmentsTabComponent {
     this.loadError.set(null);
 
     this.issuesService
-      .getIssueAttachments(issueId, query)
+      .getIssueAttachments(issueId, createIssueTabGridQuery(skip))
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (result) => {
@@ -240,13 +227,7 @@ export class IssueAttachmentsTabComponent {
             this.attachments.set(result.items);
           }
 
-          this.attachmentsQuery.set({
-            pageNumber: result.currentPage,
-            pageSize: result.pageSize,
-            sortField: 'CreatedAt',
-            ascending: false
-          });
-          this.attachmentsPagination.set(result);
+          this.attachmentsTotalCount.set(result.totalCount);
           this.isLoadingAttachments.set(false);
           this.isLoadingMoreAttachments.set(false);
           this.hasLoadedAttachments.set(true);

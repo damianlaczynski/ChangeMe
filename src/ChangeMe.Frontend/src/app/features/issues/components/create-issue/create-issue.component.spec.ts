@@ -9,7 +9,6 @@ import {
 import { IssuesService } from '@features/issues/services/issues.service';
 import { MessageService } from 'primeng/api';
 import { of } from 'rxjs';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { CreateIssueComponent } from './create-issue.component';
 
 describe('CreateIssueComponent', () => {

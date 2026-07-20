@@ -1,62 +1,26 @@
-using ChangeMe.Backend.Domain.Aggregates.Issue.Enums;
 using ChangeMe.Backend.Domain.Aggregates.Users;
 using ChangeMe.Backend.UseCases.Issues.Dtos;
+using QueryGrid.Abstractions;
+using QueryGrid.EntityFrameworkCore;
 
 namespace ChangeMe.Backend.UseCases.Issues;
 
-public class GetAllIssuesQuery : PaginationQuery<IssueDto>
+public class GetAllIssuesQuery : IQuery<GridResult<IssueDto>>
 {
-  public string? SearchText { get; set; }
-  public List<IssueStatus>? Statuses { get; set; }
-  public List<IssuePriority>? Priorities { get; set; }
-  public Guid? AssignedToUserId { get; set; }
-  public bool WatchedByMe { get; set; }
-  public bool CreatedByMe { get; set; }
+  public GridQuery Grid { get; set; } = new();
 }
 
 public class GetAllIssuesHandler(
   ApplicationDbContext context,
-  IUserAccessor userAccessor) : IQueryHandler<GetAllIssuesQuery, PaginationResult<IssueDto>>
+  IUserAccessor userAccessor) : IQueryHandler<GetAllIssuesQuery, GridResult<IssueDto>>
 {
-  public async ValueTask<Result<PaginationResult<IssueDto>>> Handle(GetAllIssuesQuery query, CancellationToken cancellationToken)
+  public async ValueTask<Result<GridResult<IssueDto>>> Handle(GetAllIssuesQuery query, CancellationToken cancellationToken)
   {
     if (userAccessor.UserId is not Guid currentUserId)
       return Result.Unauthorized();
 
-    var issuesQuery = context.Issues
+    var projectedIssues = context.Issues
       .AsNoTracking()
-      .AsQueryable();
-
-    if (!string.IsNullOrWhiteSpace(query.SearchText))
-    {
-      var searchText = query.SearchText.Trim();
-      var parsedIssueId = Guid.TryParse(searchText, out var issueId) ? issueId : Guid.Empty;
-      issuesQuery = issuesQuery.Where(i =>
-        EF.Functions.ILike(i.Title, $"%{searchText}%")
-        || EF.Functions.ILike(i.Description, $"%{searchText}%")
-        || (parsedIssueId != Guid.Empty && i.Id == parsedIssueId));
-    }
-
-    if (query.Statuses?.Count > 0)
-      issuesQuery = issuesQuery.Where(i => query.Statuses.Contains(i.Status));
-
-    if (query.Priorities?.Count > 0)
-      issuesQuery = issuesQuery.Where(i => query.Priorities.Contains(i.Priority));
-
-    if (query.AssignedToUserId.HasValue)
-      issuesQuery = issuesQuery.Where(i => i.AssignedToUserId == query.AssignedToUserId.Value);
-
-    if (query.WatchedByMe)
-    {
-      issuesQuery = issuesQuery.Where(i => i.Watchers.Any(w => w.UserId == currentUserId));
-    }
-
-    if (query.CreatedByMe)
-    {
-      issuesQuery = issuesQuery.Where(i => i.CreatedBy == currentUserId || i.AssignedToUserId == currentUserId);
-    }
-
-    var projectedIssues = issuesQuery
       .Select(i => new IssueDto
       {
         Id = i.Id,
@@ -83,8 +47,7 @@ public class GetAllIssuesHandler(
         WatchersCount = i.Watchers.Count,
       });
 
-    var pagedIssues = await projectedIssues.ToPaginationResultAsync(x => x, query.PaginationParameters, cancellationToken);
-
-    return Result.Success(pagedIssues);
+    var grid = await projectedIssues.ToGridResultAsync(query.Grid, cancellationToken: cancellationToken);
+    return Result.Success(grid);
   }
 }
