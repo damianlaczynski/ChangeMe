@@ -22,7 +22,7 @@ import {
   hasMoreGridItems
 } from '@shared/data/utils/grid.utils';
 import { ConfirmationService } from 'primeng/api';
-import { Button } from 'primeng/button';
+import { ButtonDirective } from 'primeng/button';
 import { FileSelectEvent, FileUpload } from 'primeng/fileupload';
 import { Message } from 'primeng/message';
 import { ProgressSpinner } from 'primeng/progressspinner';
@@ -30,7 +30,7 @@ import { IssueConstraints } from '../../utils/issue.utils';
 
 @Component({
   selector: 'app-issue-attachments-tab',
-  imports: [DatePipe, Button, FileUpload, Message, ProgressSpinner],
+  imports: [DatePipe, ButtonDirective, FileUpload, Message, ProgressSpinner],
   templateUrl: './issue-attachments-tab.component.html',
   host: { class: 'block' }
 })
