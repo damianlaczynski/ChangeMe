@@ -9,20 +9,6 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, RouterLink } from '@angular/router';
-import { formatGridError } from '@query-grid/core';
-import {
-  QgColumnDirective,
-  QgEmptyDirective,
-  UiDataGridComponent
-} from '@query-grid/ui';
-import {
-  ButtonComponent,
-  MenuComponent,
-  MessageBarComponent,
-  TagComponent,
-  TooltipDirective,
-  type MenuItem
-} from '@laczynski/ui';
 import { ConfirmService } from '@core/confirm/services/confirm.service';
 import { ToastService } from '@core/toast/services/toast.service';
 import { IssueAssignableUserDto, IssueDto } from '@features/issues/models/issue.model';
@@ -36,6 +22,20 @@ import {
   issuePriorities,
   issueStatuses
 } from '@features/issues/utils/issue.utils';
+import {
+  ButtonComponent,
+  MenuComponent,
+  MessageBarComponent,
+  TagComponent,
+  TooltipDirective,
+  type MenuItem
+} from '@laczynski/ui';
+import { formatGridError } from '@query-grid/core';
+import {
+  QgColumnDirective,
+  QgEmptyDirective,
+  UiDataGridComponent
+} from '@query-grid/ui';
 import {
   createAppGridResource,
   getGridListEmptyMessage
@@ -111,6 +111,7 @@ export class IssuesComponent {
         id: 'delete',
         label: 'Delete issue',
         icon: 'delete',
+        variant: 'danger',
         disabled: this.isDeletePending(issue.id)
       }
     ];

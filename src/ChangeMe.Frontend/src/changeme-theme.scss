@@ -1,145 +1,79 @@
-// ChangeMe theme — Material Design 3 baseline palette.
-
 :root {
-  --md3-primary: #6750a4;
-  --md3-on-primary: #ffffff;
-  --md3-primary-container: #eaddff;
-  --md3-on-primary-container: #21005d;
-  --md3-secondary: #625b71;
-  --md3-secondary-container: #e8def8;
-  --md3-tertiary: #7d5260;
-  --md3-error: #b3261e;
-  --md3-surface: #fffbfe;
-  --md3-on-surface: #1c1b1f;
-  --md3-surface-variant: #e7e0ec;
-  --md3-on-surface-variant: #49454f;
-  --md3-outline: #79747e;
-  --md3-outline-variant: #cac4d0;
-
-  --color-brand-primary: #6750a4;
-  --color-brand-primary-hover: #5a4894;
-  --color-brand-primary-pressed: #4f378b;
-  --color-brand-primary-selected: #5a4894;
-
-  --color-brand-foreground: #4f378b;
-  --color-brand-foreground-hover: #381e72;
-  --color-brand-foreground-pressed: #21005d;
-
-  --color-compound-brand-background: #6750a4;
-  --color-compound-brand-background-hover: #5a4894;
-  --color-compound-brand-background-pressed: #4f378b;
-  --color-compound-brand-foreground: #ffffff;
-  --color-compound-brand-foreground-hover: #ffffff;
-  --color-compound-brand-foreground-pressed: #eaddff;
-  --color-compound-brand-stroke: #6750a4;
-  --color-compound-brand-stroke-hover: #5a4894;
-  --color-compound-brand-stroke-pressed: #4f378b;
-
-  --color-accent-primary: #6750a4;
-  --color-accent-primary-hover: #5a4894;
-  --color-accent-primary-pressed: #4f378b;
-  --color-accent-primary-selected: #5a4894;
-
-  --color-neutral-foreground-rest: #1c1b1f;
-  --color-neutral-foreground-hover: #000000;
-  --color-neutral-foreground-pressed: #000000;
-  --color-neutral-foreground2-rest: #49454f;
-  --color-neutral-foreground3-rest: #79747e;
-
-  --color-neutral-background-rest: #fffbfe;
-  --color-neutral-background-hover: #f7f2fa;
-  --color-neutral-background-pressed: #f3edf7;
-  --color-neutral-background-selected: #eaddff;
-  --color-neutral-background-disabled: #e7e0ec;
-
-  --color-neutral-background2-rest: #f7f2fa;
-  --color-neutral-background2-hover: #f3edf7;
-  --color-neutral-background2-pressed: #ece6f0;
-  --color-neutral-background2-selected: #e8def8;
-
-  --color-neutral-background3-rest: #e7e0ec;
-  --color-neutral-background3-hover: #e2dbe6;
-  --color-neutral-background3-pressed: #d8d2dc;
-  --color-neutral-background3-selected: #e8def8;
-
-  --color-neutral-background-brand-selected: #eaddff;
-  --color-neutral-background-brand-hover: #e8def8;
-  --color-neutral-background-brand-pressed: #d0bcff;
-
-  --color-neutral-stroke-rest: #cac4d0;
-  --color-neutral-stroke-hover: #b8b2be;
-  --color-neutral-stroke-pressed: #a8a2ae;
-  --color-neutral-stroke-selected: #6750a4;
-
-  --color-brand-stroke-rest: #6750a4;
-  --color-brand-stroke-hover: #5a4894;
-  --color-brand-stroke-pressed: #4f378b;
-  --color-brand-stroke-selected: #6750a4;
-
-  --color-focus-border: #6750a4;
+  --color-brand-primary: #d97604;
+  --color-brand-primary-hover: #bc6604;
+  --color-brand-primary-pressed: #804603;
+  --color-brand-primary-selected: #9e5603;
+  --color-brand-foreground: #d97604;
+  --color-brand-foreground-hover: #bc6604;
+  --color-brand-foreground-pressed: #804603;
+  --color-compound-brand-background: #d97604;
+  --color-compound-brand-background-hover: #bc6604;
+  --color-compound-brand-background-pressed: #804603;
+  --color-compound-brand-foreground: #d97604;
+  --color-compound-brand-foreground-hover: #bc6604;
+  --color-compound-brand-foreground-pressed: #804603;
+  --color-compound-brand-stroke: #d97604;
+  --color-compound-brand-stroke-hover: #bc6604;
+  --color-compound-brand-stroke-pressed: #804603;
+  --color-accent-primary: #d97604;
+  --color-accent-primary-hover: #bc6604;
+  --color-accent-primary-pressed: #804603;
+  --color-accent-primary-selected: #9e5603;
+  --color-neutral-foreground-on-brand: #ffffff;
+  --color-neutral-foreground2-brand-hover: #bc6604;
+  --color-neutral-foreground2-brand-pressed: #804603;
+  --color-neutral-foreground2-brand-selected: #9e5603;
+  --color-neutral-foreground3-brand-hover: #bc6604;
+  --color-neutral-foreground3-brand-pressed: #804603;
+  --color-neutral-foreground3-brand-selected: #9e5603;
+  --color-neutral-background-brand-selected: #fdd5a7;
+  --color-neutral-background-brand-hover: #fdc88c;
+  --color-neutral-background-brand-pressed: #fcbb70;
+  --color-brand-stroke-rest: #d97604;
+  --color-brand-stroke-hover: #bc6604;
+  --color-brand-stroke-pressed: #804603;
+  --color-brand-stroke-selected: #9e5603;
+  --color-neutral-stroke-accessible-selected: #d97604;
+  --color-focus-border: #d97604;
 }
 
 :root[data-theme='dark'],
-:root.dark {
-  --color-brand-primary: #d0bcff;
-  --color-brand-primary-hover: #eaddff;
-  --color-brand-primary-pressed: #b69df8;
-  --color-brand-primary-selected: #eaddff;
-
-  --color-brand-foreground: #d0bcff;
-  --color-brand-foreground-hover: #eaddff;
-  --color-brand-foreground-pressed: #b69df8;
-
-  --color-compound-brand-background: #4f378b;
-  --color-compound-brand-background-hover: #5a4894;
-  --color-compound-brand-background-pressed: #6750a4;
-  --color-compound-brand-foreground: #eaddff;
-  --color-compound-brand-foreground-hover: #ffffff;
-  --color-compound-brand-foreground-pressed: #d0bcff;
-  --color-compound-brand-stroke: #d0bcff;
-  --color-compound-brand-stroke-hover: #eaddff;
-  --color-compound-brand-stroke-pressed: #b69df8;
-
-  --color-accent-primary: #d0bcff;
-  --color-accent-primary-hover: #eaddff;
-  --color-accent-primary-pressed: #b69df8;
-  --color-accent-primary-selected: #eaddff;
-
-  --color-neutral-foreground-rest: #e6e1e5;
-  --color-neutral-foreground-hover: #ffffff;
-  --color-neutral-foreground-pressed: #cac4d0;
-  --color-neutral-foreground2-rest: #cac4d0;
-  --color-neutral-foreground3-rest: #938f99;
-
-  --color-neutral-background-rest: #1c1b1f;
-  --color-neutral-background-hover: #211f26;
-  --color-neutral-background-pressed: #141218;
-  --color-neutral-background-selected: #4f378b;
-  --color-neutral-background-disabled: #211f26;
-
-  --color-neutral-background2-rest: #211f26;
-  --color-neutral-background2-hover: #2b2930;
-  --color-neutral-background2-pressed: #1c1b1f;
-  --color-neutral-background2-selected: #4a4458;
-
-  --color-neutral-background3-rest: #2b2930;
-  --color-neutral-background3-hover: #36343b;
-  --color-neutral-background3-pressed: #211f26;
-  --color-neutral-background3-selected: #4a4458;
-
-  --color-neutral-background-brand-selected: #4f378b;
-  --color-neutral-background-brand-hover: #5a4894;
-  --color-neutral-background-brand-pressed: #381e72;
-
-  --color-neutral-stroke-rest: #49454f;
-  --color-neutral-stroke-hover: #5c5862;
-  --color-neutral-stroke-pressed: #6e6a74;
-  --color-neutral-stroke-selected: #d0bcff;
-
-  --color-brand-stroke-rest: #d0bcff;
-  --color-brand-stroke-hover: #eaddff;
-  --color-brand-stroke-pressed: #b69df8;
-  --color-brand-stroke-selected: #d0bcff;
-
-  --color-focus-border: #d0bcff;
+:root.dark,
+body.dark-theme {
+  --color-brand-primary: #9e5603;
+  --color-brand-primary-hover: #bc6604;
+  --color-brand-primary-pressed: #633602;
+  --color-brand-primary-selected: #804603;
+  --color-brand-foreground: #fba139;
+  --color-brand-foreground-hover: #fcae55;
+  --color-brand-foreground-pressed: #f78605;
+  --color-compound-brand-background: #f78605;
+  --color-compound-brand-background-hover: #fa931e;
+  --color-compound-brand-background-pressed: #d97604;
+  --color-compound-brand-foreground: #f78605;
+  --color-compound-brand-foreground-hover: #fa931e;
+  --color-compound-brand-foreground-pressed: #d97604;
+  --color-compound-brand-stroke: #f78605;
+  --color-compound-brand-stroke-hover: #d97604;
+  --color-compound-brand-stroke-pressed: #bc6604;
+  --color-accent-primary: #9e5603;
+  --color-accent-primary-hover: #bc6604;
+  --color-accent-primary-pressed: #633602;
+  --color-accent-primary-selected: #804603;
+  --color-neutral-foreground-on-brand: #ffffff;
+  --color-neutral-foreground2-brand-hover: #fa931e;
+  --color-neutral-foreground2-brand-pressed: #d97604;
+  --color-neutral-foreground2-brand-selected: #f78605;
+  --color-neutral-foreground3-brand-hover: #fa931e;
+  --color-neutral-foreground3-brand-pressed: #d97604;
+  --color-neutral-foreground3-brand-selected: #f78605;
+  --color-neutral-background-brand-selected: #452601;
+  --color-neutral-background-brand-hover: #633602;
+  --color-neutral-background-brand-pressed: #281501;
+  --color-brand-stroke-rest: #f78605;
+  --color-brand-stroke-hover: #d97604;
+  --color-brand-stroke-pressed: #bc6604;
+  --color-brand-stroke-selected: #f78605;
+  --color-neutral-stroke-accessible-selected: #f78605;
+  --color-focus-border: #ffffff;
 }
