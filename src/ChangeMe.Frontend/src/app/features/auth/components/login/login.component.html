@@ -3,10 +3,11 @@
   subtitle="Sign in to create, edit and delete issues."
 >
   <form class="app-form" [formGroup]="form" (ngSubmit)="onSubmit()">
-    <ui-text
+    <ui-email
       label="Email"
-      type="email"
-      autocomplete="email"
+      id="email"
+      name="email"
+      autocomplete="username"
       [formControl]="form.controls.email"
       [required]="true"
       [errorText]="fieldError(form.controls.email, AuthFieldErrors.email, submitted())"
@@ -14,10 +15,14 @@
 
     <ui-password
       label="Password"
+      id="password"
+      name="password"
       autocomplete="current-password"
       [formControl]="form.controls.password"
       [required]="true"
-      [errorText]="fieldError(form.controls.password, AuthFieldErrors.password, submitted())"
+      [errorText]="
+        fieldError(form.controls.password, AuthFieldErrors.password, submitted())
+      "
     />
 
     @if (errorMessage()) {

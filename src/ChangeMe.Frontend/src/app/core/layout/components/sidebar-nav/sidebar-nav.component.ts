@@ -1,11 +1,19 @@
-import { Component, computed, DestroyRef, inject, input, output, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  DestroyRef,
+  inject,
+  input,
+  output,
+  signal
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router } from '@angular/router';
-import { NavComponent, type NavNode } from '@laczynski/ui';
 import {
   LayoutNavItem,
   LayoutNavSection
 } from '@core/layout/models/layout-nav-item.model';
+import { NavComponent, type NavNode } from '@laczynski/ui';
 import { filter } from 'rxjs/operators';
 
 @Component({
@@ -17,10 +25,9 @@ import { filter } from 'rxjs/operators';
   template: `
     <ui-nav
       [items]="navItems()"
-      appearance="filled"
+      appearance="transparent"
       variant="primary"
       size="medium"
-      [showSelectionIndicator]="false"
     />
   `
 })

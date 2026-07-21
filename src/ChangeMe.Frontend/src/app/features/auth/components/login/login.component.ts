@@ -6,15 +6,19 @@ import {
   Validators
 } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import {
-  ButtonComponent,
-  MessageBarComponent,
-  PasswordComponent,
-  TextComponent
-} from '@laczynski/ui';
 import { AuthPageComponent } from '@features/auth/components/auth-page/auth-page.component';
 import { AuthService } from '@features/auth/services/auth.service';
-import { AuthConstraints, AuthFieldErrors, AuthMessages } from '@features/auth/utils/auth.utils';
+import {
+  AuthConstraints,
+  AuthFieldErrors,
+  AuthMessages
+} from '@features/auth/utils/auth.utils';
+import {
+  ButtonComponent,
+  EmailComponent,
+  MessageBarComponent,
+  PasswordComponent
+} from '@laczynski/ui';
 import { fieldError } from '@shared/forms/field-error';
 
 @Component({
@@ -24,7 +28,7 @@ import { fieldError } from '@shared/forms/field-error';
     ReactiveFormsModule,
     AuthPageComponent,
     ButtonComponent,
-    TextComponent,
+    EmailComponent,
     PasswordComponent,
     MessageBarComponent
   ],
