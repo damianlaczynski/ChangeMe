@@ -28,9 +28,9 @@ import { Card } from 'primeng/card';
 import { Checkbox } from 'primeng/checkbox';
 import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
-import { MultiSelect } from 'primeng/multiselect';
 import { Panel } from 'primeng/panel';
 import { ProgressSpinner } from 'primeng/progressspinner';
+import { Select } from 'primeng/select';
 import { catchError, debounceTime, forkJoin, of, startWith, switchMap } from 'rxjs';
 
 @Component({
@@ -42,7 +42,7 @@ import { catchError, debounceTime, forkJoin, of, startWith, switchMap } from 'rx
     Card,
     ButtonDirective,
     InputText,
-    MultiSelect,
+    Select,
     Checkbox,
     Message,
     Panel,

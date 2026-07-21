@@ -10,9 +10,11 @@ import { AuthPageComponent } from '@features/auth/components/auth-page/auth-page
 import { AuthService } from '@features/auth/services/auth.service';
 import { AuthConstraints, AuthMessages } from '@features/auth/utils/auth.utils';
 import { ButtonDirective } from 'primeng/button';
+import { IconField } from 'primeng/iconfield';
+import { InputIcon } from 'primeng/inputicon';
+import { InputPassword } from 'primeng/inputpassword';
 import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
-import { Password } from 'primeng/password';
 
 @Component({
   selector: 'app-login',
@@ -21,9 +23,11 @@ import { Password } from 'primeng/password';
     ReactiveFormsModule,
     AuthPageComponent,
     ButtonDirective,
+    IconField,
+    InputIcon,
+    InputPassword,
     InputText,
-    Message,
-    Password
+    Message
   ],
   templateUrl: './login.component.html'
 })
@@ -34,6 +38,7 @@ export class LoginComponent {
   readonly errorMessage = signal('');
   readonly isSubmitting = signal(false);
   readonly authConstraints = AuthConstraints;
+  passwordMasked = true;
 
   readonly form = new FormGroup({
     email: new FormControl('', {

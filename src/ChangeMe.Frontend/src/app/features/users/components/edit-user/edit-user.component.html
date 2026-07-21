@@ -78,14 +78,14 @@
         <p-panel header="Roles" [toggleable]="true">
           <div class="flex flex-col gap-1.5">
             <label for="roles">Roles</label>
-            <p-multiselect
+            <p-select
               inputId="roles"
+              [multiple]="true"
               [formControl]="form.controls.roleIds"
               [options]="roleOptions()"
               optionLabel="name"
               optionValue="id"
               placeholder="Select roles"
-              display="chip"
               [invalid]="shouldShowError(form.controls.roleIds)"
             />
           </div>
