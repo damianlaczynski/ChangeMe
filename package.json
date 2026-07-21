@@ -2,6 +2,8 @@
   "name": "changeme",
   "private": true,
   "scripts": {
+    "setup": "node scripts/setup.mjs",
+    "prepare": "node scripts/prepare.mjs",
     "install:frontend": "npm --prefix src/ChangeMe.Frontend install && npm --prefix src/ChangeMe.Frontend exec playwright install chromium",
     "start:frontend": "npm --prefix src/ChangeMe.Frontend run start",
     "start:backend": "dotnet run --project src/ChangeMe.Backend/src/ChangeMe.Backend.Web/ChangeMe.Backend.Web.csproj",
@@ -40,6 +42,7 @@
     "pack:backend": "dotnet pack template-pack/ChangeMe.Templates.csproj -c Release"
   },
   "devDependencies": {
-    "concurrently": "^10.0.3"
+    "concurrently": "^10.0.3",
+    "lefthook": "^1.13.6"
   }
 }

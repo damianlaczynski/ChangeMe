@@ -106,6 +106,7 @@ For dev server, lint, format, and test commands from `src/ChangeMe.Frontend` or 
 - Dark mode follows PrimeNG styled mode: set `darkModeSelector: '.app-dark'` in `providePrimeNG()`, toggle that class on `<html>` in `LayoutService`, and mirror it for Tailwind with `@custom-variant dark` in `tailwind.css`. Page background and text color live in `tailwind.css` on `html` / `html.app-dark` (PrimeNG tokens); do not duplicate them on the app shell.
 - The small inline script in `index.html` only restores `app-dark` from `localStorage` before Angular boots to avoid a light flash on reload. It is optional if you accept that flash.
 - Toggle light/dark through `LayoutService`; the shell header theme button calls `layoutService.toggleTheme()`.
+- **Reduced motion** (`NFR-A11Y-001`): `LayoutService` listens for `prefers-reduced-motion: reduce`, toggles `app-reduced-motion` on `<html>`, and global styles in `tailwind.css` shorten non-essential transitions and hide PrimeNG ripples. Do not suppress compliance toasts or required policy dialogs.
 
 ### When adding a new screen
 

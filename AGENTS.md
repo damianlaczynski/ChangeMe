@@ -24,8 +24,9 @@
 
 ### Repository root (npm)
 
-From the repository root, run `npm install` once to install root devDependencies (`concurrently` is required for `start:all` and `test:all`). Frontend packages still live under `src/ChangeMe.Frontend`; use `npm run install:frontend` after clone or when frontend dependencies change — that script also installs Playwright **Chromium** for E2E (plain `npm install` inside `src/ChangeMe.Frontend` does not).
+From the repository root, run `npm run setup` once after clone (installs npm packages, Playwright Chromium, restores .NET, and installs Lefthook pre-commit hooks). Frontend packages still live under `src/ChangeMe.Frontend`; use `npm run install:frontend` when only frontend dependencies change.
 
+- First-time setup: `npm run setup`
 - Install frontend dependencies and Playwright Chromium: `npm run install:frontend`
 - Start dev servers: `npm run start:frontend`, `npm run start:backend`, or both in parallel with `npm run start:all`
 - Build: `npm run build:frontend`, `npm run build:backend`, or `npm run build:all`
