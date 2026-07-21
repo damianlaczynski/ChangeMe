@@ -37,7 +37,7 @@
   @if (loadError()) {
     <p-message severity="error">{{ loadError() }}</p-message>
   } @else if (isLoadingAttachments()) {
-    <p-progress-spinner ariaLabel="Loading attachments" styleClass="h-8 w-8" />
+    <p-progress-spinner ariaLabel="Loading attachments" class="!size-8" />
   } @else if (attachments().length > 0) {
     <ul class="m-0 flex list-none flex-col gap-3 p-0">
       @for (attachment of attachments(); track attachment.id) {

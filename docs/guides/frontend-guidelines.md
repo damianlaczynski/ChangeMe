@@ -70,9 +70,28 @@ For dev server, lint, format, and test commands from `src/ChangeMe.Frontend` or 
 
 ## PrimeNG
 
+### License (PrimeUI)
+
+> **Warning:** From PrimeNG v22, the library is part of **PrimeUI** and requires a valid license key for production use. Without a key, PrimeNG may display a license notice in the UI.
+
+- **Community License (free)** — for eligible small teams, students, non-profits, and non-commercial OSS. See [Community License](https://primeui.dev/licenses/community).
+- **Commercial License (paid)** — for organizations that do not qualify for the community tier. See [Commercial License](https://primeui.dev/licenses/commercial).
+- Full terms are also in `node_modules/primeng/LICENSE.md`.
+
+Set the key once in `providePrimeNG()` in `src/app/app.config.ts`:
+
+```typescript
+providePrimeNG({
+  license: "<your-primeui-license-key>",
+  // ...
+});
+```
+
+Do not commit license keys to the repository. For local development, use a personal/community key or accept the in-app notice until a project key is provisioned.
+
 ### Global setup
 
-- Theme and PrimeNG providers are configured once in `src/app/app.config.ts` through `providePrimeNG()`. PrimeNG v21 uses CSS-based animations; do not add deprecated `provideAnimationsAsync()`.
+- Theme and PrimeNG providers are configured once in `src/app/app.config.ts` through `providePrimeNG()`. PrimeNG v22 uses CSS-based animations; do not add deprecated `provideAnimationsAsync()`.
 - Ripple is enabled globally via `ripple: true` in `providePrimeNG()`.
 - Shared icon styles are imported globally from `src/tailwind.css` (`primeicons`).
 - Do not add a second UI kit beside PrimeNG for application screens.
@@ -99,8 +118,12 @@ For dev server, lint, format, and test commands from `src/ChangeMe.Frontend` or 
 - Use Tailwind utility classes in templates for layout and surface styling (`flex`, `grid`, `gap-*`, `p-*`, `max-w-*`, `rounded-*`, `border-surface-200`, `dark:` variants). Do not restyle PrimeNG components with custom CSS unless there is no built-in option.
 - Do **not** add feature-level `*.component.css` files that `@reference` `tailwind.css` and use `@apply` or custom class names for layout or surface styling. Put utilities in the template; use the component `host` metadata (for example `host: { class: 'flex flex-1 flex-col' }`) when the host element needs layout classes.
 - Put PrimeNG semantic color and surface utilities (`bg-surface-0`, `border-surface-200`, `text-color`, `dark:` variants) on elements you control directly in the template. Do not wrap them in custom CSS classes unless you must target PrimeNG internal markup.
-- Omit `styleUrl` on feature components unless a screen has a rare rule that cannot be expressed with template utilities or PrimeNG inputs (`styleClass`, `pt`, and so on).
-- The only current exception is `core/layout` shell styling for PrimeNG internal parts (for example `.p-drawer-header` under `app-shell-drawer`) that cannot be reached from the template with `styleClass` alone. Keep those CSS files minimal—no `@apply` blocks for app-owned wrappers such as headers, sidebars, or nav links.
+- Omit `styleUrl` on feature components unless a screen has a rare rule that cannot be expressed with template utilities or PrimeNG inputs (`class`, `pt`, and so on).
+- For host-enabled PrimeNG components (`<p-* />` whose visible root is the custom element, e.g. `p-progress-spinner`, `p-timeline`), use the native `class` attribute instead of deprecated `styleClass`.
+- Overlay or wrapper components that render their panel inside the template (`p-drawer`, `p-dialog`, `<p-button>`) still need `styleClass` (or built-in inputs like `[fluid]="true"`) to style the visible surface — `class` on the host does not reach the inner panel/button.
+- Use named `ng-template` references (`#marker`, `#content`, …) instead of deprecated `pTemplate`.
+- Prefer `[pButton]` on a native `<button>` over deprecated `<p-button>` for new work. Place icon and label text as direct children instead of `icon` / `label` inputs.
+- On `p-drawer`, use `closable` instead of deprecated `showCloseIcon`.
 - Theme preset extensions belong in `src/app/theme/app-preset.ts`. To switch the base look, start from another preset (`Lara`, `Nora`, `Material`) in that file.
 - Application font is **Inter** (Google Fonts in `index.html`, mirrored in `AppPreset` and `@theme` in `tailwind.css`).
 - Dark mode follows PrimeNG styled mode: set `darkModeSelector: '.app-dark'` in `providePrimeNG()`, toggle that class on `<html>` in `LayoutService`, and mirror it for Tailwind with `@custom-variant dark` in `tailwind.css`. Page background and text color live in `tailwind.css` on `html` / `html.app-dark` (PrimeNG tokens); do not duplicate them on the app shell.
