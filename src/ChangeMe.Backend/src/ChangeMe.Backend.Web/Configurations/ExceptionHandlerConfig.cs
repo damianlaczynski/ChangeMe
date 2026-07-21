@@ -1,5 +1,4 @@
-﻿using System.Text.Json;
-using ChangeMe.Backend.Domain.Common;
+using System.Text.Json;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 

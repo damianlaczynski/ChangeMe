@@ -1,13 +1,15 @@
-﻿using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.Options;
 using NSwag;
 
 namespace ChangeMe.Backend.Web.Configurations;
 
 public static class FastEndpointsConfig
 {
-  public static IServiceCollection AddFastEndpointsWithSwagger(this IServiceCollection services)
+  public static IServiceCollection AddFastEndpointsWithSwagger(this IServiceCollection services, IConfiguration configuration)
   {
+    services.Configure<SwaggerOptions>(configuration.GetSection(SwaggerOptions.SectionName));
     services.ConfigureHttpJsonOptions(options =>
     {
       options.SerializerOptions.PropertyNameCaseInsensitive = true;
@@ -38,7 +40,7 @@ public static class FastEndpointsConfig
 
   public static WebApplication UseFastEndpointsWithSwagger(this WebApplication app)
   {
-    app.UseFastEndpoints(config =>
+    var endpointBuilder = app.UseFastEndpoints(config =>
     {
       config.Endpoints.RoutePrefix = "api";
       config.Versioning.Prefix = ApiVersionConfig.Prefix;
@@ -46,7 +48,12 @@ public static class FastEndpointsConfig
       config.Versioning.DefaultVersion = ApiVersionConfig.CurrentVersion;
       config.Serializer.Options.PropertyNameCaseInsensitive = true;
       config.Serializer.Options.Converters.Add(new JsonStringEnumConverter());
-    }).UseSwaggerGen();
+    });
+
+    var swaggerEnabled = app.Services.GetRequiredService<IOptions<SwaggerOptions>>().Value.Enabled;
+    if (swaggerEnabled)
+      endpointBuilder.UseSwaggerGen();
+
     return app;
   }
 }

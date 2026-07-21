@@ -4,6 +4,43 @@ All notable changes to the **ChangeMe** NuGet template package (`dotnet new chan
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.0] - 2026-07-20
+
+### Added
+
+- **QueryGrid** — shared list/search/sort/pagination for issues, users, and roles (`@query-grid/core`, `@query-grid/primeng`).
+- **Production-safe ops defaults** — `SwaggerOptions:Enabled` and `HangfireOptions:DashboardEnabled` default to `false`; `HangfireOptions:ServerEnabled` gates background job processing per host.
+- **Auth integration tests** — refresh, logout, sessions, revoke, logout-all, and my-account flows.
+- **CI quality gates** — ESLint, Prettier, and `dotnet format --verify-no-changes` on every PR and push to `main`.
+- **Dependabot** — weekly updates for npm (root and frontend), NuGet, and GitHub Actions.
+
+### Changed
+
+- **Requirements docs** — five-layer structure under `docs/requirements/_shared/`; regenerated index and validation manifest.
+- **Code style** — `dotnet format` enforced in CI; `.editorconfig` UTF-8 without BOM; unused usings cleanup across the backend.
+- **Hangfire recurring jobs** — register via `IRecurringJobManager` (DI) so jobs work when the dashboard middleware is disabled.
+
+### Fixed
+
+- **Integration tests** — fixture startup after Swagger/Hangfire gating (static `RecurringJob` required dashboard initialization).
+
+### Migration notes for consumers upgrading from 2.1.x
+
+If you generated a project from **2.1.x** and merge template updates (not an automatic upgrade):
+
+1. **Swagger / Hangfire** — review `SwaggerOptions` and `HangfireOptions` in `appsettings.json`. Enable dashboard and Swagger in `appsettings.Development.json` for local dev; keep them disabled in production unless intentionally exposed.
+2. **Multi-instance API** — set `HangfireOptions:ServerEnabled` to `true` on exactly one host (or dedicated workers); API replicas can set it to `false`.
+3. **Lists** — adopt QueryGrid patterns when extending issues, users, or roles list screens.
+4. **CI / format** — run `npm run format:check:all` and `npm run lint:frontend` before pushing if you sync CI workflows from the template.
+
+Fresh installs: `dotnet new install ChangeMe --force`, then `dotnet new changeme -n YourApp -o YourApp`.
+
+## [2.1.1] - 2026-07-19
+
+### Changed
+
+- CI: tag `v*` triggers NuGet publish to nuget.org and GitHub Packages via trusted publishing (OIDC)
+
 ## [2.1.0] - 2026-06-24
 
 ### Added
@@ -97,6 +134,8 @@ Fresh installs: `dotnet new install ChangeMe --force`, then `dotnet new changeme
 - Backend unit and integration tests (Testcontainers).
 - Template token replacement for `ChangeMe` across solution, Docker, and docs.
 
+[2.2.0]: https://github.com/damianlaczynski/ChangeMe/compare/v2.1.1...v2.2.0
+[2.1.1]: https://github.com/damianlaczynski/ChangeMe/compare/v2.1.0...v2.1.1
 [2.1.0]: https://github.com/damianlaczynski/ChangeMe/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/damianlaczynski/ChangeMe/compare/v1.0.0...v2.0.0
 [1.0.0]: https://github.com/damianlaczynski/ChangeMe/releases/tag/v1.0.0

@@ -1,4 +1,3 @@
-﻿using ChangeMe.Backend.Domain.Aggregates.Users.Interfaces;
 using ChangeMe.Backend.Infrastructure.Auth;
 using ChangeMe.Backend.Infrastructure.Email;
 using ChangeMe.Backend.Infrastructure.FileStorage;

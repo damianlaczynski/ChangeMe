@@ -1,7 +1,5 @@
-using ChangeMe.Backend.Infrastructure.FileStorage;
 using ChangeMe.Backend.Infrastructure.Persistence;
 using Hangfire;
-using Microsoft.Extensions.Logging;
 
 namespace ChangeMe.Backend.Infrastructure.FileStorage;
 

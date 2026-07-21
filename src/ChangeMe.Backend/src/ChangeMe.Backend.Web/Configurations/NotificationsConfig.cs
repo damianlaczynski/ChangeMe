@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.UseCases.Issues.Services;
+using ChangeMe.Backend.UseCases.Issues.Services;
 using ChangeMe.Backend.UseCases.Notifications.Services;
 using ChangeMe.Backend.Web.Notifications;
 using Hangfire;
@@ -31,7 +31,8 @@ public static class NotificationsConfig
       ? "0 3 * * *"
       : retentionOptions.CleanupCronExpression;
 
-    RecurringJob.AddOrUpdate<NotificationRetentionCleanupJob>(
+    var recurringJobs = app.Services.GetRequiredService<IRecurringJobManager>();
+    recurringJobs.AddOrUpdate<NotificationRetentionCleanupJob>(
       "notifications-retention-cleanup",
       job => job.ExecuteAsync(JobCancellationToken.Null),
       cleanupCronExpression);

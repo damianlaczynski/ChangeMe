@@ -10,7 +10,7 @@ status: active
 ### List and search data
 
 - All primary entity lists are **server-paginated** with default **10** items per page (`docs/requirements/_shared/conventions/product-standards.md`, STD-LST-001).
-- Client-side loading of unbounded full tables is **not allowed** for administrative lists.
+- Client-side loading of unbounded full tables is **not allowed** for list screens (STD-LST-001).
 - Search and filter queries run on the server; the functional specification defines match rules, not client-side filter algorithms.
 
 ### Detail screen sections

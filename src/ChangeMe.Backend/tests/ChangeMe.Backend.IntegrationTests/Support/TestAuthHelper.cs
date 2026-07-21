@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using ChangeMe.Backend.Infrastructure.Persistence;
 using ChangeMe.Backend.IntegrationTests.Fixtures;
+using ChangeMe.Backend.UseCases.Auth.Dtos;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,6 +28,14 @@ internal static class TestAuthHelper
     BackendWebApplicationFactory factory,
     CancellationToken cancellationToken = default)
   {
+    var session = await CreateLoginSessionAsync(factory, cancellationToken);
+    return new AuthenticatedTestUser(session.Client, session.UserId, session.Email);
+  }
+
+  public static async Task<LoginTestSession> CreateLoginSessionAsync(
+    BackendWebApplicationFactory factory,
+    CancellationToken cancellationToken = default)
+  {
     var admin = await CreateAdministratorUserAsync(factory, cancellationToken);
     var email = $"user-{Guid.NewGuid():N}@example.com";
     var userRoleId = await RolesTestHelper.GetRoleIdByNameAsync(factory, "User", cancellationToken);
@@ -42,21 +51,23 @@ internal static class TestAuthHelper
 
     createResponse.EnsureSuccessStatusCode();
 
-    return await LoginAsUserAsync(factory, email, DefaultUserPassword, cancellationToken);
+    return await LoginExistingUserAsync(factory, email, DefaultUserPassword, cancellationToken);
   }
 
   public static async Task<AuthenticatedTestUser> CreateAdministratorUserAsync(
     BackendWebApplicationFactory factory,
     CancellationToken cancellationToken = default)
   {
-    return await LoginAsUserAsync(
+    var session = await LoginExistingUserAsync(
       factory,
       SeededAdminEmail,
       SeededAdminPassword,
       cancellationToken);
+
+    return new AuthenticatedTestUser(session.Client, session.UserId, session.Email);
   }
 
-  private static async Task<AuthenticatedTestUser> LoginAsUserAsync(
+  public static async Task<LoginTestSession> LoginExistingUserAsync(
     BackendWebApplicationFactory factory,
     string email,
     string password,
@@ -76,14 +87,15 @@ internal static class TestAuthHelper
     loginResponse.EnsureSuccessStatusCode();
 
     var responseBody = await loginResponse.Content.ReadAsStringAsync(cancellationToken);
-    var token = ExtractToken(responseBody);
+    var authSession = ParseLoginAuthSession(responseBody);
 
     var authenticatedClient = factory.CreateClient(new WebApplicationFactoryClientOptions
     {
       BaseAddress = new Uri("https://localhost")
     });
 
-    authenticatedClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+    authenticatedClient.DefaultRequestHeaders.Authorization =
+      new AuthenticationHeaderValue("Bearer", authSession.Token);
 
     await using var scope = factory.Services.CreateAsyncScope();
     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
@@ -93,30 +105,39 @@ internal static class TestAuthHelper
       .Select(u => u.Id)
       .SingleAsync(cancellationToken);
 
-    return new AuthenticatedTestUser(authenticatedClient, userId, email);
+    return new LoginTestSession(
+      authenticatedClient,
+      userId,
+      email,
+      authSession.SessionId,
+      authSession.Token,
+      authSession.RefreshToken);
   }
 
-  private static string ExtractToken(string responseBody)
+  private static AuthResponseDto ParseLoginAuthSession(string responseBody)
   {
     using var document = JsonDocument.Parse(responseBody);
 
-    if (document.RootElement.TryGetProperty("value", out var valueElement))
-    {
-      if (valueElement.TryGetProperty("authSession", out var authSession) &&
-          authSession.ValueKind == JsonValueKind.Object &&
-          authSession.TryGetProperty("token", out var nestedToken))
-      {
-        return nestedToken.GetString() ?? throw new InvalidOperationException("Token value is null.");
-      }
+    if (!document.RootElement.TryGetProperty("value", out var valueElement))
+      throw new InvalidOperationException("Login response did not contain a value payload.");
 
-      if (valueElement.TryGetProperty("token", out var tokenElement))
-      {
-        return tokenElement.GetString() ?? throw new InvalidOperationException("Token value is null.");
-      }
+    if (valueElement.TryGetProperty("authSession", out var authSessionElement))
+    {
+      var authSession = authSessionElement.Deserialize<AuthResponseDto>(IntegrationApiJson.SerializerOptions);
+      return authSession ?? throw new InvalidOperationException("Auth session payload is null.");
     }
 
-    throw new InvalidOperationException("Token was not found in login response.");
+    var directAuthSession = valueElement.Deserialize<AuthResponseDto>(IntegrationApiJson.SerializerOptions);
+    return directAuthSession ?? throw new InvalidOperationException("Auth session payload is null.");
   }
 }
 
 internal sealed record AuthenticatedTestUser(HttpClient Client, Guid UserId, string Email);
+
+internal sealed record LoginTestSession(
+  HttpClient Client,
+  Guid UserId,
+  string Email,
+  Guid SessionId,
+  string AccessToken,
+  string RefreshToken);

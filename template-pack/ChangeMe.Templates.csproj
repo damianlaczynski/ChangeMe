@@ -7,8 +7,8 @@
     <NoWarn>$(NoWarn);NU5128</NoWarn>
 
     <PackageId>ChangeMe</PackageId>
-    <Version>2.1.0</Version>
-    <PackageReleaseNotes>See CHANGELOG.md — optimistic concurrency, API rate limiting, security headers (CSP nonce), Docker hardening.</PackageReleaseNotes>
+    <Version>2.2.0</Version>
+    <PackageReleaseNotes>See CHANGELOG.md — QueryGrid lists, Swagger/Hangfire appsettings gating, CI lint/format gates, auth integration tests, Dependabot.</PackageReleaseNotes>
     <Title>ChangeMe</Title>
     <Authors>Damian Łączyński</Authors>
     <Description>Full-stack dotnet new starter template with Angular frontend, layered ASP.NET backend, PostgreSQL, Docker Compose, tests, and project documentation.</Description>

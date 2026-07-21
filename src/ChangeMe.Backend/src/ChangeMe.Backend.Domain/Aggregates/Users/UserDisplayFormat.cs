@@ -1,4 +1,4 @@
-﻿using System.Linq.Expressions;
+using System.Linq.Expressions;
 
 namespace ChangeMe.Backend.Domain.Aggregates.Users;
 

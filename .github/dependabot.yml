@@ -1,0 +1,72 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      root-dev-dependencies:
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
+
+  - package-ecosystem: npm
+    directory: /src/ChangeMe.Frontend
+    schedule:
+      interval: weekly
+    ignore:
+      - dependency-name: "@angular/*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@angular-eslint/*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "primeng"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "primeicons"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@primeuix/*"
+        update-types: ["version-update:semver-major"]
+    groups:
+      angular:
+        patterns:
+          - "@angular/*"
+          - "@angular-eslint/*"
+          - "@angular/*"
+        update-types:
+          - minor
+          - patch
+      primeng:
+        patterns:
+          - "primeng"
+          - "@primeuix/*"
+          - "primeicons"
+        update-types:
+          - minor
+          - patch
+      frontend-dev:
+        patterns:
+          - "*"
+        exclude-patterns:
+          - "@angular/*"
+          - "@angular-eslint/*"
+          - "primeng"
+          - "@primeuix/*"
+          - "primeicons"
+        update-types:
+          - minor
+          - patch
+
+  - package-ecosystem: nuget
+    directory: /src/ChangeMe.Backend
+    schedule:
+      interval: weekly
+    groups:
+      nuget-dependencies:
+        patterns:
+          - "*"
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly

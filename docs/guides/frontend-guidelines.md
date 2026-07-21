@@ -92,7 +92,7 @@ For dev server, lint, format, and test commands from `src/ChangeMe.Frontend` or 
 - Use `ui-spinner` or grid loading state for in-flight data.
 - Use `uiTooltip` for icon-only or compact action hints.
 - Use `ConfirmService` (`@core/confirm/services/confirm.service.ts`) for destructive confirmations; do not open ad hoc dialogs for the same pattern.
-- **Administrative list screens** (Issues, Users, Roles) use `<qg-ui-data-grid>` from `@query-grid/ui` with `createAppGridResource` from `@shared/data/utils/grid.utils.ts`. Wrap the page in `app-page app-page--grid` and put the grid in `app-page__body app-page__body--grid` so page chrome stays fixed and only table rows scroll inside the grid. Column templates use the `qgColumn` directive; feature services pass `GridQuery` to the API as a `grid` query parameter and return `GridResult<T>`. See `features/issues/components/issues-list/` as the reference implementation.
+- **List screens** (Issues, Users, Roles) use `<qg-ui-data-grid>` from `@query-grid/ui` with `createAppGridResource` from `@shared/data/utils/grid.utils.ts`. Wrap the page in `app-page app-page--grid` and put the grid in `app-page__body app-page__body--grid` so page chrome stays fixed and only table rows scroll inside the grid. Column templates use the `qgColumn` directive; feature services pass `GridQuery` to the API as a `grid` query parameter and return `GridResult<T>`. See `features/issues/components/issues-list/` as the reference implementation.
 - **Embedded lists** (issue tabs, sessions, notifications, role assigned users) call the same API shape with `GridQuery`/`GridResult`; use `shared/data/utils/grid.utils.ts` for `createGridQuery`, `hasMoreGridItems`, and `createIssueTabGridQuery`.
 - Keep business logic in feature services and component TypeScript. Laczynski UI should handle presentation only.
 
@@ -117,6 +117,7 @@ For dev server, lint, format, and test commands from `src/ChangeMe.Frontend` or 
 - Application font is **Inter** via `@fontsource-variable/inter` in `src/styles.scss`.
 - Dark mode: `LayoutService` sets `data-theme="dark"` and `.dark` on `<html>`. `public/theme-init.js` restores the saved theme before Angular boots to avoid a light flash.
 - Toggle light/dark through `LayoutService`; the shell header theme button calls `layoutService.toggleTheme()`.
+- **Reduced motion** (`NFR-A11Y-001`): `LayoutService` listens for `prefers-reduced-motion: reduce` and toggles `app-reduced-motion` on `<html>`. Global styles shorten non-essential transitions when that class is present. Do not suppress compliance toasts or required policy dialogs.
 
 ### When adding a new screen
 

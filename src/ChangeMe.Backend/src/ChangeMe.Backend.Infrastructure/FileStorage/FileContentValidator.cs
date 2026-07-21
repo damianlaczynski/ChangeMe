@@ -1,6 +1,5 @@
 using System.Text;
 using ChangeMe.Backend.Domain.Common.Attachments;
-using MimeDetective;
 
 namespace ChangeMe.Backend.Infrastructure.FileStorage;
 

@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.UseCases.Users;
+using ChangeMe.Backend.UseCases.Users;
 
 namespace ChangeMe.Backend.Web.Users;
 

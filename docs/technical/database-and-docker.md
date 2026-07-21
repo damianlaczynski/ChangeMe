@@ -57,13 +57,15 @@ See [data-generator.md](data-generator.md) for architecture, configuration, and 
 
 ### Dashboard
 
-| Setting                         | Default     | Purpose                                 |
-| ------------------------------- | ----------- | --------------------------------------- |
-| `HangfireOptions:DashboardPath` | `/hangfire` | Browser UI for job history and failures |
+| Setting                            | Default     | Purpose                                             |
+| ---------------------------------- | ----------- | --------------------------------------------------- |
+| `HangfireOptions:ServerEnabled`    | `true`      | Process background and recurring jobs on this host  |
+| `HangfireOptions:DashboardPath`    | `/hangfire` | Browser UI path when the dashboard is on            |
+| `HangfireOptions:DashboardEnabled` | `false`     | Expose the Hangfire dashboard (Development: `true`) |
 
-Open `https://<api-host><DashboardPath>` (for local dev: `http://localhost:<backend-port>/hangfire`).
+Open `https://<api-host><DashboardPath>` when `DashboardEnabled` is `true` (for local dev: `http://localhost:<backend-port>/hangfire`).
 
-The template ships **without dashboard authentication**. Restrict or disable the dashboard in production (reverse proxy, network policy, or Hangfire authorization filters).
+The template ships **without dashboard authentication**. Restrict or disable the dashboard in production (`DashboardEnabled: false` is the default in `appsettings.json`).
 
 ### Recurring jobs
 
@@ -79,7 +81,7 @@ Cron expressions use standard five-field syntax (minute hour day month weekday).
 ### Production notes
 
 - Hangfire tables live in the application database — include them in backup/restore with the rest of the schema.
-- Run **at least one** API instance with `AddHangfireServer()` (default in this template) so recurring jobs execute.
+- Run **at least one** API instance with `HangfireOptions:ServerEnabled` `true` so recurring jobs execute. On additional HTTP-only replicas, set `ServerEnabled` to `false` to avoid duplicate job processing.
 - Failed jobs appear in the dashboard; fix the underlying issue and retry or delete stale jobs there.
 
 ## File storage (issue attachments)

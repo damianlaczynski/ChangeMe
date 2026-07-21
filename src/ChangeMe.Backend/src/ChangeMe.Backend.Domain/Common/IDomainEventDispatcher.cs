@@ -1,4 +1,4 @@
-﻿namespace ChangeMe.Backend.Domain.Common;
+namespace ChangeMe.Backend.Domain.Common;
 
 /// <summary>
 /// A simple interface for sending domain events. Can use Mediator or any other implementation.

@@ -83,6 +83,21 @@ This repository is meant to provide:
 
 ## Getting Started
 
+### Quick start (this repository)
+
+From the repository root after clone:
+
+```powershell
+npm run setup
+docker compose up postgres mailhog -d
+npm run start:all
+```
+
+- **`npm run setup`** — installs root and frontend npm packages (including Playwright Chromium), restores the .NET solution, and installs Git pre-commit hooks.
+- **Pre-commit hooks** — [Lefthook](https://github.com/evilmartians/lefthook) runs ESLint, Prettier, and `dotnet format` on staged files. Re-run `npm run setup` or `npx lefthook install` after clone if hooks are missing.
+
+See `docs/technical/database-and-docker.md` for Docker Compose, migrations, and secrets.
+
 ### Install as a `dotnet new` template
 
 Install the template from NuGet:

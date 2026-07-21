@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.Infrastructure.Persistence;
+using ChangeMe.Backend.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;

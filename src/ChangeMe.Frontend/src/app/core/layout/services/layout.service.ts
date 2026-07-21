@@ -3,6 +3,7 @@ import { Injectable, signal } from '@angular/core';
 export type ThemeMode = 'light' | 'dark';
 
 const SIDEBAR_COLLAPSED_KEY = 'sidebarCollapsed';
+const REDUCED_MOTION_CLASS = 'app-reduced-motion';
 
 @Injectable({
   providedIn: 'root'
@@ -11,13 +12,17 @@ export class LayoutService {
   private readonly _sidebarCollapsed = signal(this.getInitialSidebarCollapsed());
   private readonly _mobileNavOpen = signal(false);
   private readonly _themeMode = signal<ThemeMode>(this.getInitialThemeMode());
+  private readonly _prefersReducedMotion = signal(this.getInitialReducedMotion());
 
   readonly $sidebarCollapsed = this._sidebarCollapsed.asReadonly();
   readonly $mobileNavOpen = this._mobileNavOpen.asReadonly();
   readonly $themeMode = this._themeMode.asReadonly();
+  readonly $prefersReducedMotion = this._prefersReducedMotion.asReadonly();
 
   constructor() {
     this.applyTheme(this._themeMode());
+    this.applyReducedMotion(this._prefersReducedMotion());
+    this.watchReducedMotionPreference();
   }
 
   toggleSidebarCollapsed(): void {
@@ -62,5 +67,31 @@ export class LayoutService {
     }
 
     document.documentElement.classList.remove('dark');
+  }
+
+  private getInitialReducedMotion(): boolean {
+    if (typeof window === 'undefined') {
+      return false;
+    }
+
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }
+
+  private watchReducedMotionPreference(): void {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const listener = (event: MediaQueryListEvent) => {
+      this._prefersReducedMotion.set(event.matches);
+      this.applyReducedMotion(event.matches);
+    };
+
+    mediaQuery.addEventListener('change', listener);
+  }
+
+  private applyReducedMotion(enabled: boolean): void {
+    document.documentElement.classList.toggle(REDUCED_MOTION_CLASS, enabled);
   }
 }

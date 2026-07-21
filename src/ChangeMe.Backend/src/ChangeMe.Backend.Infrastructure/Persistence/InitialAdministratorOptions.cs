@@ -1,4 +1,4 @@
-﻿namespace ChangeMe.Backend.Infrastructure.Persistence;
+namespace ChangeMe.Backend.Infrastructure.Persistence;
 
 public sealed class InitialAdministratorOptions
 {

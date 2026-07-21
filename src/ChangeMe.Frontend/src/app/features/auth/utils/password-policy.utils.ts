@@ -1,4 +1,9 @@
-import { AbstractControl, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
+import {
+  AbstractControl,
+  ValidationErrors,
+  ValidatorFn,
+  Validators
+} from '@angular/forms';
 import { AuthConstraints } from '@features/auth/utils/auth.utils';
 
 export interface PasswordPolicySettings {

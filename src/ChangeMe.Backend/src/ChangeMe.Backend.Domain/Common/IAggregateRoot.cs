@@ -1,4 +1,4 @@
-﻿namespace ChangeMe.Backend.Domain.Common;
+namespace ChangeMe.Backend.Domain.Common;
 
 /// <summary>
 /// Apply this marker interface only to aggregate root entities in your domain model

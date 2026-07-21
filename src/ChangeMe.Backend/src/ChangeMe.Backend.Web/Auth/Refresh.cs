@@ -1,4 +1,4 @@
-﻿using ChangeMe.Backend.UseCases.Auth;
+using ChangeMe.Backend.UseCases.Auth;
 using ChangeMe.Backend.UseCases.Auth.Dtos;
 using ChangeMe.Backend.Web.Configurations;
 

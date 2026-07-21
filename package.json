@@ -2,6 +2,8 @@
   "name": "changeme",
   "private": true,
   "scripts": {
+    "setup": "node scripts/setup.mjs",
+    "prepare": "node scripts/prepare.mjs",
     "install:frontend": "npm --prefix src/ChangeMe.Frontend install && npm --prefix src/ChangeMe.Frontend exec playwright install chromium",
     "start:frontend": "npm --prefix src/ChangeMe.Frontend run start",
     "start:backend": "dotnet run --project src/ChangeMe.Backend/src/ChangeMe.Backend.Web/ChangeMe.Backend.Web.csproj",
@@ -11,14 +13,14 @@
     "build:all": "npm run build:frontend && npm run build:backend",
     "lint:frontend": "npm --prefix src/ChangeMe.Frontend run lint",
     "format:check:frontend": "npm --prefix src/ChangeMe.Frontend run format:check",
-    "format:check:backend": "dotnet format src/ChangeMe.Backend/ChangeMe.Backend.slnx --verify-no-changes --exclude \"**/Persistence/Migrations/**\"",
+    "format:check:backend": "dotnet format src/ChangeMe.Backend/ChangeMe.Backend.slnx --severity warn --verify-no-changes --exclude \"**/Persistence/Migrations/**\"",
     "format:check:all": "npm run format:check:frontend && npm run format:check:backend",
     "format:frontend": "npm --prefix src/ChangeMe.Frontend run format",
-    "format:backend": "dotnet format src/ChangeMe.Backend/ChangeMe.Backend.slnx --exclude \"**/Persistence/Migrations/**\"",
+    "format:backend": "dotnet format src/ChangeMe.Backend/ChangeMe.Backend.slnx --severity warn --exclude \"**/Persistence/Migrations/**\"",
     "format:all": "npm run format:frontend && npm run format:backend",
     "test:frontend": "npm --prefix src/ChangeMe.Frontend run test",
-    "test:frontend:ci": "npm --prefix src/ChangeMe.Frontend run test -- --watch=false",
-    "test:frontend:coverage": "npm --prefix src/ChangeMe.Frontend run test -- --watch=false --coverage",
+    "test:frontend:ci": "npm --prefix src/ChangeMe.Frontend run test:ci",
+    "test:frontend:coverage": "npm --prefix src/ChangeMe.Frontend run test:coverage",
     "test:backend": "dotnet test src/ChangeMe.Backend/ChangeMe.Backend.slnx",
     "test:backend:unit": "dotnet test src/ChangeMe.Backend/tests/ChangeMe.Backend.UnitTests",
     "test:backend:integration": "dotnet test src/ChangeMe.Backend/tests/ChangeMe.Backend.IntegrationTests",
@@ -36,9 +38,11 @@
     "docker:build": "docker compose build",
     "docker:logs": "docker compose logs -f",
     "docker:test:backend": "docker compose --profile test run --rm backend-tests",
-    "requirements:validate": "node scripts/requirements-validate.mjs"
+    "requirements:validate": "node scripts/requirements-validate.mjs",
+    "pack:backend": "dotnet pack template-pack/ChangeMe.Templates.csproj -c Release"
   },
   "devDependencies": {
-    "concurrently": "^10.0.3"
+    "concurrently": "^10.0.3",
+    "lefthook": "^1.13.6"
   }
 }
