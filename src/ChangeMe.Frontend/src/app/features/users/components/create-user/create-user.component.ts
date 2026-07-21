@@ -19,7 +19,7 @@ import { EffectivePermissionDto } from '@features/users/models/user.model';
 import { UsersService } from '@features/users/services/users.service';
 import { UserConstraints, UserMessages } from '@features/users/utils/users.utils';
 import { BackButtonComponent } from '@shared/components/back-button/back-button.component';
-import { Button } from 'primeng/button';
+import { ButtonDirective } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
@@ -35,7 +35,7 @@ import { catchError, debounceTime, of, startWith, switchMap } from 'rxjs';
     RouterLink,
     BackButtonComponent,
     Card,
-    Button,
+    ButtonDirective,
     InputText,
     Password,
     MultiSelect,

@@ -9,7 +9,7 @@ import { ActivatedRoute } from '@angular/router';
 import { AuthPageComponent } from '@features/auth/components/auth-page/auth-page.component';
 import { AuthService } from '@features/auth/services/auth.service';
 import { AuthConstraints, AuthMessages } from '@features/auth/utils/auth.utils';
-import { Button } from 'primeng/button';
+import { ButtonDirective } from 'primeng/button';
 import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
 import { Password } from 'primeng/password';
@@ -20,7 +20,7 @@ import { Password } from 'primeng/password';
   imports: [
     ReactiveFormsModule,
     AuthPageComponent,
-    Button,
+    ButtonDirective,
     InputText,
     Message,
     Password

@@ -125,19 +125,17 @@
     }
 
     <div class="flex flex-wrap items-center justify-end gap-2">
-      <p-button
-        type="button"
-        label="Cancel"
-        severity="secondary"
-        [outlined]="true"
-        [routerLink]="['/users']"
-      />
-      <p-button
-        type="submit"
-        [label]="isSubmitting() ? 'Creating user...' : 'Create user'"
-        icon="pi pi-user-plus"
-        [loading]="isSubmitting()"
-      />
+      <a pButton severity="secondary" [outlined]="true" [routerLink]="['/users']">
+        Cancel
+      </a>
+      <button type="submit" pButton [disabled]="isSubmitting()">
+        @if (isSubmitting()) {
+          <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+        } @else {
+          <i class="pi pi-user-plus" aria-hidden="true"></i>
+        }
+        {{ isSubmitting() ? 'Creating user...' : 'Create user' }}
+      </button>
     </div>
   </form>
 </p-card>

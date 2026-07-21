@@ -67,12 +67,13 @@
       <p-message severity="error">{{ errorMessage() }}</p-message>
     }
 
-    <p-button
-      type="submit"
-      [label]="isSubmitting() ? 'Signing in...' : 'Sign in'"
-      icon="pi pi-sign-in"
-      [loading]="isSubmitting()"
-      [fluid]="true"
-    />
+    <button type="submit" pButton [fluid]="true" [disabled]="isSubmitting()">
+      @if (isSubmitting()) {
+        <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+      } @else {
+        <i class="pi pi-sign-in" aria-hidden="true"></i>
+      }
+      {{ isSubmitting() ? 'Signing in...' : 'Sign in' }}
+    </button>
   </form>
 </app-auth-page>

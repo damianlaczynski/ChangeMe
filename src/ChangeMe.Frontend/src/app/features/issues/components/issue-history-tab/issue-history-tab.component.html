@@ -56,12 +56,18 @@
 
   @if (canShowMoreHistory()) {
     <div class="mt-4 flex justify-center">
-      <p-button
-        label="Show more"
+      <button
+        type="button"
+        pButton
         [text]="true"
-        [loading]="isLoadingMoreHistory()"
-        (onClick)="showMoreHistory()"
-      />
+        [disabled]="isLoadingMoreHistory()"
+        (click)="showMoreHistory()"
+      >
+        @if (isLoadingMoreHistory()) {
+          <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+        }
+        Show more
+      </button>
     </div>
   }
 </div>

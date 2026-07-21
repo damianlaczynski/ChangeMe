@@ -23,7 +23,7 @@ import { UsersService } from '@features/users/services/users.service';
 import { UserConstraints, UserMessages } from '@features/users/utils/users.utils';
 import { PermissionCodes } from '@shared/authorization/permission-codes';
 import { BackButtonComponent } from '@shared/components/back-button/back-button.component';
-import { Button } from 'primeng/button';
+import { ButtonDirective } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { Checkbox } from 'primeng/checkbox';
 import { InputText } from 'primeng/inputtext';
@@ -40,7 +40,7 @@ import { catchError, debounceTime, forkJoin, of, startWith, switchMap } from 'rx
     RouterLink,
     BackButtonComponent,
     Card,
-    Button,
+    ButtonDirective,
     InputText,
     MultiSelect,
     Checkbox,

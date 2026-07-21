@@ -120,9 +120,9 @@ Do not commit license keys to the repository. For local development, use a perso
 - Put PrimeNG semantic color and surface utilities (`bg-surface-0`, `border-surface-200`, `text-color`, `dark:` variants) on elements you control directly in the template. Do not wrap them in custom CSS classes unless you must target PrimeNG internal markup.
 - Omit `styleUrl` on feature components unless a screen has a rare rule that cannot be expressed with template utilities or PrimeNG inputs (`class`, `pt`, and so on).
 - For host-enabled PrimeNG components (`<p-* />` whose visible root is the custom element, e.g. `p-progress-spinner`, `p-timeline`), use the native `class` attribute instead of deprecated `styleClass`.
-- Overlay or wrapper components that render their panel inside the template (`p-drawer`, `p-dialog`, `<p-button>`) still need `styleClass` (or built-in inputs like `[fluid]="true"`) to style the visible surface — `class` on the host does not reach the inner panel/button.
+- Overlay components that render their panel inside the template (`p-drawer`, `p-dialog`) still need `styleClass` to style the visible surface — `class` on the host does not reach the inner panel.
 - Use named `ng-template` references (`#marker`, `#content`, …) instead of deprecated `pTemplate`.
-- Prefer `[pButton]` on a native `<button>` over deprecated `<p-button>` for new work. Place icon and label text as direct children instead of `icon` / `label` inputs.
+- Use `ButtonDirective` (`pButton`) on native `<button>` or `<a>` elements. Do not use deprecated `<p-button>`. Put icons (`<i class="pi …">`) and label text as direct children; use `[iconOnly]="true"` with `aria-label` for icon-only actions. For loading, set `[disabled]` and render `<i class="pi pi-spin pi-spinner">` instead of the regular icon. Import `ButtonDirective` from `primeng/button`.
 - On `p-drawer`, use `closable` instead of deprecated `showCloseIcon`.
 - Theme preset extensions belong in `src/app/theme/app-preset.ts`. To switch the base look, start from another preset (`Lara`, `Nora`, `Material`) in that file.
 - Application font is **Inter** (Google Fonts in `index.html`, mirrored in `AppPreset` and `@theme` in `tailwind.css`).
