@@ -19,7 +19,7 @@ import {
   AccordionComponent,
   ButtonComponent,
   CheckboxComponent,
-  DropdownComponent,
+  SelectComponent,
   MessageBarComponent,
   SpinnerComponent,
   TextComponent
@@ -29,7 +29,11 @@ import { AuthService } from '@features/auth/services/auth.service';
 import { EffectivePermissionsComponent } from '@features/users/components/effective-permissions/effective-permissions.component';
 import { EffectivePermissionDto } from '@features/users/models/user.model';
 import { UsersService } from '@features/users/services/users.service';
-import { UserConstraints, UserFieldErrors, UserMessages } from '@features/users/utils/users.utils';
+import {
+  UserConstraints,
+  UserFieldErrors,
+  UserMessages
+} from '@features/users/utils/users.utils';
 import { PermissionCodes } from '@shared/authorization/permission-codes';
 import { BackButtonComponent } from '@shared/components/back-button/back-button.component';
 import { DefaultExpandedAccordionDirective } from '@shared/directives/default-expanded-accordion.directive';
@@ -44,7 +48,7 @@ import { catchError, debounceTime, forkJoin, of, startWith, switchMap } from 'rx
     BackButtonComponent,
     ButtonComponent,
     TextComponent,
-    DropdownComponent,
+    SelectComponent,
     CheckboxComponent,
     MessageBarComponent,
     AccordionComponent,

@@ -1,23 +1,30 @@
-<section class="app-page app-page--form app-page--wide" aria-label="Edit role">
-  <header class="app-page__header">
-    <h1 class="app-page__title">{{ pageTitle() }}</h1>
-    <p class="app-page__subtitle">Update role name, description, and permissions</p>
+<section
+  class="app-page-fill mx-auto flex min-h-0 w-full max-w-none flex-1 flex-col gap-3 overflow-hidden"
+  aria-label="Edit role"
+>
+  <header class="grid shrink-0 gap-1.5 pb-2">
+    <h1 class="m-0 text-xl font-semibold tracking-tight text-foreground md:text-2xl">
+      {{ pageTitle() }}
+    </h1>
+    <p class="m-0 max-w-3xl text-sm leading-normal text-foreground-2">
+      Update role name, description, and permissions
+    </p>
   </header>
 
-  <div class="app-page__toolbar">
+  <div class="flex shrink-0 flex-wrap items-center gap-2">
     @if (id(); as roleId) {
       <app-back-button label="Back to role details" [route]="['/roles', roleId]" />
     }
   </div>
 
-  <div class="app-page__body app-page__body--form">
+  <div class="flex min-h-0 flex-1 flex-col">
     @if (isLoading()) {
-      <div class="app-center-state">
+      <div class="flex flex-col items-center gap-2 py-8">
         <ui-spinner size="medium" ariaLabel="Loading role form" />
-        <p class="app-muted">Loading role data...</p>
+        <p class="text-foreground-2">Loading role data...</p>
       </div>
     } @else if (loadError()) {
-      <div class="app-center-state">
+      <div class="flex flex-col items-center gap-2 py-8">
         <ui-message-bar [title]="loadError()!" variant="danger" />
         <ui-button
           text="Try again"
@@ -29,10 +36,14 @@
         />
       </div>
     } @else {
-      <form class="app-form-workspace" [formGroup]="form" (ngSubmit)="onSubmit()">
-        <div class="app-form-workspace__scroll app-stack-md">
+      <form
+        class="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl bg-surface-2"
+        [formGroup]="form"
+        (ngSubmit)="onSubmit()"
+      >
+        <div class="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-4 md:p-6">
           <ui-accordion appDefaultExpanded label="Role details" icon="shield">
-            <div class="app-stack-md">
+            <div class="flex flex-col gap-4">
               <ui-text
                 label="Name"
                 [formControl]="form.controls.name"
@@ -69,8 +80,10 @@
           }
         </div>
 
-        <footer class="app-form-workspace__footer">
-          <div class="app-form__actions">
+        <footer
+          class="flex shrink-0 items-center justify-end gap-2 border-t border-stroke bg-surface-2 px-4 py-3.5 md:px-6"
+        >
+          <div class="flex w-full flex-wrap items-center justify-end gap-2">
             <ui-button
               text="Cancel"
               variant="secondary"

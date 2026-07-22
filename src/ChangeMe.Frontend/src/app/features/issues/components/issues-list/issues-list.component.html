@@ -1,10 +1,17 @@
-<section class="app-page app-page--wide app-page--grid" aria-label="Issues list">
-  <header class="app-page__header">
-    <h1 class="app-page__title">Issues list</h1>
-    <p class="app-page__subtitle">Browse, filter and monitor issues.</p>
+<section
+  class="app-page-fill app-page-grid mx-auto flex min-h-0 w-full max-w-none flex-1 flex-col gap-3 overflow-hidden"
+  aria-label="Issues list"
+>
+  <header class="grid shrink-0 gap-1.5 pb-2">
+    <h1 class="m-0 text-xl font-semibold tracking-tight text-foreground md:text-2xl">
+      Issues list
+    </h1>
+    <p class="m-0 max-w-3xl text-sm leading-normal text-foreground-2">
+      Browse, filter and monitor issues.
+    </p>
   </header>
 
-  <div class="app-page__toolbar">
+  <div class="flex shrink-0 flex-wrap items-center gap-2">
     <ui-button
       text="Add issue"
       icon="add"
@@ -13,12 +20,17 @@
     />
   </div>
 
-  <div class="app-page__body app-page__body--grid">
+  <div class="flex min-h-0 flex-1 flex-col gap-3 overflow-hidden">
     @if (errorMessage(); as message) {
-      <ui-message-bar [title]="message" variant="danger" />
+      <ui-message-bar class="shrink-0" [title]="message" variant="danger" />
     }
 
-    <qg-ui-data-grid [grid]="grid" [pageSizeOptions]="[10, 25, 50]">
+    <qg-ui-data-grid
+      class="flex min-h-0 flex-1 flex-col overflow-hidden"
+      [grid]="grid"
+      [pageSizeOptions]="[10, 25, 50]"
+      [hoverable]="true"
+    >
       <ng-template
         qgColumn="title"
         header="Title"
@@ -27,7 +39,9 @@
         width="220px"
         let-issue
       >
-        <a class="app-link" [routerLink]="['/issues', issue.id]">{{ issue.title }}</a>
+        <a class="detail-table__link" [routerLink]="['/issues', issue.id]">
+          {{ issue.title }}
+        </a>
       </ng-template>
 
       <ng-template
@@ -69,7 +83,9 @@
         width="180px"
         let-issue
       >
-        {{ issue.assignedToUserName || 'Unassigned' }}
+        <span class="detail-table__text">
+          {{ issue.assignedToUserName || 'Unassigned' }}
+        </span>
       </ng-template>
 
       <ng-template
@@ -80,7 +96,9 @@
         width="160px"
         let-issue
       >
-        {{ issue.createdAt | date: 'dd.MM.yyyy HH:mm' }}
+        <time class="detail-table__date">
+          {{ issue.createdAt | date: 'dd.MM.yyyy HH:mm' }}
+        </time>
       </ng-template>
 
       <ng-template
@@ -91,7 +109,9 @@
         width="160px"
         let-issue
       >
-        {{ issue.lastActivityAt | date: 'dd.MM.yyyy HH:mm' }}
+        <time class="detail-table__date">
+          {{ issue.lastActivityAt | date: 'dd.MM.yyyy HH:mm' }}
+        </time>
       </ng-template>
 
       <ng-template
@@ -102,7 +122,7 @@
         width="140px"
         let-issue
       >
-        <div class="app-row">
+        <div class="flex flex-wrap items-center gap-2">
           <ui-button
             [text]="issue.watchersCount.toString()"
             [icon]="issue.isWatchedByCurrentUser ? 'alert_off' : 'alert'"
@@ -125,7 +145,7 @@
       </ng-template>
 
       <ng-template qgEmpty>
-        <p>{{ getGridListEmptyMessage(grid.query()) }}</p>
+        <p class="detail-tab-empty">{{ getGridListEmptyMessage(grid.query()) }}</p>
       </ng-template>
     </qg-ui-data-grid>
   </div>

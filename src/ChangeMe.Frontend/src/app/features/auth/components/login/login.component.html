@@ -2,7 +2,7 @@
   title="Welcome back"
   subtitle="Sign in to create, edit and delete issues."
 >
-  <form class="app-form" [formGroup]="form" (ngSubmit)="onSubmit()">
+  <form class="flex flex-col gap-4" [formGroup]="form" (ngSubmit)="onSubmit()">
     <ui-email
       label="Email"
       id="email"

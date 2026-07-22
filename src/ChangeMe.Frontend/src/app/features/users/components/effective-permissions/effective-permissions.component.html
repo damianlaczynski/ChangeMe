@@ -1,30 +1,46 @@
-<ui-accordion appDefaultExpanded [label]="panelHeader()" icon="shield">
-  @if (emptySelectionMessage()) {
-    <p class="app-muted">{{ emptySelectionMessage() }}</p>
-  } @else if (permissions().length === 0) {
-    <p class="app-muted">{{ UserMessages.noPermissions }}</p>
-  } @else {
-    <div class="app-stack-md">
-      @for (group of groupedPermissions(); track group.group) {
-        <section class="app-field-group" [attr.aria-label]="group.group">
-          <h4 class="app-field-group__title">{{ group.group }}</h4>
-          <div class="app-card-grid">
-            @for (permission of group.items; track permission.code) {
-              <ui-card appearance="filled-alternative">
-                <div uiCardHeader>{{ permission.label }}</div>
-                <div uiCardBody>
-                  <p>{{ permission.description }}</p>
-                  @if (showFromRoles() && permission.fromRoleNames?.length) {
-                    <p class="app-muted">
-                      {{ formatFromRoles(permission.fromRoleNames ?? []) }}
+<section class="app-effective-permissions" [attr.aria-label]="panelHeader()">
+  <ui-accordion appDefaultExpanded [label]="panelHeader()" icon="shield">
+    <div class="detail-inset app-effective-permissions__inset">
+      @if (emptySelectionMessage()) {
+        <p class="detail-tab-empty">{{ emptySelectionMessage() }}</p>
+      } @else if (permissions().length === 0) {
+        <p class="detail-tab-empty">{{ UserMessages.noPermissions }}</p>
+      } @else {
+        <div class="detail-tab-panel app-effective-permissions__groups">
+          @for (group of groupedPermissions(); track group.group) {
+            <section
+              class="app-effective-permissions__group"
+              [attr.aria-label]="group.group"
+            >
+              <h3 class="app-effective-permissions__group-title">
+                {{ group.group }}
+              </h3>
+              <ul class="app-effective-permissions__list">
+                @for (permission of group.items; track permission.code) {
+                  <li class="app-effective-permissions__item">
+                    <div class="app-effective-permissions__item-head">
+                      <span class="app-effective-permissions__item-label">
+                        {{ permission.label }}
+                      </span>
+                      <code class="app-effective-permissions__code">
+                        {{ permission.code }}
+                      </code>
+                    </div>
+                    <p class="app-effective-permissions__item-desc">
+                      {{ permission.description }}
                     </p>
-                  }
-                </div>
-              </ui-card>
-            }
-          </div>
-        </section>
+                    @if (showFromRoles() && permission.fromRoleNames?.length) {
+                      <p class="app-effective-permissions__item-roles">
+                        {{ formatFromRoles(permission.fromRoleNames!) }}
+                      </p>
+                    }
+                  </li>
+                }
+              </ul>
+            </section>
+          }
+        </div>
       }
     </div>
-  }
-</ui-accordion>
+  </ui-accordion>
+</section>

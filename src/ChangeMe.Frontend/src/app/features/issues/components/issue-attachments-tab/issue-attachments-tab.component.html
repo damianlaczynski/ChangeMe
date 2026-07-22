@@ -1,7 +1,7 @@
-<div class="app-stack-md">
-  <div class="app-criterion-card app-stack-sm">
-    <p class="app-section-title">Upload file</p>
-    <div class="app-row">
+<div class="detail-tab-panel">
+  <div class="flex flex-col gap-3 border-b border-stroke pb-5">
+    <p class="detail-section-title">Upload file</p>
+    <div class="flex flex-wrap items-center gap-2">
       <ui-file
         mode="inline"
         label="Choose file"
@@ -10,7 +10,7 @@
         (fileSelect)="onFileSelected($event)"
       />
       @if (selectedFile(); as file) {
-        <span class="app-muted">{{ file.name }}</span>
+        <span class="detail-tab-item__submeta">{{ file.name }}</span>
       }
       <ui-button
         text="Upload"
@@ -21,8 +21,9 @@
         (click)="uploadAttachment()"
       />
     </div>
-    <p class="app-muted">
-      Max {{ formatFileSize(IssueConstraints.ATTACHMENT_MAX_FILE_SIZE_BYTES) }} per file, up to
+    <p class="detail-tab-item__submeta">
+      Max {{ formatFileSize(IssueConstraints.ATTACHMENT_MAX_FILE_SIZE_BYTES) }} per
+      file, up to
       {{ IssueConstraints.ATTACHMENT_MAX_ATTACHMENTS_PER_ISSUE }} attachments per issue.
     </p>
     @if (uploadError()) {
@@ -35,23 +36,23 @@
   } @else if (isLoadingAttachments()) {
     <ui-spinner ariaLabel="Loading attachments" />
   } @else if (attachments().length > 0) {
-    <ul class="app-list app-stack-md">
+    <ul class="detail-tab-list m-0 list-none p-0">
       @for (attachment of attachments(); track attachment.id) {
-        <li class="app-criterion-card app-stack-sm">
-          <div class="app-row app-row--between">
-            <div class="app-stack-sm app-grow">
-              <p class="app-section-title app-truncate">
+        <li class="detail-tab-item">
+          <div class="flex flex-wrap items-start justify-between gap-3">
+            <div class="min-w-0 flex-1">
+              <p class="detail-tab-item__title truncate">
                 {{ attachment.originalFileName }}
               </p>
-              <p class="app-muted">
+              <p class="detail-tab-item__submeta mt-1">
                 {{ formatFileSize(attachment.sizeBytes) }}
                 ·
                 {{ attachment.uploadedByName || attachment.uploadedByUserId }}
                 ·
-                {{ attachment.createdAt | date: 'dd.MM.yyyy HH:mm' }}
+                <time>{{ attachment.createdAt | date: 'dd.MM.yyyy HH:mm' }}</time>
               </p>
             </div>
-            <div class="app-row">
+            <div class="flex flex-wrap items-center gap-2">
               <ui-button
                 text="Download"
                 icon="arrow_download"
@@ -76,14 +77,14 @@
       }
     </ul>
   } @else if (hasLoadedAttachments()) {
-    <p class="app-muted">No attachments yet</p>
+    <p class="detail-tab-empty">No attachments yet</p>
   }
 
   @if (canShowMoreAttachments()) {
-    <div class="app-form__actions app-form__actions--center">
+    <div class="detail-tab-actions">
       <ui-button
         text="Show more"
-        appearance="subtle"
+        appearance="outline"
         variant="secondary"
         [loading]="isLoadingMoreAttachments()"
         (click)="showMoreAttachments()"

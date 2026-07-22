@@ -11,7 +11,7 @@
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
-          "style": "scss"
+          "style": "none"
         }
       },
       "root": "",
@@ -35,7 +35,11 @@
                 "output": "/assets/icons"
               }
             ],
-            "styles": ["src/styles.scss"]
+            "styles": [
+              "src/laczynski-vendor.scss",
+              "src/changeme-theme.css",
+              "src/tailwind.css"
+            ]
           },
           "configurations": {
             "production": {

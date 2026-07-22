@@ -1,17 +1,24 @@
-<section class="app-page app-page--wide" aria-label="My account">
-  <header class="app-page__header">
-    <h1 class="app-page__title">My account</h1>
-    <p class="app-page__subtitle">View your profile, roles, and permissions.</p>
+<section
+  class="mx-auto flex w-full max-w-none flex-1 flex-col gap-4"
+  aria-label="My account"
+>
+  <header class="grid shrink-0 gap-1.5 pb-2">
+    <h1 class="m-0 text-xl font-semibold tracking-tight text-foreground md:text-2xl">
+      My account
+    </h1>
+    <p class="m-0 max-w-3xl text-sm leading-normal text-foreground-2">
+      View your profile, roles, and permissions.
+    </p>
   </header>
 
-  <div class="app-page__body app-stack-md">
+  <div class="flex flex-col gap-4">
     @if (isLoading()) {
-      <div class="app-center-state">
+      <div class="flex flex-col items-center gap-2 py-8">
         <ui-spinner size="medium" ariaLabel="Loading account" />
-        <p class="app-muted">Loading account...</p>
+        <p class="text-foreground-2">Loading account...</p>
       </div>
     } @else if (errorMessage() && !account()) {
-      <div class="app-center-state">
+      <div class="flex flex-col items-center gap-2 py-8">
         <ui-message-bar [title]="errorMessage()!" variant="danger" />
         <ui-button
           text="Try again"
@@ -23,8 +30,8 @@
         />
       </div>
     } @else if (account(); as profile) {
-      <div class="app-detail-layout">
-        <div class="app-page__toolbar">
+      <div class="flex flex-col gap-4">
+        <div class="flex shrink-0 flex-wrap items-center gap-2">
           <ui-button
             text="Edit"
             icon="edit"
@@ -34,59 +41,59 @@
           />
         </div>
 
-        <div class="app-workspace-panel">
-          <div class="app-workspace-panel__facts">
-            <div class="app-workspace-stat">
-              <span class="app-workspace-stat__label">First name</span>
-              <span class="app-workspace-stat__value">{{ profile.firstName }}</span>
-            </div>
-            <div class="app-workspace-stat">
-              <span class="app-workspace-stat__label">Last name</span>
-              <span class="app-workspace-stat__value">{{ profile.lastName }}</span>
-            </div>
-            <div class="app-workspace-stat">
-              <span class="app-workspace-stat__label">Email</span>
-              <span class="app-workspace-stat__value">{{ profile.email }}</span>
-            </div>
-            <div class="app-workspace-stat">
-              <span class="app-workspace-stat__label">Member since</span>
-              <span class="app-workspace-stat__value">
-                {{ profile.memberSince | date: 'dd.MM.yyyy HH:mm' }}
-              </span>
-            </div>
+        <dl class="detail-meta">
+          <div>
+            <dt class="detail-meta__term">First name</dt>
+            <dd class="detail-meta__value">{{ profile.firstName }}</dd>
           </div>
+          <div>
+            <dt class="detail-meta__term">Last name</dt>
+            <dd class="detail-meta__value">{{ profile.lastName }}</dd>
+          </div>
+          <div>
+            <dt class="detail-meta__term">Email</dt>
+            <dd class="detail-meta__value detail-meta__value--wrap">
+              {{ profile.email }}
+            </dd>
+          </div>
+          <div>
+            <dt class="detail-meta__term">Member since</dt>
+            <dd class="detail-meta__value detail-meta__value--date">
+              {{ profile.memberSince | date: 'dd.MM.yyyy HH:mm' }}
+            </dd>
+          </div>
+        </dl>
 
-          <section class="app-workspace-panel__block">
-            <h2 class="app-workspace-panel__heading">Roles</h2>
-            <div class="app-workspace-panel__surface">
-              @if (profile.roles.length === 0) {
-                <p class="app-workspace-panel__empty">{{ UserMessages.noRolesAssigned }}</p>
-              } @else {
-                <div class="app-workspace-tags">
-                  @for (role of profile.roles; track role.id) {
-                    @if (canViewRoles()) {
-                      <a [routerLink]="['/roles', role.id]">
-                        <ui-tag
-                          [text]="role.isSystem ? role.name + ' (System)' : role.name"
-                          variant="secondary"
-                          appearance="outline"
-                        />
-                      </a>
-                    } @else {
+        <section class="flex flex-col gap-3">
+          <h2 class="detail-section-title">Roles</h2>
+          <div class="detail-inset">
+            @if (profile.roles.length === 0) {
+              <p class="detail-tab-empty">{{ UserMessages.noRolesAssigned }}</p>
+            } @else {
+              <div class="flex flex-wrap gap-2">
+                @for (role of profile.roles; track role.id) {
+                  @if (canViewRoles()) {
+                    <a [routerLink]="['/roles', role.id]">
                       <ui-tag
                         [text]="role.isSystem ? role.name + ' (System)' : role.name"
                         variant="secondary"
                         appearance="outline"
                       />
-                    }
+                    </a>
+                  } @else {
+                    <ui-tag
+                      [text]="role.isSystem ? role.name + ' (System)' : role.name"
+                      variant="secondary"
+                      appearance="outline"
+                    />
                   }
-                </div>
-              }
-            </div>
-          </section>
+                }
+              </div>
+            }
+          </div>
+        </section>
 
-          <app-effective-permissions [permissions]="effectivePermissions()" />
-        </div>
+        <app-effective-permissions [permissions]="effectivePermissions()" />
       </div>
     }
   </div>

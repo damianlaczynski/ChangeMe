@@ -1,55 +1,8 @@
-<div class="app-shell">
+<div class="flex h-dvh min-h-0 flex-col overflow-hidden bg-surface-2">
   @if (showAuthenticatedChrome()) {
-    <header class="app-shell__header">
-      <div class="app-shell__header-start">
-        <ui-button
-          variant="primary"
-          appearance="filled"
-          shape="rounded"
-          [icon]="sidebarOpen() ? 'dismiss' : 'navigation'"
-          [ariaLabel]="sidebarOpen() ? 'Hide navigation' : 'Show navigation'"
-          (click)="onMenuToggle()"
-        />
-        <h1 class="app-shell__brand">ChangeMe</h1>
-      </div>
-
-      <div class="app-shell__header-actions">
-        <app-notifications-bell />
-        <button
-          type="button"
-          class="app-theme-toggle"
-          (click)="layoutService.toggleTheme()"
-          [attr.aria-label]="themeLabel()"
-        >
-          <ui-icon [icon]="themeIcon()" />
-          <span class="app-theme-toggle__label">{{ themeLabel() }}</span>
-        </button>
-        <span class="app-shell__user-label">
-          {{ formatUserReference(currentUser()!) }}
-        </span>
-        <ui-button
-          text="Logout"
-          icon="sign_out"
-          variant="secondary"
-          appearance="outline"
-          class="app-shell__logout-desktop"
-          (click)="logout()"
-        />
-        <ui-button
-          icon="sign_out"
-          variant="secondary"
-          appearance="subtle"
-          shape="circular"
-          ariaLabel="Logout"
-          class="app-shell__logout-mobile"
-          (click)="logout()"
-        />
-      </div>
-    </header>
-
-    <div class="app-shell__workspace">
+    <div class="app-shell-workspace flex min-h-0 flex-1 overflow-hidden">
       <ui-drawer
-        class="app-shell__sidebar-drawer"
+        class="app-shell-drawer shrink-0 bg-surface-2"
         [type]="isMobile() ? 'overlay' : 'inline'"
         position="left"
         size="small"
@@ -60,40 +13,130 @@
         [visible]="sidebarOpen()"
         (close)="closeSidebar()"
       >
-        <div class="app-sidebar">
+        <div class="flex h-full min-h-0 flex-col bg-surface-2">
+          <div class="app-shell-brand hidden md:flex">
+            <ui-icon icon="flash" />
+            <span class="text-lg font-semibold tracking-tight text-foreground">
+              ChangeMe
+            </span>
+          </div>
           <app-sidebar-nav
+            class="app-sidebar-nav min-h-0 flex-1"
             [items]="authenticatedNavItems()"
             (navigate)="onSidebarNavigate()"
           />
         </div>
       </ui-drawer>
 
-      <main class="app-shell__content">
-        <router-outlet />
-      </main>
+      <div class="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+        <header class="app-shell-toolbar">
+          <div class="flex min-w-0 items-center gap-2">
+            <ui-button
+              variant="primary"
+              appearance="filled"
+              shape="rounded"
+              [icon]="sidebarOpen() ? 'dismiss' : 'navigation'"
+              [ariaLabel]="sidebarOpen() ? 'Hide navigation' : 'Show navigation'"
+              (click)="onMenuToggle()"
+            />
+            <h1
+              class="m-0 inline-flex items-center gap-2 text-lg font-semibold whitespace-nowrap text-foreground md:hidden"
+            >
+              ChangeMe
+            </h1>
+          </div>
+
+          <div class="flex flex-wrap items-center justify-end gap-2 sm:gap-2.5">
+            <app-notifications-bell />
+            <ui-button
+              [text]="themeLabel()"
+              [icon]="themeIcon()"
+              variant="secondary"
+              appearance="outline"
+              shape="rounded"
+              class="hidden md:inline-flex"
+              (click)="layoutService.toggleTheme()"
+            />
+            <ui-button
+              [icon]="themeIcon()"
+              variant="secondary"
+              appearance="outline"
+              shape="circular"
+              class="inline-flex md:hidden"
+              [ariaLabel]="themeLabel()"
+              (click)="layoutService.toggleTheme()"
+            />
+            <span
+              class="hidden max-w-48 overflow-hidden text-sm text-ellipsis whitespace-nowrap text-foreground-2 lg:inline"
+            >
+              {{ formatUserReference(currentUser()!) }}
+            </span>
+            <ui-button
+              text="Logout"
+              icon="sign_out"
+              variant="secondary"
+              appearance="outline"
+              class="hidden sm:inline-flex"
+              (click)="logout()"
+            />
+            <ui-button
+              icon="sign_out"
+              variant="secondary"
+              appearance="subtle"
+              shape="circular"
+              ariaLabel="Logout"
+              class="inline-flex sm:hidden"
+              (click)="logout()"
+            />
+          </div>
+        </header>
+
+        <main
+          class="app-shell-main flex min-h-0 flex-1 flex-col overflow-y-auto bg-surface-2 p-2 md:py-2.5 md:pr-3 md:pl-2"
+        >
+          <div class="app-shell-page w-full min-w-0 rounded-xl bg-surface-1 p-4 md:p-6">
+            <router-outlet />
+          </div>
+        </main>
+      </div>
     </div>
   } @else {
-    <header class="app-guest-header">
-      <span class="app-guest-header__brand">
+    <header
+      class="flex h-14 shrink-0 items-center justify-between gap-4 bg-surface-2 px-4 md:px-6"
+    >
+      <span class="flex items-center gap-2 text-lg font-semibold">
         <ui-icon icon="flash" />
         ChangeMe
       </span>
-      <nav class="app-row" aria-label="Account navigation">
-        <button
-          type="button"
-          class="app-theme-toggle"
+      <nav class="flex flex-wrap items-center gap-2" aria-label="Account navigation">
+        <ui-button
+          [text]="themeLabel()"
+          [icon]="themeIcon()"
+          variant="secondary"
+          appearance="outline"
+          shape="rounded"
+          class="hidden md:inline-flex"
           (click)="layoutService.toggleTheme()"
-          [attr.aria-label]="themeLabel()"
-        >
-          <ui-icon [icon]="themeIcon()" />
-          <span class="app-theme-toggle__label">{{ themeLabel() }}</span>
-        </button>
+        />
+        <ui-button
+          [icon]="themeIcon()"
+          variant="secondary"
+          appearance="outline"
+          shape="circular"
+          class="inline-flex md:hidden"
+          [ariaLabel]="themeLabel()"
+          (click)="layoutService.toggleTheme()"
+        />
         <ui-button text="Login" appearance="subtle" (click)="navigateToLogin()" />
       </nav>
     </header>
 
-    <main class="app-shell__content app-shell__content--guest">
-      <router-outlet />
+    <main
+      class="app-shell-main app-shell-main--guest flex min-h-0 flex-1 flex-col overflow-auto bg-surface-2 p-2 md:p-3"
+    >
+      <div class="app-shell-page w-full min-w-0">
+        <router-outlet />
+      </div>
     </main>
   }
 </div>

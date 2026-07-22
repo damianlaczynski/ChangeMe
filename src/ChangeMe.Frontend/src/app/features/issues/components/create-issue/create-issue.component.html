@@ -1,20 +1,29 @@
-<section class="app-page app-page--form app-page--wide" aria-label="Create issue">
-  <header class="app-page__header">
-    <h1 class="app-page__title">Create Issue</h1>
-    <p class="app-page__subtitle">
+<section
+  class="app-page-fill mx-auto flex min-h-0 w-full max-w-none flex-1 flex-col gap-3 overflow-hidden"
+  aria-label="Create issue"
+>
+  <header class="grid shrink-0 gap-1.5 pb-2">
+    <h1 class="m-0 text-xl font-semibold tracking-tight text-foreground md:text-2xl">
+      Create Issue
+    </h1>
+    <p class="m-0 max-w-3xl text-sm leading-normal text-foreground-2">
       Create a new issue and move to its details page after saving
     </p>
   </header>
 
-  <div class="app-page__toolbar">
+  <div class="flex shrink-0 flex-wrap items-center gap-2">
     <app-back-button label="Back to issues list" [route]="['/issues']" />
   </div>
 
-  <div class="app-page__body app-page__body--form">
-    <form class="app-form-workspace" [formGroup]="form" (ngSubmit)="onSubmit()">
-      <div class="app-form-workspace__scroll app-stack-md">
+  <div class="flex min-h-0 flex-1 flex-col">
+    <form
+      class="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl bg-surface-2"
+      [formGroup]="form"
+      (ngSubmit)="onSubmit()"
+    >
+      <div class="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-4 md:p-6">
         <ui-accordion appDefaultExpanded label="Issue details" icon="document">
-          <div class="app-stack-md">
+          <div class="flex flex-col gap-4">
             <ui-text
               label="Title"
               placeholder="e.g. Login button disabled on mobile"
@@ -40,18 +49,18 @@
               "
             />
 
-            <div class="app-form__grid">
-              <ui-dropdown
+            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <ui-select
                 label="Status"
                 [items]="statusItems()"
                 [formControl]="form.controls.status"
               />
-              <ui-dropdown
+              <ui-select
                 label="Priority"
                 [items]="priorityItems()"
                 [formControl]="form.controls.priority"
               />
-              <ui-dropdown
+              <ui-select
                 label="Assigned to"
                 placeholder="Unassigned"
                 [items]="assignableUserItems()"
@@ -73,14 +82,18 @@
           label="Acceptance criteria"
           icon="checkmark_circle"
         >
-          <div class="app-stack-md">
+          <div class="flex flex-col gap-4">
             @for (
               criterion of form.controls.acceptanceCriteria.controls;
               track $index
             ) {
-              <div class="app-criterion-card app-stack-sm">
-                <div class="app-row app-row--between">
-                  <span class="app-section-title">Criterion {{ $index + 1 }}</span>
+              <div
+                class="flex flex-col gap-2 rounded-lg border border-stroke bg-surface-2 p-4"
+              >
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                  <span class="m-0 text-[0.9375rem] font-semibold">
+                    Criterion {{ $index + 1 }}
+                  </span>
                   <ui-button
                     type="button"
                     text="Remove"
@@ -123,8 +136,10 @@
         }
       </div>
 
-      <footer class="app-form-workspace__footer">
-        <div class="app-form__actions">
+      <footer
+        class="flex shrink-0 items-center justify-end gap-2 border-t border-stroke bg-surface-2 px-4 py-3.5 md:px-6"
+      >
+        <div class="flex w-full flex-wrap items-center justify-end gap-2">
           <ui-button
             text="Cancel"
             variant="secondary"

@@ -13,7 +13,7 @@ import { Router, RouterLink } from '@angular/router';
 import {
   AccordionComponent,
   ButtonComponent,
-  DropdownComponent,
+  SelectComponent,
   MessageBarComponent,
   PasswordComponent,
   TextComponent
@@ -26,7 +26,11 @@ import {
 import { EffectivePermissionsComponent } from '@features/users/components/effective-permissions/effective-permissions.component';
 import { EffectivePermissionDto } from '@features/users/models/user.model';
 import { UsersService } from '@features/users/services/users.service';
-import { UserConstraints, UserFieldErrors, UserMessages } from '@features/users/utils/users.utils';
+import {
+  UserConstraints,
+  UserFieldErrors,
+  UserMessages
+} from '@features/users/utils/users.utils';
 import { BackButtonComponent } from '@shared/components/back-button/back-button.component';
 import { DefaultExpandedAccordionDirective } from '@shared/directives/default-expanded-accordion.directive';
 import { fieldError } from '@shared/forms/field-error';
@@ -41,7 +45,7 @@ import { catchError, debounceTime, of, startWith, switchMap } from 'rxjs';
     ButtonComponent,
     TextComponent,
     PasswordComponent,
-    DropdownComponent,
+    SelectComponent,
     MessageBarComponent,
     AccordionComponent,
     DefaultExpandedAccordionDirective,
@@ -71,44 +75,42 @@ export class CreateUserComponent {
     }))
   );
 
-  readonly form = new FormGroup(
-    {
-      firstName: new FormControl('', {
-        nonNullable: true,
-        validators: [
-          Validators.required,
-          Validators.maxLength(UserConstraints.NAME_MAX_LENGTH)
-        ]
-      }),
-      lastName: new FormControl('', {
-        nonNullable: true,
-        validators: [
-          Validators.required,
-          Validators.maxLength(UserConstraints.NAME_MAX_LENGTH)
-        ]
-      }),
-      email: new FormControl('', {
-        nonNullable: true,
-        validators: [
-          Validators.required,
-          Validators.email,
-          Validators.maxLength(UserConstraints.EMAIL_MAX_LENGTH)
-        ]
-      }),
-      password: new FormControl('', {
-        nonNullable: true,
-        validators: buildPasswordPolicyValidators(defaultPasswordPolicySettings())
-      }),
-      confirmPassword: new FormControl('', {
-        nonNullable: true,
-        validators: [Validators.required, confirmPasswordMatchValidator()]
-      }),
-      roleIds: new FormControl<string[]>([], {
-        nonNullable: true,
-        validators: [Validators.required]
-      })
-    }
-  );
+  readonly form = new FormGroup({
+    firstName: new FormControl('', {
+      nonNullable: true,
+      validators: [
+        Validators.required,
+        Validators.maxLength(UserConstraints.NAME_MAX_LENGTH)
+      ]
+    }),
+    lastName: new FormControl('', {
+      nonNullable: true,
+      validators: [
+        Validators.required,
+        Validators.maxLength(UserConstraints.NAME_MAX_LENGTH)
+      ]
+    }),
+    email: new FormControl('', {
+      nonNullable: true,
+      validators: [
+        Validators.required,
+        Validators.email,
+        Validators.maxLength(UserConstraints.EMAIL_MAX_LENGTH)
+      ]
+    }),
+    password: new FormControl('', {
+      nonNullable: true,
+      validators: buildPasswordPolicyValidators(defaultPasswordPolicySettings())
+    }),
+    confirmPassword: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required, confirmPasswordMatchValidator()]
+    }),
+    roleIds: new FormControl<string[]>([], {
+      nonNullable: true,
+      validators: [Validators.required]
+    })
+  });
 
   constructor() {
     this.form.controls.password.valueChanges

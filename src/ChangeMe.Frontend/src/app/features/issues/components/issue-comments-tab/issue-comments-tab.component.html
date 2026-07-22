@@ -1,64 +1,63 @@
-<div class="app-stack-md">
-  <ui-card appearance="filled-alternative">
-    <div uiCardHeader>Add comment</div>
-    <div uiCardBody>
-      <form class="app-form" [formGroup]="commentForm" (ngSubmit)="addComment()">
-        <ui-textarea
-          label="Add a comment"
-          [rows]="4"
-          [formControl]="commentForm.controls.content"
-          [required]="true"
-          [errorText]="fieldError(commentForm.controls.content, IssueFieldErrors.comment, submitted())"
-        />
+<div class="detail-tab-panel">
+  <form
+    class="flex flex-col gap-4 border-b border-stroke pb-5"
+    [formGroup]="commentForm"
+    (ngSubmit)="addComment()"
+  >
+    <ui-textarea
+      label="Add a comment"
+      [rows]="4"
+      [formControl]="commentForm.controls.content"
+      [required]="true"
+      [errorText]="
+        fieldError(commentForm.controls.content, IssueFieldErrors.comment, submitted())
+      "
+    />
 
-        @if (commentError()) {
-          <ui-message-bar [title]="commentError()!" variant="danger" />
-        }
+    @if (commentError()) {
+      <ui-message-bar [title]="commentError()!" variant="danger" />
+    }
 
-        <div class="app-form__actions">
-          <ui-button
-            type="submit"
-            [text]="isSubmittingComment() ? 'Adding comment...' : 'Add comment'"
-            icon="send"
-            variant="primary"
-            [loading]="isSubmittingComment()"
-          />
-        </div>
-      </form>
+    <div class="flex flex-wrap items-center justify-end gap-2">
+      <ui-button
+        type="submit"
+        [text]="isSubmittingComment() ? 'Adding comment...' : 'Add comment'"
+        icon="send"
+        variant="primary"
+        [loading]="isSubmittingComment()"
+      />
     </div>
-  </ui-card>
+  </form>
 
   @if (loadError()) {
     <ui-message-bar [title]="loadError()!" variant="danger" />
   } @else if (isLoadingComments()) {
     <ui-spinner ariaLabel="Loading comments" />
   } @else if (comments().length > 0) {
-    <div class="app-stack-md">
+    <div class="detail-tab-list">
       @for (comment of comments(); track comment.id) {
-        <ui-card appearance="filled-alternative">
-          <div uiCardHeader class="app-detail-comment__header">
-            <span class="app-detail-comment__author">
+        <article class="detail-tab-item">
+          <header class="detail-tab-item__header">
+            <span class="detail-tab-item__title">
               {{ comment.authorName || comment.authorUserId }}
             </span>
-            <time class="app-detail-comment__time">
+            <time class="detail-tab-item__meta">
               {{ comment.createdAt | date: 'dd.MM.yyyy HH:mm' }}
             </time>
-          </div>
-          <div uiCardBody>
-            <p class="app-detail-card__text">{{ comment.content }}</p>
-          </div>
-        </ui-card>
+          </header>
+          <p class="detail-tab-item__body">{{ comment.content }}</p>
+        </article>
       }
     </div>
   } @else if (hasLoadedComments()) {
-    <p class="app-detail-card__empty">No comments yet</p>
+    <p class="detail-tab-empty">No comments yet</p>
   }
 
   @if (canShowMoreComments()) {
-    <div class="app-form__actions app-form__actions--center">
+    <div class="detail-tab-actions">
       <ui-button
         text="Show more"
-        appearance="subtle"
+        appearance="outline"
         variant="secondary"
         [loading]="isLoadingMoreComments()"
         (click)="showMoreComments()"

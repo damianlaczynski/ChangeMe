@@ -1,11 +1,11 @@
 import { Component, computed, input } from '@angular/core';
-import { AccordionComponent, CardComponent } from '@laczynski/ui';
-import { DefaultExpandedAccordionDirective } from '@shared/directives/default-expanded-accordion.directive';
 import {
   UserMessages,
   formatFromRoles,
   groupEffectivePermissions
 } from '@features/users/utils/users.utils';
+import { AccordionComponent } from '@laczynski/ui';
+import { DefaultExpandedAccordionDirective } from '@shared/directives/default-expanded-accordion.directive';
 
 export interface PermissionListItem {
   code: string;
@@ -17,9 +17,9 @@ export interface PermissionListItem {
 
 @Component({
   selector: 'app-effective-permissions',
-  imports: [AccordionComponent, CardComponent, DefaultExpandedAccordionDirective],
+  imports: [AccordionComponent, DefaultExpandedAccordionDirective],
   templateUrl: './effective-permissions.component.html',
-  host: { class: 'block' }
+  host: { class: 'block app-effective-permissions-host' }
 })
 export class EffectivePermissionsComponent {
   readonly permissions = input<PermissionListItem[]>([]);

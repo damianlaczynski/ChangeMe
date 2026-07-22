@@ -12,7 +12,7 @@ import {
   AccordionComponent,
   ButtonComponent,
   CheckboxComponent,
-  DropdownComponent,
+  SelectComponent,
   MessageBarComponent,
   TextareaComponent,
   TextComponent
@@ -58,7 +58,7 @@ type AcceptanceCriterionForm = {
     ButtonComponent,
     TextComponent,
     TextareaComponent,
-    DropdownComponent,
+    SelectComponent,
     CheckboxComponent,
     MessageBarComponent,
     AccordionComponent,

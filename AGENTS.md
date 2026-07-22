@@ -79,7 +79,7 @@ Configuration in containers: `appsettings.json` + `appsettings.Development.json`
 - Cross-cutting user/session concerns live under `src/app/core/` and `features/auth/`.
 - Transient toast feedback uses `src/app/core/toast/services/toast.service.ts` with global `<ui-toast-container />` in `app.component.ts`.
 - Destructive confirmations use `src/app/core/confirm/services/confirm.service.ts` with global `<app-confirm-dialog />`.
-- UI components come from `@laczynski/ui`; see `docs/guides/frontend-guidelines.md`.
+- UI components come from `@laczynski/ui` with **Tailwind CSS v4** for layout; see `docs/guides/frontend-guidelines.md`.
 - Shared data models live under `src/app/shared/`.
 
 ### Backend

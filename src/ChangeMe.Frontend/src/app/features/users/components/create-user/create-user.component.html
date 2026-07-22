@@ -1,21 +1,30 @@
-<section class="app-page app-page--form app-page--wide" aria-label="Create user">
-  <header class="app-page__header">
-    <h1 class="app-page__title">Create user</h1>
-    <p class="app-page__subtitle">
+<section
+  class="app-page-fill mx-auto flex min-h-0 w-full max-w-none flex-1 flex-col gap-3 overflow-hidden"
+  aria-label="Create user"
+>
+  <header class="grid shrink-0 gap-1.5 pb-2">
+    <h1 class="m-0 text-xl font-semibold tracking-tight text-foreground md:text-2xl">
+      Create user
+    </h1>
+    <p class="m-0 max-w-3xl text-sm leading-normal text-foreground-2">
       Create a user account with email, password, and roles.
     </p>
   </header>
 
-  <div class="app-page__toolbar">
+  <div class="flex shrink-0 flex-wrap items-center gap-2">
     <app-back-button label="Back to users list" [route]="['/users']" />
   </div>
 
-  <div class="app-page__body app-page__body--form">
-    <form class="app-form-workspace" [formGroup]="form" (ngSubmit)="onSubmit()">
-      <div class="app-form-workspace__scroll app-stack-md">
+  <div class="flex min-h-0 flex-1 flex-col">
+    <form
+      class="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl bg-surface-2"
+      [formGroup]="form"
+      (ngSubmit)="onSubmit()"
+    >
+      <div class="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-4 md:p-6">
         <ui-accordion appDefaultExpanded label="Profile" icon="person">
-          <div class="app-stack-md">
-            <div class="app-form__grid app-form__grid--two">
+          <div class="flex flex-col gap-4">
+            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-2">
               <ui-text
                 label="First name"
                 [formControl]="form.controls.firstName"
@@ -54,7 +63,7 @@
         </ui-accordion>
 
         <ui-accordion appDefaultExpanded label="Password" icon="lock_closed">
-          <div class="app-form__grid app-form__grid--two">
+          <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-2">
             <ui-password
               label="Password"
               autocomplete="new-password"
@@ -85,7 +94,7 @@
         </ui-accordion>
 
         <ui-accordion appDefaultExpanded label="Roles" icon="people">
-          <ui-dropdown
+          <ui-select
             label="Roles"
             placeholder="Select roles"
             mode="multi"
@@ -108,8 +117,10 @@
         }
       </div>
 
-      <footer class="app-form-workspace__footer">
-        <div class="app-form__actions">
+      <footer
+        class="flex shrink-0 items-center justify-end gap-2 border-t border-stroke bg-surface-2 px-4 py-3.5 md:px-6"
+      >
+        <div class="flex w-full flex-wrap items-center justify-end gap-2">
           <ui-button
             type="button"
             text="Cancel"

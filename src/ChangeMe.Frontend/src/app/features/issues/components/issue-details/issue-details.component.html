@@ -1,51 +1,12 @@
-<section class="app-page app-page--wide" aria-label="Issue details">
-  <header class="app-page__header">
-    <h1 class="app-page__title">{{ pageTitle() }}</h1>
-    <p class="app-page__subtitle">
-      Review issue data, comments, attachments, and history
-    </p>
-  </header>
-
-  <div class="app-page__body app-stack-md">
-    <div class="app-page__toolbar">
-      <app-back-button label="Back to issues list" [route]="['/issues']" />
-      @if (issue(); as currentIssue) {
-        <ui-button
-          text="Edit"
-          icon="edit"
-          variant="secondary"
-          appearance="outline"
-          [routerLink]="['/issues', currentIssue.id, 'edit']"
-        />
-        <ui-button
-          [text]="currentIssue.watchersCount.toString()"
-          [icon]="currentIssue.isWatchedByCurrentUser ? 'alert_off' : 'alert'"
-          [variant]="currentIssue.isWatchedByCurrentUser ? 'success' : 'secondary'"
-          [appearance]="currentIssue.isWatchedByCurrentUser ? 'filled' : 'outline'"
-          [loading]="isTogglingWatch()"
-          [uiTooltip]="getWatchTooltip(currentIssue)"
-          uiTooltipPosition="top"
-          [attr.aria-label]="getWatchTooltip(currentIssue)"
-          (click)="toggleWatch()"
-        />
-        <ui-button
-          text="Delete"
-          icon="delete"
-          variant="danger"
-          appearance="outline"
-          [loading]="isDeleting()"
-          (click)="confirmDeleteIssue()"
-        />
-      }
-    </div>
-
+<section class="flex w-full flex-col" aria-label="Issue details">
+  <div class="flex flex-col gap-0">
     @if (isLoading()) {
-      <div class="app-center-state">
+      <div class="flex flex-col items-center gap-2 py-8">
         <ui-spinner size="medium" ariaLabel="Loading issue details" />
-        <p class="app-muted">Loading issue details...</p>
+        <p class="text-foreground-2">Loading issue details...</p>
       </div>
     } @else if (loadError()) {
-      <div class="app-center-state">
+      <div class="flex flex-col items-center gap-2 py-8">
         <ui-message-bar [title]="loadError()!" variant="danger" />
         <ui-button
           text="Try again"
@@ -57,95 +18,149 @@
         />
       </div>
     } @else if (issue(); as currentIssue) {
-      <div class="app-detail-layout">
-        <ui-card appearance="filled">
-          <div uiCardHeader>Overview</div>
-          <div uiCardBody>
-            <div class="app-workspace-panel__facts">
-              <div class="app-workspace-stat">
-                <span class="app-workspace-stat__label">Status</span>
-                <span class="app-workspace-stat__value">
-                  {{ getIssueStatusLabel(currentIssue.status) }}
-                </span>
-              </div>
-              <div class="app-workspace-stat">
-                <span class="app-workspace-stat__label">Priority</span>
-                <span class="app-workspace-stat__value">
-                  {{ getIssuePriorityLabel(currentIssue.priority) }}
-                </span>
-              </div>
-              <div class="app-workspace-stat">
-                <span class="app-workspace-stat__label">Author</span>
-                <span class="app-workspace-stat__value">
-                  {{ currentIssue.createdByName || currentIssue.createdBy }}
-                </span>
-              </div>
-              <div class="app-workspace-stat">
-                <span class="app-workspace-stat__label">Assigned to</span>
-                <span class="app-workspace-stat__value">
-                  {{ currentIssue.assignedToUserName || 'Unassigned' }}
-                </span>
-              </div>
-              <div class="app-workspace-stat">
-                <span class="app-workspace-stat__label">Created at</span>
-                <span class="app-workspace-stat__value">
-                  {{ currentIssue.createdAt | date: 'dd.MM.yyyy HH:mm' }}
-                </span>
-              </div>
-              <div class="app-workspace-stat">
-                <span class="app-workspace-stat__label">Last activity</span>
-                <span class="app-workspace-stat__value">
-                  {{ currentIssue.lastActivityAt | date: 'dd.MM.yyyy HH:mm' }}
-                </span>
-              </div>
-            </div>
-          </div>
-        </ui-card>
+      <article class="flex flex-col gap-5">
+        <header class="flex flex-col gap-1.5 pb-1">
+          <h1
+            class="m-0 break-words text-xl font-semibold tracking-tight text-foreground md:text-2xl"
+          >
+            {{ pageTitle() }}
+          </h1>
+          <p class="m-0 max-w-2xl text-sm leading-normal text-foreground-2">
+            Review issue data, comments, attachments, and history
+          </p>
+        </header>
 
-        <div class="app-detail-card-grid">
-          <ui-card appearance="filled">
-            <div uiCardHeader>Description</div>
-            <div uiCardBody>
-              <p class="app-detail-card__text">{{ currentIssue.description }}</p>
-            </div>
-          </ui-card>
-
-          <ui-card appearance="filled">
-            <div uiCardHeader>Acceptance criteria</div>
-            <div uiCardBody>
-              @if (currentIssue.acceptanceCriteria.length > 0) {
-                <ul class="app-workspace-criteria">
-                  @for (criterion of currentIssue.acceptanceCriteria; track criterion.id) {
-                    <li class="app-workspace-criteria__item">{{ criterion.content }}</li>
-                  }
-                </ul>
-              } @else {
-                <p class="app-detail-card__empty">No acceptance criteria defined</p>
-              }
-            </div>
-          </ui-card>
+        <div class="flex flex-wrap items-center gap-2">
+          <app-back-button label="Back to issues list" [route]="['/issues']" />
+          <ui-button
+            text="Edit"
+            icon="edit"
+            variant="secondary"
+            appearance="outline"
+            [routerLink]="['/issues', currentIssue.id, 'edit']"
+          />
+          <ui-button
+            [text]="currentIssue.watchersCount.toString()"
+            [icon]="currentIssue.isWatchedByCurrentUser ? 'alert_off' : 'alert'"
+            [variant]="currentIssue.isWatchedByCurrentUser ? 'success' : 'secondary'"
+            [appearance]="currentIssue.isWatchedByCurrentUser ? 'filled' : 'outline'"
+            [loading]="isTogglingWatch()"
+            [uiTooltip]="getWatchTooltip(currentIssue)"
+            uiTooltipPosition="top"
+            [attr.aria-label]="getWatchTooltip(currentIssue)"
+            (click)="toggleWatch()"
+          />
+          <ui-button
+            text="Delete"
+            icon="delete"
+            variant="danger"
+            appearance="outline"
+            [loading]="isDeleting()"
+            (click)="confirmDeleteIssue()"
+          />
         </div>
 
-        <ui-card appearance="filled" class="app-detail-tabs-card">
-          <div uiCardBody class="app-stack-md">
+        <dl class="detail-meta">
+          <div>
+            <dt class="detail-meta__term">Author</dt>
+            <dd class="detail-meta__value detail-meta__value--wrap">
+              {{ currentIssue.createdByName || currentIssue.createdBy }}
+            </dd>
+          </div>
+          <div>
+            <dt class="detail-meta__term">Assigned to</dt>
+            <dd class="detail-meta__value detail-meta__value--wrap">
+              {{ currentIssue.assignedToUserName || 'Unassigned' }}
+            </dd>
+          </div>
+          <div>
+            <dt class="detail-meta__term">Status</dt>
+            <dd class="detail-meta__value">
+              <ui-tag
+                [text]="getIssueStatusLabel(currentIssue.status)"
+                [variant]="getIssueStatusSeverity(currentIssue.status)"
+                appearance="tint"
+              />
+            </dd>
+          </div>
+          <div>
+            <dt class="detail-meta__term">Priority</dt>
+            <dd class="detail-meta__value">
+              <ui-tag
+                [text]="getIssuePriorityLabel(currentIssue.priority)"
+                [variant]="getIssuePrioritySeverity(currentIssue.priority)"
+                appearance="tint"
+              />
+            </dd>
+          </div>
+          <div>
+            <dt class="detail-meta__term">Created at</dt>
+            <dd class="detail-meta__value detail-meta__value--date">
+              {{ currentIssue.createdAt | date: 'dd.MM.yyyy HH:mm' }}
+            </dd>
+          </div>
+          <div>
+            <dt class="detail-meta__term">Last activity</dt>
+            <dd class="detail-meta__value detail-meta__value--date">
+              {{ currentIssue.lastActivityAt | date: 'dd.MM.yyyy HH:mm' }}
+            </dd>
+          </div>
+        </dl>
+
+        <div class="flex flex-col gap-3">
+          <ui-accordion appDefaultExpanded label="Description" icon="document">
+            <p
+              class="m-0 whitespace-pre-wrap text-sm leading-relaxed text-foreground-2"
+            >
+              {{ currentIssue.description }}
+            </p>
+          </ui-accordion>
+
+          <ui-accordion
+            appDefaultExpanded
+            label="Acceptance criteria"
+            icon="checkmark_circle"
+          >
+            @if (currentIssue.acceptanceCriteria.length > 0) {
+              <ul
+                class="m-0 flex list-disc flex-col gap-2 pl-5 text-sm leading-relaxed text-foreground-2 [&_li]:pl-0.5 [&_li::marker]:text-foreground-3"
+              >
+                @for (
+                  criterion of currentIssue.acceptanceCriteria;
+                  track criterion.id
+                ) {
+                  <li>{{ criterion.content }}</li>
+                }
+              </ul>
+            } @else {
+              <p class="m-0 text-sm text-foreground-3">
+                No acceptance criteria defined
+              </p>
+            }
+          </ui-accordion>
+
+          <section class="flex flex-col gap-4 pt-1">
             <ui-tabs
+              class="block w-full border-b border-stroke"
               [tabs]="detailTabs"
               [selectedTabId]="selectedTabId()"
               (selectedTabIdChange)="onTabChange($event)"
-              appearance="subtle"
+              appearance="transparent"
               variant="primary"
             />
 
-            @if (activeTab() === 'comments') {
-              <app-issue-comments-tab [issueId]="currentIssue.id" />
-            } @else if (activeTab() === 'attachments') {
-              <app-issue-attachments-tab [issueId]="currentIssue.id" />
-            } @else if (activeTab() === 'history') {
-              <app-issue-history-tab [issueId]="currentIssue.id" />
-            }
-          </div>
-        </ui-card>
-      </div>
+            <div class="detail-inset">
+              @if (activeTab() === 'comments') {
+                <app-issue-comments-tab [issueId]="currentIssue.id" />
+              } @else if (activeTab() === 'attachments') {
+                <app-issue-attachments-tab [issueId]="currentIssue.id" />
+              } @else if (activeTab() === 'history') {
+                <app-issue-history-tab [issueId]="currentIssue.id" />
+              }
+            </div>
+          </section>
+        </div>
+      </article>
     }
   </div>
 </section>

@@ -1,11 +1,18 @@
-<section class="app-page app-page--wide app-page--grid" aria-label="Users list">
-  <header class="app-page__header">
-    <h1 class="app-page__title">Users list</h1>
-    <p class="app-page__subtitle">Browse, search and manage user accounts.</p>
+<section
+  class="app-page-fill app-page-grid mx-auto flex min-h-0 w-full max-w-none flex-1 flex-col gap-3 overflow-hidden"
+  aria-label="Users list"
+>
+  <header class="grid shrink-0 gap-1.5 pb-2">
+    <h1 class="m-0 text-xl font-semibold tracking-tight text-foreground md:text-2xl">
+      Users list
+    </h1>
+    <p class="m-0 max-w-3xl text-sm leading-normal text-foreground-2">
+      Browse, search and manage user accounts.
+    </p>
   </header>
 
   @if (canCreateUsers()) {
-    <div class="app-page__toolbar">
+    <div class="flex shrink-0 flex-wrap items-center gap-2">
       <ui-button
         text="Create user"
         icon="person_add"
@@ -15,12 +22,17 @@
     </div>
   }
 
-  <div class="app-page__body app-page__body--grid">
+  <div class="flex min-h-0 flex-1 flex-col gap-3 overflow-hidden">
     @if (errorMessage(); as message) {
-      <ui-message-bar [title]="message" variant="danger" />
+      <ui-message-bar class="shrink-0" [title]="message" variant="danger" />
     }
 
-    <qg-ui-data-grid [grid]="grid" [pageSizeOptions]="[10, 25, 50]">
+    <qg-ui-data-grid
+      class="flex min-h-0 flex-1 flex-col overflow-hidden"
+      [grid]="grid"
+      [pageSizeOptions]="[10, 25, 50]"
+      [hoverable]="true"
+    >
       <ng-template
         qgColumn="lastName"
         header="Name"
@@ -29,7 +41,7 @@
         width="200px"
         let-user
       >
-        <a class="app-link" [routerLink]="['/users', user.id]">
+        <a class="detail-table__link" [routerLink]="['/users', user.id]">
           {{ formatUserName(user) || '—' }}
         </a>
       </ng-template>
@@ -42,7 +54,7 @@
         width="220px"
         let-user
       >
-        {{ user.email }}
+        <span class="detail-table__text">{{ user.email }}</span>
       </ng-template>
 
       <ng-template
@@ -68,7 +80,7 @@
         width="220px"
         let-user
       >
-        <div class="app-row">
+        <div class="flex flex-wrap items-center gap-2">
           @for (roleName of user.roleNames; track roleName) {
             <ui-tag [text]="roleName" variant="secondary" appearance="tint" />
           }
@@ -84,9 +96,11 @@
         let-user
       >
         @if (user.lastSignInAt) {
-          {{ user.lastSignInAt | date: 'dd.MM.yyyy HH:mm' }}
+          <time class="detail-table__date">
+            {{ user.lastSignInAt | date: 'dd.MM.yyyy HH:mm' }}
+          </time>
         } @else {
-          {{ UserMessages.neverSignedIn }}
+          <span class="detail-table__muted">{{ UserMessages.neverSignedIn }}</span>
         }
       </ng-template>
 
@@ -98,7 +112,9 @@
         width="160px"
         let-user
       >
-        {{ user.createdAt | date: 'dd.MM.yyyy HH:mm' }}
+        <time class="detail-table__date">
+          {{ user.createdAt | date: 'dd.MM.yyyy HH:mm' }}
+        </time>
       </ng-template>
 
       <ng-template
@@ -119,7 +135,7 @@
       </ng-template>
 
       <ng-template qgEmpty>
-        <p>{{ getGridListEmptyMessage(grid.query()) }}</p>
+        <p class="detail-tab-empty">{{ getGridListEmptyMessage(grid.query()) }}</p>
       </ng-template>
     </qg-ui-data-grid>
   </div>

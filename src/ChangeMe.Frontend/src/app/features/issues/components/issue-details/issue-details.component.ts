@@ -10,15 +10,6 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import {
-  ButtonComponent,
-  CardComponent,
-  MessageBarComponent,
-  SpinnerComponent,
-  TabsComponent,
-  TooltipDirective,
-  type Tab
-} from '@laczynski/ui';
 import { ConfirmService } from '@core/confirm/services/confirm.service';
 import { ToastService } from '@core/toast/services/toast.service';
 import { IssueAttachmentsTabComponent } from '@features/issues/components/issue-attachments-tab/issue-attachments-tab.component';
@@ -33,7 +24,18 @@ import {
   getIssueStatusLabel,
   getIssueStatusSeverity
 } from '@features/issues/utils/issue.utils';
+import {
+  AccordionComponent,
+  ButtonComponent,
+  MessageBarComponent,
+  SpinnerComponent,
+  TabsComponent,
+  TagComponent,
+  TooltipDirective,
+  type Tab
+} from '@laczynski/ui';
 import { BackButtonComponent } from '@shared/components/back-button/back-button.component';
+import { DefaultExpandedAccordionDirective } from '@shared/directives/default-expanded-accordion.directive';
 
 type IssueDetailsTab = 'comments' | 'attachments' | 'history';
 
@@ -53,10 +55,12 @@ function resolveIssueDetailsTab(
     DatePipe,
     RouterLink,
     ButtonComponent,
-    CardComponent,
+    AccordionComponent,
+    DefaultExpandedAccordionDirective,
     MessageBarComponent,
     SpinnerComponent,
     TabsComponent,
+    TagComponent,
     TooltipDirective,
     BackButtonComponent,
     IssueCommentsTabComponent,

@@ -4,26 +4,32 @@ import { ButtonComponent } from '@laczynski/ui';
 
 @Component({
   selector: 'app-auth-page',
-  host: { class: 'app-auth-page' },
+  host: {
+    class: 'flex flex-1 flex-col items-center justify-center px-4 py-8 md:px-4 md:py-12'
+  },
   imports: [ButtonComponent],
   template: `
     <div
-      class="app-auth-page__card"
-      [class.app-auth-page__card--wide]="wide()"
-      [class.app-auth-page__card--narrow]="!wide()"
+      class="w-full rounded-xl border border-stroke bg-surface-1 p-6 md:p-8"
+      [class.max-w-lg]="wide()"
+      [class.max-w-md]="!wide()"
     >
-      <header class="app-auth-page__header">
-        <h1 class="app-auth-page__title">{{ title() }}</h1>
+      <header class="mb-6 text-center sm:text-left">
+        <h1 class="m-0 text-2xl font-semibold tracking-tight">{{ title() }}</h1>
         @if (subtitle()) {
-          <p class="app-auth-page__subtitle">{{ subtitle() }}</p>
+          <p class="m-0 mt-2 text-sm leading-normal text-foreground-2">
+            {{ subtitle() }}
+          </p>
         }
       </header>
 
       <ng-content />
 
       @if (footerPrompt() && footerLinkLabel() && footerRoute()) {
-        <div class="app-auth-page__footer">
-          <p class="app-auth-page__footer-text">
+        <div class="mt-8 border-t border-stroke pt-6 text-center">
+          <p
+            class="m-0 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-sm text-foreground-2"
+          >
             <span>{{ footerPrompt() }}</span>
             <ui-button
               [text]="footerLinkLabel()"

@@ -11,7 +11,7 @@ import {
   selector: 'app-permission-checklist',
   imports: [CardComponent],
   template: `
-    <div class="app-stack-md">
+    <div class="flex flex-col gap-4">
       @if (showFormError()) {
         <span class="input-label input-label--error input-label--medium" role="status">
           {{ RoleMessages.atLeastOnePermission }}
@@ -19,9 +19,9 @@ import {
       }
 
       @for (group of groupedPermissions(); track group.group) {
-        <section class="app-field-group" [attr.aria-label]="group.group">
-          <h4 class="app-field-group__title">{{ group.group }}</h4>
-          <div class="app-card-grid">
+        <section class="flex flex-col gap-3" [attr.aria-label]="group.group">
+          <h4 class="m-0 text-sm font-semibold text-foreground-2">{{ group.group }}</h4>
+          <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             @for (permission of group.items; track permission.code) {
               <ui-card
                 appearance="filled-alternative"

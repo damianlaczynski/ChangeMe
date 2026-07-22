@@ -1,5 +1,13 @@
 import { DatePipe } from '@angular/common';
-import { Component, computed, DestroyRef, effect, inject, input, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  DestroyRef,
+  effect,
+  inject,
+  input,
+  signal
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   FormArray,
@@ -13,7 +21,7 @@ import {
   AccordionComponent,
   ButtonComponent,
   CardComponent,
-  DropdownComponent,
+  SelectComponent,
   MessageBarComponent,
   SpinnerComponent,
   TextareaComponent,
@@ -62,7 +70,7 @@ type EditAcceptanceCriterionForm = {
     ButtonComponent,
     TextComponent,
     TextareaComponent,
-    DropdownComponent,
+    SelectComponent,
     MessageBarComponent,
     AccordionComponent,
     CardComponent,

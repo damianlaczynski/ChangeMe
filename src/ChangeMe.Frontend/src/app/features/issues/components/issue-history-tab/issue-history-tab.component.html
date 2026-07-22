@@ -1,19 +1,19 @@
-<div class="app-stack-md">
+<div class="detail-tab-panel">
   @if (loadError()) {
     <ui-message-bar [title]="loadError()!" variant="danger" />
   } @else if (isLoadingHistory()) {
     <ui-spinner ariaLabel="Loading history" />
   } @else if (historyEntries().length > 0) {
-    <ui-timeline [items]="timelineItems()" ariaLabel="Issue history" />
+    <ui-timeline [items]="timelineItems()" size="large" ariaLabel="Issue history" />
   } @else if (hasLoadedHistory()) {
-    <p class="app-muted">No history entries found</p>
+    <p class="detail-tab-empty">No history entries found</p>
   }
 
   @if (canShowMoreHistory()) {
-    <div class="app-form__actions app-form__actions--center">
+    <div class="detail-tab-actions">
       <ui-button
         text="Show more"
-        appearance="subtle"
+        appearance="outline"
         variant="secondary"
         [loading]="isLoadingMoreHistory()"
         (click)="showMoreHistory()"

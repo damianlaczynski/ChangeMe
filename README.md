@@ -68,7 +68,7 @@ This repository is meant to provide:
 - Local email testing: MailHog
 - Testing: Angular test runner, .NET unit tests, .NET integration tests with Testcontainers
 - Local orchestration: Docker Compose
-- UI: [@laczynski/ui](https://ui.laczynski.dev/) (Fluent-inspired Angular components)
+- UI: [@laczynski/ui](https://ui.laczynski.dev/) (Fluent-inspired Angular components) + Tailwind CSS v4
 
 ## Repository Structure
 

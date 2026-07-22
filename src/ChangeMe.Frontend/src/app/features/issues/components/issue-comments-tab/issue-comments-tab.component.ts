@@ -15,17 +15,19 @@ import {
   ReactiveFormsModule,
   Validators
 } from '@angular/forms';
+import { ToastService } from '@core/toast/services/toast.service';
+import { IssueCommentDto } from '@features/issues/models/issue.model';
+import { IssuesService } from '@features/issues/services/issues.service';
+import {
+  IssueCommentConstraints,
+  IssueFieldErrors
+} from '@features/issues/utils/issue.utils';
 import {
   ButtonComponent,
-  CardComponent,
   MessageBarComponent,
   SpinnerComponent,
   TextareaComponent
 } from '@laczynski/ui';
-import { ToastService } from '@core/toast/services/toast.service';
-import { IssueCommentDto } from '@features/issues/models/issue.model';
-import { IssuesService } from '@features/issues/services/issues.service';
-import { IssueCommentConstraints, IssueFieldErrors } from '@features/issues/utils/issue.utils';
 import {
   createIssueTabGridQuery,
   hasMoreGridItems
@@ -42,13 +44,11 @@ type CommentForm = {
     DatePipe,
     ReactiveFormsModule,
     ButtonComponent,
-    CardComponent,
     TextareaComponent,
     MessageBarComponent,
     SpinnerComponent
   ],
-  templateUrl: './issue-comments-tab.component.html',
-  host: { class: 'block' }
+  templateUrl: './issue-comments-tab.component.html'
 })
 export class IssueCommentsTabComponent {
   readonly issueId = input.required<string>();

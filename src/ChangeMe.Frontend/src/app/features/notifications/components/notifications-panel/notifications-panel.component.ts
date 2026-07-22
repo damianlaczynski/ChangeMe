@@ -1,29 +1,31 @@
 import { DatePipe } from '@angular/common';
-import { Component, inject, output, signal } from '@angular/core';
+import { Component, computed, inject, output, signal } from '@angular/core';
 import { Router } from '@angular/router';
+import { NotificationDto } from '@features/notifications/models/notification.model';
+import { NotificationsService } from '@features/notifications/services/notifications.service';
 import {
   ButtonComponent,
   IconComponent,
   MessageBarComponent,
   SpinnerComponent,
   TabsComponent,
+  TagComponent,
   type Tab
 } from '@laczynski/ui';
-import { NotificationDto } from '@features/notifications/models/notification.model';
-import { NotificationsService } from '@features/notifications/services/notifications.service';
 
 @Component({
   selector: 'app-notifications-panel',
+  host: { class: 'block' },
   imports: [
     DatePipe,
     ButtonComponent,
     IconComponent,
     MessageBarComponent,
     SpinnerComponent,
-    TabsComponent
+    TabsComponent,
+    TagComponent
   ],
-  templateUrl: './notifications-panel.component.html',
-  styleUrl: './notifications-panel.component.scss'
+  templateUrl: './notifications-panel.component.html'
 })
 export class NotificationsPanelComponent {
   private readonly router = inject(Router);
@@ -52,6 +54,46 @@ export class NotificationsPanelComponent {
     { id: 'read', label: 'Read' }
   ];
 
+  readonly displayedNotifications = computed(() =>
+    this.activeTab() === 'unread'
+      ? this.unreadNotifications()
+      : this.readNotifications()
+  );
+
+  readonly isUnreadTab = computed(() => this.activeTab() === 'unread');
+
+  readonly canShowMore = computed(() =>
+    this.isUnreadTab() ? this.canShowMoreUnread() : this.canShowMoreRead()
+  );
+
+  readonly isLoadingMore = computed(() =>
+    this.isUnreadTab() ? this.isLoadingMoreUnread() : this.isLoadingMoreRead()
+  );
+
+  readonly statusMessage = computed(() => {
+    if (this.isLoading() && !this.hasLoaded()) {
+      return 'Loading notifications...';
+    }
+
+    if (this.unreadCount() === 0) {
+      return "You're all caught up.";
+    }
+
+    if (this.isUnreadTab()) {
+      const shown = this.unreadTotalCount();
+      return shown
+        ? `${this.unreadCount()} unread · ${shown} shown`
+        : `${this.unreadCount()} unread`;
+    }
+
+    const shown = this.readTotalCount();
+    return shown ? `${shown} read shown` : 'Read notifications';
+  });
+
+  readonly emptyTabMessage = computed(() =>
+    this.isUnreadTab() ? 'No unread notifications' : 'No read notifications'
+  );
+
   openNotification(notification: NotificationDto): void {
     if (!notification.isRead) {
       this.notificationsService.markAsRead(notification.id);
@@ -74,12 +116,12 @@ export class NotificationsPanelComponent {
     this.notificationsService.markAllAsRead();
   }
 
-  showMoreUnread(): void {
-    this.notificationsService.showMoreUnread();
-  }
-
-  showMoreRead(): void {
-    this.notificationsService.showMoreRead();
+  showMore(): void {
+    if (this.isUnreadTab()) {
+      this.notificationsService.showMoreUnread();
+    } else {
+      this.notificationsService.showMoreRead();
+    }
   }
 
   onTabChange(tabId: string | number): void {
